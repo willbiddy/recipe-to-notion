@@ -38,7 +38,7 @@ URL → Check duplicates → Scrape recipe (JSON-LD) → Claude scores/tags → 
 
 ## Cost
 
-Each recipe costs about **$0.01 or less** in Claude API usage (roughly 2,000 input tokens and 100 output tokens per recipe). The default model is Sonnet, but you can change it in `src/tagger.ts` — Haiku is faster and cheaper, Opus is more capable but costs more.
+Each recipe costs about **$0.01** in Claude API usage (roughly 3,200-3,500 input tokens and 120-140 output tokens per recipe). The default model is Sonnet, but you can change it in `src/tagger.ts` — Haiku is faster and cheaper, Opus is more capable but costs more.
 
 ## Setup
 

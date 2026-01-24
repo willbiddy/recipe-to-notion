@@ -294,6 +294,7 @@ async function saveToNotion(
  */
 function printRecipeSummary(recipe: Recipe, tags: RecipeTags): void {
 	const lines = [
+		"",
 		pc.bold(recipe.name),
 		recipe.author ? `Author:      ${recipe.author}` : null,
 		`Tags:        ${tags.tags.join(", ")}`,
@@ -302,10 +303,10 @@ function printRecipeSummary(recipe: Recipe, tags: RecipeTags): void {
 		`Minutes:     ${tags.totalTimeMinutes}`,
 		`Ingredients: ${recipe.ingredients.length} items`,
 		`Steps:       ${recipe.instructions.length} steps`,
+		"",
 	];
 
-	console.log();
-	console.log(lines.filter(Boolean).join("\n"));
+	console.log(lines.filter((line) => line !== null).join("\n"));
 }
 
 /**

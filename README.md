@@ -36,6 +36,10 @@ URL → Check duplicates → Scrape recipe (JSON-LD) → Claude scores/tags → 
 - An [Anthropic API key](https://console.anthropic.com/)
 - A [Notion integration](https://www.notion.so/my-integrations) with a connected database
 
+## Cost
+
+Each recipe costs about **$0.01 or less** in Claude API usage (roughly 2,000 input tokens and 100 output tokens per recipe).
+
 ## Setup
 
 ### 1. Clone and install

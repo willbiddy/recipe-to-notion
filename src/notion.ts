@@ -5,27 +5,29 @@ import type { RecipeTags } from "./tagger.js";
 /**
  * Notion database property names.
  */
-const PROPERTY_NAMES = {
-  NAME: "Name",
-  SOURCE_URL: "Source URL",
-  TOTAL_TIME: "Total time",
-  CUISINE: "Cuisine",
-  MEAL_TYPE: "Meal type",
-  HEALTHINESS: "Healthiness",
-} as const;
+enum PropertyNames {
+  NAME = "Name",
+  SOURCE_URL = "SourceURL",
+  TOTAL_TIME = "TotalTime",
+  TAGS = "Tags",
+  MEAL_TYPE = "MealType",
+  HEALTHINESS = "Healthiness",
+}
 
 /**
  * Valid meal type options for the Meal type multi-select property.
  */
-const MEAL_TYPE_OPTIONS = [
-  "Breakfast",
-  "Lunch",
-  "Dinner",
-  "Snack",
-  "Dessert",
-  "Appetizer",
-  "Side Dish",
-] as const;
+enum MealType {
+  BREAKFAST = "Breakfast",
+  LUNCH = "Lunch",
+  DINNER = "Dinner",
+  SNACK = "Snack",
+  DESSERT = "Dessert",
+  APPETIZER = "Appetizer",
+  SIDE_DISH = "SideDish",
+}
+
+const MEAL_TYPE_OPTIONS = Object.values(MealType);
 
 /**
  * Converts a Notion page ID to a clickable URL.
@@ -63,7 +65,7 @@ export async function checkForDuplicateByUrl(
     },
     body: JSON.stringify({
       filter: {
-        property: PROPERTY_NAMES.SOURCE_URL,
+        property: PropertyNames.SOURCE_URL,
         url: {
           equals: url,
         },
@@ -72,7 +74,13 @@ export async function checkForDuplicateByUrl(
   });
 
   if (!response.ok) {
-    throw new Error(`Notion API error: ${response.status} ${response.statusText}`);
+    const errorBody = await response.json().catch(() => ({}));
+    const errorMessage = errorBody.message || response.statusText;
+    const code = errorBody.code || "";
+    throw new Error(
+      `Notion API error: ${response.status} ${response.statusText}. ${errorMessage}${code ? ` (code: ${code})` : ""}. ` +
+      `Check that the property "${PropertyNames.SOURCE_URL}" exists in your database and is a URL type.`
+    );
   }
 
   const urlQuery = await response.json();
@@ -80,11 +88,11 @@ export async function checkForDuplicateByUrl(
   if (urlQuery.results.length > 0) {
     const page = urlQuery.results[0];
     const pageId = page.id;
-    const title = page.properties && PROPERTY_NAMES.NAME in page.properties
-      ? extractTitle(page.properties[PROPERTY_NAMES.NAME])
+    const title = page.properties && PropertyNames.NAME in page.properties
+      ? extractTitle(page.properties[PropertyNames.NAME])
       : "Unknown Recipe";
-    const foundUrl = page.properties && PROPERTY_NAMES.SOURCE_URL in page.properties
-      ? extractUrl(page.properties[PROPERTY_NAMES.SOURCE_URL])
+    const foundUrl = page.properties && PropertyNames.SOURCE_URL in page.properties
+      ? extractUrl(page.properties[PropertyNames.SOURCE_URL])
       : url;
     return { title, url: foundUrl, pageId, notionUrl: getNotionPageUrl(pageId) };
   }
@@ -116,7 +124,7 @@ export async function checkForDuplicateByTitle(
     },
     body: JSON.stringify({
       filter: {
-        property: PROPERTY_NAMES.NAME,
+        property: PropertyNames.NAME,
         title: {
           equals: recipeName,
         },
@@ -125,7 +133,13 @@ export async function checkForDuplicateByTitle(
   });
 
   if (!response.ok) {
-    throw new Error(`Notion API error: ${response.status} ${response.statusText}`);
+    const errorBody = await response.json().catch(() => ({}));
+    const errorMessage = errorBody.message || response.statusText;
+    const code = errorBody.code || "";
+    throw new Error(
+      `Notion API error: ${response.status} ${response.statusText}. ${errorMessage}${code ? ` (code: ${code})` : ""}. ` +
+      `Check that the property "${PropertyNames.NAME}" exists in your database and is a Title type.`
+    );
   }
 
   const titleQuery = await response.json();
@@ -133,11 +147,11 @@ export async function checkForDuplicateByTitle(
   if (titleQuery.results.length > 0) {
     const page = titleQuery.results[0];
     const pageId = page.id;
-    const title = page.properties && PROPERTY_NAMES.NAME in page.properties
-      ? extractTitle(page.properties[PROPERTY_NAMES.NAME])
+    const title = page.properties && PropertyNames.NAME in page.properties
+      ? extractTitle(page.properties[PropertyNames.NAME])
       : recipeName;
-    const url = page.properties && PROPERTY_NAMES.SOURCE_URL in page.properties
-      ? extractUrl(page.properties[PROPERTY_NAMES.SOURCE_URL])
+    const url = page.properties && PropertyNames.SOURCE_URL in page.properties
+      ? extractUrl(page.properties[PropertyNames.SOURCE_URL])
       : "";
     return { title, url, pageId, notionUrl: getNotionPageUrl(pageId) };
   }
@@ -238,24 +252,24 @@ export async function createRecipePage(
   }
 
   const properties: Record<string, unknown> = {
-    [PROPERTY_NAMES.NAME]: {
+    [PropertyNames.NAME]: {
       title: [{ text: { content: recipe.name } }],
     },
-    [PROPERTY_NAMES.SOURCE_URL]: {
+    [PropertyNames.SOURCE_URL]: {
       url: recipe.sourceUrl,
     },
-    [PROPERTY_NAMES.CUISINE]: {
-      multi_select: tags.cuisine.map((c) => ({ name: c })),
+    [PropertyNames.TAGS]: {
+      multi_select: tags.tags.map((t) => ({ name: t })),
     },
-    [PROPERTY_NAMES.MEAL_TYPE]: {
+    [PropertyNames.MEAL_TYPE]: {
       multi_select: tags.mealType.map((m) => ({ name: m })),
     },
-    [PROPERTY_NAMES.HEALTHINESS]: {
+    [PropertyNames.HEALTHINESS]: {
       number: tags.healthiness,
     },
   };
 
-  properties[PROPERTY_NAMES.TOTAL_TIME] = { number: tags.totalTimeMinutes };
+  properties[PropertyNames.TOTAL_TIME] = { number: tags.totalTimeMinutes };
 
   const children = buildPageBody(recipe);
 
@@ -389,16 +403,16 @@ export async function setupDatabaseViews(
   await (notion.databases.update as Function)({
     database_id: databaseId,
     properties: {
-      [PROPERTY_NAMES.NAME]: { title: {} },
-      [PROPERTY_NAMES.SOURCE_URL]: { url: {} },
-      [PROPERTY_NAMES.TOTAL_TIME]: { number: { format: "number" } },
-      [PROPERTY_NAMES.CUISINE]: { multi_select: { options: [] } },
-      [PROPERTY_NAMES.MEAL_TYPE]: {
+      [PropertyNames.NAME]: { title: {} },
+      [PropertyNames.SOURCE_URL]: { url: {} },
+      [PropertyNames.TOTAL_TIME]: { number: { format: "number" } },
+      [PropertyNames.TAGS]: { multi_select: { options: [] } },
+      [PropertyNames.MEAL_TYPE]: {
         multi_select: {
           options: MEAL_TYPE_OPTIONS.map((name) => ({ name })),
         },
       },
-      [PROPERTY_NAMES.HEALTHINESS]: { number: { format: "number" } },
+      [PropertyNames.HEALTHINESS]: { number: { format: "number" } },
     },
   });
 }

@@ -52,10 +52,20 @@ async function runRecipePipeline(url: string): Promise<void> {
   consola.start("Checking for duplicates...");
   const urlDuplicate = await checkForDuplicateByUrl(url, config.NOTION_API_KEY, config.NOTION_DATABASE_ID);
   if (urlDuplicate) {
-    consola.error(
-      `Duplicate recipe found: "${urlDuplicate.title}" (${urlDuplicate.url}) already exists in the database.`
+    consola.error("\n⚠️  Duplicate recipe detected\n");
+    consola.log(
+      [
+        pc.bold(pc.yellow("Recipe:")),
+        `  ${urlDuplicate.title}`,
+        "",
+        pc.bold(pc.yellow("Source URL:")),
+        `  ${urlDuplicate.url}`,
+        "",
+        pc.bold(pc.yellow("Notion page:")),
+        `  ${pc.underline(pc.blue(urlDuplicate.notionUrl))}`,
+      ].join("\n")
     );
-    consola.info(`View it at: ${pc.underline(pc.blue(urlDuplicate.notionUrl))}`);
+    consola.log("");
     process.exit(1);
   }
   consola.success("No duplicate URL found");
@@ -68,10 +78,20 @@ async function runRecipePipeline(url: string): Promise<void> {
   // Skip URL check since we already checked it above
   const titleDuplicate = await checkForDuplicateByTitle(recipe.name, config.NOTION_API_KEY, config.NOTION_DATABASE_ID);
   if (titleDuplicate) {
-    consola.error(
-      `Duplicate recipe found: "${titleDuplicate.title}" (${titleDuplicate.url}) already exists in the database.`
+    consola.error("\n⚠️  Duplicate recipe detected\n");
+    consola.log(
+      [
+        pc.bold(pc.yellow("Recipe:")),
+        `  ${titleDuplicate.title}`,
+        "",
+        pc.bold(pc.yellow("Source URL:")),
+        `  ${titleDuplicate.url}`,
+        "",
+        pc.bold(pc.yellow("Notion page:")),
+        `  ${pc.underline(pc.blue(titleDuplicate.notionUrl))}`,
+      ].join("\n")
     );
-    consola.info(`View it at: ${pc.underline(pc.blue(titleDuplicate.notionUrl))}`);
+    consola.log("");
     process.exit(1);
   }
 
@@ -79,11 +99,11 @@ async function runRecipePipeline(url: string): Promise<void> {
   const tags = await tagRecipe(recipe, config.ANTHROPIC_API_KEY);
   consola.success("Tagged recipe");
 
-  consola.box(
+  consola.log(
     [
       pc.bold(recipe.name),
       "",
-      `Cuisine:     ${tags.cuisine.join(", ")}`,
+      `Tags:        ${tags.tags.join(", ")}`,
       `Meal type:   ${tags.mealType.join(", ")}`,
       `Healthiness: ${tags.healthiness}/10`,
       `Total time:  ${tags.totalTimeMinutes} min`,

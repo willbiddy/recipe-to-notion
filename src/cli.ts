@@ -107,7 +107,7 @@ async function runRecipePipeline(url: string): Promise<void> {
       `Tags:        ${tags.tags.join(", ")}`,
       `Meal type:   ${tags.mealType.join(", ")}`,
       `Healthiness: ${tags.healthiness}/10`,
-      `Total time:  ${tags.totalTimeMinutes} min`,
+      `Time:        ${tags.totalTimeMinutes} min`,
       `Ingredients: ${recipe.ingredients.length} items`,
       `Steps:       ${recipe.instructions.length} steps`,
     ].filter(Boolean).join("\n")

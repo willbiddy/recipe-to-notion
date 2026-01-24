@@ -55,7 +55,7 @@ enum PromptLabels {
   RECIPE = "Recipe",
   INGREDIENTS = "Ingredients",
   INSTRUCTIONS = "Instructions",
-  TOTAL_TIME = "Total time",
+  TIME = "Time",
 }
 
 /**
@@ -143,9 +143,9 @@ function buildPrompt(recipe: Recipe): string {
   ];
 
   if (recipe.totalTimeMinutes) {
-    lines.push("", `${PromptLabels.TOTAL_TIME}: ${recipe.totalTimeMinutes} minutes`);
+    lines.push("", `${PromptLabels.TIME}: ${recipe.totalTimeMinutes} minutes`);
   } else {
-    lines.push("", `${PromptLabels.TOTAL_TIME}: not provided (please estimate)`);
+    lines.push("", `${PromptLabels.TIME}: not provided (please estimate)`);
   }
 
   return lines.join("\n");

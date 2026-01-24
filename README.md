@@ -116,18 +116,27 @@ This is useful for testing that scraping and AI tagging work before committing t
 ### Example output
 
 ```
+◐ Scraping recipe...
 ✔ Scraped: Chicken Tikka Masala
+◐ Generating AI scores and tags...
 ✔ Tagged recipe
 
-  Cuisine:    Indian
-  Meal Type:  Dinner
-  Difficulty: 5/10
-  Healthiness: 6/10
-  Total Time: 45 min
-  Servings:   4 servings
-  Ingredients: 18 items
-  Steps:      8 steps
+╭──────────────────────────────╮
+│                              │
+│  Chicken Tikka Masala        │
+│                              │
+│  Cuisine:     Indian         │
+│  Meal Type:   Dinner         │
+│  Difficulty:  5/10           │
+│  Healthiness: 6/10           │
+│  Total Time:  45 min         │
+│  Servings:    4 servings     │
+│  Ingredients: 18 items       │
+│  Steps:       8 steps        │
+│                              │
+╰──────────────────────────────╯
 
+◐ Saving to Notion...
 ✔ Saved to Notion (page ID: abc123-def456...)
 ```
 
@@ -152,7 +161,7 @@ bun build src/cli.ts --compile --outfile recipe-to-notion
 
 ```
 src/
-├── cli.ts        CLI entry point (commander, ora spinners)
+├── cli.ts        CLI entry point (commander + consola logging)
 ├── index.ts      Orchestrator connecting scrape → tag → save
 ├── scraper.ts    Recipe extraction (JSON-LD primary, cheerio fallback)
 ├── tagger.ts     Claude API for difficulty/healthiness/cuisine/meal-type

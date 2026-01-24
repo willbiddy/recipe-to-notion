@@ -176,7 +176,7 @@ src/
 | [Cheerio](https://cheerio.js.org/) | HTML parsing and scraping |
 | [Anthropic SDK](https://docs.anthropic.com/en/api/client-sdks) | Claude API for AI tagging |
 | [Notion SDK](https://github.com/makenotion/notion-sdk-js) | Notion API client |
-| [Commander](https://github.com/tj/commander.js) | CLI argument parsing |
+| [Citty](https://github.com/unjs/citty) | CLI argument parsing |
 | [Consola](https://github.com/unjs/consola) | Console logging with spinners |
 | [Zod](https://zod.dev/) | Schema validation for env vars and API responses |
 | [Biome](https://biomejs.dev/) | Linting and formatting |

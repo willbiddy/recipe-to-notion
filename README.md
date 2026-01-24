@@ -16,7 +16,7 @@ URL → Check duplicates → Scrape recipe (JSON-LD) → Claude scores/tags → 
 
 2. **Scrape** — Fetches the page HTML and extracts structured recipe data from [JSON-LD](https://json-ld.org/) (`schema.org/Recipe`). Most recipe sites embed this for SEO, including paywalled sites like NYT Cooking. If JSON-LD isn't available, falls back to microdata attributes and common CSS class patterns.
 
-3. **Tag** — Sends the recipe name, ingredients, and instructions to Claude (`claude-sonnet-4-5-20250929`), which returns:
+3. **Tag** — Sends the recipe name, ingredients, and instructions to Claude, which returns:
    - **Tags** — 1-4 tags for cuisine, dish type, and main ingredient (e.g. Italian, Pasta, Chicken)
    - **Meal type** — Breakfast, Lunch, Dinner, Snack, Dessert, Appetizer, Side Dish, or Component
    - **Healthiness** — 0-10 scale (0 = junk food, 10 = balanced whole-food meal)
@@ -38,7 +38,7 @@ URL → Check duplicates → Scrape recipe (JSON-LD) → Claude scores/tags → 
 
 ## Cost
 
-Each recipe costs about **$0.01 or less** in Claude API usage (roughly 2,000 input tokens and 100 output tokens per recipe).
+Each recipe costs about **$0.01 or less** in Claude API usage (roughly 2,000 input tokens and 100 output tokens per recipe). The default model is Sonnet, but you can change it in `src/tagger.ts` — Haiku is faster and cheaper, Opus is more capable but costs more.
 
 ## Setup
 

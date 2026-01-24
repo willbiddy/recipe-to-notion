@@ -102,7 +102,7 @@ async function processUrlsSequentially(
 	for (let i = 0; i < urls.length; i++) {
 		if (urls.length > 1) {
 			consola.info(
-				pc.cyan(`[${i + 1}/${urls.length}]`) + ` ${pc.dim(urls[i])}`,
+				`${pc.cyan(`[${i + 1}/${urls.length}]`)} ${pc.dim(urls[i])}`,
 			);
 		}
 

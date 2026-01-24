@@ -2,6 +2,10 @@
 
 A CLI tool that scrapes a recipe URL, generates AI scores and tags with Claude, and saves it to a Notion database with a cover photo and structured content.
 
+![Notion gallery view with recipe cards](docs/notion-gallery.png)
+
+![Recipe page in Notion](docs/notion-recipe.png)
+
 ## How It Works
 
 ```

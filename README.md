@@ -1,10 +1,10 @@
 # recipe-to-notion
 
-A CLI tool that scrapes a recipe URL, generates AI scores and tags with Claude, and saves it to a Notion database with a cover photo and structured content.
+Save recipes to Notion without copying and pasting. Paste a URL from almost any recipe site and get a Notion page with the cover photo, ingredients, instructions, and AI-generated tags. Claude automatically analyzes each recipe to add cuisine tags, meal types, healthiness scores, and a short description, so you can filter and search your collection later.
 
-![Notion gallery view with recipe cards](docs/notion-gallery.png)
+![Gallery view in Notion showing recipe cards with cover photos, tags, and meal types](docs/notion-gallery.png)
 
-![Recipe page in Notion](docs/notion-recipe.png)
+![Individual recipe page in Notion with properties, AI-generated description, and ingredients list](docs/notion-recipe.png)
 
 ## How It Works
 
@@ -96,10 +96,6 @@ NOTION_API_KEY=ntn_...
 NOTION_DATABASE_ID=abc123...
 ```
 
-### 7. (Optional) Initialize database properties
-
-The tool will work with manually created properties, but you can also programmatically ensure your database has all required properties using the `setupDatabaseViews` function from `src/notion.ts`. This creates any missing properties and pre-populates the Meal type multi-select options.
-
 ## Usage
 
 ```bash
@@ -143,17 +139,13 @@ The tool automatically checks for duplicate recipes before processing. If a reci
 - Provide a clickable link to view the existing recipe in Notion
 - Exit without adding the duplicate
 
-This prevents duplicate entries and saves API costs by checking before scraping and tagging.
+## Notion Views
 
-## Recommended Notion Views
+Once you have a few recipes, create custom Notion views to browse your collection:
 
-After adding a few recipes, create these views in your Notion database for a better browsing experience:
-
-1. **Gallery** — Gallery view showing cover photos with Name, Tags, and scores visible.
-2. **Quick Meals** — Table view filtered to `Minutes ≤ 30`, sorted by Minutes ascending.
-3. **Healthiest** — Table view sorted by Healthiness descending.
-4. **By Tags** — Board view grouped by Tags.
-5. **By Meal type** — Board view grouped by Meal type.
+- Gallery view with cover photos
+- "Quick meals" filter for recipes under 30 minutes
+- "Healthy meals" filter using the healthiness score
 
 ## Building a standalone binary
 

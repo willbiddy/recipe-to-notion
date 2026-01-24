@@ -64,29 +64,29 @@ Most dishes are single-type. Use multiple only when genuinely versatile (e.g., q
 
 Based on Harvard T.H. Chan School of Public Health's Healthy Eating Plate: whole grains over refined carbs, quality protein (fish, poultry, legumes, nuts), healthy fats (plant oils, nuts, fish), abundant vegetables, minimal added sugar and sodium.
 
-**10 — Optimal**
-Protein anchor from fish, poultry, legumes, nuts, or eggs. Vegetables ≥50% of dish. Whole grains or legumes as base. Fats from olive oil, nuts, or fatty fish. No added sugar. Minimal sodium. Fresh, unprocessed. Roasted, grilled, steamed, or raw.
-*Examples: Lemony Salmon and Spiced Chickpeas. One-Pot Beans, Greens and Grains. Big Baked Falafel Cake With Cucumber Salad.*
-
-**8-9 — Excellent**
-Quality protein is central. Vegetables are major component. May include whole grains. Healthy fats predominate. Little added sugar. One minor compromise (small amount of cheese, some saturated fat, refined garnish). Lean red meat acceptable sparingly.
-*Examples: Saucy, Spiced Shrimp and White Beans. Turkey Meatballs With Romesco. Harissa Shrimp With Greens and Feta.*
-
-**6-7 — Good**
-Protein present but not dominant. Vegetables present but not starring. May use refined carbs as base but balanced by nutritious components. Moderate saturated fat from butter, cream, or cheese. Small amount of added sugar in sauce.
-*Examples: Panang Curry. Spicy Sesame Noodles With Chicken. Family-Meal Fish Tacos. Pasta With Pumpkin Seed Pesto.*
-
-**4-5 — Neutral**
-Minimal protein or high-saturated-fat sources. Refined carbs dominate. Vegetables minimal. Added sugar in sauces. Higher sodium. Fats from butter, cream, cheese. Satisfying but not health-positive.
-*Examples: Enchiladas Suizas. Rigatoni with Vodka Sauce. One-Pot Buffalo Chicken Pasta. Stromboli.*
+**0-1 — Avoid**
+No meaningful protein or only ultra-processed sources. No vegetables. Sugar is primary ingredient. Deep fried. Extremely high sodium. Built from processed components.
+*Examples: Chocolate Chip Skillet Cookie. Peanut Butter Cookie Cups. Frozen pizza. Corn dogs.*
 
 **2-3 — Poor**
 Negligible protein or processed meats (bacon, sausage, hot dogs). Refined carbs dominate. Vegetables absent. High added sugar. High sodium. Deep fried or loaded with cheese/cream/butter. Relies on canned soups, packaged sauces, processed cheese.
 *Examples: Seattle-Style Hot Dogs. Pambazo. Creamy pasta heavy on butter and cheese without vegetables.*
 
-**0-1 — Avoid**
-No meaningful protein or only ultra-processed sources. No vegetables. Sugar is primary ingredient. Deep fried. Extremely high sodium. Built from processed components.
-*Examples: Chocolate Chip Skillet Cookie. Peanut Butter Cookie Cups. Frozen pizza. Corn dogs.*
+**4-5 — Neutral**
+Minimal protein or high-saturated-fat sources. Refined carbs dominate. Vegetables minimal. Added sugar in sauces. Higher sodium. Fats from butter, cream, cheese. Satisfying but not health-positive.
+*Examples: Enchiladas Suizas. Rigatoni with Vodka Sauce. One-Pot Buffalo Chicken Pasta. Stromboli.*
+
+**6-7 — Good**
+Protein present but not dominant. Vegetables present but not starring. May use refined carbs as base but balanced by nutritious components. Moderate saturated fat from butter, cream, or cheese. Small amount of added sugar in sauce.
+*Examples: Panang Curry. Spicy Sesame Noodles With Chicken. Family-Meal Fish Tacos. Pasta With Pumpkin Seed Pesto.*
+
+**8-9 — Excellent**
+Quality protein is central. Vegetables are major component. May include whole grains. Healthy fats predominate. Little added sugar. One minor compromise (small amount of cheese, some saturated fat, refined garnish). Lean red meat acceptable sparingly.
+*Examples: Saucy, Spiced Shrimp and White Beans. Turkey Meatballs With Romesco. Harissa Shrimp With Greens and Feta.*
+
+**10 — Optimal**
+Protein anchor from fish, poultry, legumes, nuts, or eggs. Vegetables ≥50% of dish. Whole grains or legumes as base. Fats from olive oil, nuts, or fatty fish. No added sugar. Minimal sodium. Fresh, unprocessed. Roasted, grilled, steamed, or raw.
+*Examples: Lemony Salmon and Spiced Chickpeas. One-Pot Beans, Greens and Grains. Big Baked Falafel Cake With Cucumber Salad.*
 
 **Key signals:**
 

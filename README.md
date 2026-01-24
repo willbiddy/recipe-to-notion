@@ -16,7 +16,7 @@ URL → Check duplicates → Scrape recipe (JSON-LD) → Claude scores/tags → 
    - **Tags** — 1-4 tags for cuisine, dish type, and main ingredient (e.g. Italian, Pasta, Chicken)
    - **Meal type** — Breakfast, Lunch, Dinner, Snack, Dessert, Appetizer, Side Dish, or Component
    - **Healthiness** — 0-10 scale (0 = junk food, 10 = balanced whole-food meal)
-   - **Time** — Estimated in minutes (uses scraped value if available, otherwise AI estimates)
+   - **Minutes** — Total time estimate (uses scraped value if available, otherwise AI estimates)
    - **Description** — Brief 2-3 sentence summary of the dish
 
 4. **Save** — Creates a Notion page in your database with:
@@ -55,7 +55,7 @@ Create a new full-page database in Notion. You can add the required properties m
 | Name        | Title        | Recipe name                    |
 | Source URL  | URL          | Link to original recipe        |
 | Author      | Rich text    | Recipe author (if available)   |
-| Time        | Number       | Minutes                        |
+| Minutes     | Number       | Total time in minutes          |
 | Tags        | Multi-select | e.g. Italian, Pasta, Chicken   |
 | Meal type   | Multi-select | e.g. Dinner, Snack             |
 | Healthiness | Number       | 0-10                           |
@@ -119,7 +119,7 @@ Author:      Melissa Clark
 Tags:        Indian, Curry, Chicken
 Meal type:   Dinner
 Healthiness: 6/10
-Time:        45 min
+Minutes:     45
 Ingredients: 18 items
 Steps:       8 steps
 
@@ -142,7 +142,7 @@ This prevents duplicate entries and saves API costs by checking before scraping 
 After adding a few recipes, create these views in your Notion database for a better browsing experience:
 
 1. **Gallery** — Gallery view showing cover photos with Name, Tags, and scores visible.
-2. **Quick Meals** — Table view filtered to `Time ≤ 30`, sorted by Time ascending.
+2. **Quick Meals** — Table view filtered to `Minutes ≤ 30`, sorted by Minutes ascending.
 3. **Healthiest** — Table view sorted by Healthiness descending.
 4. **By Tags** — Board view grouped by Tags.
 5. **By Meal type** — Board view grouped by Meal type.

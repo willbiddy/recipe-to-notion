@@ -24,7 +24,7 @@ Strongly prefer tags from these lists.
 American, Italian, Mexican, Chinese, Japanese, Indian, French, Thai, Greek, Vietnamese, Korean, Mediterranean, Middle Eastern, Cajun, Southern
 
 **Dish type** (0-1):
-Soup, Salad, Pasta, Sandwich, Stir-Fry, Casserole, Curry, Tacos, Enchiladas, Bowl, Stew, Noodles, Pancakes, Meatballs, Dip, Sauce
+Soup, Salad, Pasta, Sandwich, Stir-Fry, Casserole, Curry, Tacos, Enchiladas, Bowl, Stew, Noodles, Pancakes, Meatballs, Dip, Sauce, Cookie, Cake, Pie
 
 **Main ingredient** (0-2, pick the most central):
 Chicken, Beef, Pork, Fish, Shrimp, Seafood, Salmon, Turkey, Tofu, Eggs, Chickpeas, Beans, Lentils, Nuts, Cheese, Vegetables, Fruit
@@ -143,7 +143,7 @@ Blistered Green Beans With Garlic →
 
 Chocolate Chip Skillet Cookie →
 {
-  "tags": ["Chocolate"],
+  "tags": ["Cookie", "Chocolate"],
   "mealType": ["Dessert"],
   "healthiness": 1,
   "totalTimeMinutes": 135,

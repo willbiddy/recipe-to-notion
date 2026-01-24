@@ -122,18 +122,18 @@ When processing multiple URLs, each is processed sequentially. Failures (duplica
 ◐ Checking for duplicates...
 ✔ No duplicate URL found
 ◐ Scraping recipe...
-✔ Scraped: Chicken Tikka Masala
+✔ Scraped: Classic Sloppy Joes (JSON-LD)
 ◐ Generating AI scores and tags...
 ✔ Tagged recipe
 
-Chicken Tikka Masala
-Author:      Melissa Clark
-Tags:        Indian, Curry, Chicken
-Meal type:   Dinner
-Healthiness: 6/10
-Minutes:     45
-Ingredients: 18 items
-Steps:       8 steps
+Classic Sloppy Joes
+Author:      Marian Burros
+Tags:        American, Sandwich, Beef
+Meal type:   Lunch, Dinner
+Healthiness: 4/10
+Minutes:     22
+Ingredients: 13 items
+Steps:       3 steps
 
 ◐ Saving to Notion...
 ✔ Saved to Notion: https://www.notion.so/abc123def456...

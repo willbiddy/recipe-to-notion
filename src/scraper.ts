@@ -71,6 +71,11 @@ function isArray(value: unknown): value is unknown[] {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
+ * Method used to extract recipe data from the page.
+ */
+export type ScrapeMethod = "json-ld" | "html-fallback";
+
+/**
  * Structured recipe data extracted from a web page.
  */
 export interface Recipe {
@@ -82,6 +87,10 @@ export interface Recipe {
 	 * Original URL the recipe was scraped from.
 	 */
 	sourceUrl: string;
+	/**
+	 * Method used to extract recipe data.
+	 */
+	scrapeMethod: ScrapeMethod;
 	/**
 	 * Recipe author or source attribution, if available.
 	 */
@@ -142,15 +151,17 @@ export async function scrapeRecipe(url: string): Promise<Recipe> {
 	const response = await fetch(url, {
 		headers: {
 			"User-Agent":
-				"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+				"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
 			Accept:
 				"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
 			"Accept-Language": "en-US,en;q=0.9",
 			"Accept-Encoding": "gzip, deflate, br",
 			"Cache-Control": "no-cache",
+			Connection: "keep-alive",
+			DNT: "1",
 			Pragma: "no-cache",
 			"Sec-Ch-Ua":
-				'"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
+				'"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
 			"Sec-Ch-Ua-Mobile": "?0",
 			"Sec-Ch-Ua-Platform": '"macOS"',
 			"Sec-Fetch-Dest": "document",
@@ -312,6 +323,7 @@ function extractFromJsonLd(
 	return {
 		name: decodeHtmlEntities(cleanRecipeName(String(data.name || "Untitled"))),
 		sourceUrl,
+		scrapeMethod: "json-ld",
 		author,
 		totalTimeMinutes:
 			parseDuration(data.totalTime as string | undefined) ??
@@ -602,6 +614,7 @@ function parseFallback(
 	return {
 		name,
 		sourceUrl,
+		scrapeMethod: "html-fallback",
 		author: author || null,
 		totalTimeMinutes: null,
 		servings: null,

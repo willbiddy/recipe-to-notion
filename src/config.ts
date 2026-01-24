@@ -6,7 +6,9 @@ const envSchema = z.object({
   NOTION_DATABASE_ID: z.string().min(1, "NOTION_DATABASE_ID is required"),
 });
 
-/** Validated environment configuration containing all required API keys. */
+/**
+ * Validated environment configuration containing all required API keys.
+ */
 export type Config = z.infer<typeof envSchema>;
 
 /**

@@ -3,6 +3,31 @@ import type { Recipe } from "./scraper.js";
 import type { RecipeTags } from "./tagger.js";
 
 /**
+ * Notion database property names.
+ */
+const PROPERTY_NAMES = {
+  NAME: "Name",
+  SOURCE_URL: "Source URL",
+  TOTAL_TIME: "Total Time",
+  CUISINE: "Cuisine",
+  MEAL_TYPE: "Meal type",
+  HEALTHINESS: "Healthiness",
+} as const;
+
+/**
+ * Valid meal type options for the Meal type multi-select property.
+ */
+const MEAL_TYPE_OPTIONS = [
+  "Breakfast",
+  "Lunch",
+  "Dinner",
+  "Snack",
+  "Dessert",
+  "Appetizer",
+  "Side Dish",
+] as const;
+
+/**
  * Creates a new page in the Notion recipe database with the recipe's metadata,
  * cover image, and body content (ingredients + instructions).
  *
@@ -21,35 +46,24 @@ export async function createRecipePage(
   const notion = new Client({ auth: notionApiKey });
 
   const properties: Record<string, unknown> = {
-    Name: {
+    [PROPERTY_NAMES.NAME]: {
       title: [{ text: { content: recipe.name } }],
     },
-    "Source URL": {
+    [PROPERTY_NAMES.SOURCE_URL]: {
       url: recipe.sourceUrl,
     },
-    Cuisine: {
+    [PROPERTY_NAMES.CUISINE]: {
       multi_select: tags.cuisine.map((c) => ({ name: c })),
     },
-    "Meal Type": {
+    [PROPERTY_NAMES.MEAL_TYPE]: {
       multi_select: tags.mealType.map((m) => ({ name: m })),
     },
-    Difficulty: {
-      number: tags.difficulty,
-    },
-    Healthiness: {
+    [PROPERTY_NAMES.HEALTHINESS]: {
       number: tags.healthiness,
     },
   };
 
-  if (recipe.totalTimeMinutes !== null) {
-    properties["Total Time"] = { number: recipe.totalTimeMinutes };
-  }
-
-  if (recipe.servings) {
-    properties["Servings"] = {
-      rich_text: [{ text: { content: recipe.servings } }],
-    };
-  }
+  properties[PROPERTY_NAMES.TOTAL_TIME] = { number: tags.totalTimeMinutes };
 
   const children = buildPageBody(recipe);
 
@@ -73,7 +87,12 @@ export async function createRecipePage(
 /**
  * Builds the Notion page body: an "Ingredients" heading followed by bulleted
  * list items, then an "Instructions" heading followed by numbered list items.
- * Truncates to 100 blocks (Notion API limit per request).
+ *
+ * Creates the content blocks for a Notion page, including headings
+ * and lists. Truncates to 100 blocks to respect Notion API limits.
+ *
+ * @param recipe - The recipe data to build the page body from.
+ * @returns An array of Notion block objects.
  */
 function buildPageBody(recipe: Recipe): unknown[] {
   const blocks: unknown[] = [];
@@ -95,7 +114,12 @@ function buildPageBody(recipe: Recipe): unknown[] {
   return blocks.slice(0, 100);
 }
 
-/** Creates a heading_2 block. */
+/**
+ * Creates a heading_2 block for Notion.
+ *
+ * @param text - The heading text content.
+ * @returns A Notion heading_2 block object.
+ */
 function heading(text: string): unknown {
   return {
     object: "block",
@@ -106,7 +130,12 @@ function heading(text: string): unknown {
   };
 }
 
-/** Creates a bulleted_list_item block. */
+/**
+ * Creates a bulleted_list_item block for Notion.
+ *
+ * @param text - The list item text content (truncated to 2000 chars).
+ * @returns A Notion bulleted_list_item block object.
+ */
 function bulletItem(text: string): unknown {
   return {
     object: "block",
@@ -117,7 +146,12 @@ function bulletItem(text: string): unknown {
   };
 }
 
-/** Creates a numbered_list_item block. */
+/**
+ * Creates a numbered_list_item block for Notion.
+ *
+ * @param text - The list item text content (truncated to 2000 chars).
+ * @returns A Notion numbered_list_item block object.
+ */
 function numberedItem(text: string): unknown {
   return {
     object: "block",
@@ -128,7 +162,13 @@ function numberedItem(text: string): unknown {
   };
 }
 
-/** Truncates text to a maximum length, appending "..." if truncated. */
+/**
+ * Truncates text to a maximum length, appending "..." if truncated.
+ *
+ * @param text - The text to truncate.
+ * @param maxLength - The maximum allowed length.
+ * @returns The truncated text with "..." appended if needed.
+ */
 function truncate(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength - 3) + "...";
@@ -137,7 +177,7 @@ function truncate(text: string, maxLength: number): string {
 /**
  * Ensures the target Notion database has all required properties with the
  * correct types. Creates any missing properties and pre-populates the
- * Meal Type multi-select options.
+ * Meal type multi-select options.
  *
  * Note: The Notion API does not support creating views programmatically.
  * Views (Gallery, Quick Meals, etc.) must be configured manually in Notion.
@@ -152,33 +192,21 @@ export async function setupDatabaseViews(
 ): Promise<void> {
   const notion = new Client({ auth: notionApiKey });
 
-  // Verify the database exists and is accessible
   await notion.databases.retrieve({ database_id: databaseId });
 
-  // The properties field is supported by the Notion API but missing from the v5 SDK types.
   await (notion.databases.update as Function)({
     database_id: databaseId,
     properties: {
-      Name: { title: {} },
-      "Source URL": { url: {} },
-      "Total Time": { number: { format: "number" } },
-      Servings: { rich_text: {} },
-      Cuisine: { multi_select: { options: [] } },
-      "Meal Type": {
+      [PROPERTY_NAMES.NAME]: { title: {} },
+      [PROPERTY_NAMES.SOURCE_URL]: { url: {} },
+      [PROPERTY_NAMES.TOTAL_TIME]: { number: { format: "number" } },
+      [PROPERTY_NAMES.CUISINE]: { multi_select: { options: [] } },
+      [PROPERTY_NAMES.MEAL_TYPE]: {
         multi_select: {
-          options: [
-            { name: "Breakfast" },
-            { name: "Lunch" },
-            { name: "Dinner" },
-            { name: "Snack" },
-            { name: "Dessert" },
-            { name: "Appetizer" },
-            { name: "Side Dish" },
-          ],
+          options: MEAL_TYPE_OPTIONS.map((name) => ({ name })),
         },
       },
-      Difficulty: { number: { format: "number" } },
-      Healthiness: { number: { format: "number" } },
+      [PROPERTY_NAMES.HEALTHINESS]: { number: { format: "number" } },
     },
   });
 }

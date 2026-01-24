@@ -4,9 +4,15 @@ Analyze recipes and return structured JSON metadata.
 
 Return ONLY valid JSON with these exact keys:
 
-{"tags": [...], "mealType": [...], "healthiness": N, "totalTimeMinutes": N}
+{
+  "tags": [...],
+  "mealType": [...],
+  "healthiness": N,
+  "totalTimeMinutes": N,
+  "description": "..."
+}
 
-No markdown, no code fences, no explanation—just the JSON object.
+No markdown, no code fences, no explanation. Just the JSON object.
 
 ## Field Definitions
 
@@ -60,12 +66,54 @@ Total prep + cook time in minutes. Never return 0 or null.
 - 150-300 min: Slow cooker meals, smoking, bread from scratch
 - 300+ min: Low-and-slow BBQ, complex fermented doughs, stock from scratch
 
+### description (string)
+
+A 2-3 sentence summary. Start by describing what the dish is so someone knows what they're making without reading the full recipe. Then mention what's unique, interesting, or important to know. Keep it concise (40-80 words).
+
+Write like you're telling a friend about the recipe. Casual, helpful, and a little appetizing. Avoid AI-sounding phrases. Never use dashes.
+
+Structure:
+1. What is this dish? (1 sentence describing the food, make it sound good)
+2. What's notable? (key techniques, time considerations, equipment, what makes this version different)
+
+Examples:
+- "Crispy breaded chicken cutlets topped with tangy marinara and melted mozzarella. Pound the chicken thin so it cooks evenly."
+- "A comforting Vietnamese noodle soup with tender sliced beef in a rich, spiced broth. Takes about 3 hours but most of that is just letting it simmer. Char the onion and ginger first for better flavor."
+
 ## Examples
 
-Chicken Parmesan → {"tags": ["Italian", "Chicken"], "mealType": ["Dinner"], "healthiness": 4, "totalTimeMinutes": 50}
+Chicken Parmesan →
+{
+  "tags": ["Italian", "Chicken"],
+  "mealType": ["Dinner"],
+  "healthiness": 4,
+  "totalTimeMinutes": 50,
+  "description": "Crispy breaded chicken cutlets topped with tangy marinara and melted mozzarella. Pound the chicken thin so it cooks evenly."
+}
 
-Overnight Oats with Berries → {"tags": ["Bowl"], "mealType": ["Breakfast"], "healthiness": 8, "totalTimeMinutes": 5}
+Overnight Oats with Berries →
+{
+  "tags": ["Bowl"],
+  "mealType": ["Breakfast"],
+  "healthiness": 8,
+  "totalTimeMinutes": 5,
+  "description": "Creamy oats soaked overnight in milk or yogurt, topped with fresh berries. Just mix everything the night before and grab it in the morning."
+}
 
-Beef Pho → {"tags": ["Vietnamese", "Soup", "Beef"], "mealType": ["Lunch", "Dinner"], "healthiness": 7, "totalTimeMinutes": 180}
+Beef Pho →
+{
+  "tags": ["Vietnamese", "Soup", "Beef"],
+  "mealType": ["Lunch", "Dinner"],
+  "healthiness": 7,
+  "totalTimeMinutes": 180,
+  "description": "A comforting Vietnamese noodle soup with tender sliced beef in a rich, spiced broth. Takes about 3 hours but most of that is just letting it simmer. Char the onion and ginger first for better flavor."
+}
 
-Caesar Salad → {"tags": ["Salad"], "mealType": ["Lunch", "Side Dish"], "healthiness": 5, "totalTimeMinutes": 15}
+Caesar Salad →
+{
+  "tags": ["Salad"],
+  "mealType": ["Lunch", "Side Dish"],
+  "healthiness": 5,
+  "totalTimeMinutes": 15,
+  "description": "Crisp romaine tossed with salty parmesan, crunchy croutons, and a rich garlicky dressing. Traditional version uses raw egg yolk and anchovies, but you can sub mayo if you prefer."
+}

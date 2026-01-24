@@ -13,6 +13,10 @@ export interface Recipe {
    */
   sourceUrl: string;
   /**
+   * Recipe author or source attribution, if available.
+   */
+  author: string | null;
+  /**
    * Total preparation + cooking time in minutes, if available.
    */
   totalTimeMinutes: number | null;
@@ -150,8 +154,9 @@ function findRecipeInLd(data: unknown): Record<string, unknown> | null {
  */
 function extractFromJsonLd(data: Record<string, unknown>, sourceUrl: string): Recipe {
   return {
-    name: String(data.name || "Untitled Recipe"),
+    name: cleanRecipeName(String(data.name || "Untitled")),
     sourceUrl,
+    author: parseAuthor(data.author),
     totalTimeMinutes:
       parseDuration(data.totalTime as string | undefined) ??
       parseDuration(data.cookTime as string | undefined),
@@ -195,6 +200,29 @@ function parseServings(yield_: unknown): string | null {
   if (typeof yield_ === "string") return yield_;
   if (typeof yield_ === "number") return `${yield_} servings`;
   if (Array.isArray(yield_)) return String(yield_[0]);
+  return null;
+}
+
+/**
+ * Extracts author name from various JSON-LD `author` formats.
+ *
+ * Handles multiple author formats: direct string names, Person/Organization
+ * objects with a `name` property, and arrays of authors (returns first).
+ *
+ * @param author - The author data in various JSON-LD formats.
+ * @returns The author name string, or null if not found.
+ */
+function parseAuthor(author: unknown): string | null {
+  if (!author) return null;
+  if (typeof author === "string") return author;
+  if (Array.isArray(author)) {
+    const first = author[0];
+    if (typeof first === "string") return first;
+    if (first && typeof first === "object" && "name" in first) return String(first.name);
+  }
+  if (typeof author === "object" && author !== null && "name" in author) {
+    return String((author as { name: string }).name);
+  }
   return null;
 }
 
@@ -267,6 +295,19 @@ function parseInstructions(data: unknown): string[] {
 }
 
 /**
+ * Cleans up a recipe name by removing trailing "Recipe" suffix.
+ *
+ * Many recipe sites append "Recipe" to the title (e.g., "Chicken Parmesan Recipe").
+ * This removes that suffix for cleaner display.
+ *
+ * @param name - The raw recipe name.
+ * @returns The cleaned recipe name.
+ */
+function cleanRecipeName(name: string): string {
+  return name.replace(/\s+Recipe$/i, "").trim();
+}
+
+/**
  * Fallback scraper that extracts recipe data from microdata attributes
  * and common CSS class patterns when JSON-LD is unavailable.
  *
@@ -279,11 +320,20 @@ function parseInstructions(data: unknown): string[] {
  * @returns Parsed recipe data if found, null otherwise.
  */
 function parseFallback($: cheerio.CheerioAPI, sourceUrl: string): Recipe | null {
-  const name =
+  const rawName =
     $('meta[property="og:title"]').attr("content") ||
     $("h1").first().text().trim();
 
-  if (!name) return null;
+  if (!rawName) return null;
+  
+  const name = cleanRecipeName(rawName);
+
+  const author =
+    $('[itemprop="author"]').first().text().trim() ||
+    $('meta[name="author"]').attr("content") ||
+    $('[class*="author"] a').first().text().trim() ||
+    $('[class*="author"]').first().text().trim() ||
+    null;
 
   const imageUrl =
     $('meta[property="og:image"]').attr("content") ||
@@ -309,6 +359,7 @@ function parseFallback($: cheerio.CheerioAPI, sourceUrl: string): Recipe | null 
   return {
     name,
     sourceUrl,
+    author: author || null,
     totalTimeMinutes: null,
     servings: null,
     imageUrl,

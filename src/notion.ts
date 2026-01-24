@@ -7,10 +7,11 @@ import type { RecipeTags } from "./tagger.js";
  */
 enum PropertyNames {
   NAME = "Name",
-  SOURCE_URL = "SourceURL",
-  TOTAL_TIME = "TotalTime",
+  SOURCE_URL = "Source URL",
+  AUTHOR = "Author",
+  TOTAL_TIME = "Total time",
   TAGS = "Tags",
-  MEAL_TYPE = "MealType",
+  MEAL_TYPE = "Meal type",
   HEALTHINESS = "Healthiness",
 }
 
@@ -269,9 +270,15 @@ export async function createRecipePage(
     },
   };
 
+  if (recipe.author) {
+    properties[PropertyNames.AUTHOR] = {
+      rich_text: [{ text: { content: recipe.author } }],
+    };
+  }
+
   properties[PropertyNames.TOTAL_TIME] = { number: tags.totalTimeMinutes };
 
-  const children = buildPageBody(recipe);
+  const children = buildPageBody(recipe, tags);
 
   const pageParams: Record<string, unknown> = {
     parent: { database_id: databaseId },
@@ -291,17 +298,23 @@ export async function createRecipePage(
 }
 
 /**
- * Builds the Notion page body: an "Ingredients" heading followed by bulleted
+ * Builds the Notion page body: description, then "Ingredients" heading followed by bulleted
  * list items, then an "Instructions" heading followed by numbered list items.
  *
- * Creates the content blocks for a Notion page, including headings
+ * Creates the content blocks for a Notion page, including paragraphs, headings
  * and lists. Truncates to 100 blocks to respect Notion API limits.
  *
  * @param recipe - The recipe data to build the page body from.
+ * @param tags - AI-generated tags including description.
  * @returns An array of Notion block objects.
  */
-function buildPageBody(recipe: Recipe): unknown[] {
+function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
   const blocks: unknown[] = [];
+
+  // Add description if available
+  if (tags.description) {
+    blocks.push(paragraph(tags.description));
+  }
 
   if (recipe.ingredients.length > 0) {
     blocks.push(heading("Ingredients"));
@@ -318,6 +331,22 @@ function buildPageBody(recipe: Recipe): unknown[] {
   }
 
   return blocks.slice(0, 100);
+}
+
+/**
+ * Creates a paragraph block for Notion.
+ *
+ * @param text - The paragraph text content (truncated to 2000 chars).
+ * @returns A Notion paragraph block object.
+ */
+function paragraph(text: string): unknown {
+  return {
+    object: "block",
+    type: "paragraph",
+    paragraph: {
+      rich_text: [{ type: "text", text: { content: truncate(text, 2000) } }],
+    },
+  };
 }
 
 /**
@@ -405,6 +434,7 @@ export async function setupDatabaseViews(
     properties: {
       [PropertyNames.NAME]: { title: {} },
       [PropertyNames.SOURCE_URL]: { url: {} },
+      [PropertyNames.AUTHOR]: { rich_text: {} },
       [PropertyNames.TOTAL_TIME]: { number: { format: "number" } },
       [PropertyNames.TAGS]: { multi_select: { options: [] } },
       [PropertyNames.MEAL_TYPE]: {

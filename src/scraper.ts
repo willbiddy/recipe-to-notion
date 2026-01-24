@@ -8,31 +8,31 @@ import * as cheerio from "cheerio";
  * Returns true if value is a non-null object.
  */
 function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
+	return typeof value === "object" && value !== null;
 }
 
 /**
  * Returns true if value is an object with the specified property.
  */
 function hasProperty<K extends string>(
-  value: unknown,
-  key: K
+	value: unknown,
+	key: K,
 ): value is Record<K, unknown> {
-  return isObject(value) && key in value;
+	return isObject(value) && key in value;
 }
 
 /**
  * Returns true if value is a string.
  */
 function isString(value: unknown): value is string {
-  return typeof value === "string";
+	return typeof value === "string";
 }
 
 /**
  * Returns true if value is an array.
  */
 function isArray(value: unknown): value is unknown[] {
-  return Array.isArray(value);
+	return Array.isArray(value);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -43,53 +43,53 @@ function isArray(value: unknown): value is unknown[] {
  * Structured recipe data extracted from a web page.
  */
 export interface Recipe {
-  /**
-   * Display name of the recipe.
-   */
-  name: string;
-  /**
-   * Original URL the recipe was scraped from.
-   */
-  sourceUrl: string;
-  /**
-   * Recipe author or source attribution, if available.
-   */
-  author: string | null;
-  /**
-   * Total preparation + cooking time in minutes, if available.
-   */
-  totalTimeMinutes: number | null;
-  /**
-   * Serving size description (e.g. "4 servings"), if available.
-   */
-  servings: string | null;
-  /**
-   * URL to the recipe's hero/header image for use as a Notion cover.
-   */
-  imageUrl: string | null;
-  /**
-   * List of ingredient strings (e.g. "2 cups flour").
-   */
-  ingredients: string[];
-  /**
-   * Ordered list of instruction steps.
-   */
-  instructions: string[];
-  /**
-   * Source description from the recipe page, if available.
-   * Used to provide AI with additional context for tagging.
-   */
-  description: string | null;
-  /**
-   * Cuisine type from the source (e.g., "Italian", "Mexican").
-   * Used as a hint for AI tagging, not authoritative.
-   */
-  cuisine: string | null;
-  /**
-   * Recipe category from the source (e.g., "appetizer", "main course").
-   * Used as a hint for AI tagging, not authoritative.
-   */
-  category: string | null;
+	/**
+	 * Display name of the recipe.
+	 */
+	name: string;
+	/**
+	 * Original URL the recipe was scraped from.
+	 */
+	sourceUrl: string;
+	/**
+	 * Recipe author or source attribution, if available.
+	 */
+	author: string | null;
+	/**
+	 * Total preparation + cooking time in minutes, if available.
+	 */
+	totalTimeMinutes: number | null;
+	/**
+	 * Serving size description (e.g. "4 servings"), if available.
+	 */
+	servings: string | null;
+	/**
+	 * URL to the recipe's hero/header image for use as a Notion cover.
+	 */
+	imageUrl: string | null;
+	/**
+	 * List of ingredient strings (e.g. "2 cups flour").
+	 */
+	ingredients: string[];
+	/**
+	 * Ordered list of instruction steps.
+	 */
+	instructions: string[];
+	/**
+	 * Source description from the recipe page, if available.
+	 * Used to provide AI with additional context for tagging.
+	 */
+	description: string | null;
+	/**
+	 * Cuisine type from the source (e.g., "Italian", "Mexican").
+	 * Used as a hint for AI tagging, not authoritative.
+	 */
+	cuisine: string | null;
+	/**
+	 * Recipe category from the source (e.g., "appetizer", "main course").
+	 * Used as a hint for AI tagging, not authoritative.
+	 */
+	category: string | null;
 }
 
 /**
@@ -105,35 +105,37 @@ export interface Recipe {
  * @throws If the page cannot be fetched or no recipe data is found.
  */
 export async function scrapeRecipe(url: string): Promise<Recipe> {
-  const response = await fetch(url, {
-    headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    },
-  });
+	const response = await fetch(url, {
+		headers: {
+			"User-Agent":
+				"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+		},
+	});
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
-  }
+	if (!response.ok) {
+		throw new Error(
+			`Failed to fetch ${url}: ${response.status} ${response.statusText}`,
+		);
+	}
 
-  const html = await response.text();
-  const $ = cheerio.load(html);
+	const html = await response.text();
+	const $ = cheerio.load(html);
 
-  const recipe = parseJsonLd($, url) ?? parseFallback($, url);
+	const recipe = parseJsonLd($, url) ?? parseFallback($, url);
 
-  if (!recipe) {
-    throw new Error(
-      `Could not extract recipe data from ${url}. The page may be fully paywalled or not contain a recipe.`
-    );
-  }
+	if (!recipe) {
+		throw new Error(
+			`Could not extract recipe data from ${url}. The page may be fully paywalled or not contain a recipe.`,
+		);
+	}
 
-  // If author wasn't found in JSON-LD, try HTML fallback
-  if (!recipe.author) {
-    recipe.author = extractAuthorFromHtml($);
-  }
+	// If author wasn't found in JSON-LD, try HTML fallback
+	if (!recipe.author) {
+		recipe.author = extractAuthorFromHtml($);
+	}
 
-  return recipe;
+	return recipe;
 }
 
 /**
@@ -148,22 +150,20 @@ export async function scrapeRecipe(url: string): Promise<Recipe> {
  * @returns Parsed recipe data if found, null otherwise.
  */
 function parseJsonLd($: cheerio.CheerioAPI, sourceUrl: string): Recipe | null {
-  const scripts = $('script[type="application/ld+json"]');
-  for (let i = 0; i < scripts.length; i++) {
-    try {
-      const content = $(scripts[i]).html();
-      if (!content) continue;
+	const scripts = $('script[type="application/ld+json"]');
+	for (let i = 0; i < scripts.length; i++) {
+		try {
+			const content = $(scripts[i]).html();
+			if (!content) continue;
 
-      const data = JSON.parse(content);
-      const recipeData = findRecipeInLd(data);
-      if (recipeData) {
-        return extractFromJsonLd(recipeData, sourceUrl);
-      }
-    } catch {
-      continue;
-    }
-  }
-  return null;
+			const data = JSON.parse(content);
+			const recipeData = findRecipeInLd(data);
+			if (recipeData) {
+				return extractFromJsonLd(recipeData, sourceUrl);
+			}
+		} catch {}
+	}
+	return null;
 }
 
 /**
@@ -177,25 +177,28 @@ function parseJsonLd($: cheerio.CheerioAPI, sourceUrl: string): Recipe | null {
  * @returns The Recipe object if found, null otherwise.
  */
 function findRecipeInLd(data: unknown): Record<string, unknown> | null {
-  if (!isObject(data)) return null;
+	if (!isObject(data)) return null;
 
-  if (isArray(data)) {
-    for (const item of data) {
-      const found = findRecipeInLd(item);
-      if (found) return found;
-    }
-    return null;
-  }
+	if (isArray(data)) {
+		for (const item of data) {
+			const found = findRecipeInLd(item);
+			if (found) return found;
+		}
+		return null;
+	}
 
-  if (data["@type"] === "Recipe" || (isArray(data["@type"]) && data["@type"].includes("Recipe"))) {
-    return data;
-  }
+	if (
+		data["@type"] === "Recipe" ||
+		(isArray(data["@type"]) && data["@type"].includes("Recipe"))
+	) {
+		return data;
+	}
 
-  if (isArray(data["@graph"])) {
-    return findRecipeInLd(data["@graph"]);
-  }
+	if (isArray(data["@graph"])) {
+		return findRecipeInLd(data["@graph"]);
+	}
 
-  return null;
+	return null;
 }
 
 /**
@@ -209,25 +212,28 @@ function findRecipeInLd(data: unknown): Record<string, unknown> | null {
  * @param sourceUrl - Original URL of the recipe page.
  * @returns A normalized Recipe object.
  */
-function extractFromJsonLd(data: Record<string, unknown>, sourceUrl: string): Recipe {
-  // Try author first, fall back to publisher name
-  const author = parseAuthor(data.author) ?? parseAuthor(data.publisher);
-  
-  return {
-    name: cleanRecipeName(String(data.name || "Untitled")),
-    sourceUrl,
-    author,
-    totalTimeMinutes:
-      parseDuration(data.totalTime as string | undefined) ??
-      parseDuration(data.cookTime as string | undefined),
-    servings: parseServings(data.recipeYield),
-    imageUrl: parseImage(data.image),
-    ingredients: parseStringArray(data.recipeIngredient),
-    instructions: parseInstructions(data.recipeInstructions),
-    description: isString(data.description) ? data.description : null,
-    cuisine: parseFirstString(data.recipeCuisine),
-    category: parseFirstString(data.recipeCategory),
-  };
+function extractFromJsonLd(
+	data: Record<string, unknown>,
+	sourceUrl: string,
+): Recipe {
+	// Try author first, fall back to publisher name
+	const author = parseAuthor(data.author) ?? parseAuthor(data.publisher);
+
+	return {
+		name: cleanRecipeName(String(data.name || "Untitled")),
+		sourceUrl,
+		author,
+		totalTimeMinutes:
+			parseDuration(data.totalTime as string | undefined) ??
+			parseDuration(data.cookTime as string | undefined),
+		servings: parseServings(data.recipeYield),
+		imageUrl: parseImage(data.image),
+		ingredients: parseStringArray(data.recipeIngredient),
+		instructions: parseInstructions(data.recipeInstructions),
+		description: isString(data.description) ? data.description : null,
+		cuisine: parseFirstString(data.recipeCuisine),
+		category: parseFirstString(data.recipeCategory),
+	};
 }
 
 /**
@@ -240,12 +246,12 @@ function extractFromJsonLd(data: Record<string, unknown>, sourceUrl: string): Re
  * @returns Total minutes as a number, or null if parsing fails.
  */
 function parseDuration(iso: string | undefined): number | null {
-  if (!iso || typeof iso !== "string") return null;
-  const match = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/i);
-  if (!match) return null;
-  const hours = parseInt(match[1] || "0", 10);
-  const minutes = parseInt(match[2] || "0", 10);
-  return hours * 60 + minutes || null;
+	if (!iso || typeof iso !== "string") return null;
+	const match = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/i);
+	if (!match) return null;
+	const hours = parseInt(match[1] || "0", 10);
+	const minutes = parseInt(match[2] || "0", 10);
+	return hours * 60 + minutes || null;
 }
 
 /**
@@ -259,11 +265,11 @@ function parseDuration(iso: string | undefined): number | null {
  * @returns A normalized serving string, or null if unavailable.
  */
 function parseServings(yield_: unknown): string | null {
-  if (!yield_) return null;
-  if (isString(yield_)) return yield_;
-  if (typeof yield_ === "number") return `${yield_} servings`;
-  if (isArray(yield_)) return String(yield_[0]);
-  return null;
+	if (!yield_) return null;
+	if (isString(yield_)) return yield_;
+	if (typeof yield_ === "number") return `${yield_} servings`;
+	if (isArray(yield_)) return String(yield_[0]);
+	return null;
 }
 
 /**
@@ -276,15 +282,15 @@ function parseServings(yield_: unknown): string | null {
  * @returns The author name string, or null if not found.
  */
 function parseAuthor(author: unknown): string | null {
-  if (!author) return null;
-  if (isString(author)) return author;
-  if (isArray(author)) {
-    const first = author[0];
-    if (isString(first)) return first;
-    if (hasProperty(first, "name")) return String(first.name);
-  }
-  if (hasProperty(author, "name")) return String(author.name);
-  return null;
+	if (!author) return null;
+	if (isString(author)) return author;
+	if (isArray(author)) {
+		const first = author[0];
+		if (isString(first)) return first;
+		if (hasProperty(first, "name")) return String(first.name);
+	}
+	if (hasProperty(author, "name")) return String(author.name);
+	return null;
 }
 
 /**
@@ -298,15 +304,15 @@ function parseAuthor(author: unknown): string | null {
  * @returns The image URL string, or null if not found.
  */
 function parseImage(image: unknown): string | null {
-  if (!image) return null;
-  if (isString(image)) return image;
-  if (isArray(image)) {
-    const first = image[0];
-    if (isString(first)) return first;
-    if (hasProperty(first, "url")) return String(first.url);
-  }
-  if (hasProperty(image, "url")) return String(image.url);
-  return null;
+	if (!image) return null;
+	if (isString(image)) return image;
+	if (isArray(image)) {
+		const first = image[0];
+		if (isString(first)) return first;
+		if (hasProperty(first, "url")) return String(first.url);
+	}
+	if (hasProperty(image, "url")) return String(image.url);
+	return null;
 }
 
 /**
@@ -319,10 +325,10 @@ function parseImage(image: unknown): string | null {
  * @returns An array of strings, empty if input is null/undefined.
  */
 function parseStringArray(data: unknown): string[] {
-  if (!data) return [];
-  if (isArray(data)) return data.map(String);
-  if (isString(data)) return [data];
-  return [];
+	if (!data) return [];
+	if (isArray(data)) return data.map(String);
+	if (isString(data)) return [data];
+	return [];
 }
 
 /**
@@ -335,10 +341,10 @@ function parseStringArray(data: unknown): string[] {
  * @returns The first string value, or null if unavailable.
  */
 function parseFirstString(data: unknown): string | null {
-  if (!data) return null;
-  if (isString(data)) return data;
-  if (isArray(data) && data.length > 0) return String(data[0]);
-  return null;
+	if (!data) return null;
+	if (isString(data)) return data;
+	if (isArray(data) && data.length > 0) return String(data[0]);
+	return null;
 }
 
 /**
@@ -353,23 +359,23 @@ function parseFirstString(data: unknown): string | null {
  * @returns An array of instruction step strings.
  */
 function parseInstructions(data: unknown): string[] {
-  if (!data) return [];
-  if (isString(data)) return [data];
-  if (!isArray(data)) return [];
+	if (!data) return [];
+	if (isString(data)) return [data];
+	if (!isArray(data)) return [];
 
-  return data.flatMap((item) => {
-    if (isString(item)) return [item];
-    if (isObject(item)) {
-      if (item.text) return [String(item.text)];
-      if (isArray(item.itemListElement)) {
-        return item.itemListElement.map((sub) => {
-          const step = sub as { text?: string };
-          return String(step.text || sub);
-        });
-      }
-    }
-    return [];
-  });
+	return data.flatMap((item) => {
+		if (isString(item)) return [item];
+		if (isObject(item)) {
+			if (item.text) return [String(item.text)];
+			if (isArray(item.itemListElement)) {
+				return item.itemListElement.map((sub) => {
+					const step = sub as { text?: string };
+					return String(step.text || sub);
+				});
+			}
+		}
+		return [];
+	});
 }
 
 /**
@@ -382,7 +388,7 @@ function parseInstructions(data: unknown): string[] {
  * @returns The cleaned recipe name.
  */
 function cleanRecipeName(name: string): string {
-  return name.replace(/\s+Recipe$/i, "").trim();
+	return name.replace(/\s+Recipe$/i, "").trim();
 }
 
 /**
@@ -393,30 +399,30 @@ function cleanRecipeName(name: string): string {
  * @returns The author name if found, null otherwise.
  */
 function extractAuthorFromHtml($: cheerio.CheerioAPI): string | null {
-  // Try structured data patterns first
-  const structuredAuthor =
-    $('[itemprop="author"]').first().text().trim() ||
-    $('[itemprop="author"] [itemprop="name"]').first().text().trim() ||
-    $('meta[name="author"]').attr("content") ||
-    $('meta[property="article:author"]').attr("content") ||
-    $('[rel="author"]').first().text().trim();
-  
-  if (structuredAuthor) return structuredAuthor;
-  
-  // Try common class patterns
-  const classAuthor =
-    $('[class*="recipe-author"]').first().text().trim() ||
-    $('[class*="author-name"]').first().text().trim() ||
-    $('[class*="byline"] a').first().text().trim() ||
-    $('[class*="byline"]').first().text().trim();
-  
-  if (classAuthor) return classAuthor;
-  
-  // For personal blogs, use the site name as author (last resort)
-  const siteName = $('meta[property="og:site_name"]').attr("content");
-  if (siteName && siteName.length < 50) return siteName;
-  
-  return null;
+	// Try structured data patterns first
+	const structuredAuthor =
+		$('[itemprop="author"]').first().text().trim() ||
+		$('[itemprop="author"] [itemprop="name"]').first().text().trim() ||
+		$('meta[name="author"]').attr("content") ||
+		$('meta[property="article:author"]').attr("content") ||
+		$('[rel="author"]').first().text().trim();
+
+	if (structuredAuthor) return structuredAuthor;
+
+	// Try common class patterns
+	const classAuthor =
+		$('[class*="recipe-author"]').first().text().trim() ||
+		$('[class*="author-name"]').first().text().trim() ||
+		$('[class*="byline"] a').first().text().trim() ||
+		$('[class*="byline"]').first().text().trim();
+
+	if (classAuthor) return classAuthor;
+
+	// For personal blogs, use the site name as author (last resort)
+	const siteName = $('meta[property="og:site_name"]').attr("content");
+	if (siteName && siteName.length < 50) return siteName;
+
+	return null;
 }
 
 /**
@@ -431,59 +437,62 @@ function extractAuthorFromHtml($: cheerio.CheerioAPI): string | null {
  * @param sourceUrl - Original URL of the recipe page.
  * @returns Parsed recipe data if found, null otherwise.
  */
-function parseFallback($: cheerio.CheerioAPI, sourceUrl: string): Recipe | null {
-  const rawName =
-    $('meta[property="og:title"]').attr("content") ||
-    $("h1").first().text().trim();
+function parseFallback(
+	$: cheerio.CheerioAPI,
+	sourceUrl: string,
+): Recipe | null {
+	const rawName =
+		$('meta[property="og:title"]').attr("content") ||
+		$("h1").first().text().trim();
 
-  if (!rawName) return null;
-  
-  const name = cleanRecipeName(rawName);
+	if (!rawName) return null;
 
-  const author =
-    $('[itemprop="author"]').first().text().trim() ||
-    $('meta[name="author"]').attr("content") ||
-    $('[class*="author"] a').first().text().trim() ||
-    $('[class*="author"]').first().text().trim() ||
-    null;
+	const name = cleanRecipeName(rawName);
 
-  const imageUrl =
-    $('meta[property="og:image"]').attr("content") ||
-    $('meta[name="twitter:image"]').attr("content") ||
-    null;
+	const author =
+		$('[itemprop="author"]').first().text().trim() ||
+		$('meta[name="author"]').attr("content") ||
+		$('[class*="author"] a').first().text().trim() ||
+		$('[class*="author"]').first().text().trim() ||
+		null;
 
-  const description =
-    $('meta[property="og:description"]').attr("content") ||
-    $('meta[name="description"]').attr("content") ||
-    null;
+	const imageUrl =
+		$('meta[property="og:image"]').attr("content") ||
+		$('meta[name="twitter:image"]').attr("content") ||
+		null;
 
-  const ingredients: string[] = [];
-  $('[class*="ingredient"], [itemprop="recipeIngredient"]').each((_, el) => {
-    const text = $(el).text().trim();
-    if (text) ingredients.push(text);
-  });
+	const description =
+		$('meta[property="og:description"]').attr("content") ||
+		$('meta[name="description"]').attr("content") ||
+		null;
 
-  const instructions: string[] = [];
-  $(
-    '[class*="instruction"], [class*="direction"], [itemprop="recipeInstructions"] li, [itemprop="step"]'
-  ).each((_, el) => {
-    const text = $(el).text().trim();
-    if (text) instructions.push(text);
-  });
+	const ingredients: string[] = [];
+	$('[class*="ingredient"], [itemprop="recipeIngredient"]').each((_, el) => {
+		const text = $(el).text().trim();
+		if (text) ingredients.push(text);
+	});
 
-  if (ingredients.length === 0 && instructions.length === 0) return null;
+	const instructions: string[] = [];
+	$(
+		'[class*="instruction"], [class*="direction"], [itemprop="recipeInstructions"] li, [itemprop="step"]',
+	).each((_, el) => {
+		const text = $(el).text().trim();
+		if (text) instructions.push(text);
+	});
 
-  return {
-    name,
-    sourceUrl,
-    author: author || null,
-    totalTimeMinutes: null,
-    servings: null,
-    imageUrl,
-    ingredients,
-    instructions,
-    description,
-    cuisine: null,
-    category: null,
-  };
+	if (ingredients.length === 0 && instructions.length === 0) return null;
+
+	return {
+		name,
+		sourceUrl,
+		author: author || null,
+		totalTimeMinutes: null,
+		servings: null,
+		imageUrl,
+		ingredients,
+		instructions,
+		description,
+		cuisine: null,
+		category: null,
+	};
 }

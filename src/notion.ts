@@ -6,26 +6,26 @@ import type { RecipeTags } from "./tagger.js";
  * Notion database property names.
  */
 enum PropertyNames {
-  NAME = "Name",
-  SOURCE = "Source",
-  AUTHOR = "Author",
-  MINUTES = "Minutes",
-  TAGS = "Tags",
-  MEAL_TYPE = "Meal type",
-  HEALTHINESS = "Healthiness",
+	NAME = "Name",
+	SOURCE = "Source",
+	AUTHOR = "Author",
+	MINUTES = "Minutes",
+	TAGS = "Tags",
+	MEAL_TYPE = "Meal type",
+	HEALTHINESS = "Healthiness",
 }
 
 /**
  * Valid meal type options for the Meal type multi-select property.
  */
 enum MealType {
-  BREAKFAST = "Breakfast",
-  LUNCH = "Lunch",
-  DINNER = "Dinner",
-  SNACK = "Snack",
-  DESSERT = "Dessert",
-  APPETIZER = "Appetizer",
-  SIDE_DISH = "SideDish",
+	BREAKFAST = "Breakfast",
+	LUNCH = "Lunch",
+	DINNER = "Dinner",
+	SNACK = "Snack",
+	DESSERT = "Dessert",
+	APPETIZER = "Appetizer",
+	SIDE_DISH = "SideDish",
 }
 
 const MEAL_TYPE_OPTIONS = Object.values(MealType);
@@ -34,22 +34,22 @@ const MEAL_TYPE_OPTIONS = Object.values(MealType);
  * Information about an existing recipe that matches a duplicate check.
  */
 export interface DuplicateInfo {
-  /**
-   * Recipe title in Notion.
-   */
-  title: string;
-  /**
-   * Original source URL of the recipe.
-   */
-  url: string;
-  /**
-   * Notion page ID.
-   */
-  pageId: string;
-  /**
-   * Clickable Notion page URL.
-   */
-  notionUrl: string;
+	/**
+	 * Recipe title in Notion.
+	 */
+	title: string;
+	/**
+	 * Original source URL of the recipe.
+	 */
+	url: string;
+	/**
+	 * Notion page ID.
+	 */
+	pageId: string;
+	/**
+	 * Clickable Notion page URL.
+	 */
+	notionUrl: string;
 }
 
 /**
@@ -59,9 +59,9 @@ export interface DuplicateInfo {
  * @returns The Notion page URL.
  */
 export function getNotionPageUrl(pageId: string): string {
-  // Remove dashes if present and format as URL
-  const cleanId = pageId.replace(/-/g, "");
-  return `https://www.notion.so/${cleanId}`;
+	// Remove dashes if present and format as URL
+	const cleanId = pageId.replace(/-/g, "");
+	return `https://www.notion.so/${cleanId}`;
 }
 
 /**
@@ -74,53 +74,63 @@ export function getNotionPageUrl(pageId: string): string {
  * @returns Information about the duplicate if found, null otherwise.
  */
 export async function checkForDuplicateByUrl(
-  url: string,
-  notionApiKey: string,
-  databaseId: string
+	url: string,
+	notionApiKey: string,
+	databaseId: string,
 ): Promise<DuplicateInfo | null> {
-  // Query for recipes with the same URL using direct API call
-  const response = await fetch(`https://api.notion.com/v1/databases/${databaseId}/query`, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${notionApiKey}`,
-      "Notion-Version": "2022-06-28",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      filter: {
-        property: PropertyNames.SOURCE,
-        url: {
-          equals: url,
-        },
-      },
-    }),
-  });
+	// Query for recipes with the same URL using direct API call
+	const response = await fetch(
+		`https://api.notion.com/v1/databases/${databaseId}/query`,
+		{
+			method: "POST",
+			headers: {
+				Authorization: `Bearer ${notionApiKey}`,
+				"Notion-Version": "2022-06-28",
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				filter: {
+					property: PropertyNames.SOURCE,
+					url: {
+						equals: url,
+					},
+				},
+			}),
+		},
+	);
 
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({}));
-    const errorMessage = errorBody.message || response.statusText;
-    const code = errorBody.code || "";
-    throw new Error(
-      `Notion API error: ${response.status} ${response.statusText}. ${errorMessage}${code ? ` (code: ${code})` : ""}. ` +
-      `Check that the property "${PropertyNames.SOURCE}" exists in your database and is a URL type.`
-    );
-  }
+	if (!response.ok) {
+		const errorBody = await response.json().catch(() => ({}));
+		const errorMessage = errorBody.message || response.statusText;
+		const code = errorBody.code || "";
+		throw new Error(
+			`Notion API error: ${response.status} ${response.statusText}. ${errorMessage}${code ? ` (code: ${code})` : ""}. ` +
+				`Check that the property "${PropertyNames.SOURCE}" exists in your database and is a URL type.`,
+		);
+	}
 
-  const urlQuery = await response.json();
+	const urlQuery = await response.json();
 
-  if (urlQuery.results.length > 0) {
-    const page = urlQuery.results[0];
-    const pageId = page.id;
-    const title = page.properties && PropertyNames.NAME in page.properties
-      ? extractTitle(page.properties[PropertyNames.NAME])
-      : "Unknown Recipe";
-    const foundUrl = page.properties && PropertyNames.SOURCE in page.properties
-      ? extractUrl(page.properties[PropertyNames.SOURCE])
-      : url;
-    return { title, url: foundUrl, pageId, notionUrl: getNotionPageUrl(pageId) };
-  }
+	if (urlQuery.results.length > 0) {
+		const page = urlQuery.results[0];
+		const pageId = page.id;
+		const title =
+			page.properties && PropertyNames.NAME in page.properties
+				? extractTitle(page.properties[PropertyNames.NAME])
+				: "Unknown Recipe";
+		const foundUrl =
+			page.properties && PropertyNames.SOURCE in page.properties
+				? extractUrl(page.properties[PropertyNames.SOURCE])
+				: url;
+		return {
+			title,
+			url: foundUrl,
+			pageId,
+			notionUrl: getNotionPageUrl(pageId),
+		};
+	}
 
-  return null;
+	return null;
 }
 
 /**
@@ -133,53 +143,58 @@ export async function checkForDuplicateByUrl(
  * @returns Information about the duplicate if found, null otherwise.
  */
 export async function checkForDuplicateByTitle(
-  recipeName: string,
-  notionApiKey: string,
-  databaseId: string
+	recipeName: string,
+	notionApiKey: string,
+	databaseId: string,
 ): Promise<DuplicateInfo | null> {
-  // Query for recipes with the same title using direct API call
-  const response = await fetch(`https://api.notion.com/v1/databases/${databaseId}/query`, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${notionApiKey}`,
-      "Notion-Version": "2022-06-28",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      filter: {
-        property: PropertyNames.NAME,
-        title: {
-          equals: recipeName,
-        },
-      },
-    }),
-  });
+	// Query for recipes with the same title using direct API call
+	const response = await fetch(
+		`https://api.notion.com/v1/databases/${databaseId}/query`,
+		{
+			method: "POST",
+			headers: {
+				Authorization: `Bearer ${notionApiKey}`,
+				"Notion-Version": "2022-06-28",
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				filter: {
+					property: PropertyNames.NAME,
+					title: {
+						equals: recipeName,
+					},
+				},
+			}),
+		},
+	);
 
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({}));
-    const errorMessage = errorBody.message || response.statusText;
-    const code = errorBody.code || "";
-    throw new Error(
-      `Notion API error: ${response.status} ${response.statusText}. ${errorMessage}${code ? ` (code: ${code})` : ""}. ` +
-      `Check that the property "${PropertyNames.NAME}" exists in your database and is a Title type.`
-    );
-  }
+	if (!response.ok) {
+		const errorBody = await response.json().catch(() => ({}));
+		const errorMessage = errorBody.message || response.statusText;
+		const code = errorBody.code || "";
+		throw new Error(
+			`Notion API error: ${response.status} ${response.statusText}. ${errorMessage}${code ? ` (code: ${code})` : ""}. ` +
+				`Check that the property "${PropertyNames.NAME}" exists in your database and is a Title type.`,
+		);
+	}
 
-  const titleQuery = await response.json();
+	const titleQuery = await response.json();
 
-  if (titleQuery.results.length > 0) {
-    const page = titleQuery.results[0];
-    const pageId = page.id;
-    const title = page.properties && PropertyNames.NAME in page.properties
-      ? extractTitle(page.properties[PropertyNames.NAME])
-      : recipeName;
-    const url = page.properties && PropertyNames.SOURCE in page.properties
-      ? extractUrl(page.properties[PropertyNames.SOURCE])
-      : "";
-    return { title, url, pageId, notionUrl: getNotionPageUrl(pageId) };
-  }
+	if (titleQuery.results.length > 0) {
+		const page = titleQuery.results[0];
+		const pageId = page.id;
+		const title =
+			page.properties && PropertyNames.NAME in page.properties
+				? extractTitle(page.properties[PropertyNames.NAME])
+				: recipeName;
+		const url =
+			page.properties && PropertyNames.SOURCE in page.properties
+				? extractUrl(page.properties[PropertyNames.SOURCE])
+				: "";
+		return { title, url, pageId, notionUrl: getNotionPageUrl(pageId) };
+	}
 
-  return null;
+	return null;
 }
 
 /**
@@ -192,55 +207,59 @@ export async function checkForDuplicateByTitle(
  * @returns Information about the duplicate if found, null otherwise.
  */
 export async function checkForDuplicate(
-  recipe: Recipe,
-  notionApiKey: string,
-  databaseId: string,
-  skipUrlCheck: boolean = false
+	recipe: Recipe,
+	notionApiKey: string,
+	databaseId: string,
+	skipUrlCheck: boolean = false,
 ): Promise<DuplicateInfo | null> {
-  // First check for URL duplicates (unless already checked)
-  if (!skipUrlCheck) {
-    const urlDuplicate = await checkForDuplicateByUrl(recipe.sourceUrl, notionApiKey, databaseId);
-    if (urlDuplicate) {
-      return urlDuplicate;
-    }
-  }
+	// First check for URL duplicates (unless already checked)
+	if (!skipUrlCheck) {
+		const urlDuplicate = await checkForDuplicateByUrl(
+			recipe.sourceUrl,
+			notionApiKey,
+			databaseId,
+		);
+		if (urlDuplicate) {
+			return urlDuplicate;
+		}
+	}
 
-  // Query for recipes with the same title
-  return await checkForDuplicateByTitle(recipe.name, notionApiKey, databaseId);
+	// Query for recipes with the same title
+	return await checkForDuplicateByTitle(recipe.name, notionApiKey, databaseId);
 }
 
 /**
  * Extracts the title text from a Notion title property.
  */
 function extractTitle(property: unknown): string {
-  if (
-    property &&
-    typeof property === "object" &&
-    "title" in property &&
-    Array.isArray(property.title) &&
-    property.title.length > 0 &&
-    typeof property.title[0] === "object" &&
-    property.title[0] !== null &&
-    "plain_text" in property.title[0]
-  ) {
-    return String(property.title[0].plain_text);
-  }
-  return "";
+	if (
+		property &&
+		typeof property === "object" &&
+		"title" in property &&
+		Array.isArray(property.title) &&
+		property.title.length > 0 &&
+		typeof property.title[0] === "object" &&
+		property.title[0] !== null &&
+		"plain_text" in property.title[0]
+	) {
+		return String(property.title[0].plain_text);
+	}
+	return "";
 }
 
 /**
  * Extracts the URL from a Notion URL property.
  */
 function extractUrl(property: unknown): string {
-  if (
-    property &&
-    typeof property === "object" &&
-    "url" in property &&
-    property.url !== null
-  ) {
-    return String(property.url);
-  }
-  return "";
+	if (
+		property &&
+		typeof property === "object" &&
+		"url" in property &&
+		property.url !== null
+	) {
+		return String(property.url);
+	}
+	return "";
 }
 
 /**
@@ -256,67 +275,69 @@ function extractUrl(property: unknown): string {
  * @throws If a duplicate recipe (same title or URL) already exists and skipDuplicateCheck is false.
  */
 export async function createRecipePage(
-  recipe: Recipe,
-  tags: RecipeTags,
-  notionApiKey: string,
-  databaseId: string,
-  skipDuplicateCheck: boolean = false
+	recipe: Recipe,
+	tags: RecipeTags,
+	notionApiKey: string,
+	databaseId: string,
+	skipDuplicateCheck: boolean = false,
 ): Promise<string> {
-  const notion = new Client({ auth: notionApiKey });
+	const notion = new Client({ auth: notionApiKey });
 
-  // Check for duplicates before creating (unless explicitly skipped)
-  if (!skipDuplicateCheck) {
-    const duplicate = await checkForDuplicate(recipe, notionApiKey, databaseId);
-    if (duplicate) {
-      throw new Error(
-        `Duplicate recipe found: "${duplicate.title}" (${duplicate.url}) already exists in the database. View it at: ${duplicate.notionUrl}`
-      );
-    }
-  }
+	// Check for duplicates before creating (unless explicitly skipped)
+	if (!skipDuplicateCheck) {
+		const duplicate = await checkForDuplicate(recipe, notionApiKey, databaseId);
+		if (duplicate) {
+			throw new Error(
+				`Duplicate recipe found: "${duplicate.title}" (${duplicate.url}) already exists in the database. View it at: ${duplicate.notionUrl}`,
+			);
+		}
+	}
 
-  const properties: Record<string, unknown> = {
-    [PropertyNames.NAME]: {
-      title: [{ text: { content: recipe.name } }],
-    },
-    [PropertyNames.SOURCE]: {
-      url: recipe.sourceUrl,
-    },
-    [PropertyNames.TAGS]: {
-      multi_select: tags.tags.map((t) => ({ name: t })),
-    },
-    [PropertyNames.MEAL_TYPE]: {
-      multi_select: tags.mealType.map((m) => ({ name: m })),
-    },
-    [PropertyNames.HEALTHINESS]: {
-      number: tags.healthiness,
-    },
-  };
+	const properties: Record<string, unknown> = {
+		[PropertyNames.NAME]: {
+			title: [{ text: { content: recipe.name } }],
+		},
+		[PropertyNames.SOURCE]: {
+			url: recipe.sourceUrl,
+		},
+		[PropertyNames.TAGS]: {
+			multi_select: tags.tags.map((t) => ({ name: t })),
+		},
+		[PropertyNames.MEAL_TYPE]: {
+			multi_select: tags.mealType.map((m) => ({ name: m })),
+		},
+		[PropertyNames.HEALTHINESS]: {
+			number: tags.healthiness,
+		},
+	};
 
-  if (recipe.author) {
-    properties[PropertyNames.AUTHOR] = {
-      rich_text: [{ text: { content: recipe.author } }],
-    };
-  }
+	if (recipe.author) {
+		properties[PropertyNames.AUTHOR] = {
+			rich_text: [{ text: { content: recipe.author } }],
+		};
+	}
 
-  properties[PropertyNames.MINUTES] = { number: tags.totalTimeMinutes };
+	properties[PropertyNames.MINUTES] = { number: tags.totalTimeMinutes };
 
-  const children = buildPageBody(recipe, tags);
+	const children = buildPageBody(recipe, tags);
 
-  const pageParams: Record<string, unknown> = {
-    parent: { database_id: databaseId },
-    properties,
-    children,
-  };
+	const pageParams: Record<string, unknown> = {
+		parent: { database_id: databaseId },
+		properties,
+		children,
+	};
 
-  if (recipe.imageUrl) {
-    pageParams.cover = {
-      type: "external",
-      external: { url: recipe.imageUrl },
-    };
-  }
+	if (recipe.imageUrl) {
+		pageParams.cover = {
+			type: "external",
+			external: { url: recipe.imageUrl },
+		};
+	}
 
-  const page = await notion.pages.create(pageParams as Parameters<typeof notion.pages.create>[0]);
-  return page.id;
+	const page = await notion.pages.create(
+		pageParams as Parameters<typeof notion.pages.create>[0],
+	);
+	return page.id;
 }
 
 /**
@@ -331,28 +352,28 @@ export async function createRecipePage(
  * @returns An array of Notion block objects.
  */
 function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
-  const blocks: unknown[] = [];
+	const blocks: unknown[] = [];
 
-  // Add description if available
-  if (tags.description) {
-    blocks.push(paragraph(tags.description));
-  }
+	// Add description if available
+	if (tags.description) {
+		blocks.push(paragraph(tags.description));
+	}
 
-  if (recipe.ingredients.length > 0) {
-    blocks.push(heading("Ingredients"));
-    for (const ingredient of recipe.ingredients) {
-      blocks.push(bulletItem(ingredient));
-    }
-  }
+	if (recipe.ingredients.length > 0) {
+		blocks.push(heading("Ingredients"));
+		for (const ingredient of recipe.ingredients) {
+			blocks.push(bulletItem(ingredient));
+		}
+	}
 
-  if (recipe.instructions.length > 0) {
-    blocks.push(heading("Instructions"));
-    for (const step of recipe.instructions) {
-      blocks.push(numberedItem(step));
-    }
-  }
+	if (recipe.instructions.length > 0) {
+		blocks.push(heading("Instructions"));
+		for (const step of recipe.instructions) {
+			blocks.push(numberedItem(step));
+		}
+	}
 
-  return blocks.slice(0, 100);
+	return blocks.slice(0, 100);
 }
 
 /**
@@ -362,13 +383,13 @@ function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
  * @returns A Notion paragraph block object.
  */
 function paragraph(text: string): unknown {
-  return {
-    object: "block",
-    type: "paragraph",
-    paragraph: {
-      rich_text: [{ type: "text", text: { content: truncate(text, 2000) } }],
-    },
-  };
+	return {
+		object: "block",
+		type: "paragraph",
+		paragraph: {
+			rich_text: [{ type: "text", text: { content: truncate(text, 2000) } }],
+		},
+	};
 }
 
 /**
@@ -378,13 +399,13 @@ function paragraph(text: string): unknown {
  * @returns A Notion heading_2 block object.
  */
 function heading(text: string): unknown {
-  return {
-    object: "block",
-    type: "heading_2",
-    heading_2: {
-      rich_text: [{ type: "text", text: { content: text } }],
-    },
-  };
+	return {
+		object: "block",
+		type: "heading_2",
+		heading_2: {
+			rich_text: [{ type: "text", text: { content: text } }],
+		},
+	};
 }
 
 /**
@@ -394,13 +415,13 @@ function heading(text: string): unknown {
  * @returns A Notion bulleted_list_item block object.
  */
 function bulletItem(text: string): unknown {
-  return {
-    object: "block",
-    type: "bulleted_list_item",
-    bulleted_list_item: {
-      rich_text: [{ type: "text", text: { content: truncate(text, 2000) } }],
-    },
-  };
+	return {
+		object: "block",
+		type: "bulleted_list_item",
+		bulleted_list_item: {
+			rich_text: [{ type: "text", text: { content: truncate(text, 2000) } }],
+		},
+	};
 }
 
 /**
@@ -410,13 +431,13 @@ function bulletItem(text: string): unknown {
  * @returns A Notion numbered_list_item block object.
  */
 function numberedItem(text: string): unknown {
-  return {
-    object: "block",
-    type: "numbered_list_item",
-    numbered_list_item: {
-      rich_text: [{ type: "text", text: { content: truncate(text, 2000) } }],
-    },
-  };
+	return {
+		object: "block",
+		type: "numbered_list_item",
+		numbered_list_item: {
+			rich_text: [{ type: "text", text: { content: truncate(text, 2000) } }],
+		},
+	};
 }
 
 /**
@@ -427,8 +448,8 @@ function numberedItem(text: string): unknown {
  * @returns The truncated text with "..." appended if needed.
  */
 function truncate(text: string, maxLength: number): string {
-  if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength - 3) + "...";
+	if (text.length <= maxLength) return text;
+	return `${text.slice(0, maxLength - 3)}...`;
 }
 
 /**
@@ -444,27 +465,28 @@ function truncate(text: string, maxLength: number): string {
  * @throws If the database is not accessible by the integration.
  */
 export async function setupDatabaseViews(
-  notionApiKey: string,
-  databaseId: string
+	notionApiKey: string,
+	databaseId: string,
 ): Promise<void> {
-  const notion = new Client({ auth: notionApiKey });
+	const notion = new Client({ auth: notionApiKey });
 
-  await notion.databases.retrieve({ database_id: databaseId });
+	await notion.databases.retrieve({ database_id: databaseId });
 
-  await (notion.databases.update as Function)({
-    database_id: databaseId,
-    properties: {
-      [PropertyNames.NAME]: { title: {} },
-      [PropertyNames.SOURCE]: { url: {} },
-      [PropertyNames.AUTHOR]: { rich_text: {} },
-      [PropertyNames.MINUTES]: { number: { format: "number" } },
-      [PropertyNames.TAGS]: { multi_select: { options: [] } },
-      [PropertyNames.MEAL_TYPE]: {
-        multi_select: {
-          options: MEAL_TYPE_OPTIONS.map((name) => ({ name })),
-        },
-      },
-      [PropertyNames.HEALTHINESS]: { number: { format: "number" } },
-    },
-  });
+	// biome-ignore lint/complexity/noBannedTypes: Notion SDK types don't expose update properly
+	await (notion.databases.update as Function)({
+		database_id: databaseId,
+		properties: {
+			[PropertyNames.NAME]: { title: {} },
+			[PropertyNames.SOURCE]: { url: {} },
+			[PropertyNames.AUTHOR]: { rich_text: {} },
+			[PropertyNames.MINUTES]: { number: { format: "number" } },
+			[PropertyNames.TAGS]: { multi_select: { options: [] } },
+			[PropertyNames.MEAL_TYPE]: {
+				multi_select: {
+					options: MEAL_TYPE_OPTIONS.map((name) => ({ name })),
+				},
+			},
+			[PropertyNames.HEALTHINESS]: { number: { format: "number" } },
+		},
+	});
 }

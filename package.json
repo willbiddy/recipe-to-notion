@@ -9,12 +9,16 @@
   "scripts": {
     "start": "bun src/cli.ts",
     "build": "bun build src/cli.ts --compile --outfile recipe-to-notion",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check src/",
+    "lint:fix": "biome check --write src/",
+    "format": "biome format --write src/"
   },
   "keywords": ["recipe", "notion", "claude", "cli"],
   "license": "MIT",
   "private": true,
   "devDependencies": {
+    "@biomejs/biome": "^2.3.12",
     "@types/bun": "latest",
     "typescript": "^5.9.3"
   },

@@ -1,0 +1,30 @@
+{
+  "name": "recipe-to-notion",
+  "version": "1.0.0",
+  "description": "CLI tool that scrapes recipe URLs, generates AI scores/tags with Claude, and saves to Notion",
+  "type": "module",
+  "bin": {
+    "recipe-to-notion": "./src/cli.ts"
+  },
+  "scripts": {
+    "start": "bun src/cli.ts",
+    "build": "bun build src/cli.ts --compile --outfile recipe-to-notion",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": ["recipe", "notion", "claude", "cli"],
+  "license": "MIT",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.2",
+    "@notionhq/client": "^5.8.0",
+    "chalk": "^5.6.2",
+    "cheerio": "^1.2.0",
+    "commander": "^14.0.2",
+    "ora": "^9.1.0",
+    "zod": "^4.3.6"
+  }
+}

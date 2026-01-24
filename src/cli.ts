@@ -30,11 +30,6 @@ const main = defineCommand({
 		version: "1.0.0",
 	},
 	args: {
-		url: {
-			type: "positional",
-			description: "Recipe URL(s) to process",
-			required: true,
-		},
 		html: {
 			type: "string",
 			description:
@@ -42,7 +37,7 @@ const main = defineCommand({
 		},
 	},
 	async run({ args }) {
-		const urls = parseUrls(args.url, args._);
+		const urls = parseUrls(args._);
 
 		if (urls.length === 0) {
 			consola.error("Please provide at least one recipe URL");
@@ -76,15 +71,11 @@ runMain(main);
 /**
  * Extracts valid HTTP URLs from CLI arguments.
  *
- * @param firstUrl - The first positional URL argument.
- * @param remainingArgs - Additional URL arguments from the CLI.
+ * @param args - Positional arguments from the CLI.
  * @returns Array of valid HTTP/HTTPS URLs.
  */
-function parseUrls(
-	firstUrl: string,
-	remainingArgs: string[] | undefined,
-): string[] {
-	return [firstUrl, ...(remainingArgs || [])].filter(
+function parseUrls(args: string[] | undefined): string[] {
+	return (args || []).filter(
 		(arg): arg is string => typeof arg === "string" && arg.startsWith("http"),
 	);
 }
@@ -123,8 +114,9 @@ async function processUrlsWithRateLimiting(
 	const byDomain = groupByDomain(urls);
 
 	if (urls.length > 1) {
+		const siteWord = byDomain.size === 1 ? "site" : "sites";
 		consola.info(
-			`Processing ${urls.length} recipes across ${byDomain.size} site(s)`,
+			`Processing ${urls.length} recipes across ${byDomain.size} ${siteWord}`,
 		);
 	}
 
@@ -280,7 +272,9 @@ async function fetchRecipe(url: string, htmlPath?: string): Promise<Recipe> {
 		? await scrapeRecipeFromHtml(htmlPath, url)
 		: await scrapeRecipe(url);
 
-	consola.success(`Scraped: ${recipe.name}`);
+	const methodLabel =
+		recipe.scrapeMethod === "json-ld" ? "(JSON-LD)" : "(HTML fallback)";
+	consola.success(`Scraped: ${recipe.name} ${methodLabel}`);
 	return recipe;
 }
 

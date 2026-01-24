@@ -215,6 +215,9 @@ export async function checkForDuplicate(
 
 /**
  * Extracts the title text from a Notion title property.
+ *
+ * @param property - The Notion title property object.
+ * @returns The plain text title, or empty string if not found.
  */
 function extractTitle(property: unknown): string {
 	if (
@@ -234,6 +237,9 @@ function extractTitle(property: unknown): string {
 
 /**
  * Extracts the URL from a Notion URL property.
+ *
+ * @param property - The Notion URL property object.
+ * @returns The URL string, or empty string if not found.
  */
 function extractUrl(property: unknown): string {
 	if (

@@ -2,6 +2,23 @@ import * as cheerio from "cheerio";
 import { readFile } from "node:fs/promises";
 
 // ─────────────────────────────────────────────────────────────────────────────
+// HTML entity decoding
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Decodes HTML entities in a string to their Unicode characters.
+ *
+ * Uses cheerio's built-in HTML parser to decode all entity types:
+ * named entities (e.g., &frac34;), decimal (&#8532;), and hex (&#x2154;).
+ *
+ * @param str - String potentially containing HTML entities.
+ * @returns String with HTML entities decoded.
+ */
+function decodeHtmlEntities(str: string): string {
+	return cheerio.load(str, null, false).text();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Type guards
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -280,7 +297,7 @@ function extractFromJsonLd(
 	const author = parseAuthor(data.author) ?? parseAuthor(data.publisher);
 
 	return {
-		name: cleanRecipeName(String(data.name || "Untitled")),
+		name: decodeHtmlEntities(cleanRecipeName(String(data.name || "Untitled"))),
 		sourceUrl,
 		author,
 		totalTimeMinutes:
@@ -290,7 +307,9 @@ function extractFromJsonLd(
 		imageUrl: parseImage(data.image),
 		ingredients: parseStringArray(data.recipeIngredient),
 		instructions: parseInstructions(data.recipeInstructions),
-		description: isString(data.description) ? data.description : null,
+		description: isString(data.description)
+			? decodeHtmlEntities(data.description)
+			: null,
 		cuisine: parseFirstString(data.recipeCuisine),
 		category: parseFirstString(data.recipeCategory),
 	};
@@ -403,14 +422,15 @@ function parseImage(image: unknown): string | null {
  *
  * Normalizes various input formats into a consistent string array.
  * Handles single strings, arrays of strings, and null/undefined values.
+ * Decodes HTML entities in all strings.
  *
  * @param data - The data to convert to a string array.
  * @returns An array of strings, empty if input is null/undefined.
  */
 function parseStringArray(data: unknown): string[] {
 	if (!data) return [];
-	if (isArray(data)) return data.map(String);
-	if (isString(data)) return [data];
+	if (isArray(data)) return data.map((item) => decodeHtmlEntities(String(item)));
+	if (isString(data)) return [decodeHtmlEntities(data)];
 	return [];
 }
 
@@ -437,23 +457,24 @@ function parseFirstString(data: unknown): string | null {
  *
  * Handles the various instruction formats found in JSON-LD Recipe objects,
  * extracting text from nested structures and flattening the result.
+ * Decodes HTML entities in all instruction text.
  *
  * @param data - The instruction data in various formats.
  * @returns An array of instruction step strings.
  */
 function parseInstructions(data: unknown): string[] {
 	if (!data) return [];
-	if (isString(data)) return [data];
+	if (isString(data)) return [decodeHtmlEntities(data)];
 	if (!isArray(data)) return [];
 
 	return data.flatMap((item) => {
-		if (isString(item)) return [item];
+		if (isString(item)) return [decodeHtmlEntities(item)];
 		if (isObject(item)) {
-			if (item.text) return [String(item.text)];
+			if (item.text) return [decodeHtmlEntities(String(item.text))];
 			if (isArray(item.itemListElement)) {
 				return item.itemListElement.map((sub) => {
 					const step = sub as { text?: string };
-					return String(step.text || sub);
+					return decodeHtmlEntities(String(step.text || sub));
 				});
 			}
 		}

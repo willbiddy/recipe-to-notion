@@ -158,13 +158,13 @@ bun build src/cli.ts --compile --outfile recipe-to-notion
 
 ```
 src/
-├── cli.ts             CLI entry point (commander + consola logging)
-├── index.ts           Orchestrator connecting scrape → tag → save
-├── scraper.ts         Recipe extraction (JSON-LD primary, cheerio fallback)
-├── tagger.ts          Claude API for tags, healthiness, meal-type, time, description
-├── notion.ts          Notion page creation, duplicate detection, and database schema setup
-├── config.ts          Environment variable loading with zod validation
-└── system-prompt.md   Claude system prompt for recipe analysis
+├── cli.ts             Command-line interface and progress logging
+├── index.ts           Pipeline orchestration for programmatic use
+├── scraper.ts         Recipe extraction from URLs and HTML files
+├── tagger.ts          Claude API integration for AI tagging
+├── notion.ts          Notion page creation and duplicate detection
+├── config.ts          Environment variable validation
+└── system-prompt.md   Claude instructions for recipe analysis
 ```
 
 ## Tech Stack

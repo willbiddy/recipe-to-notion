@@ -74,6 +74,11 @@ export async function scrapeRecipe(url: string): Promise<Recipe> {
     );
   }
 
+  // If author wasn't found in JSON-LD, try HTML fallback
+  if (!recipe.author) {
+    recipe.author = extractAuthorFromHtml($);
+  }
+
   return recipe;
 }
 
@@ -153,10 +158,13 @@ function findRecipeInLd(data: unknown): Record<string, unknown> | null {
  * @returns A normalized Recipe object.
  */
 function extractFromJsonLd(data: Record<string, unknown>, sourceUrl: string): Recipe {
+  // Try author first, fall back to publisher name
+  const author = parseAuthor(data.author) ?? parseAuthor(data.publisher);
+  
   return {
     name: cleanRecipeName(String(data.name || "Untitled")),
     sourceUrl,
-    author: parseAuthor(data.author),
+    author,
     totalTimeMinutes:
       parseDuration(data.totalTime as string | undefined) ??
       parseDuration(data.cookTime as string | undefined),
@@ -305,6 +313,40 @@ function parseInstructions(data: unknown): string[] {
  */
 function cleanRecipeName(name: string): string {
   return name.replace(/\s+Recipe$/i, "").trim();
+}
+
+/**
+ * Extracts author from HTML using various patterns.
+ * Used as a fallback when JSON-LD doesn't include author info.
+ *
+ * @param $ - Cheerio instance loaded with the page HTML.
+ * @returns The author name if found, null otherwise.
+ */
+function extractAuthorFromHtml($: cheerio.CheerioAPI): string | null {
+  // Try structured data patterns first
+  const structuredAuthor =
+    $('[itemprop="author"]').first().text().trim() ||
+    $('[itemprop="author"] [itemprop="name"]').first().text().trim() ||
+    $('meta[name="author"]').attr("content") ||
+    $('meta[property="article:author"]').attr("content") ||
+    $('[rel="author"]').first().text().trim();
+  
+  if (structuredAuthor) return structuredAuthor;
+  
+  // Try common class patterns
+  const classAuthor =
+    $('[class*="recipe-author"]').first().text().trim() ||
+    $('[class*="author-name"]').first().text().trim() ||
+    $('[class*="byline"] a').first().text().trim() ||
+    $('[class*="byline"]').first().text().trim();
+  
+  if (classAuthor) return classAuthor;
+  
+  // For personal blogs, use the site name as author (last resort)
+  const siteName = $('meta[property="og:site_name"]').attr("content");
+  if (siteName && siteName.length < 50) return siteName;
+  
+  return null;
 }
 
 /**

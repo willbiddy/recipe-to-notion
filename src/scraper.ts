@@ -1,15 +1,35 @@
 import * as cheerio from "cheerio";
 
+/** Structured recipe data extracted from a web page. */
 export interface Recipe {
+  /** Display name of the recipe. */
   name: string;
+  /** Original URL the recipe was scraped from. */
   sourceUrl: string;
+  /** Total preparation + cooking time in minutes, if available. */
   totalTimeMinutes: number | null;
+  /** Serving size description (e.g. "4 servings"), if available. */
   servings: string | null;
+  /** URL to the recipe's hero/header image for use as a Notion cover. */
   imageUrl: string | null;
+  /** List of ingredient strings (e.g. "2 cups flour"). */
   ingredients: string[];
+  /** Ordered list of instruction steps. */
   instructions: string[];
 }
 
+/**
+ * Fetches a recipe URL and extracts structured data.
+ *
+ * Attempts JSON-LD (schema.org/Recipe) parsing first, which works for most
+ * recipe sites including paywalled ones like NYT Cooking that embed structured
+ * data for SEO. Falls back to scraping microdata attributes and common CSS
+ * class patterns if JSON-LD is unavailable.
+ *
+ * @param url - The recipe page URL to scrape.
+ * @returns Parsed recipe data.
+ * @throws If the page cannot be fetched or no recipe data is found.
+ */
 export async function scrapeRecipe(url: string): Promise<Recipe> {
   const response = await fetch(url, {
     headers: {
@@ -37,6 +57,9 @@ export async function scrapeRecipe(url: string): Promise<Recipe> {
   return recipe;
 }
 
+/**
+ * Searches all `<script type="application/ld+json">` blocks for a Recipe object.
+ */
 function parseJsonLd($: cheerio.CheerioAPI, sourceUrl: string): Recipe | null {
   const scripts = $('script[type="application/ld+json"]');
   for (let i = 0; i < scripts.length; i++) {
@@ -50,12 +73,17 @@ function parseJsonLd($: cheerio.CheerioAPI, sourceUrl: string): Recipe | null {
         return extractFromJsonLd(recipeData, sourceUrl);
       }
     } catch {
+      // Malformed JSON-LD block — skip and try the next one.
       continue;
     }
   }
   return null;
 }
 
+/**
+ * Recursively searches a JSON-LD structure for an object with `@type: "Recipe"`.
+ * Handles top-level arrays, `@graph` arrays, and direct Recipe objects.
+ */
 function findRecipeInLd(data: unknown): Record<string, unknown> | null {
   if (!data || typeof data !== "object") return null;
 
@@ -80,12 +108,14 @@ function findRecipeInLd(data: unknown): Record<string, unknown> | null {
   return null;
 }
 
+/** Maps a JSON-LD Recipe object to our internal {@link Recipe} interface. */
 function extractFromJsonLd(data: Record<string, unknown>, sourceUrl: string): Recipe {
   return {
     name: String(data.name || "Untitled Recipe"),
     sourceUrl,
-    totalTimeMinutes: parseDuration(data.totalTime as string | undefined)
-      ?? parseDuration(data.cookTime as string | undefined),
+    totalTimeMinutes:
+      parseDuration(data.totalTime as string | undefined) ??
+      parseDuration(data.cookTime as string | undefined),
     servings: parseServings(data.recipeYield),
     imageUrl: parseImage(data.image),
     ingredients: parseStringArray(data.recipeIngredient),
@@ -93,6 +123,7 @@ function extractFromJsonLd(data: Record<string, unknown>, sourceUrl: string): Re
   };
 }
 
+/** Parses an ISO 8601 duration string (e.g. "PT1H30M") into total minutes. */
 function parseDuration(iso: string | undefined): number | null {
   if (!iso || typeof iso !== "string") return null;
   const match = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/i);
@@ -102,6 +133,7 @@ function parseDuration(iso: string | undefined): number | null {
   return hours * 60 + minutes || null;
 }
 
+/** Normalizes `recipeYield` (string, number, or array) into a display string. */
 function parseServings(yield_: unknown): string | null {
   if (!yield_) return null;
   if (typeof yield_ === "string") return yield_;
@@ -110,6 +142,7 @@ function parseServings(yield_: unknown): string | null {
   return null;
 }
 
+/** Extracts an image URL from the various JSON-LD `image` formats. */
 function parseImage(image: unknown): string | null {
   if (!image) return null;
   if (typeof image === "string") return image;
@@ -124,6 +157,7 @@ function parseImage(image: unknown): string | null {
   return null;
 }
 
+/** Coerces unknown data into a string array (handles single string, array, or null). */
 function parseStringArray(data: unknown): string[] {
   if (!data) return [];
   if (Array.isArray(data)) return data.map(String);
@@ -131,6 +165,11 @@ function parseStringArray(data: unknown): string[] {
   return [];
 }
 
+/**
+ * Parses `recipeInstructions` which may be a plain string, an array of strings,
+ * an array of HowToStep objects, or an array of HowToSection objects containing
+ * nested itemListElement arrays.
+ */
 function parseInstructions(data: unknown): string[] {
   if (!data) return [];
   if (typeof data === "string") return [data];
@@ -148,6 +187,10 @@ function parseInstructions(data: unknown): string[] {
   });
 }
 
+/**
+ * Fallback scraper that extracts recipe data from microdata attributes
+ * and common CSS class patterns when JSON-LD is unavailable.
+ */
 function parseFallback($: cheerio.CheerioAPI, sourceUrl: string): Recipe | null {
   const name =
     $('meta[property="og:title"]').attr("content") ||
@@ -167,12 +210,12 @@ function parseFallback($: cheerio.CheerioAPI, sourceUrl: string): Recipe | null 
   });
 
   const instructions: string[] = [];
-  $('[class*="instruction"], [class*="direction"], [itemprop="recipeInstructions"] li, [itemprop="step"]').each(
-    (_, el) => {
-      const text = $(el).text().trim();
-      if (text) instructions.push(text);
-    }
-  );
+  $(
+    '[class*="instruction"], [class*="direction"], [itemprop="recipeInstructions"] li, [itemprop="step"]'
+  ).each((_, el) => {
+    const text = $(el).text().trim();
+    if (text) instructions.push(text);
+  });
 
   if (ingredients.length === 0 && instructions.length === 0) return null;
 

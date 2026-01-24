@@ -31,10 +31,23 @@ program
 	)
 	.version("1.0.0")
 	.argument("<urls...>", "Recipe URL(s) to process")
-	.action(async (urls: string[]) => {
+	.option(
+		"--html <file>",
+		"Use saved HTML file instead of fetching (for sites that block requests)",
+	)
+	.action(async (urls: string[], options: { html?: string }) => {
 		const config = loadConfig();
 		let succeeded = 0;
 		let failed = 0;
+
+		// If --html is provided, only process the first URL with that HTML
+		if (options.html) {
+			if (urls.length > 1) {
+				consola.warn("--html option only supports one URL at a time");
+			}
+			const success = await processRecipe(urls[0], config, options.html);
+			process.exit(success ? 0 : 1);
+		}
 
 		for (const url of urls) {
 			const success = await processRecipe(url, config);
@@ -63,9 +76,14 @@ program.parse();
  *
  * @param url - The recipe URL to process.
  * @param config - Application configuration with API keys.
+ * @param htmlPath - Optional path to saved HTML file (bypasses fetching).
  * @returns True if the recipe was saved successfully, false otherwise.
  */
-async function processRecipe(url: string, config: Config): Promise<boolean> {
+async function processRecipe(
+	url: string,
+	config: Config,
+	htmlPath?: string,
+): Promise<boolean> {
 	try {
 		// Check for URL duplicates before scraping (saves API costs)
 		consola.start("Checking for duplicates...");
@@ -82,9 +100,13 @@ async function processRecipe(url: string, config: Config): Promise<boolean> {
 		}
 		consola.success("No duplicate URL found");
 
-		// Scrape the recipe
-		consola.start("Scraping recipe...");
-		const recipe = await scrapeRecipe(url);
+		// Scrape the recipe (from HTML file or by fetching)
+		consola.start(
+			htmlPath ? `Parsing recipe from ${htmlPath}...` : "Scraping recipe...",
+		);
+		const recipe = htmlPath
+			? await scrapeRecipeFromHtml(htmlPath, url)
+			: await scrapeRecipe(url);
 		consola.success(`Scraped: ${recipe.name}`);
 
 		// Check for title duplicates (same recipe from different URL)

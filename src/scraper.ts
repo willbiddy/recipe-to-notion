@@ -133,6 +133,13 @@ export async function scrapeRecipe(url: string): Promise<Recipe> {
 	});
 
 	if (!response.ok) {
+		if (response.status === 403) {
+			throw new Error(
+				`Failed to fetch ${url}: 403 Forbidden. This site blocks automated requests.\n` +
+					`  Tip: Save the page source in your browser and use --html:\n` +
+					`  bun src/cli.ts --html ~/Downloads/recipe.html "${url}"`,
+			);
+		}
 		throw new Error(
 			`Failed to fetch ${url}: ${response.status} ${response.statusText}`,
 		);
@@ -347,11 +354,12 @@ function parseAuthor(author: unknown): string | null {
 }
 
 /**
- * Extracts an image URL from the various JSON-LD `image` formats.
+ * Extracts the best (largest) image URL from JSON-LD `image` formats.
  *
  * Handles multiple image formats: direct string URLs, arrays of
  * strings, arrays of ImageObject objects with `url` properties,
- * and single ImageObject objects.
+ * and single ImageObject objects. When multiple images are available,
+ * prefers the largest one (last in array, or highest width).
  *
  * @param image - The image data in various JSON-LD formats.
  * @returns The image URL string, or null if not found.
@@ -359,10 +367,32 @@ function parseAuthor(author: unknown): string | null {
 function parseImage(image: unknown): string | null {
 	if (!image) return null;
 	if (isString(image)) return image;
-	if (isArray(image)) {
-		const first = image[0];
-		if (isString(first)) return first;
-		if (hasProperty(first, "url")) return String(first.url);
+	if (isArray(image) && image.length > 0) {
+		// Check if it's an array of ImageObjects with width info
+		const firstItem = image[0];
+		if (hasProperty(firstItem, "url") && hasProperty(firstItem, "width")) {
+			// Find the image with the largest width
+			let bestUrl = String(firstItem.url);
+			let bestWidth =
+				typeof firstItem.width === "number" ? firstItem.width : 0;
+			for (const item of image) {
+				if (
+					hasProperty(item, "url") &&
+					hasProperty(item, "width") &&
+					typeof item.width === "number" &&
+					item.width > bestWidth
+				) {
+					bestUrl = String(item.url);
+					bestWidth = item.width;
+				}
+			}
+			return bestUrl;
+		}
+		// Array of strings - take the last one (usually full-size)
+		// Many sites order from smallest to largest
+		const last = image[image.length - 1];
+		if (isString(last)) return last;
+		if (hasProperty(last, "url")) return String(last.url);
 	}
 	if (hasProperty(image, "url")) return String(image.url);
 	return null;

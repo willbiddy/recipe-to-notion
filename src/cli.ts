@@ -11,7 +11,7 @@ import pc from "picocolors";
 import { loadConfig } from "./config.js";
 import { scrapeRecipe } from "./scraper.js";
 import { tagRecipe } from "./tagger.js";
-import { createRecipePage, checkForDuplicateByUrl, checkForDuplicateByTitle } from "./notion.js";
+import { createRecipePage, checkForDuplicateByUrl, checkForDuplicateByTitle, getNotionPageUrl } from "./notion.js";
 
 const program = new Command();
 
@@ -52,7 +52,7 @@ async function runRecipePipeline(url: string): Promise<void> {
   consola.start("Checking for duplicates...");
   const urlDuplicate = await checkForDuplicateByUrl(url, config.NOTION_API_KEY, config.NOTION_DATABASE_ID);
   if (urlDuplicate) {
-    consola.error("\n⚠️  Duplicate recipe detected\n");
+    consola.error("\n⚠️  Duplicate recipe detected");
     consola.log(
       [
         pc.bold(pc.yellow("Recipe:")),
@@ -78,7 +78,7 @@ async function runRecipePipeline(url: string): Promise<void> {
   // Skip URL check since we already checked it above
   const titleDuplicate = await checkForDuplicateByTitle(recipe.name, config.NOTION_API_KEY, config.NOTION_DATABASE_ID);
   if (titleDuplicate) {
-    consola.error("\n⚠️  Duplicate recipe detected\n");
+    consola.error("\n⚠️  Duplicate recipe detected");
     consola.log(
       [
         pc.bold(pc.yellow("Recipe:")),
@@ -99,20 +99,20 @@ async function runRecipePipeline(url: string): Promise<void> {
   const tags = await tagRecipe(recipe, config.ANTHROPIC_API_KEY);
   consola.success("Tagged recipe");
 
+  console.log("");
   consola.log(
     [
       pc.bold(recipe.name),
-      "",
+      recipe.author ? `Author:      ${recipe.author}` : null,
       `Tags:        ${tags.tags.join(", ")}`,
       `Meal type:   ${tags.mealType.join(", ")}`,
       `Healthiness: ${tags.healthiness}/10`,
       `Total time:  ${tags.totalTimeMinutes} min`,
       `Ingredients: ${recipe.ingredients.length} items`,
       `Steps:       ${recipe.instructions.length} steps`,
-    ]
-      .filter(Boolean)
-      .join("\n")
+    ].filter(Boolean).join("\n")
   );
+  console.log("");
 
   consola.start("Saving to Notion...");
   const pageId = await createRecipePage(
@@ -122,5 +122,6 @@ async function runRecipePipeline(url: string): Promise<void> {
     config.NOTION_DATABASE_ID,
     true // Skip duplicate check since we already checked URL and title
   );
-  consola.success(`Saved to Notion (page ID: ${pageId})`);
+  const notionUrl = getNotionPageUrl(pageId);
+  consola.success(`Saved to Notion: ${pc.underline(pc.blue(notionUrl))}`);
 }

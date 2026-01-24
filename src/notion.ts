@@ -2,6 +2,16 @@ import { Client } from "@notionhq/client";
 import type { Recipe } from "./scraper.js";
 import type { RecipeTags } from "./tagger.js";
 
+/**
+ * Creates a new page in the Notion recipe database with the recipe's metadata,
+ * cover image, and body content (ingredients + instructions).
+ *
+ * @param recipe - Scraped recipe data.
+ * @param tags - AI-generated scores and classifications.
+ * @param notionApiKey - Notion integration API key.
+ * @param databaseId - Target Notion database ID.
+ * @returns The ID of the newly created Notion page.
+ */
 export async function createRecipePage(
   recipe: Recipe,
   tags: RecipeTags,
@@ -60,58 +70,82 @@ export async function createRecipePage(
   return page.id;
 }
 
+/**
+ * Builds the Notion page body: an "Ingredients" heading followed by bulleted
+ * list items, then an "Instructions" heading followed by numbered list items.
+ * Truncates to 100 blocks (Notion API limit per request).
+ */
 function buildPageBody(recipe: Recipe): unknown[] {
   const blocks: unknown[] = [];
 
   if (recipe.ingredients.length > 0) {
-    blocks.push({
-      object: "block",
-      type: "heading_2",
-      heading_2: {
-        rich_text: [{ type: "text", text: { content: "Ingredients" } }],
-      },
-    });
-
+    blocks.push(heading("Ingredients"));
     for (const ingredient of recipe.ingredients) {
-      blocks.push({
-        object: "block",
-        type: "bulleted_list_item",
-        bulleted_list_item: {
-          rich_text: [{ type: "text", text: { content: truncate(ingredient, 2000) } }],
-        },
-      });
+      blocks.push(bulletItem(ingredient));
     }
   }
 
   if (recipe.instructions.length > 0) {
-    blocks.push({
-      object: "block",
-      type: "heading_2",
-      heading_2: {
-        rich_text: [{ type: "text", text: { content: "Instructions" } }],
-      },
-    });
-
+    blocks.push(heading("Instructions"));
     for (const step of recipe.instructions) {
-      blocks.push({
-        object: "block",
-        type: "numbered_list_item",
-        numbered_list_item: {
-          rich_text: [{ type: "text", text: { content: truncate(step, 2000) } }],
-        },
-      });
+      blocks.push(numberedItem(step));
     }
   }
 
-  // Notion API limits to 100 blocks per request
   return blocks.slice(0, 100);
 }
 
+/** Creates a heading_2 block. */
+function heading(text: string): unknown {
+  return {
+    object: "block",
+    type: "heading_2",
+    heading_2: {
+      rich_text: [{ type: "text", text: { content: text } }],
+    },
+  };
+}
+
+/** Creates a bulleted_list_item block. */
+function bulletItem(text: string): unknown {
+  return {
+    object: "block",
+    type: "bulleted_list_item",
+    bulleted_list_item: {
+      rich_text: [{ type: "text", text: { content: truncate(text, 2000) } }],
+    },
+  };
+}
+
+/** Creates a numbered_list_item block. */
+function numberedItem(text: string): unknown {
+  return {
+    object: "block",
+    type: "numbered_list_item",
+    numbered_list_item: {
+      rich_text: [{ type: "text", text: { content: truncate(text, 2000) } }],
+    },
+  };
+}
+
+/** Truncates text to a maximum length, appending "..." if truncated. */
 function truncate(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength - 3) + "...";
 }
 
+/**
+ * Ensures the target Notion database has all required properties with the
+ * correct types. Creates any missing properties and pre-populates the
+ * Meal Type multi-select options.
+ *
+ * Note: The Notion API does not support creating views programmatically.
+ * Views (Gallery, Quick Meals, etc.) must be configured manually in Notion.
+ *
+ * @param notionApiKey - Notion integration API key.
+ * @param databaseId - Target Notion database ID.
+ * @throws If the database is not accessible by the integration.
+ */
 export async function setupDatabaseViews(
   notionApiKey: string,
   databaseId: string
@@ -121,10 +155,7 @@ export async function setupDatabaseViews(
   // Verify the database exists and is accessible
   await notion.databases.retrieve({ database_id: databaseId });
 
-  // The Notion API does not support creating views programmatically as of 2025.
-  // Views must be created manually in the Notion UI.
-  // However, we can update the database to ensure all required properties exist.
-  // The properties field is supported by the API but missing from the v5 SDK types.
+  // The properties field is supported by the Notion API but missing from the v5 SDK types.
   await (notion.databases.update as Function)({
     database_id: databaseId,
     properties: {

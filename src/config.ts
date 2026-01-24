@@ -6,8 +6,16 @@ const envSchema = z.object({
   NOTION_DATABASE_ID: z.string().min(1, "NOTION_DATABASE_ID is required"),
 });
 
+/** Validated environment configuration containing all required API keys. */
 export type Config = z.infer<typeof envSchema>;
 
+/**
+ * Loads and validates required environment variables from the process environment.
+ * Bun automatically loads `.env` files, so no dotenv import is needed.
+ *
+ * @returns Validated configuration object with API keys and database ID.
+ * @throws If any required environment variable is missing or empty.
+ */
 export function loadConfig(): Config {
   const result = envSchema.safeParse(process.env);
   if (!result.success) {

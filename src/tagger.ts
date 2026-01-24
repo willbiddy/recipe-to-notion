@@ -1,10 +1,15 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { Recipe } from "./scraper.js";
 
+/** AI-generated metadata for a recipe, produced by Claude. */
 export interface RecipeTags {
+  /** 1-3 cuisine categories (e.g. "Italian", "Indian", "Mediterranean"). */
   cuisine: string[];
+  /** Applicable meal types (e.g. "Dinner", "Snack", "Dessert"). */
   mealType: string[];
+  /** Difficulty score from 0 (no-cook) to 10 (professional-level). */
   difficulty: number;
+  /** Healthiness score from 0 (junk food) to 10 (balanced whole-food meal). */
   healthiness: number;
 }
 
@@ -17,19 +22,19 @@ const SYSTEM_PROMPT = `You are a culinary expert that analyzes recipes and provi
 
 Respond ONLY with valid JSON, no additional text.`;
 
+/**
+ * Sends recipe data to Claude and receives cuisine/meal-type classifications
+ * along with difficulty and healthiness scores.
+ *
+ * @param recipe - The scraped recipe to analyze.
+ * @param apiKey - Anthropic API key.
+ * @returns AI-generated tags and scores for the recipe.
+ * @throws If the Claude API call fails or returns unparseable JSON.
+ */
 export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeTags> {
   const client = new Anthropic({ apiKey });
 
-  const userMessage = `Recipe: ${recipe.name}
-
-Ingredients:
-${recipe.ingredients.map((i) => `- ${i}`).join("\n")}
-
-Instructions:
-${recipe.instructions.map((s, i) => `${i + 1}. ${s}`).join("\n")}
-
-${recipe.totalTimeMinutes ? `Total time: ${recipe.totalTimeMinutes} minutes` : ""}
-${recipe.servings ? `Servings: ${recipe.servings}` : ""}`;
+  const userMessage = buildPrompt(recipe);
 
   const response = await client.messages.create({
     model: "claude-sonnet-4-5-20250929",
@@ -53,6 +58,29 @@ ${recipe.servings ? `Servings: ${recipe.servings}` : ""}`;
   };
 }
 
+/** Formats recipe data into a structured prompt for Claude. */
+function buildPrompt(recipe: Recipe): string {
+  const lines = [
+    `Recipe: ${recipe.name}`,
+    "",
+    "Ingredients:",
+    ...recipe.ingredients.map((i) => `- ${i}`),
+    "",
+    "Instructions:",
+    ...recipe.instructions.map((s, i) => `${i + 1}. ${s}`),
+  ];
+
+  if (recipe.totalTimeMinutes) {
+    lines.push("", `Total time: ${recipe.totalTimeMinutes} minutes`);
+  }
+  if (recipe.servings) {
+    lines.push(`Servings: ${recipe.servings}`);
+  }
+
+  return lines.join("\n");
+}
+
+/** Clamps a number to the range [min, max]. */
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }

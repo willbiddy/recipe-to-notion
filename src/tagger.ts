@@ -1,4 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { readFileSync } from "fs";
+import { join } from "path";
+import { fileURLToPath } from "url";
 import type { Recipe } from "./scraper.js";
 
 /**
@@ -6,9 +9,10 @@ import type { Recipe } from "./scraper.js";
  */
 export interface RecipeTags {
   /**
-   * 1-3 cuisine categories (e.g. "Italian", "Indian", "Mediterranean").
+   * Descriptive tags (2-4 items) for cuisine, dish type, and primary protein
+   * (e.g. "Italian", "Pasta", "Chicken", "Stir-Fry").
    */
-  cuisine: string[];
+  tags: string[];
   /**
    * Applicable meal types (e.g. "Dinner", "Snack", "Dessert").
    */
@@ -25,37 +29,46 @@ export interface RecipeTags {
 
 /**
  * System prompt for Claude to analyze recipes and generate structured metadata.
+ * Loaded from system-prompt.md file for easier editing.
  */
-const SYSTEM_PROMPT = `You are a culinary expert that analyzes recipes and provides structured metadata. Given a recipe's name, ingredients, and instructions, return a JSON object with the following fields:
-
-- cuisine: array of 1-3 cuisine categories (e.g. "Italian", "Indian", "Mexican", "American", "French", "Japanese", "Thai", "Mediterranean", "Fusion")
-- mealType: array of applicable meal types from: "Breakfast", "Lunch", "Dinner", "Snack", "Dessert", "Appetizer", "Side Dish"
-- healthiness: integer 0-10. 0 = deep-fried candy bar, 3 = comfort food, 5 = average home meal, 7 = nutritious balanced meal, 10 = optimally balanced whole-food meal
-- totalTimeMinutes: integer (minutes). If a total time is provided in the recipe, use that value. If not provided, estimate the total time based on the number of steps, complexity of techniques, and typical cooking times for similar dishes. Always provide a reasonable estimate.
-
-Respond ONLY with valid JSON, no additional text.`;
+const SYSTEM_PROMPT = (() => {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = join(__filename, "..");
+  const promptPath = join(__dirname, "system-prompt.md");
+  try {
+    return readFileSync(promptPath, "utf-8").trim();
+  } catch (error) {
+    throw new Error(
+      `Failed to load system prompt from ${promptPath}: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+})();
 
 /**
  * Labels used when formatting recipe data into a user prompt for Claude.
  */
-const PROMPT_LABELS = {
-  RECIPE: "Recipe",
-  INGREDIENTS: "Ingredients",
-  INSTRUCTIONS: "Instructions",
-  TOTAL_TIME: "Total time",
-} as const;
+enum PromptLabels {
+  RECIPE = "Recipe",
+  INGREDIENTS = "Ingredients",
+  INSTRUCTIONS = "Instructions",
+  TOTAL_TIME = "Total time",
+}
 
 /**
  * Claude model configuration for recipe analysis.
  */
+enum ClaudeModel {
+  MODEL = "claude-sonnet-4-5-20250929",
+}
+
 const CLAUDE_CONFIG = {
-  MODEL: "claude-sonnet-4-5-20250929",
+  MODEL: ClaudeModel.MODEL,
   MAX_TOKENS: 256,
 } as const;
 
 /**
- * Sends recipe data to Claude and receives cuisine/meal-type classifications
- * along with healthiness scores and time estimates.
+ * Sends recipe data to Claude and receives tags, meal-type classifications,
+ * healthiness scores, and time estimates.
  *
  * @param recipe - The scraped recipe to analyze.
  * @param apiKey - Anthropic API key.
@@ -79,11 +92,10 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
     .map((block) => block.text)
     .join("");
 
-  // Strip markdown code blocks if present (Claude sometimes wraps JSON in ```json ... ```)
-  const cleanedText = stripMarkdownCodeBlocks(text);
 
   let parsed;
   try {
+    const cleanedText = stripMarkdownCodeBlocks(text);
     parsed = JSON.parse(cleanedText);
   } catch (error) {
     throw new Error(
@@ -93,13 +105,15 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
 
   const scrapedTime = recipe.totalTimeMinutes;
   const aiEstimatedTime = Number(parsed.totalTimeMinutes) || null;
-  const finalTime = scrapedTime ?? aiEstimatedTime ?? estimateTimeFromRecipe(recipe);
+  
+  // Use scraped time if available, otherwise use AI estimate, with a reasonable fallback
+  const finalTime = scrapedTime ?? aiEstimatedTime ?? 45;
   
   return {
-    cuisine: Array.isArray(parsed.cuisine) ? parsed.cuisine : [],
+    tags: Array.isArray(parsed.tags) ? parsed.tags : [],
     mealType: Array.isArray(parsed.mealType) ? parsed.mealType : [],
     healthiness: clamp(Number(parsed.healthiness) || 5, 0, 10),
-    totalTimeMinutes: finalTime,
+    totalTimeMinutes: clamp(finalTime, 15, 180),
   };
 }
 
@@ -114,19 +128,19 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
  */
 function buildPrompt(recipe: Recipe): string {
   const lines = [
-    `${PROMPT_LABELS.RECIPE}: ${recipe.name}`,
+    `${PromptLabels.RECIPE}: ${recipe.name}`,
     "",
-    `${PROMPT_LABELS.INGREDIENTS}:`,
+    `${PromptLabels.INGREDIENTS}:`,
     ...recipe.ingredients.map((i) => `- ${i}`),
     "",
-    `${PROMPT_LABELS.INSTRUCTIONS}:`,
+    `${PromptLabels.INSTRUCTIONS}:`,
     ...recipe.instructions.map((s, i) => `${i + 1}. ${s}`),
   ];
 
   if (recipe.totalTimeMinutes) {
-    lines.push("", `${PROMPT_LABELS.TOTAL_TIME}: ${recipe.totalTimeMinutes} minutes`);
+    lines.push("", `${PromptLabels.TOTAL_TIME}: ${recipe.totalTimeMinutes} minutes`);
   } else {
-    lines.push("", `${PROMPT_LABELS.TOTAL_TIME}: not provided (please estimate)`);
+    lines.push("", `${PromptLabels.TOTAL_TIME}: not provided (please estimate)`);
   }
 
   return lines.join("\n");
@@ -153,24 +167,6 @@ function stripMarkdownCodeBlocks(text: string): string {
   }
   
   return cleaned;
-}
-
-/**
- * Estimates total time in minutes based on recipe complexity.
- *
- * Fallback estimation when neither the scraped recipe nor Claude
- * provides a time estimate. Uses a simple heuristic based on
- * number of ingredients and instructions.
- *
- * @param recipe - The recipe to estimate time for.
- * @returns Estimated time in minutes (minimum 15, maximum 180).
- */
-function estimateTimeFromRecipe(recipe: Recipe): number {
-  const baseTime = 20;
-  const ingredientTime = recipe.ingredients.length * 1.5;
-  const instructionTime = recipe.instructions.length * 5;
-  const estimated = Math.round(baseTime + ingredientTime + instructionTime);
-  return clamp(estimated, 15, 180);
 }
 
 /**

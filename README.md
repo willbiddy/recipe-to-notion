@@ -109,6 +109,9 @@ bun src/cli.ts https://cooking.nytimes.com/recipes/1234-example
 
 # Multiple recipes
 bun src/cli.ts url1 url2 url3
+
+# If a site blocks requests (403 error), save the page source and use --html
+bun src/cli.ts --html ~/Downloads/recipe.html "https://example.com/recipe-url"
 ```
 
 When processing multiple URLs, each is processed sequentially. Failures (duplicates, scraping errors) don't stop execution - all URLs are attempted.

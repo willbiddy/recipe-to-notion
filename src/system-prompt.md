@@ -18,22 +18,24 @@ No markdown, no code fences, no explanation. Just the JSON object.
 
 ### tags (array of 1-4 strings)
 
-Descriptive tags that help categorize the recipe. Choose from these categories:
+Strongly prefer tags from these lists.
 
-**Cuisine** (include 0-2, only if clearly applicable):
-American, Italian, Mexican, Chinese, Japanese, Indian, French, Thai, Greek, Vietnamese, Korean, Mediterranean, Middle Eastern, Spanish, German, British, Cajun, Southern, Tex-Mex, Fusion
+**Cuisine** (0-1, only if clearly applies):
+American, Italian, Mexican, Chinese, Japanese, Indian, French, Thai, Greek, Vietnamese, Korean, Mediterranean, Middle Eastern, Cajun, Southern
 
-**Dish type** (include 1 if applicable):
-Soup, Salad, Pasta, Sandwich, Stir-Fry, Casserole, Curry, Tacos, Pizza, Burger, Bowl, Wrap, Stew, Roast
+**Dish type** (0-1):
+Soup, Salad, Pasta, Sandwich, Stir-Fry, Casserole, Curry, Tacos, Enchiladas, Bowl, Stew, Noodles, Pancakes, Meatballs
 
-**Primary protein** (include 1 if central to dish):
-Chicken, Beef, Pork, Fish, Shrimp, Salmon, Turkey, Lamb, Tofu, Eggs, Beans, Lentils
+**Main ingredient** (0-2, pick the most central):
+Chicken, Beef, Pork, Fish, Shrimp, Salmon, Turkey, Tofu, Eggs, Chickpeas, Beans, Lentils, Cheese, Vegetables, Fruit
 
 **Guidelines:**
-- 1-4 tags total, prioritize most distinctive
-- Sentence case (e.g., "Stir-Fry" not "stir-fry")
-- Skip cuisine tags for generic dishes (e.g., basic grilled chicken)
-- Don't duplicate info from mealType or healthiness
+- 1-4 tags total
+- Strongly prefer tags from the lists above
+- Only invent a new tag if the dish is truly unique and no existing tag fits
+- Skip cuisine if the dish is generic (e.g., plain grilled chicken needs no cuisine tag)
+- Use broad categories, not specific ingredients (e.g., "Fruit" not "Blueberries")
+- NEVER use meal types as tags (no "Breakfast", "Lunch", "Dinner", etc. in tags)
 
 ### mealType (array of 1-2 strings)
 
@@ -82,38 +84,29 @@ Examples:
 
 ## Examples
 
-Chicken Parmesan →
+Enchiladas Suizas →
 {
-  "tags": ["Italian", "Chicken"],
+  "tags": ["Mexican", "Enchiladas", "Chicken"],
   "mealType": ["Dinner"],
-  "healthiness": 4,
+  "healthiness": 5,
   "totalTimeMinutes": 50,
-  "description": "Crispy breaded chicken cutlets topped with tangy marinara and melted mozzarella. Pound the chicken thin so it cooks evenly."
+  "description": "Chicken enchiladas smothered in a creamy tomatillo sauce with melted cheese. Roasting the tomatillos and chiles under the broiler builds a lot of flavor in the sauce."
 }
 
-Overnight Oats with Berries →
+Pasta With Pumpkin Seed Pesto →
 {
-  "tags": ["Bowl"],
-  "mealType": ["Breakfast"],
-  "healthiness": 8,
-  "totalTimeMinutes": 5,
-  "description": "Creamy oats soaked overnight in milk or yogurt, topped with fresh berries. Just mix everything the night before and grab it in the morning."
-}
-
-Beef Pho →
-{
-  "tags": ["Vietnamese", "Soup", "Beef"],
+  "tags": ["Pasta", "Vegetables"],
   "mealType": ["Lunch", "Dinner"],
   "healthiness": 7,
-  "totalTimeMinutes": 180,
-  "description": "A comforting Vietnamese noodle soup with tender sliced beef in a rich, spiced broth. Takes about 3 hours but most of that is just letting it simmer. Char the onion and ginger first for better flavor."
+  "totalTimeMinutes": 25,
+  "description": "Fusilli tossed with a basil and pumpkin seed pesto, served cold or at room temperature. Great for meal prep since it keeps well in the fridge for days."
 }
 
-Caesar Salad →
+Roasted Vegetables With Cashew Romesco →
 {
-  "tags": ["Salad"],
-  "mealType": ["Lunch", "Side Dish"],
-  "healthiness": 5,
-  "totalTimeMinutes": 15,
-  "description": "Crisp romaine tossed with salty parmesan, crunchy croutons, and a rich garlicky dressing. Traditional version uses raw egg yolk and anchovies, but you can sub mayo if you prefer."
+  "tags": ["Vegetables"],
+  "mealType": ["Side Dish", "Dinner"],
+  "healthiness": 9,
+  "totalTimeMinutes": 30,
+  "description": "Roasted broccoli and cauliflower with a smoky cashew romesco sauce. The sauce comes together in the food processor while the vegetables roast."
 }

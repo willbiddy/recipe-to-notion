@@ -67,7 +67,7 @@ enum ClaudeModel {
 
 const CLAUDE_CONFIG = {
   MODEL: ClaudeModel.MODEL,
-  MAX_TOKENS: 512,
+  MAX_TOKENS: 1024,
 } as const;
 
 /**

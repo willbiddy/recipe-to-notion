@@ -139,17 +139,9 @@ Steps:       8 steps
 ✔ Saved to Notion: https://www.notion.so/abc123def456...
 ```
 
-### Duplicate Detection
-
-The tool automatically checks for duplicate recipes before processing. If a recipe with the same URL or title already exists, it will:
-
-- Display an error message with the existing recipe's title and source URL
-- Provide a clickable link to view the existing recipe in Notion
-- Exit without adding the duplicate
-
 ## Notion Views
 
-Once you have a few recipes, create custom Notion views to browse your collection:
+Once you have a few recipes, create custom Notion views to browse your collection. Some ideas:
 
 - Gallery view with cover photos
 - "Quick meals" filter for recipes under 30 minutes

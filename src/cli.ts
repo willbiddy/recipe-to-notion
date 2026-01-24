@@ -11,7 +11,7 @@ import pc from "picocolors";
 import { loadConfig } from "./config.js";
 import { scrapeRecipe } from "./scraper.js";
 import { tagRecipe } from "./tagger.js";
-import { createRecipePage } from "./notion.js";
+import { createRecipePage, checkForDuplicateByUrl, checkForDuplicateByTitle } from "./notion.js";
 
 const program = new Command();
 
@@ -48,9 +48,32 @@ program.parse();
 async function runRecipePipeline(url: string): Promise<void> {
   const config = loadConfig();
 
+  // Check for URL duplicates before scraping to save time and API costs
+  consola.start("Checking for duplicates...");
+  const urlDuplicate = await checkForDuplicateByUrl(url, config.NOTION_API_KEY, config.NOTION_DATABASE_ID);
+  if (urlDuplicate) {
+    consola.error(
+      `Duplicate recipe found: "${urlDuplicate.title}" (${urlDuplicate.url}) already exists in the database.`
+    );
+    consola.info(`View it at: ${pc.underline(pc.blue(urlDuplicate.notionUrl))}`);
+    process.exit(1);
+  }
+  consola.success("No duplicate URL found");
+
   consola.start("Scraping recipe...");
   const recipe = await scrapeRecipe(url);
   consola.success(`Scraped: ${recipe.name}`);
+
+  // Check for title duplicates after scraping (in case same title but different URL)
+  // Skip URL check since we already checked it above
+  const titleDuplicate = await checkForDuplicateByTitle(recipe.name, config.NOTION_API_KEY, config.NOTION_DATABASE_ID);
+  if (titleDuplicate) {
+    consola.error(
+      `Duplicate recipe found: "${titleDuplicate.title}" (${titleDuplicate.url}) already exists in the database.`
+    );
+    consola.info(`View it at: ${pc.underline(pc.blue(titleDuplicate.notionUrl))}`);
+    process.exit(1);
+  }
 
   consola.start("Generating AI scores and tags...");
   const tags = await tagRecipe(recipe, config.ANTHROPIC_API_KEY);
@@ -76,7 +99,8 @@ async function runRecipePipeline(url: string): Promise<void> {
     recipe,
     tags,
     config.NOTION_API_KEY,
-    config.NOTION_DATABASE_ID
+    config.NOTION_DATABASE_ID,
+    true // Skip duplicate check since we already checked URL and title
   );
   consola.success(`Saved to Notion (page ID: ${pageId})`);
 }

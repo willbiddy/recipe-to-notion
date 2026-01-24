@@ -16,21 +16,6 @@ enum PropertyNames {
 }
 
 /**
- * Valid meal type options for the Meal type multi-select property.
- */
-enum MealType {
-	BREAKFAST = "Breakfast",
-	LUNCH = "Lunch",
-	DINNER = "Dinner",
-	SNACK = "Snack",
-	DESSERT = "Dessert",
-	APPETIZER = "Appetizer",
-	SIDE_DISH = "Side dish",
-}
-
-const MEAL_TYPE_OPTIONS = Object.values(MealType);
-
-/**
  * Information about an existing recipe that matches a duplicate check.
  */
 export interface DuplicateInfo {
@@ -450,43 +435,4 @@ function numberedItem(text: string): unknown {
 function truncate(text: string, maxLength: number): string {
 	if (text.length <= maxLength) return text;
 	return `${text.slice(0, maxLength - 3)}...`;
-}
-
-/**
- * Ensures the target Notion database has all required properties with the
- * correct types. Creates any missing properties and pre-populates the
- * Meal type multi-select options.
- *
- * Note: The Notion API does not support creating views programmatically.
- * Views (Gallery, Quick Meals, etc.) must be configured manually in Notion.
- *
- * @param notionApiKey - Notion integration API key.
- * @param databaseId - Target Notion database ID.
- * @throws If the database is not accessible by the integration.
- */
-export async function setupDatabaseViews(
-	notionApiKey: string,
-	databaseId: string,
-): Promise<void> {
-	const notion = new Client({ auth: notionApiKey });
-
-	await notion.databases.retrieve({ database_id: databaseId });
-
-	// biome-ignore lint/complexity/noBannedTypes: Notion SDK types don't expose update properly
-	await (notion.databases.update as Function)({
-		database_id: databaseId,
-		properties: {
-			[PropertyNames.NAME]: { title: {} },
-			[PropertyNames.SOURCE]: { url: {} },
-			[PropertyNames.AUTHOR]: { rich_text: {} },
-			[PropertyNames.MINUTES]: { number: { format: "number" } },
-			[PropertyNames.TAGS]: { multi_select: { options: [] } },
-			[PropertyNames.MEAL_TYPE]: {
-				multi_select: {
-					options: MEAL_TYPE_OPTIONS.map((name) => ({ name })),
-				},
-			},
-			[PropertyNames.HEALTHINESS]: { number: { format: "number" } },
-		},
-	});
 }

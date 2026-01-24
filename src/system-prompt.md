@@ -92,7 +92,7 @@ No meaningful protein or only ultra-processed sources. No vegetables. Sugar is p
 
 Raises score: Quality protein (fish, poultry, legumes, nuts, eggs), vegetables with color/variety, whole grains, healthy fats (olive oil, nuts, avocado, fatty fish), legumes, high fiber, fresh ingredients, herbs/spices for flavor
 
-Lowers score: Refined carbs as base, red meat as primary protein, processed meats, deep frying, heavy butter/cream, added sugar, high sodium, canned soups/jarred sauces/packaged cheese, ultra-processed components
+Lowers score: Refined carbs as base, red meat as primary protein, processed meats, deep frying, heavy butter/cream, added sugar (heavily penalize when sugar is a primary ingredient), high sodium, canned soups/jarred sauces/packaged cheese, ultra-processed components
 
 **By dish type:**
 - **Main dishes:** Protein quality and vegetable content are primary signals.

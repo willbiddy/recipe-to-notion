@@ -25,7 +25,7 @@ enum MealType {
 	SNACK = "Snack",
 	DESSERT = "Dessert",
 	APPETIZER = "Appetizer",
-	SIDE_DISH = "SideDish",
+	SIDE_DISH = "Side dish",
 }
 
 const MEAL_TYPE_OPTIONS = Object.values(MealType);

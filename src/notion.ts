@@ -9,7 +9,7 @@ enum PropertyNames {
   NAME = "Name",
   SOURCE_URL = "Source URL",
   AUTHOR = "Author",
-  TOTAL_TIME = "Total time",
+  TIME = "Time",
   TAGS = "Tags",
   MEAL_TYPE = "Meal type",
   HEALTHINESS = "Healthiness",
@@ -276,7 +276,7 @@ export async function createRecipePage(
     };
   }
 
-  properties[PropertyNames.TOTAL_TIME] = { number: tags.totalTimeMinutes };
+  properties[PropertyNames.TIME] = { number: tags.totalTimeMinutes };
 
   const children = buildPageBody(recipe, tags);
 
@@ -435,7 +435,7 @@ export async function setupDatabaseViews(
       [PropertyNames.NAME]: { title: {} },
       [PropertyNames.SOURCE_URL]: { url: {} },
       [PropertyNames.AUTHOR]: { rich_text: {} },
-      [PropertyNames.TOTAL_TIME]: { number: { format: "number" } },
+      [PropertyNames.TIME]: { number: { format: "number" } },
       [PropertyNames.TAGS]: { multi_select: { options: [] } },
       [PropertyNames.MEAL_TYPE]: {
         multi_select: {

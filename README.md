@@ -13,16 +13,18 @@ URL → Check duplicates → Scrape recipe (JSON-LD) → Claude scores/tags → 
 2. **Scrape** — Fetches the page HTML and extracts structured recipe data from [JSON-LD](https://json-ld.org/) (`schema.org/Recipe`). Most recipe sites embed this for SEO, including paywalled sites like NYT Cooking. If JSON-LD isn't available, falls back to microdata attributes and common CSS class patterns.
 
 3. **Tag** — Sends the recipe name, ingredients, and instructions to Claude (`claude-sonnet-4-5-20250929`), which returns:
-   - **Cuisine** — 1-3 categories (e.g. Italian, Indian, Mexican)
-   - **Meal type** — Breakfast, Lunch, Dinner, Snack, Dessert, Appetizer, or Side Dish
+   - **Tags** — 1-4 tags for cuisine, dish type, and main ingredient (e.g. Italian, Pasta, Chicken)
+   - **Meal type** — Breakfast, Lunch, Dinner, Snack, Dessert, Appetizer, Side Dish, or Component
    - **Healthiness** — 0-10 scale (0 = junk food, 10 = balanced whole-food meal)
-   - **Total time** — Estimated in minutes (uses scraped value if available, otherwise AI estimates)
+   - **Time** — Estimated in minutes (uses scraped value if available, otherwise AI estimates)
+   - **Description** — Brief 2-3 sentence summary of the dish
 
 4. **Save** — Creates a Notion page in your database with:
-   - All properties filled in (name, URL, time, scores, tags)
+   - All properties filled in (name, URL, author, time, scores, tags)
    - The recipe's hero image as the page cover
-   - Ingredients as a bulleted list in the page body
-   - Instructions as a numbered list in the page body
+   - AI-generated description at the top of the page body
+   - Ingredients as a bulleted list
+   - Instructions as a numbered list
 
 ## Prerequisites
 
@@ -52,8 +54,9 @@ Create a new full-page database in Notion. You can add the required properties m
 |-------------|--------------|--------------------------------|
 | Name        | Title        | Recipe name                    |
 | Source URL  | URL          | Link to original recipe        |
-| Total time  | Number       | Minutes                        |
-| Cuisine     | Multi-select | e.g. Italian, Indian           |
+| Author      | Rich text    | Recipe author (if available)   |
+| Time        | Number       | Minutes                        |
+| Tags        | Multi-select | e.g. Italian, Pasta, Chicken   |
 | Meal type   | Multi-select | e.g. Dinner, Snack             |
 | Healthiness | Number       | 0-10                           |
 
@@ -111,21 +114,17 @@ bun src/cli.ts https://cooking.nytimes.com/recipes/1234-example
 ◐ Generating AI scores and tags...
 ✔ Tagged recipe
 
-╭──────────────────────────────╮
-│                              │
-│  Chicken Tikka Masala        │
-│                              │
-│  Cuisine:     Indian         │
-│  Meal type:   Dinner         │
-│  Healthiness: 6/10           │
-│  Total time:  45 min         │
-│  Ingredients: 18 items       │
-│  Steps:       8 steps        │
-│                              │
-╰──────────────────────────────╯
+Chicken Tikka Masala
+Author:      Melissa Clark
+Tags:        Indian, Curry, Chicken
+Meal type:   Dinner
+Healthiness: 6/10
+Time:        45 min
+Ingredients: 18 items
+Steps:       8 steps
 
 ◐ Saving to Notion...
-✔ Saved to Notion (page ID: abc123-def456...)
+✔ Saved to Notion: https://www.notion.so/abc123def456...
 ```
 
 ### Duplicate Detection
@@ -142,10 +141,10 @@ This prevents duplicate entries and saves API costs by checking before scraping 
 
 After adding a few recipes, create these views in your Notion database for a better browsing experience:
 
-1. **Gallery** — Gallery view showing cover photos with Name, Cuisine, and scores visible.
-2. **Quick Meals** — Table view filtered to `Total time ≤ 30`, sorted by Total time ascending.
+1. **Gallery** — Gallery view showing cover photos with Name, Tags, and scores visible.
+2. **Quick Meals** — Table view filtered to `Time ≤ 30`, sorted by Time ascending.
 3. **Healthiest** — Table view sorted by Healthiness descending.
-4. **By Cuisine** — Board view grouped by Cuisine.
+4. **By Tags** — Board view grouped by Tags.
 5. **By Meal type** — Board view grouped by Meal type.
 
 ## Building a standalone binary
@@ -159,10 +158,11 @@ bun build src/cli.ts --compile --outfile recipe-to-notion
 
 ```
 src/
-├── cli.ts        CLI entry point (commander + consola logging)
-├── index.ts      Orchestrator connecting scrape → tag → save
-├── scraper.ts    Recipe extraction (JSON-LD primary, cheerio fallback)
-├── tagger.ts     Claude API for healthiness/cuisine/meal-type/time estimation
-├── notion.ts     Notion page creation, duplicate detection, and database schema setup
-└── config.ts     Environment variable loading with zod validation
+├── cli.ts             CLI entry point (commander + consola logging)
+├── index.ts           Orchestrator connecting scrape → tag → save
+├── scraper.ts         Recipe extraction (JSON-LD primary, cheerio fallback)
+├── tagger.ts          Claude API for tags, healthiness, meal-type, time, description
+├── notion.ts          Notion page creation, duplicate detection, and database schema setup
+├── config.ts          Environment variable loading with zod validation
+└── system-prompt.md   Claude system prompt for recipe analysis
 ```

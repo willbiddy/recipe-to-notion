@@ -5,7 +5,7 @@
  * Usage:
  *   bun src/cli.ts <url> [urls...]
  */
-import { Command } from "commander";
+import { defineCommand, runMain } from "citty";
 import { consola } from "consola";
 import pc from "picocolors";
 import { type Config, loadConfig } from "./config.js";
@@ -22,30 +22,46 @@ import {
 } from "./scraper.js";
 import { type RecipeTags, tagRecipe } from "./tagger.js";
 
-const program = new Command();
+const main = defineCommand({
+	meta: {
+		name: "recipe-to-notion",
+		description:
+			"Scrape recipe URL(s), generate AI scores/tags, and save to Notion",
+		version: "1.0.0",
+	},
+	args: {
+		url: {
+			type: "positional",
+			description: "Recipe URL(s) to process",
+			required: true,
+		},
+		html: {
+			type: "string",
+			description:
+				"Use saved HTML file instead of fetching (for sites that block requests)",
+		},
+	},
+	async run({ args }) {
+		// Collect all URLs (first positional + any remaining args)
+		const urls = [args.url, ...(args._ || [])].filter(
+			(arg): arg is string => typeof arg === "string" && arg.startsWith("http"),
+		);
 
-program
-	.name("recipe-to-notion")
-	.description(
-		"Scrape recipe URL(s), generate AI scores/tags, and save to Notion",
-	)
-	.version("1.0.0")
-	.argument("<urls...>", "Recipe URL(s) to process")
-	.option(
-		"--html <file>",
-		"Use saved HTML file instead of fetching (for sites that block requests)",
-	)
-	.action(async (urls: string[], options: { html?: string }) => {
+		if (urls.length === 0) {
+			consola.error("Please provide at least one recipe URL");
+			process.exit(1);
+		}
+
 		const config = loadConfig();
 		let succeeded = 0;
 		let failed = 0;
 
 		// If --html is provided, only process the first URL with that HTML
-		if (options.html) {
+		if (args.html) {
 			if (urls.length > 1) {
 				consola.warn("--html option only supports one URL at a time");
 			}
-			const success = await processRecipe(urls[0], config, options.html);
+			const success = await processRecipe(urls[0], config, args.html);
 			process.exit(success ? 0 : 1);
 		}
 
@@ -67,9 +83,10 @@ program
 		}
 
 		process.exit(failed > 0 ? 1 : 0);
-	});
+	},
+});
 
-program.parse();
+runMain(main);
 
 /**
  * Processes a single recipe URL through the full pipeline.

@@ -55,7 +55,7 @@ const main = defineCommand({
 			process.exit(success ? 0 : 1);
 		}
 
-		const results = await processUrlsWithRateLimiting(urls, config);
+		const results = await processUrlsSequentially(urls, config);
 		printSummary(results);
 
 		process.exit(results.failed > 0 ? 1 : 0);
@@ -81,64 +81,10 @@ function parseUrls(args: string[] | undefined): string[] {
 }
 
 /**
- * Groups URLs by their hostname for per-domain rate limiting.
- *
- * @param urls - Array of URLs to group.
- * @returns Map of hostname to array of URLs for that domain.
- */
-function groupByDomain(urls: string[]): Map<string, string[]> {
-	const byDomain = new Map<string, string[]>();
-
-	for (const url of urls) {
-		const domain = new URL(url).hostname;
-		const list = byDomain.get(domain) ?? [];
-		list.push(url);
-		byDomain.set(domain, list);
-	}
-
-	return byDomain;
-}
-
-/**
- * Processes URLs sequentially within each domain, but in parallel across domains.
- * This prevents overwhelming any single site while still being fast.
+ * Processes all URLs sequentially, one at a time.
+ * This ensures clean, non-interspersed output.
  *
  * @param urls - Array of recipe URLs to process.
- * @param config - Application configuration with API keys.
- * @returns Object with counts of succeeded and failed recipes.
- */
-async function processUrlsWithRateLimiting(
-	urls: string[],
-	config: Config,
-): Promise<{ succeeded: number; failed: number }> {
-	const byDomain = groupByDomain(urls);
-
-	if (urls.length > 1) {
-		const siteWord = byDomain.size === 1 ? "site" : "sites";
-		consola.info(
-			`Processing ${urls.length} recipes across ${byDomain.size} ${siteWord}`,
-		);
-	}
-
-	const allResults = await Promise.all(
-		[...byDomain.values()].map((domainUrls) =>
-			processUrlsSequentially(domainUrls, config),
-		),
-	);
-
-	return allResults.reduce(
-		(acc, results) => ({
-			succeeded: acc.succeeded + results.succeeded,
-			failed: acc.failed + results.failed,
-		}),
-		{ succeeded: 0, failed: 0 },
-	);
-}
-
-/**
- * Processes a list of URLs one at a time, in order.
- *
- * @param urls - Array of recipe URLs to process sequentially.
  * @param config - Application configuration with API keys.
  * @returns Object with counts of succeeded and failed recipes.
  */
@@ -146,15 +92,30 @@ async function processUrlsSequentially(
 	urls: string[],
 	config: Config,
 ): Promise<{ succeeded: number; failed: number }> {
+	if (urls.length > 1) {
+		consola.info(`Processing ${urls.length} recipes sequentially\n`);
+	}
+
 	let succeeded = 0;
 	let failed = 0;
 
-	for (const url of urls) {
-		const success = await handleRecipe(url, config);
+	for (let i = 0; i < urls.length; i++) {
+		if (urls.length > 1) {
+			consola.info(
+				pc.cyan(`[${i + 1}/${urls.length}]`) + ` ${pc.dim(urls[i])}`,
+			);
+		}
+
+		const success = await handleRecipe(urls[i], config);
 		if (success) {
 			succeeded++;
 		} else {
 			failed++;
+		}
+
+		// Add spacing between recipes (except after the last one)
+		if (urls.length > 1 && i < urls.length - 1) {
+			console.log();
 		}
 	}
 
@@ -343,9 +304,8 @@ function printRecipeSummary(recipe: Recipe, tags: RecipeTags): void {
 		`Steps:       ${recipe.instructions.length} steps`,
 	];
 
-	consola.log("");
-	consola.log(lines.filter(Boolean).join("\n"));
-	consola.log("");
+	console.log();
+	console.log(lines.filter(Boolean).join("\n"));
 }
 
 /**
@@ -357,7 +317,7 @@ function printSummary(results: { succeeded: number; failed: number }): void {
 	const total = results.succeeded + results.failed;
 
 	if (total > 1) {
-		consola.log("");
+		console.log();
 		consola.info(
 			`Processed ${total} recipes: ${pc.green(`${results.succeeded} succeeded`)}, ${pc.red(`${results.failed} failed`)}`,
 		);

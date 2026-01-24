@@ -317,11 +317,17 @@ function extractFromJsonLd(
 	data: Record<string, unknown>,
 	sourceUrl: string,
 ): Recipe {
+	if (!data.name || typeof data.name !== "string") {
+		throw new Error(
+			`Recipe name is required but was missing or invalid in JSON-LD data from ${sourceUrl}`,
+		);
+	}
+
 	// Try author first, fall back to publisher name
 	const author = parseAuthor(data.author) ?? parseAuthor(data.publisher);
 
 	return {
-		name: decodeHtmlEntities(cleanRecipeName(String(data.name || "Untitled"))),
+		name: decodeHtmlEntities(cleanRecipeName(data.name)),
 		sourceUrl,
 		scrapeMethod: "json-ld",
 		author,

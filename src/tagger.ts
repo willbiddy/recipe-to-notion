@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import Anthropic from "@anthropic-ai/sdk";
+import { z } from "zod";
 import type { Recipe } from "./scraper.js";
 
 /**
@@ -75,6 +76,48 @@ enum ClaudeLimit {
 }
 
 /**
+ * Healthiness score configuration.
+ */
+enum HealthinessScore {
+	Min = 0,
+	Max = 10,
+}
+
+/**
+ * Recipe time configuration (in minutes).
+ */
+enum RecipeTime {
+	Min = 15,
+	Max = 180,
+}
+
+/**
+ * Error message display limits.
+ */
+enum ErrorDisplay {
+	JsonParsePreview = 200,
+	ValidationPreview = 300,
+}
+
+/**
+ * Zod schema for validating Claude API responses.
+ *
+ * Validates the structure of the JSON response from Claude, ensuring
+ * all required fields are present and have the correct types.
+ */
+const claudeResponseSchema = z.object({
+	tags: z.array(z.string()).min(1, "At least one tag is required"),
+	mealType: z.array(z.string()).min(1, "At least one meal type is required"),
+	healthiness: z
+		.number()
+		.int()
+		.min(HealthinessScore.Min)
+		.max(HealthinessScore.Max),
+	totalTimeMinutes: z.number().int().positive(),
+	description: z.string().min(1, "Description is required"),
+});
+
+/**
  * Sends recipe data to Claude and receives tags, meal-type classifications,
  * healthiness scores, and time estimates.
  *
@@ -103,29 +146,55 @@ export async function tagRecipe(
 		.map((block) => block.text)
 		.join("");
 
-	let parsed: Record<string, unknown>;
+	let parsed: unknown;
 	try {
 		const cleanedText = stripMarkdownCodeBlocks(text);
-		parsed = JSON.parse(cleanedText) as Record<string, unknown>;
-	} catch (_error) {
+		parsed = JSON.parse(cleanedText);
+	} catch (error) {
 		throw new Error(
-			`Failed to parse Claude response as JSON. Response: ${text.substring(0, 200)}...`,
+			`Failed to parse Claude response as JSON. Response: ${text.substring(0, ErrorDisplay.JsonParsePreview)}...\n` +
+				`Parse error: ${error instanceof Error ? error.message : String(error)}`,
 		);
 	}
 
-	const scrapedTime = recipe.totalTimeMinutes;
-	const aiEstimatedTime = Number(parsed.totalTimeMinutes) || null;
+	const validationResult = claudeResponseSchema.safeParse(parsed);
+	if (!validationResult.success) {
+		const issues = validationResult.error.issues
+			.map((issue) => {
+				const path = issue.path.join(".");
+				return `  - ${path}: ${issue.message}`;
+			})
+			.join("\n");
+		throw new Error(
+			`Claude response validation failed:\n${issues}\n\n` +
+				`Raw response: ${text.substring(0, ErrorDisplay.ValidationPreview)}...`,
+		);
+	}
 
-	// Use scraped time if available, otherwise use AI estimate, with a reasonable fallback
-	const finalTime = scrapedTime ?? aiEstimatedTime ?? 45;
+	const validated = validationResult.data;
+	const scrapedTime = recipe.totalTimeMinutes;
+	const aiEstimatedTime = validated.totalTimeMinutes;
+
+	// Use scraped time if available, otherwise use AI estimate
+	// Both should be validated by the schema, but we prefer scraped time
+	const finalTime = scrapedTime ?? aiEstimatedTime;
+
+	if (finalTime === null || finalTime === undefined) {
+		throw new Error(
+			`Recipe time is required but was not provided. Scraped time: ${scrapedTime}, AI estimate: ${aiEstimatedTime}`,
+		);
+	}
 
 	return {
-		tags: Array.isArray(parsed.tags) ? parsed.tags : [],
-		mealType: Array.isArray(parsed.mealType) ? parsed.mealType : [],
-		healthiness: clamp(Number(parsed.healthiness) || 5, 0, 10),
-		totalTimeMinutes: clamp(finalTime, 15, 180),
-		description:
-			typeof parsed.description === "string" ? parsed.description.trim() : "",
+		tags: validated.tags,
+		mealType: validated.mealType,
+		healthiness: clamp(
+			validated.healthiness,
+			HealthinessScore.Min,
+			HealthinessScore.Max,
+		),
+		totalTimeMinutes: clamp(finalTime, RecipeTime.Min, RecipeTime.Max),
+		description: validated.description.trim(),
 	};
 }
 

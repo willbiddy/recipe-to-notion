@@ -45,7 +45,8 @@ Each recipe costs about **$0.01 or less** in Claude API usage (roughly 2,000 inp
 ### 1. Clone and install
 
 ```bash
-cd ~/recipe-to-notion
+git clone https://github.com/willbiddy/recipe-to-notion.git
+cd recipe-to-notion
 bun install
 ```
 

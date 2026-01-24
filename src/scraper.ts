@@ -1,4 +1,5 @@
 import * as cheerio from "cheerio";
+import { readFile } from "node:fs/promises";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Type guards
@@ -105,11 +106,29 @@ export interface Recipe {
  * @throws If the page cannot be fetched or no recipe data is found.
  */
 export async function scrapeRecipe(url: string): Promise<Recipe> {
+	const parsedUrl = new URL(url);
+
+	// Use comprehensive browser-like headers to avoid bot detection
 	const response = await fetch(url, {
 		headers: {
 			"User-Agent":
-				"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-			Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+				"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+			Accept:
+				"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+			"Accept-Language": "en-US,en;q=0.9",
+			"Accept-Encoding": "gzip, deflate, br",
+			"Cache-Control": "no-cache",
+			Pragma: "no-cache",
+			"Sec-Ch-Ua":
+				'"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
+			"Sec-Ch-Ua-Mobile": "?0",
+			"Sec-Ch-Ua-Platform": '"macOS"',
+			"Sec-Fetch-Dest": "document",
+			"Sec-Fetch-Mode": "navigate",
+			"Sec-Fetch-Site": "none",
+			"Sec-Fetch-User": "?1",
+			"Upgrade-Insecure-Requests": "1",
+			Referer: `${parsedUrl.protocol}//${parsedUrl.host}/`,
 		},
 	});
 
@@ -127,6 +146,40 @@ export async function scrapeRecipe(url: string): Promise<Recipe> {
 	if (!recipe) {
 		throw new Error(
 			`Could not extract recipe data from ${url}. The page may be fully paywalled or not contain a recipe.`,
+		);
+	}
+
+	// If author wasn't found in JSON-LD, try HTML fallback
+	if (!recipe.author) {
+		recipe.author = extractAuthorFromHtml($);
+	}
+
+	return recipe;
+}
+
+/**
+ * Parses recipe data from a local HTML file.
+ *
+ * Use this when a site blocks automated requests. Save the page source
+ * from your browser and pass the file path here.
+ *
+ * @param htmlPath - Path to the saved HTML file.
+ * @param sourceUrl - The original URL of the recipe (for reference).
+ * @returns Parsed recipe data.
+ * @throws If the file cannot be read or no recipe data is found.
+ */
+export async function scrapeRecipeFromHtml(
+	htmlPath: string,
+	sourceUrl: string,
+): Promise<Recipe> {
+	const html = await readFile(htmlPath, "utf-8");
+	const $ = cheerio.load(html);
+
+	const recipe = parseJsonLd($, sourceUrl) ?? parseFallback($, sourceUrl);
+
+	if (!recipe) {
+		throw new Error(
+			`Could not extract recipe data from ${htmlPath}. The file may not contain valid recipe markup.`,
 		);
 	}
 

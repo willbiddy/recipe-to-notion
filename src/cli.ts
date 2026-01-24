@@ -15,7 +15,11 @@ import {
 	createRecipePage,
 	getNotionPageUrl,
 } from "./notion.js";
-import { type Recipe, scrapeRecipe } from "./scraper.js";
+import {
+	type Recipe,
+	scrapeRecipe,
+	scrapeRecipeFromHtml,
+} from "./scraper.js";
 import { type RecipeTags, tagRecipe } from "./tagger.js";
 
 const program = new Command();

@@ -1,5 +1,5 @@
-import * as cheerio from "cheerio";
 import { readFile } from "node:fs/promises";
+import * as cheerio from "cheerio";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HTML entity decoding
@@ -23,14 +23,21 @@ function decodeHtmlEntities(str: string): string {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Returns true if value is a non-null object.
+ * Type guard that returns true if value is a non-null object.
+ *
+ * @param value - The value to check.
+ * @returns True if value is a non-null object.
  */
 function isObject(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null;
 }
 
 /**
- * Returns true if value is an object with the specified property.
+ * Type guard that returns true if value is an object with the specified property.
+ *
+ * @param value - The value to check.
+ * @param key - The property key to check for.
+ * @returns True if value is an object containing the specified key.
  */
 function hasProperty<K extends string>(
 	value: unknown,
@@ -40,14 +47,20 @@ function hasProperty<K extends string>(
 }
 
 /**
- * Returns true if value is a string.
+ * Type guard that returns true if value is a string.
+ *
+ * @param value - The value to check.
+ * @returns True if value is a string.
  */
 function isString(value: unknown): value is string {
 	return typeof value === "string";
 }
 
 /**
- * Returns true if value is an array.
+ * Type guard that returns true if value is an array.
+ *
+ * @param value - The value to check.
+ * @returns True if value is an array.
  */
 function isArray(value: unknown): value is unknown[] {
 	return Array.isArray(value);
@@ -392,8 +405,7 @@ function parseImage(image: unknown): string | null {
 		if (hasProperty(firstItem, "url") && hasProperty(firstItem, "width")) {
 			// Find the image with the largest width
 			let bestUrl = String(firstItem.url);
-			let bestWidth =
-				typeof firstItem.width === "number" ? firstItem.width : 0;
+			let bestWidth = typeof firstItem.width === "number" ? firstItem.width : 0;
 			for (const item of image) {
 				if (
 					hasProperty(item, "url") &&
@@ -429,7 +441,8 @@ function parseImage(image: unknown): string | null {
  */
 function parseStringArray(data: unknown): string[] {
 	if (!data) return [];
-	if (isArray(data)) return data.map((item) => decodeHtmlEntities(String(item)));
+	if (isArray(data))
+		return data.map((item) => decodeHtmlEntities(String(item)));
 	if (isString(data)) return [decodeHtmlEntities(data)];
 	return [];
 }

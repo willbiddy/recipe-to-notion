@@ -15,12 +15,12 @@ import {
 	createRecipePage,
 	getNotionPageUrl,
 } from "./notion.js";
-import {
-	type Recipe,
-	scrapeRecipe,
-	scrapeRecipeFromHtml,
-} from "./scraper.js";
+import { type Recipe, scrapeRecipe, scrapeRecipeFromHtml } from "./scraper.js";
 import { type RecipeTags, tagRecipe } from "./tagger.js";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLI Definition
+// ─────────────────────────────────────────────────────────────────────────────
 
 const main = defineCommand({
 	meta: {
@@ -42,10 +42,7 @@ const main = defineCommand({
 		},
 	},
 	async run({ args }) {
-		// Collect all URLs (first positional + any remaining args)
-		const urls = [args.url, ...(args._ || [])].filter(
-			(arg): arg is string => typeof arg === "string" && arg.startsWith("http"),
-		);
+		const urls = parseUrls(args.url, args._);
 
 		if (urls.length === 0) {
 			consola.error("Please provide at least one recipe URL");
@@ -53,111 +50,158 @@ const main = defineCommand({
 		}
 
 		const config = loadConfig();
-		let succeeded = 0;
-		let failed = 0;
 
-		// If --html is provided, only process the first URL with that HTML
+		// Handle --html flag (single URL only)
 		if (args.html) {
 			if (urls.length > 1) {
 				consola.warn("--html option only supports one URL at a time");
 			}
-			const success = await processRecipe(urls[0], config, args.html);
+			const success = await handleRecipe(urls[0], config, args.html);
 			process.exit(success ? 0 : 1);
 		}
 
-		for (const url of urls) {
-			const success = await processRecipe(url, config);
-			if (success) {
-				succeeded++;
-			} else {
-				failed++;
-			}
-		}
+		const results = await processUrlsWithRateLimiting(urls, config);
+		printSummary(results);
 
-		// Show summary if multiple URLs were processed
-		if (urls.length > 1) {
-			consola.log("");
-			consola.info(
-				`Processed ${urls.length} recipes: ${pc.green(`${succeeded} succeeded`)}, ${pc.red(`${failed} failed`)}`,
-			);
-		}
-
-		process.exit(failed > 0 ? 1 : 0);
+		process.exit(results.failed > 0 ? 1 : 0);
 	},
 });
 
 runMain(main);
 
+// ─────────────────────────────────────────────────────────────────────────────
+// URL Processing
+// ─────────────────────────────────────────────────────────────────────────────
+
 /**
- * Processes a single recipe URL through the full pipeline.
+ * Extracts valid HTTP URLs from CLI arguments.
+ *
+ * @param firstUrl - The first positional URL argument.
+ * @param remainingArgs - Additional URL arguments from the CLI.
+ * @returns Array of valid HTTP/HTTPS URLs.
+ */
+function parseUrls(
+	firstUrl: string,
+	remainingArgs: string[] | undefined,
+): string[] {
+	return [firstUrl, ...(remainingArgs || [])].filter(
+		(arg): arg is string => typeof arg === "string" && arg.startsWith("http"),
+	);
+}
+
+/**
+ * Groups URLs by their hostname for per-domain rate limiting.
+ *
+ * @param urls - Array of URLs to group.
+ * @returns Map of hostname to array of URLs for that domain.
+ */
+function groupByDomain(urls: string[]): Map<string, string[]> {
+	const byDomain = new Map<string, string[]>();
+
+	for (const url of urls) {
+		const domain = new URL(url).hostname;
+		const list = byDomain.get(domain) ?? [];
+		list.push(url);
+		byDomain.set(domain, list);
+	}
+
+	return byDomain;
+}
+
+/**
+ * Processes URLs sequentially within each domain, but in parallel across domains.
+ * This prevents overwhelming any single site while still being fast.
+ *
+ * @param urls - Array of recipe URLs to process.
+ * @param config - Application configuration with API keys.
+ * @returns Object with counts of succeeded and failed recipes.
+ */
+async function processUrlsWithRateLimiting(
+	urls: string[],
+	config: Config,
+): Promise<{ succeeded: number; failed: number }> {
+	const byDomain = groupByDomain(urls);
+
+	if (urls.length > 1) {
+		consola.info(
+			`Processing ${urls.length} recipes across ${byDomain.size} site(s)`,
+		);
+	}
+
+	const allResults = await Promise.all(
+		[...byDomain.values()].map((domainUrls) =>
+			processUrlsSequentially(domainUrls, config),
+		),
+	);
+
+	return allResults.reduce(
+		(acc, results) => ({
+			succeeded: acc.succeeded + results.succeeded,
+			failed: acc.failed + results.failed,
+		}),
+		{ succeeded: 0, failed: 0 },
+	);
+}
+
+/**
+ * Processes a list of URLs one at a time, in order.
+ *
+ * @param urls - Array of recipe URLs to process sequentially.
+ * @param config - Application configuration with API keys.
+ * @returns Object with counts of succeeded and failed recipes.
+ */
+async function processUrlsSequentially(
+	urls: string[],
+	config: Config,
+): Promise<{ succeeded: number; failed: number }> {
+	let succeeded = 0;
+	let failed = 0;
+
+	for (const url of urls) {
+		const success = await handleRecipe(url, config);
+		if (success) {
+			succeeded++;
+		} else {
+			failed++;
+		}
+	}
+
+	return { succeeded, failed };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Single Recipe Processing
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Handles a single recipe URL through the full pipeline with CLI logging:
+ * duplicate check → scrape → AI tag → save to Notion.
  *
  * @param url - The recipe URL to process.
  * @param config - Application configuration with API keys.
  * @param htmlPath - Optional path to saved HTML file (bypasses fetching).
  * @returns True if the recipe was saved successfully, false otherwise.
  */
-async function processRecipe(
+async function handleRecipe(
 	url: string,
 	config: Config,
 	htmlPath?: string,
 ): Promise<boolean> {
 	try {
-		// Check for URL duplicates before scraping (saves API costs)
-		consola.start("Checking for duplicates...");
-		const urlDuplicate = await checkForDuplicateByUrl(
-			url,
-			config.NOTION_API_KEY,
-			config.NOTION_DATABASE_ID,
-		);
-		if (urlDuplicate) {
-			consola.warn(
-				`Duplicate: "${urlDuplicate.title}" already exists at ${urlDuplicate.notionUrl}`,
-			);
-			return false;
-		}
-		consola.success("No duplicate URL found");
-
-		// Scrape the recipe (from HTML file or by fetching)
-		consola.start(
-			htmlPath ? `Parsing recipe from ${htmlPath}...` : "Scraping recipe...",
-		);
-		const recipe = htmlPath
-			? await scrapeRecipeFromHtml(htmlPath, url)
-			: await scrapeRecipe(url);
-		consola.success(`Scraped: ${recipe.name}`);
-
-		// Check for title duplicates (same recipe from different URL)
-		const titleDuplicate = await checkForDuplicateByTitle(
-			recipe.name,
-			config.NOTION_API_KEY,
-			config.NOTION_DATABASE_ID,
-		);
-		if (titleDuplicate) {
-			consola.warn(
-				`Duplicate: "${titleDuplicate.title}" already exists at ${titleDuplicate.notionUrl}`,
-			);
+		if (await isDuplicate(url, config)) {
 			return false;
 		}
 
-		// Generate AI tags
-		consola.start("Generating AI scores and tags...");
-		const tags = await tagRecipe(recipe, config.ANTHROPIC_API_KEY);
-		consola.success("Tagged recipe");
+		const recipe = await fetchRecipe(url, htmlPath);
 
+		if (await isTitleDuplicate(recipe.name, config)) {
+			return false;
+		}
+
+		const tags = await generateTags(recipe, config);
 		printRecipeSummary(recipe, tags);
 
-		// Save to Notion
-		consola.start("Saving to Notion...");
-		const pageId = await createRecipePage(
-			recipe,
-			tags,
-			config.NOTION_API_KEY,
-			config.NOTION_DATABASE_ID,
-			/* skipDuplicateCheck */ true,
-		);
-		const notionUrl = getNotionPageUrl(pageId);
-		consola.success(`Saved to Notion: ${pc.underline(pc.blue(notionUrl))}`);
-
+		await saveToNotion(recipe, tags, config);
 		return true;
 	} catch (err) {
 		const message = err instanceof Error ? err.message : String(err);
@@ -167,7 +211,131 @@ async function processRecipe(
 }
 
 /**
+ * Checks if a recipe URL already exists in Notion.
+ *
+ * @param url - Recipe URL to check for duplicates.
+ * @param config - Application configuration with API keys.
+ * @returns True if a duplicate exists, false otherwise.
+ */
+async function isDuplicate(url: string, config: Config): Promise<boolean> {
+	consola.start("Checking for duplicates...");
+
+	const duplicate = await checkForDuplicateByUrl(
+		url,
+		config.NOTION_API_KEY,
+		config.NOTION_DATABASE_ID,
+	);
+
+	if (duplicate) {
+		consola.warn(
+			`Duplicate: "${duplicate.title}" already exists at ${duplicate.notionUrl}`,
+		);
+		return true;
+	}
+
+	consola.success("No duplicate URL found");
+	return false;
+}
+
+/**
+ * Checks if a recipe with the same title already exists in Notion.
+ *
+ * @param title - Recipe title to check for duplicates.
+ * @param config - Application configuration with API keys.
+ * @returns True if a duplicate exists, false otherwise.
+ */
+async function isTitleDuplicate(
+	title: string,
+	config: Config,
+): Promise<boolean> {
+	const duplicate = await checkForDuplicateByTitle(
+		title,
+		config.NOTION_API_KEY,
+		config.NOTION_DATABASE_ID,
+	);
+
+	if (duplicate) {
+		consola.warn(
+			`Duplicate: "${duplicate.title}" already exists at ${duplicate.notionUrl}`,
+		);
+		return true;
+	}
+
+	return false;
+}
+
+/**
+ * Fetches and parses recipe data from URL or local HTML file.
+ *
+ * @param url - The recipe URL to scrape.
+ * @param htmlPath - Optional path to saved HTML file (bypasses fetching).
+ * @returns Parsed recipe data.
+ */
+async function fetchRecipe(url: string, htmlPath?: string): Promise<Recipe> {
+	consola.start(
+		htmlPath ? `Parsing recipe from ${htmlPath}...` : "Scraping recipe...",
+	);
+
+	const recipe = htmlPath
+		? await scrapeRecipeFromHtml(htmlPath, url)
+		: await scrapeRecipe(url);
+
+	consola.success(`Scraped: ${recipe.name}`);
+	return recipe;
+}
+
+/**
+ * Generates AI tags and scores for a recipe.
+ *
+ * @param recipe - The scraped recipe to analyze.
+ * @param config - Application configuration with API keys.
+ * @returns AI-generated tags and scores for the recipe.
+ */
+async function generateTags(
+	recipe: Recipe,
+	config: Config,
+): Promise<RecipeTags> {
+	consola.start("Generating AI scores and tags...");
+	const tags = await tagRecipe(recipe, config.ANTHROPIC_API_KEY);
+	consola.success("Tagged recipe");
+	return tags;
+}
+
+/**
+ * Saves a recipe to Notion and logs the resulting URL.
+ *
+ * @param recipe - The scraped recipe data.
+ * @param tags - AI-generated tags and scores.
+ * @param config - Application configuration with API keys.
+ */
+async function saveToNotion(
+	recipe: Recipe,
+	tags: RecipeTags,
+	config: Config,
+): Promise<void> {
+	consola.start("Saving to Notion...");
+
+	const pageId = await createRecipePage(
+		recipe,
+		tags,
+		config.NOTION_API_KEY,
+		config.NOTION_DATABASE_ID,
+		true, // skipDuplicateCheck - already checked above
+	);
+
+	const notionUrl = getNotionPageUrl(pageId);
+	consola.success(`Saved to Notion: ${pc.underline(pc.blue(notionUrl))}`);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Output
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
  * Displays a formatted summary of the scraped and tagged recipe.
+ *
+ * @param recipe - The scraped recipe data.
+ * @param tags - AI-generated tags and scores.
  */
 function printRecipeSummary(recipe: Recipe, tags: RecipeTags): void {
 	const lines = [
@@ -184,4 +352,20 @@ function printRecipeSummary(recipe: Recipe, tags: RecipeTags): void {
 	consola.log("");
 	consola.log(lines.filter(Boolean).join("\n"));
 	consola.log("");
+}
+
+/**
+ * Prints final summary when processing multiple recipes.
+ *
+ * @param results - Object with counts of succeeded and failed recipes.
+ */
+function printSummary(results: { succeeded: number; failed: number }): void {
+	const total = results.succeeded + results.failed;
+
+	if (total > 1) {
+		consola.log("");
+		consola.info(
+			`Processed ${total} recipes: ${pc.green(`${results.succeeded} succeeded`)}, ${pc.red(`${results.failed} failed`)}`,
+		);
+	}
 }

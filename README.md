@@ -178,5 +178,6 @@ src/
 | [Notion SDK](https://github.com/makenotion/notion-sdk-js) | Notion API client |
 | [Citty](https://github.com/unjs/citty) | CLI argument parsing |
 | [Consola](https://github.com/unjs/consola) | Console logging with spinners |
+| [picocolors](https://github.com/alexeyraspopov/picocolors) | Terminal string styling |
 | [Zod](https://zod.dev/) | Schema validation for env vars and API responses |
 | [Biome](https://biomejs.dev/) | Linting and formatting |

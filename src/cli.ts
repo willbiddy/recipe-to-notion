@@ -3,125 +3,134 @@
  * CLI entry point for recipe-to-notion.
  *
  * Usage:
- *   bun src/cli.ts <url>    Process a recipe and save to Notion
+ *   bun src/cli.ts <url> [urls...]
  */
 import { Command } from "commander";
 import { consola } from "consola";
 import pc from "picocolors";
-import { loadConfig } from "./config.js";
-import { scrapeRecipe } from "./scraper.js";
-import { tagRecipe } from "./tagger.js";
-import { createRecipePage, checkForDuplicateByUrl, checkForDuplicateByTitle, getNotionPageUrl } from "./notion.js";
+import { loadConfig, type Config } from "./config.js";
+import { scrapeRecipe, type Recipe } from "./scraper.js";
+import { tagRecipe, type RecipeTags } from "./tagger.js";
+import {
+  createRecipePage,
+  checkForDuplicateByUrl,
+  checkForDuplicateByTitle,
+  getNotionPageUrl,
+} from "./notion.js";
 
 const program = new Command();
 
 program
   .name("recipe-to-notion")
-  .description("Scrape a recipe URL, generate AI scores/tags, and save to Notion")
+  .description("Scrape recipe URL(s), generate AI scores/tags, and save to Notion")
   .version("1.0.0")
-  .argument("[url]", "Recipe URL to process")
-  .action(async (url: string | undefined) => {
-    try {
-      if (!url) {
-        program.error("Please provide a recipe URL");
-        return;
-      }
+  .argument("<urls...>", "Recipe URL(s) to process")
+  .action(async (urls: string[]) => {
+    const config = loadConfig();
+    let succeeded = 0;
+    let failed = 0;
 
-      await runRecipePipeline(url);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      consola.error(message);
-      process.exit(1);
+    for (const url of urls) {
+      const success = await processRecipe(url, config);
+      if (success) {
+        succeeded++;
+      } else {
+        failed++;
+      }
     }
+
+    // Show summary if multiple URLs were processed
+    if (urls.length > 1) {
+      consola.log("");
+      consola.info(`Processed ${urls.length} recipes: ${pc.green(`${succeeded} succeeded`)}, ${pc.red(`${failed} failed`)}`);
+    }
+
+    process.exit(failed > 0 ? 1 : 0);
   });
 
 program.parse();
 
 /**
- * Handles the main recipe pipeline: scrape -> tag -> save.
- *
- * Orchestrates the full workflow of scraping a recipe URL, generating
- * AI tags and scores, displaying the results, and saving to Notion.
+ * Processes a single recipe URL through the full pipeline.
  *
  * @param url - The recipe URL to process.
+ * @param config - Application configuration with API keys.
+ * @returns True if the recipe was saved successfully, false otherwise.
  */
-async function runRecipePipeline(url: string): Promise<void> {
-  const config = loadConfig();
-
-  // Check for URL duplicates before scraping to save time and API costs
-  consola.start("Checking for duplicates...");
-  const urlDuplicate = await checkForDuplicateByUrl(url, config.NOTION_API_KEY, config.NOTION_DATABASE_ID);
-  if (urlDuplicate) {
-    consola.error("\n⚠️  Duplicate recipe detected");
-    consola.log(
-      [
-        pc.bold(pc.yellow("Recipe:")),
-        `  ${urlDuplicate.title}`,
-        "",
-        pc.bold(pc.yellow("Source URL:")),
-        `  ${urlDuplicate.url}`,
-        "",
-        pc.bold(pc.yellow("Notion page:")),
-        `  ${pc.underline(pc.blue(urlDuplicate.notionUrl))}`,
-      ].join("\n")
+async function processRecipe(url: string, config: Config): Promise<boolean> {
+  try {
+    // Check for URL duplicates before scraping (saves API costs)
+    consola.start("Checking for duplicates...");
+    const urlDuplicate = await checkForDuplicateByUrl(
+      url,
+      config.NOTION_API_KEY,
+      config.NOTION_DATABASE_ID
     );
-    consola.log("");
-    process.exit(1);
-  }
-  consola.success("No duplicate URL found");
+    if (urlDuplicate) {
+      consola.warn(`Duplicate: "${urlDuplicate.title}" already exists at ${urlDuplicate.notionUrl}`);
+      return false;
+    }
+    consola.success("No duplicate URL found");
 
-  consola.start("Scraping recipe...");
-  const recipe = await scrapeRecipe(url);
-  consola.success(`Scraped: ${recipe.name}`);
+    // Scrape the recipe
+    consola.start("Scraping recipe...");
+    const recipe = await scrapeRecipe(url);
+    consola.success(`Scraped: ${recipe.name}`);
 
-  // Check for title duplicates after scraping (in case same title but different URL)
-  // Skip URL check since we already checked it above
-  const titleDuplicate = await checkForDuplicateByTitle(recipe.name, config.NOTION_API_KEY, config.NOTION_DATABASE_ID);
-  if (titleDuplicate) {
-    consola.error("\n⚠️  Duplicate recipe detected");
-    consola.log(
-      [
-        pc.bold(pc.yellow("Recipe:")),
-        `  ${titleDuplicate.title}`,
-        "",
-        pc.bold(pc.yellow("Source URL:")),
-        `  ${titleDuplicate.url}`,
-        "",
-        pc.bold(pc.yellow("Notion page:")),
-        `  ${pc.underline(pc.blue(titleDuplicate.notionUrl))}`,
-      ].join("\n")
+    // Check for title duplicates (same recipe from different URL)
+    const titleDuplicate = await checkForDuplicateByTitle(
+      recipe.name,
+      config.NOTION_API_KEY,
+      config.NOTION_DATABASE_ID
     );
-    consola.log("");
-    process.exit(1);
+    if (titleDuplicate) {
+      consola.warn(`Duplicate: "${titleDuplicate.title}" already exists at ${titleDuplicate.notionUrl}`);
+      return false;
+    }
+
+    // Generate AI tags
+    consola.start("Generating AI scores and tags...");
+    const tags = await tagRecipe(recipe, config.ANTHROPIC_API_KEY);
+    consola.success("Tagged recipe");
+
+    printRecipeSummary(recipe, tags);
+
+    // Save to Notion
+    consola.start("Saving to Notion...");
+    const pageId = await createRecipePage(
+      recipe,
+      tags,
+      config.NOTION_API_KEY,
+      config.NOTION_DATABASE_ID,
+      /* skipDuplicateCheck */ true
+    );
+    const notionUrl = getNotionPageUrl(pageId);
+    consola.success(`Saved to Notion: ${pc.underline(pc.blue(notionUrl))}`);
+
+    return true;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    consola.error(`Failed: ${message}`);
+    return false;
   }
+}
 
-  consola.start("Generating AI scores and tags...");
-  const tags = await tagRecipe(recipe, config.ANTHROPIC_API_KEY);
-  consola.success("Tagged recipe");
+/**
+ * Displays a formatted summary of the scraped and tagged recipe.
+ */
+function printRecipeSummary(recipe: Recipe, tags: RecipeTags): void {
+  const lines = [
+    pc.bold(recipe.name),
+    recipe.author ? `Author:      ${recipe.author}` : null,
+    `Tags:        ${tags.tags.join(", ")}`,
+    `Meal type:   ${tags.mealType.join(", ")}`,
+    `Healthiness: ${tags.healthiness}/10`,
+    `Minutes:     ${tags.totalTimeMinutes}`,
+    `Ingredients: ${recipe.ingredients.length} items`,
+    `Steps:       ${recipe.instructions.length} steps`,
+  ];
 
-  console.log("");
-  consola.log(
-    [
-      pc.bold(recipe.name),
-      recipe.author ? `Author:      ${recipe.author}` : null,
-      `Tags:        ${tags.tags.join(", ")}`,
-      `Meal type:   ${tags.mealType.join(", ")}`,
-      `Healthiness: ${tags.healthiness}/10`,
-      `Minutes:     ${tags.totalTimeMinutes}`,
-      `Ingredients: ${recipe.ingredients.length} items`,
-      `Steps:       ${recipe.instructions.length} steps`,
-    ].filter(Boolean).join("\n")
-  );
-  console.log("");
-
-  consola.start("Saving to Notion...");
-  const pageId = await createRecipePage(
-    recipe,
-    tags,
-    config.NOTION_API_KEY,
-    config.NOTION_DATABASE_ID,
-    true // Skip duplicate check since we already checked URL and title
-  );
-  const notionUrl = getNotionPageUrl(pageId);
-  consola.success(`Saved to Notion: ${pc.underline(pc.blue(notionUrl))}`);
+  consola.log("");
+  consola.log(lines.filter(Boolean).join("\n"));
+  consola.log("");
 }

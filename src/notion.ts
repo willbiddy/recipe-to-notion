@@ -7,7 +7,7 @@ import type { RecipeTags } from "./tagger.js";
  */
 enum PropertyNames {
   NAME = "Name",
-  SOURCE_URL = "Source URL",
+  SOURCE = "Source",
   AUTHOR = "Author",
   MINUTES = "Minutes",
   TAGS = "Tags",
@@ -29,6 +29,28 @@ enum MealType {
 }
 
 const MEAL_TYPE_OPTIONS = Object.values(MealType);
+
+/**
+ * Information about an existing recipe that matches a duplicate check.
+ */
+export interface DuplicateInfo {
+  /**
+   * Recipe title in Notion.
+   */
+  title: string;
+  /**
+   * Original source URL of the recipe.
+   */
+  url: string;
+  /**
+   * Notion page ID.
+   */
+  pageId: string;
+  /**
+   * Clickable Notion page URL.
+   */
+  notionUrl: string;
+}
 
 /**
  * Converts a Notion page ID to a clickable URL.
@@ -55,7 +77,7 @@ export async function checkForDuplicateByUrl(
   url: string,
   notionApiKey: string,
   databaseId: string
-): Promise<{ title: string; url: string; pageId: string; notionUrl: string } | null> {
+): Promise<DuplicateInfo | null> {
   // Query for recipes with the same URL using direct API call
   const response = await fetch(`https://api.notion.com/v1/databases/${databaseId}/query`, {
     method: "POST",
@@ -66,7 +88,7 @@ export async function checkForDuplicateByUrl(
     },
     body: JSON.stringify({
       filter: {
-        property: PropertyNames.SOURCE_URL,
+        property: PropertyNames.SOURCE,
         url: {
           equals: url,
         },
@@ -80,7 +102,7 @@ export async function checkForDuplicateByUrl(
     const code = errorBody.code || "";
     throw new Error(
       `Notion API error: ${response.status} ${response.statusText}. ${errorMessage}${code ? ` (code: ${code})` : ""}. ` +
-      `Check that the property "${PropertyNames.SOURCE_URL}" exists in your database and is a URL type.`
+      `Check that the property "${PropertyNames.SOURCE}" exists in your database and is a URL type.`
     );
   }
 
@@ -92,8 +114,8 @@ export async function checkForDuplicateByUrl(
     const title = page.properties && PropertyNames.NAME in page.properties
       ? extractTitle(page.properties[PropertyNames.NAME])
       : "Unknown Recipe";
-    const foundUrl = page.properties && PropertyNames.SOURCE_URL in page.properties
-      ? extractUrl(page.properties[PropertyNames.SOURCE_URL])
+    const foundUrl = page.properties && PropertyNames.SOURCE in page.properties
+      ? extractUrl(page.properties[PropertyNames.SOURCE])
       : url;
     return { title, url: foundUrl, pageId, notionUrl: getNotionPageUrl(pageId) };
   }
@@ -114,7 +136,7 @@ export async function checkForDuplicateByTitle(
   recipeName: string,
   notionApiKey: string,
   databaseId: string
-): Promise<{ title: string; url: string; pageId: string; notionUrl: string } | null> {
+): Promise<DuplicateInfo | null> {
   // Query for recipes with the same title using direct API call
   const response = await fetch(`https://api.notion.com/v1/databases/${databaseId}/query`, {
     method: "POST",
@@ -151,8 +173,8 @@ export async function checkForDuplicateByTitle(
     const title = page.properties && PropertyNames.NAME in page.properties
       ? extractTitle(page.properties[PropertyNames.NAME])
       : recipeName;
-    const url = page.properties && PropertyNames.SOURCE_URL in page.properties
-      ? extractUrl(page.properties[PropertyNames.SOURCE_URL])
+    const url = page.properties && PropertyNames.SOURCE in page.properties
+      ? extractUrl(page.properties[PropertyNames.SOURCE])
       : "";
     return { title, url, pageId, notionUrl: getNotionPageUrl(pageId) };
   }
@@ -174,7 +196,7 @@ export async function checkForDuplicate(
   notionApiKey: string,
   databaseId: string,
   skipUrlCheck: boolean = false
-): Promise<{ title: string; url: string; pageId: string; notionUrl: string } | null> {
+): Promise<DuplicateInfo | null> {
   // First check for URL duplicates (unless already checked)
   if (!skipUrlCheck) {
     const urlDuplicate = await checkForDuplicateByUrl(recipe.sourceUrl, notionApiKey, databaseId);
@@ -256,7 +278,7 @@ export async function createRecipePage(
     [PropertyNames.NAME]: {
       title: [{ text: { content: recipe.name } }],
     },
-    [PropertyNames.SOURCE_URL]: {
+    [PropertyNames.SOURCE]: {
       url: recipe.sourceUrl,
     },
     [PropertyNames.TAGS]: {
@@ -433,7 +455,7 @@ export async function setupDatabaseViews(
     database_id: databaseId,
     properties: {
       [PropertyNames.NAME]: { title: {} },
-      [PropertyNames.SOURCE_URL]: { url: {} },
+      [PropertyNames.SOURCE]: { url: {} },
       [PropertyNames.AUTHOR]: { rich_text: {} },
       [PropertyNames.MINUTES]: { number: { format: "number" } },
       [PropertyNames.TAGS]: { multi_select: { options: [] } },

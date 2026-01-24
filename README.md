@@ -53,7 +53,7 @@ Create a new full-page database in Notion. You can add the required properties m
 | Property    | Type         | Description                    |
 |-------------|--------------|--------------------------------|
 | Name        | Title        | Recipe name                    |
-| Source URL  | URL          | Link to original recipe        |
+| Source      | URL          | Link to original recipe        |
 | Author      | Rich text    | Recipe author (if available)   |
 | Minutes     | Number       | Total time in minutes          |
 | Tags        | Multi-select | e.g. Italian, Pasta, Chicken   |
@@ -98,11 +98,15 @@ The tool will work with manually created properties, but you can also programmat
 
 ## Usage
 
-### Process a recipe and save to Notion
-
 ```bash
+# Single recipe
 bun src/cli.ts https://cooking.nytimes.com/recipes/1234-example
+
+# Multiple recipes
+bun src/cli.ts url1 url2 url3
 ```
+
+When processing multiple URLs, each is processed sequentially. Failures (duplicates, scraping errors) don't stop execution - all URLs are attempted.
 
 ### Example output
 

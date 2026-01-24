@@ -51,24 +51,28 @@ const SYSTEM_PROMPT = (() => {
 /**
  * Labels used when formatting recipe data into a user prompt for Claude.
  */
-enum PromptLabels {
-  RECIPE = "Recipe",
-  INGREDIENTS = "Ingredients",
-  INSTRUCTIONS = "Instructions",
-  MINUTES = "Minutes",
+enum PromptLabel {
+  Recipe = "Recipe",
+  Description = "Source Description",
+  Hints = "Source Hints (use as context, not authoritative)",
+  Ingredients = "Ingredients",
+  Instructions = "Instructions",
+  Minutes = "Minutes",
 }
 
 /**
- * Claude model configuration for recipe analysis.
+ * Claude model identifier for recipe analysis.
  */
 enum ClaudeModel {
-  MODEL = "claude-sonnet-4-5-20250929",
+  Sonnet = "claude-sonnet-4-5-20250929",
 }
 
-const CLAUDE_CONFIG = {
-  MODEL: ClaudeModel.MODEL,
-  MAX_TOKENS: 1024,
-} as const;
+/**
+ * Claude API configuration limits.
+ */
+enum ClaudeLimit {
+  MaxTokens = 1024,
+}
 
 /**
  * Sends recipe data to Claude and receives tags, meal-type classifications,
@@ -85,8 +89,8 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
   const userMessage = buildPrompt(recipe);
 
   const response = await client.messages.create({
-    model: CLAUDE_CONFIG.MODEL,
-    max_tokens: CLAUDE_CONFIG.MAX_TOKENS,
+    model: ClaudeModel.Sonnet,
+    max_tokens: ClaudeLimit.MaxTokens,
     system: SYSTEM_PROMPT,
     messages: [{ role: "user", content: userMessage }],
   });
@@ -125,30 +129,61 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
 /**
  * Formats recipe data into a structured prompt for Claude.
  *
- * Builds a text prompt containing the recipe name, ingredients list,
- * instructions, and optional time information for Claude to analyze.
+ * Builds a text prompt containing the recipe name, source description,
+ * hints (author, cuisine, category), ingredients list, instructions,
+ * and optional time information for Claude to analyze.
  *
  * @param recipe - The recipe data to format into a prompt.
  * @returns A formatted string prompt for Claude.
  */
 function buildPrompt(recipe: Recipe): string {
   const lines = [
-    `${PromptLabels.RECIPE}: ${recipe.name}`,
-    "",
-    `${PromptLabels.INGREDIENTS}:`,
-    ...recipe.ingredients.map((i) => `- ${i}`),
-    "",
-    `${PromptLabels.INSTRUCTIONS}:`,
-    ...recipe.instructions.map((s, i) => `${i + 1}. ${s}`),
+    `${PromptLabel.Recipe}: ${recipe.name}`,
   ];
 
+  if (recipe.description) {
+    lines.push("", `${PromptLabel.Description}: ${recipe.description}`);
+  }
+
+  // Add hints section if any hints are available
+  const hints = buildHints(recipe);
+  if (hints.length > 0) {
+    lines.push("", `${PromptLabel.Hints}:`, ...hints.map((h) => `- ${h}`));
+  }
+
+  lines.push(
+    "",
+    `${PromptLabel.Ingredients}:`,
+    ...recipe.ingredients.map((i) => `- ${i}`),
+    "",
+    `${PromptLabel.Instructions}:`,
+    ...recipe.instructions.map((s, i) => `${i + 1}. ${s}`)
+  );
+
   if (recipe.totalTimeMinutes) {
-    lines.push("", `${PromptLabels.MINUTES}: ${recipe.totalTimeMinutes} minutes`);
+    lines.push("", `${PromptLabel.Minutes}: ${recipe.totalTimeMinutes} minutes`);
   } else {
-    lines.push("", `${PromptLabels.MINUTES}: not provided (please estimate)`);
+    lines.push("", `${PromptLabel.Minutes}: not provided (please estimate)`);
   }
 
   return lines.join("\n");
+}
+
+/**
+ * Builds a list of hint strings from available recipe metadata.
+ *
+ * Collects author, cuisine, and category information to provide
+ * Claude with additional context for tagging decisions.
+ *
+ * @param recipe - The recipe with potential hint data.
+ * @returns Array of hint strings, empty if no hints available.
+ */
+function buildHints(recipe: Recipe): string[] {
+  const hints: string[] = [];
+  if (recipe.author) hints.push(`Author: ${recipe.author}`);
+  if (recipe.cuisine) hints.push(`Cuisine: ${recipe.cuisine}`);
+  if (recipe.category) hints.push(`Category: ${recipe.category}`);
+  return hints;
 }
 
 /**

@@ -5,13 +5,21 @@ import { loadConfig } from "./config.js";
 import type { Recipe } from "./scraper.js";
 import type { RecipeTags } from "./tagger.js";
 
-/** Result of processing a recipe URL through the full pipeline. */
+/**
+ * Result of processing a recipe URL through the full pipeline.
+ */
 export interface ProcessResult {
-  /** The scraped recipe data. */
+  /**
+   * The scraped recipe data.
+   */
   recipe: Recipe;
-  /** AI-generated tags and scores. */
+  /**
+   * AI-generated tags and scores.
+   */
   tags: RecipeTags;
-  /** Notion page ID. */
+  /**
+   * Notion page ID.
+   */
   pageId: string;
 }
 

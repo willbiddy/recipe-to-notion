@@ -25,17 +25,11 @@ URL → Check duplicates → Scrape recipe (JSON-LD) → Claude scores/tags → 
 
 4. **Save** — Creates a Notion page with all properties, cover image, AI description, ingredients grouped by shopping category, and numbered instructions.
 
-## Prerequisites
-
-- [Bun](https://bun.sh/) runtime installed
-- An [Anthropic API key](https://console.anthropic.com/)
-- A [Notion integration](https://www.notion.so/my-integrations) with a connected database
-
 ## Cost
 
-Each recipe costs about **$0.01** in Claude API usage (roughly 3,000-3,500 input tokens and 200-400 output tokens per recipe, including ingredient categorization). The default model is Sonnet, but you can change it in `src/tagger.ts` — Haiku is faster and cheaper, Opus is more capable but costs more.
+Each recipe costs about **$0.03** in Claude API usage (roughly 4,000-7,000 input tokens and 200-1,000 output tokens per recipe, including ingredient categorization). The default model is Sonnet 4.5, but you can change it in `src/tagger.ts` — Haiku is faster and cheaper, Opus is more capable but costs more.
 
-## Setup
+## Preparation
 
 ### 1. Clone and install
 
@@ -45,20 +39,39 @@ cd recipe-to-notion
 bun install
 ```
 
-### 2. Create a Notion integration
+### 2. Create an Anthropic API key
+
+1. Go to [console.anthropic.com](https://console.anthropic.com/) and sign in or create an account.
+2. Navigate to **API Keys** in the sidebar.
+3. Click **Create Key** and give it a name (e.g., "recipe-to-notion").
+4. Copy the API key (starts with `sk-ant-`). You won't be able to see it again, so save it securely.
+
+### 3. Create a Notion integration
 
 1. Go to [notion.so/my-integrations](https://www.notion.so/my-integrations) and create a new integration.
 2. Copy the **Internal Integration Secret** (starts with `ntn_`).
 
-### 3. Create a Notion database
+### 4. Create a Notion database
 
-Create a new full-page database in Notion with these properties: "Name" (Title), "Source" (URL), "Author" (Rich text), "Minutes" (Number), "Tags" (Multi-select), "Meal type" (Multi-select), "Healthiness" (Number). Connect your integration to the database via the `...` menu → Connections.
+1. In Notion, create a new page and select **Table** → **Full page**.
+2. Add the following properties to your database:
+   - **"Name"** - Type: Title (this is the default property)
+   - **"Source"** - Type: URL
+   - **"Author"** - Type: Text
+   - **"Minutes"** - Type: Number
+   - **"Tags"** - Type: Multi-select
+   - **"Meal type"** - Type: Multi-select
+   - **"Healthiness"** - Type: Number
+3. Connect your integration to the database:
+   - Click the `...` menu in the top-right of the database
+   - Select **Connections**
+   - Choose your integration from the list
 
-### 4. Get your database ID
+### 5. Get your database ID
 
 The database ID is the 32-character hex string in your database URL (`https://www.notion.so/yourworkspace/DATABASE_ID_HERE?v=...`). Copy just the ID portion (with or without dashes).
 
-### 5. Configure environment variables
+### 6. Configure environment variables
 
 Copy the example file and fill in your keys:
 
@@ -113,8 +126,7 @@ Save recipes with one click directly from your browser!
 **Quick Start:**
 
 1. Deploy to Vercel (see [Deployment Guide](docs/DEPLOYMENT.md))
-2. Build: `bun run build:extension`
-3. Load in Chrome: `chrome://extensions/` → Enable Developer mode → Load unpacked → Select `extension/` directory
+2. Build and load the extension (see [Extension Setup Guide](docs/EXTENSION.md) for complete instructions)
 
 ### 3. HTTP API
 
@@ -131,14 +143,6 @@ curl -X POST https://your-server.com/api/recipes \
 ```
 
 **Endpoints:** `POST /api/recipes` and `GET /api/health`
-
----
-
-## Architecture
-
-All entry points share the same core pipeline (`src/index.ts: processRecipe()`).
-
-**Flow:** URL → Duplicate Check → Scrape (Cheerio + JSON-LD/HTML) → AI Analysis (Claude) → Create Notion Page
 
 ---
 

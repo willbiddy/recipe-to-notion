@@ -19,19 +19,7 @@ Save recipes with one click directly from your browser! The extension connects t
 
 First, deploy your server to Vercel. This is a one-time setup.
 
-> 📖 **Full Instructions:** See [Deployment Guide](./DEPLOYMENT.md) for complete Vercel deployment steps.
-
-**Quick Deploy:**
-
-```bash
-bunx vercel login
-bunx vercel --prod
-```
-
-Then add environment variables in the Vercel dashboard:
-- `ANTHROPIC_API_KEY`
-- `NOTION_API_KEY`
-- `NOTION_DATABASE_ID`
+> 📖 **Full Instructions:** See [Deployment Guide](./DEPLOYMENT.md) for complete Vercel deployment steps, including environment variable configuration.
 
 ### Step 2: Build the Extension
 
@@ -135,10 +123,3 @@ For development and testing, you can use a local server instead of Vercel:
 
 > **Note:** For production use, always use Vercel deployment.
 
----
-
-## Related Documentation
-
-- [Deployment Guide](./DEPLOYMENT.md) - Deploy your server to Vercel
-- [API Reference](./API.md) - Understand the API the extension uses
-- [Main README](../README.md) - Project overview and other usage methods

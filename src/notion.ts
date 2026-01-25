@@ -420,7 +420,7 @@ function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
 	 * Add instructions section.
 	 */
 	if (recipe.instructions.length > 0) {
-		blocks.push(heading1("Instructions"));
+		blocks.push(heading1("Preparation"));
 		for (const step of recipe.instructions) {
 			blocks.push(numberedItem(step));
 		}

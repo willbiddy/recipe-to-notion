@@ -326,14 +326,25 @@ async function handleSave(): Promise<void> {
  */
 function toggleSettings(): void {
 	const settingsPanel = document.getElementById("settings-panel");
-	if (!settingsPanel) return;
+	const settingsButton = document.getElementById("settings-button");
+	if (!settingsPanel || !settingsButton) return;
 
 	const isHidden = settingsPanel.classList.contains("hidden");
+	const chevron = settingsButton.querySelector(".settings-chevron");
+	
 	if (isHidden) {
 		settingsPanel.classList.remove("hidden");
+		settingsButton.setAttribute("aria-expanded", "true");
+		if (chevron) {
+			chevron.style.transform = "rotate(180deg)";
+		}
 		loadApiKeyIntoInput();
 	} else {
 		settingsPanel.classList.add("hidden");
+		settingsButton.setAttribute("aria-expanded", "false");
+		if (chevron) {
+			chevron.style.transform = "rotate(0deg)";
+		}
 	}
 }
 

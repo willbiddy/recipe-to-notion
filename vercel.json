@@ -3,6 +3,16 @@
 	"bunVersion": "1.x",
 	"buildCommand": "",
 	"outputDirectory": ".",
+	"rewrites": [
+		{
+			"source": "/",
+			"destination": "/public/index.html"
+		},
+		{
+			"source": "/(.*\\.(js|css|json|png|jpg|svg))",
+			"destination": "/public/$1"
+		}
+	],
 	"functions": {
 		"api/**/*.ts": {
 			"maxDuration": 60

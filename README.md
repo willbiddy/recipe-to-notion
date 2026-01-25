@@ -14,10 +14,10 @@ Save recipes to Notion without copying and pasting. Paste a URL from almost any 
 ## How It Works
 
 ```
-CLI/Extension/API → Check duplicates → Scrape recipe → Claude scores/tags → Notion page
+CLI/Extension/Web/API → Check duplicates → Scrape recipe → Claude scores/tags → Notion page
 ```
 
-1. **CLI/Extension/API** — Recipe URL is provided via CLI command, browser extension click, or HTTP API request.
+1. **CLI/Extension/Web/API** — Recipe URL is provided via CLI command, browser extension click, web interface, or HTTP API request.
 
 2. **Check duplicates** — Before processing, checks if a recipe with the same URL or title already exists in your Notion database. If found, the tool rejects the duplicate and provides a link to the existing recipe.
 
@@ -96,6 +96,8 @@ API_SECRET=your-secret-api-key-here
 
 📚 **Detailed Guides:**
 - **[Browser Extension Setup](docs/EXTENSION.md)** - Complete guide for setting up and using the browser extension
+- **[Web Interface Guide](docs/WEB_INTERFACE.md)** - Mobile-friendly web interface for saving recipes from any device
+- **[iOS Shortcut Setup](docs/IOS_SHORTCUT.md)** - Set up iOS Share Sheet integration
 - **[API Reference](docs/API.md)** - Full REST API documentation with examples
 - **[Deployment Guide](docs/DEPLOYMENT.md)** - Deploy to Vercel
 
@@ -103,7 +105,7 @@ API_SECRET=your-secret-api-key-here
 
 ## Usage
 
-There are three ways to use recipe-to-notion:
+There are four ways to use recipe-to-notion:
 
 ### 1. Command Line Interface (CLI)
 
@@ -130,7 +132,15 @@ Save recipes with one click directly from your browser!
 >
 > **Quick Start:** Deploy to Vercel (see [Deployment Guide](docs/DEPLOYMENT.md)), then build and load the extension.
 
-### 3. HTTP API
+### 3. Web Interface
+
+Save recipes from your phone or any device using the mobile-friendly web interface. Works with iOS Share Sheet (via Shortcuts) and Android Share Sheet (native).
+
+> 📖 See [Web Interface Guide](docs/WEB_INTERFACE.md) for complete setup instructions, including iOS and Android sharing.
+>
+> **Quick Start:** Deploy to Vercel, build the web interface (`bun run build:web`), then access it at your Vercel URL.
+
+### 4. HTTP API
 
 Use the REST API to integrate recipe-to-notion into your own applications or scripts.
 
@@ -172,6 +182,15 @@ extension/
 ├── input.css          Tailwind CSS source file
 ├── styles.css         Compiled Tailwind CSS (generated)
 └── icons/             Extension icons (SVG source files)
+
+public/                 Web interface (mobile-friendly)
+├── index.html         Main web page
+├── manifest.json      Web App Manifest (PWA + Share Target)
+├── web.ts             Client-side TypeScript
+├── web.js             Compiled JavaScript (generated)
+├── input.css          Tailwind CSS source file
+├── web.css            Compiled CSS (generated)
+└── tsconfig.json      TypeScript configuration
 ```
 
 **Technologies:**
@@ -196,6 +215,7 @@ extension/
 - **`bun run start`** / **`bun src/cli.ts`** - Run the CLI tool to save recipes from the command line
 - **`bun run server`** - Start local HTTP server for development (runs on `localhost:3000`)
 - **`bun run build:extension`** - Compile TypeScript and Tailwind CSS for the browser extension
+- **`bun run build:web`** - Compile TypeScript and Tailwind CSS for the web interface
 - **`bun run typecheck`** - Check TypeScript types for errors
 - **`bun run lint`** - Run linter to find code issues
 - **`bun run format`** - Auto-format code with Biome

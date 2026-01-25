@@ -1,0 +1,38 @@
+{
+	"name": "Recipe to Notion",
+	"short_name": "Recipe2Notion",
+	"description": "Save recipes from any website to your Notion database",
+	"start_url": "/",
+	"display": "standalone",
+	"background_color": "#ffffff",
+	"theme_color": "#2563eb",
+	"orientation": "portrait-primary",
+	"icons": [
+		{
+			"src": "/extension/icons/icon16.png",
+			"sizes": "16x16",
+			"type": "image/png"
+		},
+		{
+			"src": "/extension/icons/icon48.png",
+			"sizes": "48x48",
+			"type": "image/png"
+		},
+		{
+			"src": "/extension/icons/icon128.png",
+			"sizes": "128x128",
+			"type": "image/png"
+		}
+	],
+	"share_target": {
+		"action": "/",
+		"method": "GET",
+		"params": {
+			"title": "url",
+			"text": "url",
+			"url": "url"
+		},
+		"enctype": "application/x-www-form-urlencoded"
+	},
+	"categories": ["food", "productivity", "utilities"]
+}

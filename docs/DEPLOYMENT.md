@@ -38,19 +38,7 @@ bunx vercel --prod
 
 ## Testing Your Deployment
 
-### Health Check
-
-```bash
-curl https://your-app.vercel.app/api/health
-```
-
-Expected response:
-```json
-{
-  "status": "ok",
-  "service": "recipe-to-notion"
-}
-```
+> 📖 **API Endpoints:** See [API Reference](./API.md) for complete endpoint documentation, including the health check endpoint.
 
 ### Test Recipe Processing
 
@@ -122,10 +110,3 @@ After deploying to Vercel:
 2. **Test the API** - Use the health check and test recipe endpoints
 3. **Monitor usage** - Check Vercel dashboard for function invocations and execution times
 
----
-
-## Related Documentation
-
-- [Extension Setup](./EXTENSION.md) - Configure the browser extension to use your Vercel deployment
-- [API Reference](./API.md) - Understand the API endpoints
-- [Main README](../README.md) - Project overview

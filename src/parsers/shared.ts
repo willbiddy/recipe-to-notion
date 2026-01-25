@@ -5,16 +5,18 @@ import * as cheerio from "cheerio";
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Decodes HTML entities in a string to their Unicode characters.
+ * Decodes HTML entities and normalizes Unicode fractions to ASCII.
  *
  * Uses cheerio's built-in HTML parser to decode all entity types:
  * named entities (e.g., &frac34;), decimal (&#8532;), and hex (&#x2154;).
+ * Also converts Unicode fraction characters to ASCII equivalents.
  *
- * @param str - String potentially containing HTML entities.
- * @returns String with HTML entities decoded.
+ * @param str - String potentially containing HTML entities and Unicode fractions.
+ * @returns String with HTML entities decoded and fractions normalized.
  */
 export function decodeHtmlEntities(str: string): string {
-	return cheerio.load(str, null, false).text();
+	const decoded = cheerio.load(str, null, false).text();
+	return normalizeFractions(decoded);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -99,6 +101,34 @@ export function cleanRecipeName(name: string): string {
 		.replace(/\s+Recipe$/i, "")
 		.replace(/\s*-\s*[^-]+$/, "") // Remove " - Author Name" pattern
 		.trim();
+}
+
+/**
+ * Normalizes Unicode fraction characters to ASCII equivalents.
+ *
+ * Converts Unicode fraction characters (e.g., ½, ¼, ¾) to their
+ * ASCII equivalents (e.g., 1/2, 1/4, 3/4) for consistent display.
+ *
+ * @param text - The text potentially containing Unicode fractions.
+ * @returns The text with fractions normalized to ASCII.
+ */
+export function normalizeFractions(text: string): string {
+	return text
+		.replace(/½/g, "1/2")
+		.replace(/¼/g, "1/4")
+		.replace(/¾/g, "3/4")
+		.replace(/⅓/g, "1/3")
+		.replace(/⅔/g, "2/3")
+		.replace(/⅛/g, "1/8")
+		.replace(/⅜/g, "3/8")
+		.replace(/⅝/g, "5/8")
+		.replace(/⅞/g, "7/8")
+		.replace(/⅕/g, "1/5")
+		.replace(/⅖/g, "2/5")
+		.replace(/⅗/g, "3/5")
+		.replace(/⅘/g, "4/5")
+		.replace(/⅙/g, "1/6")
+		.replace(/⅚/g, "5/6");
 }
 
 /**

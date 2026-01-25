@@ -86,11 +86,22 @@ enum PromptLabel {
 }
 
 /**
- * Claude model identifier for recipe analysis.
+ * Claude model identifiers for recipe analysis.
  */
 enum ClaudeModel {
+	Haiku = "claude-3-5-haiku-20241022",
 	Sonnet = "claude-sonnet-4-5-20250929",
+	Opus = "claude-3-opus-20240229",
 }
+
+/**
+ * Active Claude model to use for recipe analysis.
+ * Change this to switch between models:
+ * - Haiku: Fastest and cheapest (~$0.01 per recipe)
+ * - Sonnet: Balanced performance and cost (~$0.03 per recipe) - Default
+ * - Opus: Most capable but expensive (~$0.10+ per recipe)
+ */
+const ACTIVE_MODEL = ClaudeModel.Sonnet;
 
 /**
  * Claude API configuration limits.
@@ -164,7 +175,7 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
 	let response: Anthropic.Messages.Message;
 	try {
 		response = await client.messages.create({
-			model: ClaudeModel.Sonnet,
+			model: ACTIVE_MODEL,
 			max_tokens: ClaudeLimit.MaxTokens,
 			system: SYSTEM_PROMPT,
 			tools: [

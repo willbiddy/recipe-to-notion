@@ -74,27 +74,6 @@ NOTION_API_KEY=ntn_...
 NOTION_DATABASE_ID=abc123...
 ```
 
-## Deployment
-
-The recipe-to-notion server can be deployed to the cloud so you don't need to run it locally. This is especially useful for the browser extension.
-
-### Vercel (Recommended)
-
-Vercel provides a free tier with excellent Bun runtime support. The code is already configured for Vercel deployment.
-
-#### Quick Deploy
-
-1. Login: `bunx vercel login`
-2. Deploy: `bunx vercel --prod`
-3. Add environment variables in Vercel dashboard (Settings → Environment Variables): `ANTHROPIC_API_KEY`, `NOTION_API_KEY`, `NOTION_DATABASE_ID`
-4. Update browser extension config with your deployment URL
-
-**Note:** Vercel's free tier has a 60-second execution limit (sufficient for most recipes).
-
-### Other Deployment Options
-
-The server can also be deployed to Railway, Fly.io, Render, DigitalOcean, or any VPS. Use `cli-server.ts` as the entry point (defaults to port 3000, configurable via `SERVER_PORT`).
-
 ## Usage
 
 There are three ways to use recipe-to-notion:
@@ -125,7 +104,7 @@ Save recipes with one click directly from your browser!
 1. Build: `bun run build:extension`
 2. Choose server option:
    - **Local:** Start `bun run server`, set `SERVER_URL` in `extension/config.ts` to `"http://localhost:3000"`
-   - **Vercel (Recommended):** Deploy to Vercel (see [Deployment](#deployment) above), set `SERVER_URL` to your deployment URL
+   - **Vercel:** Deploy to Vercel (`bunx vercel login` → `bunx vercel --prod`), add environment variables in dashboard, then set `SERVER_URL` to your deployment URL
 3. Rebuild and reload: `bun run build:extension`, then reload extension in Chrome
 4. Load in Chrome: `chrome://extensions/` → Enable Developer mode → Load unpacked → Select `extension/` directory
 
@@ -190,7 +169,7 @@ extension/
 └── icons/             Extension icons (SVG source files)
 ```
 
-**Technologies:** Bun, TypeScript, Vercel, Cheerio, Anthropic SDK, Notion SDK, Citty, Consola, Zod, Tailwind CSS, SSE, Biome
+**Technologies:** [Bun](https://bun.sh/) (runtime), [TypeScript](https://www.typescriptlang.org/) (type safety), [Vercel](https://vercel.com/) (deployment), [Cheerio](https://cheerio.js.org/) (HTML parsing), [Anthropic SDK](https://docs.anthropic.com/en/api/client-sdks) (Claude API), [Notion SDK](https://github.com/makenotion/notion-sdk-js) (Notion API), [Citty](https://github.com/unjs/citty) (CLI parsing), [Consola](https://github.com/unjs/consola) (logging), [Zod](https://zod.dev/) (validation), [Tailwind CSS](https://tailwindcss.com/) (styling), [SSE](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) (progress updates), [Biome](https://biomejs.dev/) (linting)
 
 ## Scripts
 

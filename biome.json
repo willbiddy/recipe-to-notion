@@ -27,14 +27,14 @@
 				"noUnusedVariables": "error"
 			},
 			"style": {
-				"noNegationElse": "warn",
-				"useCollapsedElseIf": "warn",
-				"useThrowOnlyError": "warn"
+				"noNegationElse": "off",
+				"useCollapsedElseIf": "off",
+				"useThrowOnlyError": "off"
 			},
 			"complexity": {
-				"noExcessiveCognitiveComplexity": "warn",
+				"noExcessiveCognitiveComplexity": "off",
 				"noUselessStringConcat": "error",
-				"noUselessUndefinedInitialization": "warn",
+				"noUselessUndefinedInitialization": "off",
 				"useDateNow": "error"
 			},
 			"nursery": {
@@ -46,12 +46,12 @@
 				}
 			},
 			"performance": {
-				"noAccumulatingSpread": "warn",
-				"noBarrelFile": "warn"
+				"noAccumulatingSpread": "off",
+				"noBarrelFile": "off"
 			},
 			"suspicious": {
 				"noConsole": "off",
-				"noEvolvingTypes": "warn",
+				"noEvolvingTypes": "off",
 				"useAwait": "error",
 				"noUnknownAtRules": "off"
 			}

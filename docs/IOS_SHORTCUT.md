@@ -26,27 +26,37 @@ iOS browsers (Safari, Chrome, Firefox, etc.) don't support Web Share Target API 
 
 ### Step 1: Create the Shortcut
 
-1. Open the **Shortcuts** app on your iPhone/iPad
-2. Tap the **"+"** button in the top-right to create a new shortcut
-3. Tap **"Add Action"**
-4. Search for **"Get URLs from Input"** and add it (this receives the URL from Share Sheet)
-5. Tap **"Add Action"** again
-6. Search for **"Text"** and add it
-7. In the Text action, enter:
-    ```
-    https://your-app.vercel.app/?url=
-    ```
-    Replace `your-app.vercel.app` with your actual Vercel deployment URL (e.g., `recipe-to-notion-xi.vercel.app`)
-8. Tap **"Add Action"** again
-9. Search for **"Combine Text"** and add it
-10. In the Combine Text action:
-    - First input: Tap and select the **Text** variable (from step 6)
-    - Second input: Tap and select the **URLs** variable (from step 4 - the "Get URLs from Input" result)
-11. Tap **"Add Action"** again
-12. Search for **"Open URLs"** and add it
-13. In the "Open URLs" action, tap the input field and select the **Combined Text** variable (from step 9)
-14. Tap **"Show More"** on the Open URLs action
-15. Change **"Open URLs"** to **"Open URL"** (singular)
+**Exact Action List (in order):**
+
+1. **Action 1: "Get URLs from Input"**
+   - Search for: `Get URLs from Input`
+   - Add it (no configuration needed - it automatically receives the URL from Share Sheet)
+
+2. **Action 2: "Text"**
+   - Search for: `Text`
+   - In the text field, enter exactly (replace with your Vercel URL):
+     ```
+     https://recipe-to-notion-xi.vercel.app/?url=
+     ```
+   - Make sure there's no space after the `=` sign
+
+3. **Action 3: "Combine Text"**
+   - Search for: `Combine Text`
+   - Tap the first input field → Select **"Text"** (the variable from Action 2)
+   - Tap the second input field → Select **"URLs"** (the variable from Action 1 - "Get URLs from Input")
+
+4. **Action 4: "Open URL"**
+   - Search for: `Open URLs`
+   - Add it
+   - Tap the input field → Select **"Combined Text"** (the variable from Action 3)
+   - Tap **"Show More"** on this action
+   - Change from **"Open URLs"** (plural) to **"Open URL"** (singular)
+
+**Final shortcut should have exactly 4 actions in this order:**
+1. Get URLs from Input
+2. Text (with your base URL)
+3. Combine Text (combines Text + URLs)
+4. Open URL (uses Combined Text)
 
 ### Step 2: Configure the Shortcut
 
@@ -97,16 +107,23 @@ If you see a warning about untrusted shortcuts:
 
 ## Alternative: Simpler Method (If the above doesn't work)
 
-If you're having trouble with the variable passing, try this simpler approach:
+If you're having trouble with Combine Text, try this method using the URL action:
 
-**Shortcut Name:** Save Recipe to Notion
+**Action 1: "Get URLs from Input"**
+- Search for: `Get URLs from Input`
+- Add it (no configuration needed)
 
-**Actions:**
-1. **Get URLs from Input** (receives URL from Share Sheet)
-2. **URL** action → Enter: `https://your-app.vercel.app/?url=`
-   - Then tap the "+" next to the URL field and select the **URLs** variable from step 1
-3. **Open URLs** → Tap the input and select the **URL** variable from step 2
-   - Change to "Open URL" (singular) in Show More
+**Action 2: "URL"**
+- Search for: `URL`
+- In the URL field, enter: `https://recipe-to-notion-xi.vercel.app/?url=`
+- Tap the **"+"** button next to the URL field
+- Select **"URLs"** variable (from Action 1)
+- This will append the shared URL to your base URL
+
+**Action 3: "Open URL"**
+- Search for: `Open URLs`
+- Tap the input field → Select **"URL"** variable (from Action 2)
+- Tap **"Show More"** → Change to **"Open URL"** (singular)
 
 **Share Sheet Settings:**
 - Show in Share Sheet: ✅ Enabled

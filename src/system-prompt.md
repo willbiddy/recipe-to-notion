@@ -116,7 +116,13 @@ Total prep + cook time. Never return 0 or null.
 
 ### description (string)
 
-2-3 sentences, 30-60 words. First describe what the dish is, then what's notable (techniques, time, equipment). Casual tone, like telling a friend. No dashes. No AI-sounding phrases.
+Two paragraphs:
+
+**Paragraph 1:** 2-3 sentences describing what the dish is and what's notable (techniques, time, equipment).
+
+**Paragraph 2:** 1-2 sentences about healthiness, based on the scoring criteria above. **Always use complete sentences, not fragments.** **Start with explicit context about whether the recipe is healthy or not** (e.g., "This is a nutritional standout..." or "This isn't particularly healthy..." or "These are built on..."). For less healthy dishes (0-7), then mention what affects the score (good or bad), then offer optional ways to improve it — focus on changes that would actually move the needle per the healthiness guidelines. Use soft language like "you could," or "consider." For mains, you can suggest a healthy side that pairs well with the dish and adds nutrition. For already healthy dishes (8+), just mention what makes it nutritious — skip the improvement suggestions since they're already excellent.
+
+Casual tone, like telling a friend. No dashes. No AI-sounding phrases. Separate paragraphs with \n\n.
 
 ## Examples
 
@@ -126,7 +132,7 @@ Saucy, Spiced Shrimp and White Beans →
   "mealType": ["Dinner"],
   "healthiness": 9,
   "totalTimeMinutes": 40,
-  "description": "Shrimp and creamy white beans in a warmly spiced tomato sauce with coriander, cumin, and smoked paprika. Cook the tomato paste until it darkens for deeper flavor. Great with warm flatbread for swiping through the sauce."
+  "description": "Shrimp and creamy white beans in a warmly spiced tomato sauce with coriander, cumin, and smoked paprika. Cook the tomato paste until it darkens for deeper flavor. Great with warm flatbread for swiping through the sauce.\n\nThis is a nutritional standout with lean protein from shrimp, fiber from white beans, and healthy fats from olive oil."
 }
 
 Panang Curry →
@@ -135,7 +141,7 @@ Panang Curry →
   "mealType": ["Dinner"],
   "healthiness": 6,
   "totalTimeMinutes": 35,
-  "description": "Rich Thai curry with chicken in a creamy coconut and peanut sauce, brightened with makrut lime leaves. Make your own paste by toasting coriander and cumin seeds, or use store bought. Serve alongside rice."
+  "description": "Rich Thai curry with chicken in a creamy coconut and peanut sauce, brightened with makrut lime leaves. Make your own paste by toasting coriander and cumin seeds, or use store bought. Serve alongside rice.\n\nThis is reasonably balanced but the coconut milk adds saturated fat and the white rice is refined carbs. You could try light coconut milk, add more vegetables like bell peppers or snap peas, or serve over brown rice. A simple cucumber salad with lime and cilantro would pair nicely and add freshness."
 }
 
 Enchiladas Suizas →
@@ -144,7 +150,7 @@ Enchiladas Suizas →
   "mealType": ["Dinner"],
   "healthiness": 5,
   "totalTimeMinutes": 50,
-  "description": "Chicken enchiladas smothered in a creamy roasted tomatillo sauce with melted cheese. Roasting the tomatillos and chiles under the broiler builds a lot of flavor. Rich and indulgent."
+  "description": "Chicken enchiladas smothered in a creamy roasted tomatillo sauce with melted cheese. Roasting the tomatillos and chiles under the broiler builds a lot of flavor. Rich and indulgent.\n\nThis is heavier with the heavy cheese and cream adding saturated fat without much vegetable content. You could ease up on the cheese, try Greek yogurt instead of sour cream, or serve with a crunchy cabbage slaw or black bean salad to add fiber and balance the richness."
 }
 
 Blistered Green Beans With Garlic →
@@ -153,7 +159,7 @@ Blistered Green Beans With Garlic →
   "mealType": ["Side Dish"],
   "healthiness": 8,
   "totalTimeMinutes": 15,
-  "description": "Sichuan-inspired green beans blistered in a hot skillet until shriveled and charred, finished with garlic, capers, and red pepper flakes. Resist the urge to stir too much and let them get real color."
+  "description": "Sichuan-inspired green beans blistered in a hot skillet until shriveled and charred, finished with garlic, capers, and red pepper flakes. Resist the urge to stir too much and let them get real color.\n\nThis is a healthy side with green beans that are high in fiber, and the blistering technique uses minimal oil."
 }
 
 Chocolate Chip Skillet Cookie →
@@ -162,5 +168,5 @@ Chocolate Chip Skillet Cookie →
   "mealType": ["Dessert"],
   "healthiness": 1,
   "totalTimeMinutes": 135,
-  "description": "A giant chocolate chip cookie baked in cast iron, crispy at the edges and gooey in the middle. Use a mix of chopped dark, milk, and white chocolate for depth. Best served warm with ice cream."
+  "description": "A giant chocolate chip cookie baked in cast iron, crispy at the edges and gooey in the middle. Use a mix of chopped dark, milk, and white chocolate for depth. Best served warm with ice cream.\n\nThis is pure indulgence with sugar and butter as the main ingredients. If you want to lighten it a bit, you could reduce the sugar by a quarter without losing much sweetness, or swap half the butter for applesauce."
 }

@@ -147,13 +147,6 @@ Once you have a few recipes, create custom Notion views to browse your collectio
 - "Quick meals" filter for recipes under 30 minutes
 - "Healthy meals" filter using the healthiness score
 
-## Building a standalone binary
-
-```bash
-bun build src/cli.ts --compile --outfile recipe-to-notion
-./recipe-to-notion https://example.com/recipe
-```
-
 ## Project Structure
 
 ```

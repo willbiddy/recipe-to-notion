@@ -1,4 +1,5 @@
 import { consola } from "consola";
+import { nanoid } from "nanoid";
 import { type ProgressEvent, processRecipe } from "./index.js";
 import { createCliLogger, printRecipeSummary } from "./logger.js";
 import { getNotionPageUrl } from "./notion.js";
@@ -90,7 +91,7 @@ function handleHealth(): Response {
  * @returns A unique request ID string.
  */
 function generateRequestId(): string {
-	return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+	return nanoid();
 }
 
 /**

@@ -3,13 +3,20 @@
  * This allows the root path (/) to serve the HTML file from public/.
  */
 
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { join, dirname } from "node:path";
+
+// Get the correct path to public/index.html relative to this file
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const indexPath = join(__dirname, "..", "public", "index.html");
+
 export default {
 	async fetch(): Promise<Response> {
 		try {
 			// Read the index.html file from public directory
-			// Using Bun's file system API
-			const file = Bun.file("public/index.html");
-			const html = await file.text();
+			const html = readFileSync(indexPath, "utf-8");
 
 			return new Response(html, {
 				headers: {
@@ -18,7 +25,8 @@ export default {
 			});
 		} catch (error) {
 			console.error("Error serving index.html:", error);
-			return new Response("Not Found", { status: 404 });
+			console.error("Tried to read from:", indexPath);
+			return new Response(`Not Found. Path: ${indexPath}, Error: ${error instanceof Error ? error.message : String(error)}`, { status: 404 });
 		}
 	},
 };

@@ -21,20 +21,9 @@ URL → Check duplicates → Scrape recipe (JSON-LD) → Claude scores/tags → 
 
 2. **Scrape** — Fetches the page HTML and extracts structured recipe data from [JSON-LD](https://json-ld.org/) (`schema.org/Recipe`). Most recipe sites embed this for SEO, including paywalled sites like NYT Cooking. If JSON-LD isn't available, falls back to microdata attributes and common CSS class patterns.
 
-3. **Tag** — Sends the recipe name, ingredients, and instructions to Claude, which returns:
-   - **Tags** — 1-4 tags for cuisine, dish type, and main ingredient (e.g. Italian, Pasta, Chicken)
-   - **Meal type** — Breakfast, Lunch, Dinner, Snack, Dessert, Appetizer, Side Dish, or Component
-   - **Healthiness** — 0-10 scale (0 = junk food, 10 = balanced whole-food meal)
-   - **Minutes** — Total time estimate (uses scraped value if available, otherwise AI estimates)
-   - **Description** — Brief 2-3 sentence summary of the dish
-   - **Ingredient categories** — Each ingredient categorized by shopping aisle (Produce, Meat & Seafood, Pantry, Dairy & Eggs)
+3. **Tag** — Sends the recipe to Claude, which returns tags, meal type, healthiness score (0-10), time estimate, description, and ingredient categories grouped by shopping aisle.
 
-4. **Save** — Creates a Notion page in your database with:
-   - All properties filled in (name, URL, author, time, scores, tags)
-   - The recipe's hero image as the page cover
-   - AI-generated description at the top of the page body
-   - Ingredients grouped by shopping category (Produce → Meat & Seafood → Pantry → Dairy & Eggs)
-   - Instructions as a numbered list
+4. **Save** — Creates a Notion page with all properties, cover image, AI description, ingredients grouped by shopping category, and numbered instructions.
 
 ## Prerequisites
 
@@ -63,35 +52,13 @@ bun install
 
 ### 3. Create a Notion database
 
-Create a new full-page database in Notion. You can add the required properties manually:
+Create a new full-page database in Notion with these properties: "Name" (Title), "Source" (URL), "Author" (Rich text), "Minutes" (Number), "Tags" (Multi-select), "Meal type" (Multi-select), "Healthiness" (Number). Connect your integration to the database via the `...` menu → Connections.
 
-| Property    | Type         | Description                    |
-|-------------|--------------|--------------------------------|
-| Name        | Title        | Recipe name                    |
-| Source      | URL          | Link to original recipe        |
-| Author      | Rich text    | Recipe author (if available)   |
-| Minutes     | Number       | Total time in minutes          |
-| Tags        | Multi-select | e.g. Italian, Pasta, Chicken   |
-| Meal type   | Multi-select | e.g. Dinner, Snack             |
-| Healthiness | Number       | 0-10                           |
+### 4. Get your database ID
 
-### 4. Connect the integration to your database
+The database ID is the 32-character hex string in your database URL (`https://www.notion.so/yourworkspace/DATABASE_ID_HERE?v=...`). Copy just the ID portion (with or without dashes).
 
-1. Open the database page in Notion.
-2. Click the `...` menu in the top-right corner.
-3. Under **Connections**, find and add your integration.
-
-### 5. Get your database ID
-
-The database ID is the 32-character hex string in the database URL:
-
-```
-https://www.notion.so/yourworkspace/DATABASE_ID_HERE?v=...
-```
-
-Copy just the ID portion (with or without dashes).
-
-### 6. Configure environment variables
+### 5. Configure environment variables
 
 Copy the example file and fill in your keys:
 
@@ -117,40 +84,12 @@ Vercel provides a free tier with excellent Bun runtime support. The code is alre
 
 #### Quick Deploy
 
-1. **Login to Vercel:**
-   ```bash
-   bunx vercel login
-   ```
+1. Login: `bunx vercel login`
+2. Deploy: `bunx vercel --prod`
+3. Add environment variables in Vercel dashboard (Settings → Environment Variables): `ANTHROPIC_API_KEY`, `NOTION_API_KEY`, `NOTION_DATABASE_ID`
+4. Update browser extension config with your deployment URL
 
-2. **Deploy:**
-   ```bash
-   bunx vercel --prod
-   ```
-
-3. **Add environment variables:**
-   - Go to your project settings on [vercel.com](https://vercel.com)
-   - Navigate to Settings → Environment Variables
-   - Add: `ANTHROPIC_API_KEY`, `NOTION_API_KEY`, `NOTION_DATABASE_ID`
-   - Select all environments (Production, Preview, Development)
-   - Redeploy after adding variables (or wait for auto-deploy)
-
-4. **Get your deployment URL:**
-   - Vercel will provide a URL like `https://recipe-to-notion-xi.vercel.app`
-   - Update your browser extension config to use this URL
-
-**Note:** Vercel's free tier has a 60-second execution limit per function call, which is sufficient for most recipes (processing typically takes 30-45 seconds).
-
-#### Testing Your Deployment
-
-```bash
-# Health check
-curl https://your-app.vercel.app/api/health
-
-# Test recipe processing
-curl -X POST https://your-app.vercel.app/api/recipes \
-  -H "Content-Type: application/json" \
-  -d '{"url": "https://cooking.nytimes.com/recipes/1234-example"}'
-```
+**Note:** Vercel's free tier has a 60-second execution limit (sufficient for most recipes).
 
 ### Other Deployment Options
 
@@ -158,7 +97,7 @@ The server can also be deployed to Railway, Fly.io, Render, DigitalOcean, or any
 
 ## Usage
 
-There are two ways to use recipe-to-notion:
+There are three ways to use recipe-to-notion:
 
 ### 1. Command Line Interface (CLI)
 
@@ -177,7 +116,22 @@ bun src/cli.ts --html ~/Downloads/recipe.html "https://example.com/recipe-url"
 
 When processing multiple URLs, each is processed sequentially. Failures (duplicates, scraping errors) don't stop execution - all URLs are attempted.
 
-### 2. HTTP API
+### 2. Browser Extension
+
+Save recipes with one click directly from your browser!
+
+**Setup:**
+
+1. Build: `bun run build:extension`
+2. Choose server option:
+   - **Local:** Start `bun run server`, set `SERVER_URL` in `extension/config.ts` to `"http://localhost:3000"`
+   - **Vercel (Recommended):** Deploy to Vercel (see [Deployment](#deployment) above), set `SERVER_URL` to your deployment URL
+3. Rebuild and reload: `bun run build:extension`, then reload extension in Chrome
+4. Load in Chrome: `chrome://extensions/` → Enable Developer mode → Load unpacked → Select `extension/` directory
+
+Navigate to any recipe page, click the extension icon, then "Save Recipe". The extension uses Server-Sent Events (SSE) for real-time progress updates.
+
+### 3. HTTP API
 
 Use the REST API to integrate recipe-to-notion into your own applications or scripts:
 
@@ -196,94 +150,11 @@ curl -X POST https://your-server.com/api/recipes \
   -d '{"url": "https://example.com/recipe", "stream": true}'
 ```
 
-**API Endpoints:**
-- `POST /api/recipes` - Process and save a recipe
-  - Request body: `{ "url": string, "stream"?: boolean }`
-  - Response: `{ "success": boolean, "pageId"?: string, "notionUrl"?: string, "error"?: string }`
-  - With `stream: true`, returns Server-Sent Events (SSE) with progress updates
-- `GET /api/health` - Health check endpoint
-  - Response: `{ "status": "ok", "service": "recipe-to-notion" }`
+**Endpoints:** `POST /api/recipes` (body: `{ "url": string, "stream"?: boolean }`) and `GET /api/health`
 
-## Browser Extension
+## Architecture
 
-Save recipes with one click directly from your browser!
-
-### Option A: Local Server Setup
-
-1. **Build the extension:**
-   ```bash
-   bun run build:extension
-   ```
-   This compiles TypeScript files and Tailwind CSS for the extension UI.
-
-2. **Start the local server:**
-   ```bash
-   bun run server
-   ```
-   The server runs on `http://localhost:3000` by default (configurable via `SERVER_PORT` env var).
-
-3. **Load the extension in Chrome:**
-   - Open Chrome and go to `chrome://extensions/`
-   - Enable "Developer mode" (toggle in top-right)
-   - Click "Load unpacked"
-   - Select the `extension/` directory
-
-4. **Configure the extension:**
-   - Edit `extension/config.ts` and set `SERVER_URL` to `"http://localhost:3000"`
-   - Rebuild: `bun run build:extension`
-   - Reload the extension in Chrome
-
-### Option B: Vercel Deployment (Recommended)
-
-Deploy the server to Vercel so you don't need to run a local server. See the [Deployment](#deployment) section below for instructions.
-
-1. **Build the extension:**
-   ```bash
-   bun run build:extension
-   ```
-
-2. **Configure the extension:**
-   - Edit `extension/config.ts` and set `SERVER_URL` to your Vercel deployment URL (e.g., `"https://recipe-to-notion-xi.vercel.app"`)
-   - Rebuild: `bun run build:extension`
-   - Reload the extension in Chrome
-
-3. **Load the extension in Chrome:**
-   - Open Chrome and go to `chrome://extensions/`
-   - Enable "Developer mode" (toggle in top-right)
-   - Click "Load unpacked"
-   - Select the `extension/` directory
-
-### Usage
-
-1. Navigate to any recipe page in your browser
-2. Click the extension icon in the toolbar
-3. Click "Save Recipe"
-4. The recipe will be processed and saved to your Notion database
-5. A new tab will open with the saved recipe page
-
-The extension uses Server-Sent Events (SSE) to show real-time progress updates while processing recipes.
-
-## Ingredient Organization
-
-Ingredients are automatically grouped by shopping category: Produce → Deli & Bakery → Meat & Seafood → Pantry → Snacks & Soda → Dairy & Eggs → Frozen Foods.
-
-
-## Architecture & Tech Stack
-
-All entry points (CLI, HTTP server, Vercel functions, browser extension) share the same core pipeline (`src/index.ts: processRecipe()`), ensuring consistent behavior across all interfaces.
-
-**Processing Flow:**
-```
-URL Input
-  ↓
-Duplicate Check (Notion API)
-  ↓
-Scrape Recipe (Cheerio + JSON-LD/HTML parsers)
-  ↓
-AI Analysis (Claude API)
-  ↓
-Create Notion Page (Notion API)
-```
+All entry points share the same core pipeline (`src/index.ts: processRecipe()`). Flow: URL → Duplicate Check → Scrape (Cheerio + JSON-LD/HTML) → AI Analysis (Claude) → Create Notion Page.
 
 ## Project Structure
 
@@ -319,29 +190,12 @@ extension/
 └── icons/             Extension icons (SVG source files)
 ```
 
-**Technologies:**
-
-| Technology | Purpose |
-|------------|---------|
-| [Bun](https://bun.sh/) | Runtime and package manager |
-| [TypeScript](https://www.typescriptlang.org/) | Type-safe JavaScript |
-| [Vercel](https://vercel.com/) | Serverless deployment platform (optional, for cloud hosting) |
-| [Cheerio](https://cheerio.js.org/) | HTML parsing and scraping |
-| [Anthropic SDK](https://docs.anthropic.com/en/api/client-sdks) | Claude API for AI tagging |
-| [Notion SDK](https://github.com/makenotion/notion-sdk-js) | Notion API client |
-| [Citty](https://github.com/unjs/citty) | CLI argument parsing |
-| [Consola](https://github.com/unjs/consola) | Console logging with spinners and colors |
-| [Zod](https://zod.dev/) | Schema validation for env vars and API responses |
-| [Tailwind CSS](https://tailwindcss.com/) | Utility-first CSS framework for extension UI |
-| [Server-Sent Events (SSE)](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) | Real-time progress updates in browser extension |
-| [Biome](https://biomejs.dev/) | Linting and formatting |
+**Technologies:** Bun, TypeScript, Vercel, Cheerio, Anthropic SDK, Notion SDK, Citty, Consola, Zod, Tailwind CSS, SSE, Biome
 
 ## Scripts
 
-- `bun run start` or `bun src/cli.ts` - Run the CLI tool
-- `bun run server` - Start the local HTTP server for the browser extension
-- `bun run build:extension` - Compile TypeScript extension files and Tailwind CSS
-- `bun run typecheck` - Type check without emitting files
-- `bun run lint` - Lint code with Biome
-- `bun run format` - Format code with Biome
+- `bun run start` / `bun src/cli.ts` - CLI tool
+- `bun run server` - Local HTTP server
+- `bun run build:extension` - Build extension
+- `bun run typecheck` / `lint` / `format` - Code quality
 

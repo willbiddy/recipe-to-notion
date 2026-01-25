@@ -3,13 +3,15 @@
 	"bunVersion": "1.x",
 	"buildCommand": "bun run build:web",
 	"outputDirectory": ".",
+	"cleanUrls": true,
+	"trailingSlash": false,
 	"rewrites": [
 		{
 			"source": "/",
 			"destination": "/public/index.html"
 		},
 		{
-			"source": "/(.*\\.(js|css|json|png|jpg|svg|ico))",
+			"source": "/(web\\.js|web\\.css|manifest\\.json)",
 			"destination": "/public/$1"
 		}
 	],

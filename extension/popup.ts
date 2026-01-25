@@ -261,7 +261,7 @@ function updateUrlDisplay(url: string | null, title: string | null): void {
 	if (!url) {
 		urlDisplay.textContent = "No URL found";
 		urlDisplay.className =
-			"text-[15px] text-red-600 p-3 bg-red-50 border border-red-200 rounded-md break-words leading-relaxed transition-all duration-200 font-medium text-left";
+			"text-[14px] text-red-600 p-3.5 bg-red-50 border-2 border-red-200 rounded-2xl break-words leading-relaxed transition-all duration-200 font-medium text-left shadow-sm";
 		return;
 	}
 
@@ -271,7 +271,7 @@ function updateUrlDisplay(url: string | null, title: string | null): void {
 	if (!url.startsWith("http://") && !url.startsWith("https://")) {
 		urlDisplay.textContent = "Not a valid web page";
 		urlDisplay.className =
-			"text-[15px] text-red-600 p-3 bg-red-50 border border-red-200 rounded-md break-words leading-relaxed transition-all duration-200 font-medium text-left";
+			"text-[14px] text-red-600 p-3.5 bg-red-50 border-2 border-red-200 rounded-2xl break-words leading-relaxed transition-all duration-200 font-medium text-left shadow-sm";
 		return;
 	}
 
@@ -282,7 +282,7 @@ function updateUrlDisplay(url: string | null, title: string | null): void {
 	if (trimmedTitle) {
 		urlDisplay.textContent = trimmedTitle;
 		urlDisplay.className =
-			"text-[15px] text-gray-700 p-3 bg-gray-50 border border-gray-200 rounded-md break-words leading-relaxed transition-all duration-200 font-medium text-left hover:bg-gray-100 hover:border-gray-300";
+			"text-[14px] text-gray-700 p-3.5 bg-amber-50/60 border-2 border-orange-200 rounded-2xl break-words leading-relaxed transition-all duration-200 font-medium text-left hover:bg-amber-50 hover:border-orange-300 shadow-sm";
 		/**
 		 * Show full URL in tooltip.
 		 */
@@ -296,12 +296,12 @@ function updateUrlDisplay(url: string | null, title: string | null): void {
 			const displayText = `${urlObj.hostname}${urlObj.pathname}`;
 			urlDisplay.textContent = displayText;
 			urlDisplay.className =
-				"text-[15px] text-gray-700 p-3 bg-gray-50 border border-gray-200 rounded-md break-words leading-relaxed transition-all duration-200 font-medium text-left hover:bg-gray-100 hover:border-gray-300";
+				"text-[14px] text-gray-700 p-3.5 bg-amber-50/60 border-2 border-orange-200 rounded-2xl break-words leading-relaxed transition-all duration-200 font-medium text-left hover:bg-amber-50 hover:border-orange-300 shadow-sm";
 			urlDisplay.title = url;
 		} catch {
 			urlDisplay.textContent = url;
 			urlDisplay.className =
-				"text-[15px] text-gray-700 p-3 bg-gray-50 border border-gray-200 rounded-md break-words leading-relaxed transition-all duration-200 font-medium text-left hover:bg-gray-100 hover:border-gray-300";
+				"text-[14px] text-gray-700 p-3.5 bg-amber-50/60 border-2 border-orange-200 rounded-2xl break-words leading-relaxed transition-all duration-200 font-medium text-left hover:bg-amber-50 hover:border-orange-300 shadow-sm";
 		}
 	}
 }
@@ -319,11 +319,11 @@ function updateStatus(message: string, type: "info" | "success" | "error" = "inf
 
 	statusEl.textContent = message;
 	const baseClasses =
-		"py-3 px-4 rounded-lg text-[13px] leading-relaxed animate-[fadeIn_0.2s_ease-in] block";
+		"py-3.5 px-4 rounded-2xl text-[13px] leading-relaxed animate-[fadeIn_0.2s_ease-in] block shadow-sm";
 	const typeClasses = {
-		info: "bg-blue-50 text-blue-800 border border-blue-200",
-		success: "bg-green-50 text-green-800 border border-green-200",
-		error: "bg-red-50 text-red-800 border border-red-200 whitespace-pre-line",
+		info: "bg-orange-50 text-orange-800 border-2 border-orange-200",
+		success: "bg-amber-50 text-amber-800 border-2 border-amber-300",
+		error: "bg-red-50 text-red-800 border-2 border-red-200 whitespace-pre-line",
 	};
 	statusEl.className = `${baseClasses} ${typeClasses[type]}`;
 }

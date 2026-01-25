@@ -62,9 +62,10 @@ function hideProgress(): void {
 
 /**
  * Gets the API key from storage.
+ * Uses chrome.storage.local (not sync) to avoid syncing sensitive data to Google servers.
  */
 async function getApiKey(): Promise<string | null> {
-	const result = await chrome.storage.sync.get("apiKey");
+	const result = await chrome.storage.local.get("apiKey");
 	const apiKey = result.apiKey;
 	return typeof apiKey === "string" ? apiKey : null;
 }
@@ -416,7 +417,8 @@ async function saveApiKey(): Promise<void> {
 	}
 
 	try {
-		await chrome.storage.sync.set({ apiKey });
+		// Use chrome.storage.local instead of sync to avoid syncing sensitive API key to Google servers
+		await chrome.storage.local.set({ apiKey });
 		updateStatus("API key saved successfully", "success");
 		setTimeout(() => {
 			clearStatus();

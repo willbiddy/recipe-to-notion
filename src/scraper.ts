@@ -1,4 +1,3 @@
-import { readFile } from "node:fs/promises";
 import * as cheerio from "cheerio";
 import { extractAuthorFromHtml, parseHtml } from "./parsers/html.js";
 import { parseJsonLd } from "./parsers/json-ld.js";
@@ -183,7 +182,9 @@ export async function scrapeRecipe(url: string): Promise<Recipe> {
  * @throws If the file cannot be read or no recipe data is found.
  */
 export async function scrapeRecipeFromHtml(htmlPath: string, sourceUrl: string): Promise<Recipe> {
-	const html = await readFile(htmlPath, "utf-8");
+	// Use Bun's native file API for faster file reading
+	const file = Bun.file(htmlPath);
+	const html = await file.text();
 	try {
 		return parseRecipeFromHtml(html, sourceUrl);
 	} catch (error) {

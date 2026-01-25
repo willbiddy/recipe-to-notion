@@ -5,6 +5,14 @@
  * Supports both streaming (SSE) and non-streaming responses.
  */
 
+import {
+	type RecipeRequest,
+	MAX_REQUEST_BODY_SIZE,
+	validateApiKeyHeader,
+	validateRecipeRequest,
+	validateRequestSize,
+} from "../src/security.js";
+
 /**
  * HTTP status codes used throughout the API.
  */
@@ -18,20 +26,6 @@ const HttpStatus = {
 	InternalServerError: 500,
 	BadGateway: 502,
 } as const;
-
-/**
- * Request body format for the /api/recipes endpoint.
- */
-type RecipeRequest = {
-	/**
-	 * Recipe URL to process.
-	 */
-	url: string;
-	/**
-	 * If true, use SSE for progress updates.
-	 */
-	stream?: boolean;
-};
 
 /**
  * Response format for the /api/recipes endpoint.
@@ -53,65 +47,6 @@ function setCorsHeaders(response: Response): void {
 	response.headers.set("Access-Control-Expose-Headers", "*");
 }
 
-/**
- * Validates the API key from the Authorization header.
- * Returns null if valid, or an error response if invalid.
- */
-function validateApiKey(req: Request): Response | null {
-	const authHeader = req.headers.get("Authorization");
-	if (!authHeader) {
-		return createErrorResponse("Missing Authorization header", HttpStatus.BadRequest);
-	}
-
-	if (!authHeader.startsWith("Bearer ")) {
-		return createErrorResponse(
-			"Invalid Authorization format. Expected: Bearer <token>",
-			HttpStatus.BadRequest,
-		);
-	}
-
-	const providedKey = authHeader.slice(7); // Remove "Bearer " prefix
-	const expectedKey = process.env.API_SECRET;
-
-	if (!expectedKey) {
-		console.error("API_SECRET environment variable is not set");
-		return createErrorResponse("Server configuration error", HttpStatus.InternalServerError);
-	}
-
-	if (providedKey !== expectedKey) {
-		return createErrorResponse("Invalid API key", HttpStatus.BadRequest);
-	}
-
-	return null;
-}
-
-/**
- * Validates the request body and returns an error response if invalid.
- */
-function validateRecipeRequest(body: unknown): Response | null {
-	if (!body || typeof body !== "object") {
-		return createErrorResponse("Missing request body", HttpStatus.BadRequest);
-	}
-
-	const request = body as RecipeRequest;
-	if (!request.url || typeof request.url !== "string") {
-		return createErrorResponse(
-			"Missing or invalid 'url' field in request body",
-			HttpStatus.BadRequest,
-		);
-	}
-
-	/**
-	 * Validate URL format.
-	 */
-	try {
-		new URL(request.url);
-	} catch {
-		return createErrorResponse("Invalid URL format", 400);
-	}
-
-	return null;
-}
 
 /**
  * Creates an error response with CORS headers.
@@ -328,7 +263,7 @@ export default {
 			const headers = new Headers();
 			headers.set("Access-Control-Allow-Origin", "*");
 			headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-			headers.set("Access-Control-Allow-Headers", "Content-Type");
+			headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
 			headers.set("Access-Control-Expose-Headers", "*");
 			return new Response(null, { status: 204, headers });
 		}
@@ -348,9 +283,24 @@ export default {
 		/**
 		 * Validate API key authentication.
 		 */
-		const authError = validateApiKey(req);
+		const authError = validateApiKeyHeader(
+			req.headers.get("Authorization"),
+			(error, status) => createErrorResponse(error, status),
+		);
 		if (authError) {
 			return authError;
+		}
+
+		/**
+		 * Check Content-Length header to prevent large request body attacks.
+		 */
+		const sizeError = validateRequestSize(
+			req.headers.get("Content-Length"),
+			MAX_REQUEST_BODY_SIZE,
+			(error, status) => createErrorResponse(error, status),
+		);
+		if (sizeError) {
+			return sizeError;
 		}
 
 		try {
@@ -359,7 +309,10 @@ export default {
 			/**
 			 * Validate request.
 			 */
-			const validationError = validateRecipeRequest(body);
+			const validationError = validateRecipeRequest(
+				body,
+				(error, status) => createErrorResponse(error, status),
+			);
 			if (validationError) {
 				return validationError;
 			}

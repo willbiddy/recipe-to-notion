@@ -2,6 +2,13 @@ import { consola } from "consola";
 import { type ProgressEvent, processRecipe } from "./index.js";
 import { createCliLogger, printRecipeSummary } from "./logger.js";
 import { getNotionPageUrl } from "./notion.js";
+import {
+	MAX_REQUEST_BODY_SIZE,
+	type RecipeRequest,
+	validateApiKeyHeader,
+	validateRecipeRequest,
+	validateRequestSize,
+} from "./security.js";
 
 /**
  * HTTP status codes used throughout the server.
@@ -25,20 +32,6 @@ export type RecipeResponse = {
 	pageId?: string;
 	notionUrl?: string;
 	error?: string;
-};
-
-/**
- * Request body format for the /api/recipes endpoint.
- */
-type RecipeRequest = {
-	/**
-	 * Recipe URL to process.
-	 */
-	url: string;
-	/**
-	 * If true, use SSE for progress updates.
-	 */
-	stream?: boolean;
 };
 
 /**
@@ -173,83 +166,6 @@ function handleRecipeStream(_request: Request, url: string): Response {
 }
 
 /**
- * Validates the API key from the Authorization header.
- * Returns null if valid, or an error response if invalid.
- */
-function validateApiKey(request: Request): Response | null {
-	const authHeader = request.headers.get("Authorization");
-	if (!authHeader) {
-		const response = Response.json(
-			{ success: false, error: "Missing Authorization header" },
-			{ status: HttpStatus.BadRequest },
-		);
-		setCorsHeaders(response);
-		return response;
-	}
-
-	if (!authHeader.startsWith("Bearer ")) {
-		const response = Response.json(
-			{ success: false, error: "Invalid Authorization format. Expected: Bearer <token>" },
-			{ status: HttpStatus.BadRequest },
-		);
-		setCorsHeaders(response);
-		return response;
-	}
-
-	const providedKey = authHeader.slice(7); // Remove "Bearer " prefix
-	const expectedKey = process.env.API_SECRET;
-
-	if (!expectedKey) {
-		consola.error("API_SECRET environment variable is not set");
-		const response = Response.json(
-			{ success: false, error: "Server configuration error" },
-			{ status: HttpStatus.InternalServerError },
-		);
-		setCorsHeaders(response);
-		return response;
-	}
-
-	if (providedKey !== expectedKey) {
-		const response = Response.json(
-			{ success: false, error: "Invalid API key" },
-			{ status: HttpStatus.BadRequest },
-		);
-		setCorsHeaders(response);
-		return response;
-	}
-
-	return null;
-}
-
-/**
- * Validates the request body and returns an error response if invalid.
- */
-function validateRecipeRequest(body: unknown): Response | null {
-	if (!body || typeof body !== "object") {
-		return createErrorResponse("Missing request body", HttpStatus.BadRequest);
-	}
-
-	const request = body as RecipeRequest;
-	if (!request.url || typeof request.url !== "string") {
-		return createErrorResponse(
-			"Missing or invalid 'url' field in request body",
-			HttpStatus.BadRequest,
-		);
-	}
-
-	/**
-	 * Validate URL format.
-	 */
-	try {
-		new URL(request.url);
-	} catch {
-		return createErrorResponse("Invalid URL format", 400);
-	}
-
-	return null;
-}
-
-/**
  * Creates an error response with CORS headers.
  */
 function createErrorResponse(error: string, status: number): Response {
@@ -315,9 +231,25 @@ async function handleRecipe(request: Request): Promise<Response> {
 	/**
 	 * Validate API key authentication.
 	 */
-	const authError = validateApiKey(request);
+	const authError = validateApiKeyHeader(request.headers.get("Authorization"), (error, status) => {
+		const response = Response.json({ success: false, error }, { status });
+		setCorsHeaders(response);
+		return response;
+	});
 	if (authError) {
 		return authError;
+	}
+
+	/**
+	 * Check Content-Length header to prevent large request body attacks.
+	 */
+	const sizeError = validateRequestSize(
+		request.headers.get("Content-Length"),
+		MAX_REQUEST_BODY_SIZE,
+		(error, status) => createErrorResponse(error, status),
+	);
+	if (sizeError) {
+		return sizeError;
 	}
 
 	try {
@@ -326,7 +258,9 @@ async function handleRecipe(request: Request): Promise<Response> {
 		/**
 		 * Validate request.
 		 */
-		const validationError = validateRecipeRequest(body);
+		const validationError = validateRecipeRequest(body, (error, status) =>
+			createErrorResponse(error, status),
+		);
 		if (validationError) {
 			return validationError;
 		}

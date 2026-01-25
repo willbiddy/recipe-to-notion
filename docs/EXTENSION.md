@@ -127,7 +127,7 @@ export const SERVER_URL = "https://your-app.vercel.app";
 
 ### API Key
 
-The API key is stored securely in the browser's sync storage and can be configured through the extension popup:
+The API key is stored locally in the browser's storage (not synced to Google servers) and can be configured through the extension popup:
 
 1. Click the extension icon
 2. Click the settings icon (⚙️) in the top-right
@@ -135,6 +135,8 @@ The API key is stored securely in the browser's sync storage and can be configur
 4. Click "Save API Key"
 
 The API key is required for all API requests and prevents unauthorized usage of your deployment.
+
+> **Security Note:** The API key is stored in `chrome.storage.local` (not `sync`) to avoid syncing sensitive data to Google servers. However, it is stored in plaintext on your local machine. Anyone with access to your Chrome profile can view it. For maximum security, use a strong, unique `API_SECRET` and don't share your Chrome profile.
 
 ---
 

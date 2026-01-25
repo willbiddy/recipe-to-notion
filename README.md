@@ -87,7 +87,10 @@ Edit `.env`:
 ANTHROPIC_API_KEY=sk-ant-...
 NOTION_API_KEY=ntn_...
 NOTION_DATABASE_ID=abc123...
+API_SECRET=your-secret-api-key-here
 ```
+
+> **Note:** The `API_SECRET` is required for API authentication. Use a strong, random value (e.g., generate with `openssl rand -hex 32`). This prevents unauthorized access to your API endpoints.
 
 ## Documentation
 
@@ -148,6 +151,7 @@ src/
 ├── tagger.ts          Claude API integration for AI tagging
 ├── notion.ts          Notion page creation and duplicate detection
 ├── config.ts          Environment variable validation
+├── security.ts        Security utilities
 ├── system-prompt.md   Claude instructions for recipe analysis
 └── parsers/
     ├── json-ld.ts     JSON-LD (schema.org) recipe parsing
@@ -164,6 +168,7 @@ extension/
 ├── popup.ts           Popup logic and API communication
 ├── background.ts      Service worker for context menu
 ├── config.ts          Server URL configuration management
+├── tsconfig.json      TypeScript configuration for extension
 ├── input.css          Tailwind CSS source file
 ├── styles.css         Compiled Tailwind CSS (generated)
 └── icons/             Extension icons (SVG source files)

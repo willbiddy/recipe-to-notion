@@ -3,12 +3,17 @@ import { getServerUrl } from "./config.js";
 /**
  * Response format from the server API.
  */
-type RecipeResponse = {
-	success: boolean;
-	pageId?: string;
-	notionUrl?: string;
-	error?: string;
-};
+type RecipeResponse =
+	| {
+			success: true;
+			pageId: string;
+			notionUrl: string;
+	  }
+	| {
+			success: false;
+			error: string;
+			notionUrl?: string; // May be present for duplicate errors
+	  };
 
 /**
  * Gets the current active tab URL and title.
@@ -22,16 +27,34 @@ async function getCurrentTab(): Promise<{ url: string | null; title: string | nu
 }
 
 /**
+ * Progress event types from server.
+ */
+enum ProgressEventType {
+	Progress = "progress",
+	Complete = "complete",
+	Error = "error",
+}
+
+/**
  * Progress event from server.
  */
-type ProgressEvent = {
-	type: "progress" | "complete" | "error";
-	message?: string;
-	success?: boolean;
-	pageId?: string;
-	notionUrl?: string;
-	error?: string;
-};
+type ProgressEvent =
+	| {
+			type: ProgressEventType.Progress;
+			message: string;
+	  }
+	| {
+			type: ProgressEventType.Complete;
+			success: true;
+			pageId: string;
+			notionUrl: string;
+	  }
+	| {
+			type: ProgressEventType.Error;
+			success: false;
+			error: string;
+			notionUrl?: string;
+	  };
 
 /**
  * Shows progress with spinner and message.
@@ -160,17 +183,17 @@ async function saveRecipe(url: string): Promise<RecipeResponse> {
 									try {
 										const data = JSON.parse(line.slice(6)) as ProgressEvent;
 
-										if (data.type === "progress") {
-											showProgress(data.message || "Processing...");
-										} else if (data.type === "complete") {
+										if (data.type === ProgressEventType.Progress) {
+											showProgress(data.message);
+										} else if (data.type === ProgressEventType.Complete) {
 											hideProgress();
 											resolve({
-												success: data.success || false,
+												success: true,
 												pageId: data.pageId,
 												notionUrl: data.notionUrl,
 											});
 											return;
-										} else if (data.type === "error") {
+										} else if (data.type === ProgressEventType.Error) {
 											hideProgress();
 											resolve({
 												success: false,
@@ -354,7 +377,7 @@ async function handleSave(): Promise<void> {
 	try {
 		const result = await saveRecipe(url);
 
-		if (result.success && result.notionUrl) {
+		if (result.success) {
 			updateStatus("Recipe saved successfully!", "success");
 			/**
 			 * Show "Opening..." message, then open the Notion page.
@@ -365,7 +388,7 @@ async function handleSave(): Promise<void> {
 					chrome.tabs.create({ url: result.notionUrl });
 				}, 500);
 			}, 500);
-		} else if (result.error?.includes("Duplicate recipe found") && result.notionUrl) {
+		} else if (result.error.includes("Duplicate recipe found") && result.notionUrl) {
 			/**
 			 * Handle duplicate errors specially.
 			 */

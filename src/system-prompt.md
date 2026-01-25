@@ -141,16 +141,17 @@ Categorize each ingredient for grocery shopping. Return the same number of ingre
 8. **Household & Health** — Paper towels, cleaning supplies, personal care items (rarely needed for recipes)
 9. **Checkout** — Magazines, gum, candy (rarely needed for recipes)
 
-**usage field (optional):**
+**Handling duplicate ingredients:**
 
-If an ingredient appears multiple times in the recipe (e.g., "Fine sea salt and black pepper" in both marinade and main sections), add a brief usage note to distinguish them:
-- Use short phrases like "for marinade", "for salmon", "for sauce", "for seasoning"
-- Only include if the ingredient appears multiple times and has distinct usage
-- Leave as `null` for most ingredients (especially if they only appear once)
+If an ingredient appears multiple times in the recipe with different contexts (e.g., "Fine sea salt and black pepper" in both marinade and main sections), include a brief usage note in parentheses to distinguish them:
+- Append short phrases like " (for marinade)", " (for salmon)", " (for sauce)", " (for seasoning)"
+- Only add usage context if the ingredient appears multiple times and has distinct usage
+- For most ingredients (especially those that only appear once), preserve the ingredient text exactly as provided
 
 **Important:**
-- Preserve the original ingredient text exactly as provided
+- Preserve the ingredient text exactly as provided
 - Don't modify quantities or descriptions
+- Only append usage context when an ingredient appears multiple times with different purposes
 - Order categories: Produce → Deli & Bakery → Meat & Seafood → Pantry Aisles → Snacks & Soda → Dairy & Eggs → Frozen Foods → Household & Health → Checkout
 - Most recipe ingredients will fall into Produce, Meat & Seafood, Pantry Aisles, Dairy & Eggs, or Frozen Foods
 
@@ -165,72 +166,59 @@ Saucy, Spiced Shrimp and White Beans →
   "description": "Shrimp and creamy white beans in a warmly spiced tomato sauce with coriander, cumin, and smoked paprika. Cook the tomato paste until it darkens for deeper flavor. Great with warm flatbread for swiping through the sauce.\n\nThis is a nutritional standout with lean protein from shrimp, fiber from white beans, and healthy fats from olive oil.",
   "ingredients": [
     {
-      "original": "1 lb. large shrimp, peeled, deveined",
-      "category": "Meat & Seafood",
-      "usage": null
+      "name": "1 lb. large shrimp, peeled, deveined",
+      "category": "Meat & Seafood"
     },
     {
-      "original": "2 tsp. Diamond Crystal or 1 tsp. Morton kosher salt, divided, plus more",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "2 tsp. Diamond Crystal or 1 tsp. Morton kosher salt, divided, plus more",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "Freshly ground pepper",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "Freshly ground pepper",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "¼ cup extra-virgin olive oil",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "¼ cup extra-virgin olive oil",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "1 large shallot, quartered, thinly sliced",
-      "category": "Produce",
-      "usage": null
+      "name": "1 large shallot, quartered, thinly sliced",
+      "category": "Produce"
     },
     {
-      "original": "5 garlic cloves, finely chopped",
-      "category": "Produce",
-      "usage": null
+      "name": "5 garlic cloves, finely chopped",
+      "category": "Produce"
     },
     {
-      "original": "1 Tbsp. ground coriander",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "1 Tbsp. ground coriander",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "1 Tbsp. ground cumin",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "1 Tbsp. ground cumin",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "1 Tbsp. smoked paprika",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "1 Tbsp. smoked paprika",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "1 tsp. sugar",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "1 tsp. sugar",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "½ tsp. crushed red pepper flakes",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "½ tsp. crushed red pepper flakes",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "¼ cup double-concentrated tomato paste",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "¼ cup double-concentrated tomato paste",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "1 15.5-oz. can white beans (such as cannellini), rinsed",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "1 15.5-oz. can white beans (such as cannellini), rinsed",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "Coarsely chopped mint and dill and warm flatbread (for serving)",
+      "name": "Coarsely chopped mint and dill and warm flatbread (for serving)",
       "category": "Produce"
     }
   ]
@@ -245,62 +233,51 @@ Panang Curry →
   "description": "Rich Thai curry with chicken in a creamy coconut and peanut sauce, brightened with makrut lime leaves. Make your own paste by toasting coriander and cumin seeds, or use store bought. Serve alongside rice.\n\nThis is reasonably balanced but the coconut milk adds saturated fat and the white rice is refined carbs. You could try light coconut milk, add more vegetables like bell peppers or snap peas, or serve over brown rice. A simple cucumber salad with lime and cilantro would pair nicely and add freshness.",
   "ingredients": [
     {
-      "original": "½ teaspoon coriander seeds",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "½ teaspoon coriander seeds",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "½ teaspoon cumin seeds",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "½ teaspoon cumin seeds",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "¼ cup/1 ounce dry-roasted, unsalted peanuts",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "¼ cup/1 ounce dry-roasted, unsalted peanuts",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "2 to 4 tablespoons red curry paste, to taste",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "2 to 4 tablespoons red curry paste, to taste",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "1 pound boneless, skinless chicken breasts or thighs",
-      "category": "Meat & Seafood",
-      "usage": null
+      "name": "1 pound boneless, skinless chicken breasts or thighs",
+      "category": "Meat & Seafood"
     },
     {
-      "original": "2 teaspoons fish sauce, plus more as needed",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "2 teaspoons fish sauce, plus more as needed",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "1 (13.5-ounce) can full-fat coconut milk (do not shake)",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "1 (13.5-ounce) can full-fat coconut milk (do not shake)",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "8 makrut lime leaves, deveined, 6 torn and 2 thinly sliced, or 1 teaspoon grated lime zest, for serving",
-      "category": "Produce",
-      "usage": null
+      "name": "8 makrut lime leaves, deveined, 6 torn and 2 thinly sliced, or 1 teaspoon grated lime zest, for serving",
+      "category": "Produce"
     },
     {
-      "original": "1½ teaspoons palm, granulated or brown sugar, plus more as needed",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "1½ teaspoons palm, granulated or brown sugar, plus more as needed",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "1 small, mild, thin-skinned pepper, such as a Fresno, Anaheim or banana pepper, or ½ small red bell pepper, thinly sliced",
-      "category": "Produce",
-      "usage": null
+      "name": "1 small, mild, thin-skinned pepper, such as a Fresno, Anaheim or banana pepper, or ½ small red bell pepper, thinly sliced",
+      "category": "Produce"
     },
     {
-      "original": "Thai basil, thinly sliced, for serving (optional, if makrut lime leaves are not used)",
-      "category": "Produce",
-      "usage": null
+      "name": "Thai basil, thinly sliced, for serving (optional, if makrut lime leaves are not used)",
+      "category": "Produce"
     },
     {
-      "original": "Rice, for serving",
+      "name": "Rice, for serving",
       "category": "Pantry Aisles"
     }
   ]
@@ -315,69 +292,56 @@ Chocolate Chip Skillet Cookie →
   "description": "A giant chocolate chip cookie baked in cast iron, crispy at the edges and gooey in the middle. Use a mix of chopped dark, milk, and white chocolate for depth. Best served warm with ice cream.\n\nThis is pure indulgence with sugar and butter as the main ingredients. If you want to lighten it a bit, you could reduce the sugar by a quarter without losing much sweetness, or swap half the butter for applesauce.",
   "ingredients": [
     {
-      "original": "8 ounces unsalted butter (2 sticks; 225 g), soft but cool, about 65°F (18°C), plus more for greasing skillet",
-      "category": "Dairy & Eggs",
-      "usage": null
+      "name": "8 ounces unsalted butter (2 sticks; 225 g), soft but cool, about 65°F (18°C), plus more for greasing skillet",
+      "category": "Dairy & Eggs"
     },
     {
-      "original": "4 1/2 ounces granulated sugar (2/3 cup; 125 g)",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "4 1/2 ounces granulated sugar (2/3 cup; 125 g)",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "8 ounces light brown sugar (1 cup, gently packed; 225 g)",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "8 ounces light brown sugar (1 cup, gently packed; 225 g)",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "1 ounce malted milk powder (about 1/4 cup; 25 g)",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "1 ounce malted milk powder (about 1/4 cup; 25 g)",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "1/2 ounce vanilla extract (1 tablespoon; 15 g)",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "1/2 ounce vanilla extract (1 tablespoon; 15 g)",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "2 1/2 teaspoons (8 g) Diamond Crystal kosher salt; for table salt, use about half as much by volume or the same weight",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "2 1/2 teaspoons (8 g) Diamond Crystal kosher salt; for table salt, use about half as much by volume or the same weight",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "1 teaspoon (5 g) baking soda",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "1 teaspoon (5 g) baking soda",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "1/2 teaspoon baking powder",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "1/2 teaspoon baking powder",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "1/8 teaspoon grated nutmeg",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "1/8 teaspoon grated nutmeg",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "1 large egg (about 1 3/4 ounces; 50 g), straight from the fridge",
-      "category": "Dairy & Eggs",
-      "usage": null
+      "name": "1 large egg (about 1 3/4 ounces; 50 g), straight from the fridge",
+      "category": "Dairy & Eggs"
     },
     {
-      "original": "12 1/2 ounces all-purpose flour (2 3/4 cups, spooned; 355 g), such as Gold Medal",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "12 1/2 ounces all-purpose flour (2 3/4 cups, spooned; 355 g), such as Gold Medal",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "12 ounces assorted dark, milk, or white chocolate (not commercial chips), roughly chopped (about 2 cups; 340 g)",
-      "category": "Pantry Aisles",
-      "usage": null
+      "name": "12 ounces assorted dark, milk, or white chocolate (not commercial chips), roughly chopped (about 2 cups; 340 g)",
+      "category": "Pantry Aisles"
     },
     {
-      "original": "Vanilla ice cream, to serve (optional)",
-      "category": "Frozen Foods",
-      "usage": null
+      "name": "Vanilla ice cream, to serve (optional)",
+      "category": "Frozen Foods"
     }
   ]
 }

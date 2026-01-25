@@ -10,18 +10,15 @@ import type { Recipe } from "./scraper.js";
  */
 export type CategorizedIngredient = {
 	/**
-	 * Original ingredient text from the recipe (preserved exactly as provided).
+	 * Ingredient name/text to display. Preserves the original text from the recipe.
+	 * If an ingredient appears multiple times with different contexts, include the usage
+	 * context in the name (e.g. "Fine sea salt and black pepper (for marinade)").
 	 */
-	original: string;
+	name: string;
 	/**
 	 * Shopping category (e.g. "Produce", "Dairy & Eggs", "Meat & Seafood").
 	 */
 	category: string;
-	/**
-	 * Optional usage context (e.g. "for marinade", "for salmon") when ingredient appears multiple times.
-	 * Only include if the ingredient is used in a specific section or step that would help distinguish duplicates.
-	 */
-	usage: string | null;
 };
 
 /**
@@ -145,9 +142,8 @@ enum ErrorDisplay {
  * all required fields are present and have the correct types.
  */
 const categorizedIngredientSchema = z.object({
-	original: z.string().min(1, "Original ingredient text is required"),
+	name: z.string().min(1, "Ingredient name is required"),
 	category: z.string().min(1, "Category is required"),
-	usage: z.string().nullable(),
 });
 
 const claudeResponseSchema = z.object({

@@ -330,7 +330,7 @@ export async function createRecipePage(
  * @returns Array of Notion block objects for ingredients.
  */
 function buildIngredientBlocks(
-	grouped: Map<string, Array<{ original: string; usage?: string }>>,
+	grouped: Map<string, Array<{ name: string }>>,
 ): unknown[] {
 	const blocks: unknown[] = [];
 	const orderedCategories = getCategoryOrder();
@@ -354,10 +354,7 @@ function buildIngredientBlocks(
 		if (ingredients && ingredients.length > 0) {
 			blocks.push(heading3(category));
 			for (const ingredient of ingredients) {
-				const displayText = ingredient.usage
-					? `${ingredient.original} (${ingredient.usage})`
-					: ingredient.original;
-				blocks.push(bulletItem(displayText));
+				blocks.push(bulletItem(ingredient.name));
 			}
 		}
 	}
@@ -395,13 +392,12 @@ function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
 		/**
 		 * Convert CategorizedIngredient[] to the format expected by buildIngredientBlocks.
 		 */
-		const converted = new Map<string, Array<{ original: string; usage?: string }>>();
+		const converted = new Map<string, Array<{ name: string }>>();
 		for (const [category, ingredients] of grouped.entries()) {
 			converted.set(
 				category,
 				ingredients.map((ing) => ({
-					original: ing.original,
-					usage: ing.usage ?? undefined,
+					name: ing.name,
 				})),
 			);
 		}

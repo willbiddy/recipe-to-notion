@@ -1,7 +1,16 @@
 /**
- * Background service worker for the Recipe Clipper for Notion extension.
+ * Background service worker for the recipe-to-notion extension.
  * Handles context menu and other background tasks.
  */
+
+/**
+ * Context menu configuration.
+ */
+const CONTEXT_MENU = {
+	ID: "save-recipe",
+	TITLE: "Save Recipe with recipe-to-notion",
+	CONTEXTS: ["page"] as chrome.contextMenus.ContextType[],
+} as const;
 
 /**
  * Creates context menu item when extension is installed.
@@ -9,9 +18,9 @@
 chrome.runtime.onInstalled.addListener(() => {
 	if (chrome.contextMenus) {
 		chrome.contextMenus.create({
-			id: "save-recipe",
-			title: "Save Recipe with Recipe Clipper for Notion",
-			contexts: ["page"],
+			id: CONTEXT_MENU.ID,
+			title: CONTEXT_MENU.TITLE,
+			contexts: CONTEXT_MENU.CONTEXTS,
 		});
 	}
 });
@@ -19,12 +28,12 @@ chrome.runtime.onInstalled.addListener(() => {
 /**
  * Handles context menu clicks.
  *
- * Attempts to open the extension popup when "Save Recipe with Recipe Clipper for Notion" is selected.
+ * Attempts to open the extension popup when the save recipe menu item is selected.
  * Falls back gracefully if popup cannot be opened programmatically.
  */
 if (chrome.contextMenus) {
 	chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-		if (info.menuItemId === "save-recipe" && tab?.url) {
+		if (info.menuItemId === CONTEXT_MENU.ID && tab?.url) {
 			try {
 				await chrome.action.openPopup();
 			} catch {

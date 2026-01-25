@@ -47,11 +47,6 @@ export const INGREDIENT_HEADER_PATTERN = /^(INGREDIENTS|INGREDIENT LIST)$/i;
  */
 export const INSTRUCTION_HEADER_PATTERN = /^(INSTRUCTIONS|DIRECTIONS|STEPS)$/i;
 
-/**
- * Pattern to match ingredient list headers (should be filtered out).
- */
-export const INGREDIENT_HEADER_PATTERN = /^(INGREDIENTS|INGREDIENT LIST)$/i;
-
 // ─────────────────────────────────────────────────────────────────────────────
 // HTML entity decoding
 // ─────────────────────────────────────────────────────────────────────────────

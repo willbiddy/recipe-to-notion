@@ -11,6 +11,28 @@ import {
 } from "./shared/ui.js";
 
 /**
+ * Element IDs used in the popup.
+ */
+const POPUP_ELEMENT_IDS = {
+	URL_DISPLAY: "url-display",
+	SAVE_BUTTON: "save-button",
+	SETTINGS_BUTTON: "settings-button",
+	SETTINGS_PANEL: "settings-panel",
+	API_KEY_INPUT: "api-key-input",
+	SAVE_API_KEY_BUTTON: "save-api-key-button",
+} as const;
+
+/**
+ * Delay before opening Notion page (milliseconds).
+ */
+const NOTION_OPEN_DELAY_MS = 500;
+
+/**
+ * Delay before clearing success status (milliseconds).
+ */
+const SUCCESS_STATUS_CLEAR_DELAY_MS = 2000;
+
+/**
  * Gets the current active tab URL and title.
  *
  * @returns Object with the current tab's URL and title, or null values if unavailable.
@@ -134,14 +156,16 @@ async function handleSave(): Promise<void> {
 			setTimeout(() => {
 				updateStatus("Opening...", "info", { textSize: "xs" });
 				setTimeout(() => {
-					chrome.tabs.create({ url: result.notionUrl });
-				}, 500);
-			}, 500);
-		} else if (result.error.includes("Duplicate recipe found") && result.notionUrl) {
-			updateStatus(`This recipe already exists. Opening...`, "info", { textSize: "xs" });
+					if (result.notionUrl) {
+						chrome.tabs.create({ url: result.notionUrl });
+					}
+				}, NOTION_OPEN_DELAY_MS);
+			}, NOTION_OPEN_DELAY_MS);
+		} else if (result.error?.includes("Duplicate recipe found") && result.notionUrl) {
+			updateStatus("This recipe already exists. Opening...", "info", { textSize: "xs" });
 			setTimeout(() => {
 				chrome.tabs.create({ url: result.notionUrl });
-			}, 500);
+			}, NOTION_OPEN_DELAY_MS);
 		} else {
 			updateStatus(result.error || "Failed to save recipe", "error", { textSize: "xs" });
 		}
@@ -160,9 +184,17 @@ async function handleSave(): Promise<void> {
  *
  * Shows or hides the settings accordion and updates the chevron icon rotation.
  */
+/**
+ * Chevron rotation values for settings button.
+ */
+const CHEVRON_ROTATION = {
+	EXPANDED: "180deg",
+	COLLAPSED: "0deg",
+} as const;
+
 function toggleSettings(): void {
-	const settingsPanel = document.getElementById("settings-panel");
-	const settingsButton = document.getElementById("settings-button");
+	const settingsPanel = document.getElementById(POPUP_ELEMENT_IDS.SETTINGS_PANEL);
+	const settingsButton = document.getElementById(POPUP_ELEMENT_IDS.SETTINGS_BUTTON);
 	if (!settingsPanel || !settingsButton) {
 		console.error("Settings panel or button not found");
 		return;
@@ -175,14 +207,14 @@ function toggleSettings(): void {
 		settingsPanel.classList.remove("hidden");
 		settingsButton.setAttribute("aria-expanded", "true");
 		if (chevron) {
-			chevron.style.transform = "rotate(180deg)";
+			chevron.style.transform = `rotate(${CHEVRON_ROTATION.EXPANDED})`;
 		}
 		loadApiKeyIntoInput();
 	} else {
 		settingsPanel.classList.add("hidden");
 		settingsButton.setAttribute("aria-expanded", "false");
 		if (chevron) {
-			chevron.style.transform = "rotate(0deg)";
+			chevron.style.transform = `rotate(${CHEVRON_ROTATION.COLLAPSED})`;
 		}
 	}
 }
@@ -193,8 +225,10 @@ function toggleSettings(): void {
  * Called when the settings panel is opened.
  */
 async function loadApiKeyIntoInput(): Promise<void> {
-	const input = document.getElementById("api-key-input") as HTMLInputElement;
-	if (!input) return;
+	const input = document.getElementById(POPUP_ELEMENT_IDS.API_KEY_INPUT) as HTMLInputElement;
+	if (!input) {
+		return;
+	}
 
 	const apiKey = await storage.getApiKey();
 	if (apiKey) {
@@ -210,8 +244,10 @@ async function loadApiKeyIntoInput(): Promise<void> {
  * Validates that the API key is not empty before saving.
  */
 async function saveApiKey(): Promise<void> {
-	const input = document.getElementById("api-key-input") as HTMLInputElement;
-	if (!input) return;
+	const input = document.getElementById(POPUP_ELEMENT_IDS.API_KEY_INPUT) as HTMLInputElement;
+	if (!input) {
+		return;
+	}
 
 	const apiKey = input.value.trim();
 	if (!apiKey) {
@@ -224,7 +260,7 @@ async function saveApiKey(): Promise<void> {
 		updateStatus("API secret saved successfully", "success", { textSize: "xs" });
 		setTimeout(() => {
 			clearStatus();
-		}, 2000);
+		}, SUCCESS_STATUS_CLEAR_DELAY_MS);
 	} catch (error) {
 		updateStatus(error instanceof Error ? error.message : "Failed to save API secret", "error", {
 			textSize: "xs",
@@ -241,17 +277,17 @@ async function init(): Promise<void> {
 	const { url, title } = await getCurrentTab();
 	updateUrlDisplay(url, title);
 
-	const saveButton = document.getElementById("save-button");
+	const saveButton = document.getElementById(POPUP_ELEMENT_IDS.SAVE_BUTTON);
 	if (saveButton) {
 		saveButton.addEventListener("click", handleSave);
 	}
 
-	const settingsButton = document.getElementById("settings-button");
+	const settingsButton = document.getElementById(POPUP_ELEMENT_IDS.SETTINGS_BUTTON);
 	if (settingsButton) {
 		settingsButton.addEventListener("click", toggleSettings);
 	}
 
-	const saveApiKeyButton = document.getElementById("save-api-key-button");
+	const saveApiKeyButton = document.getElementById(POPUP_ELEMENT_IDS.SAVE_API_KEY_BUTTON);
 	if (saveApiKeyButton) {
 		saveApiKeyButton.addEventListener("click", saveApiKey);
 	}

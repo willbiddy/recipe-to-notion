@@ -7,6 +7,18 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+/**
+ * HTTP status codes used in the index endpoint.
+ */
+const HttpStatus = {
+	NotFound: 404,
+} as const;
+
+/**
+ * Content type for HTML responses.
+ */
+const HTML_CONTENT_TYPE = "text/html; charset=utf-8";
+
 // Get the correct path to public/index.html relative to this file
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -24,16 +36,17 @@ export default {
 
 			return new Response(html, {
 				headers: {
-					"Content-Type": "text/html; charset=utf-8",
+					"Content-Type": HTML_CONTENT_TYPE,
 				},
 			});
 		} catch (error) {
 			console.error("Error serving index.html:", error);
 			console.error("Tried to read from:", indexPath);
-			return new Response(
-				`Not Found. Path: ${indexPath}, Error: ${error instanceof Error ? error.message : String(error)}`,
-				{ status: 404 },
-			);
+
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			return new Response(`Not Found. Path: ${indexPath}, Error: ${errorMessage}`, {
+				status: HttpStatus.NotFound,
+			});
 		}
 	},
 };

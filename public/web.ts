@@ -1,5 +1,5 @@
 /**
- * Web interface for Recipe Clipper for Notion.
+ * Web interface for recipe-to-notion.
  * Handles API key management, URL submission, and SSE progress updates.
  */
 
@@ -13,6 +13,37 @@ import {
 	showProgress,
 	updateStatus,
 } from "./shared/ui.js";
+
+/**
+ * Element IDs used in the web interface.
+ */
+const WEB_ELEMENT_IDS = {
+	URL_INPUT: "url-input",
+	SAVE_BUTTON: "save-button",
+	SETTINGS_BUTTON: "settings-button",
+	SETTINGS_PANEL: "settings-panel",
+	API_KEY_INPUT: "api-key-input",
+	SAVE_API_KEY_BUTTON: "save-api-key-button",
+	STATUS: "status",
+} as const;
+
+/**
+ * Delay before auto-submitting URL from query parameters (milliseconds).
+ */
+const AUTO_SUBMIT_DELAY_MS = 300;
+
+/**
+ * Delay before clearing success status (milliseconds).
+ */
+const SUCCESS_STATUS_CLEAR_DELAY_MS = 2000;
+
+/**
+ * Chevron rotation values for settings button.
+ */
+const CHEVRON_ROTATION = {
+	EXPANDED: "180deg",
+	COLLAPSED: "0deg",
+} as const;
 
 /**
  * Gets the server URL from the current origin.
@@ -61,7 +92,7 @@ function saveRecipeWithProgress(url: string) {
  * Validates the URL and initiates recipe saving with progress updates.
  */
 async function handleSave(): Promise<void> {
-	const urlInput = document.getElementById("url-input") as HTMLInputElement;
+	const urlInput = document.getElementById(WEB_ELEMENT_IDS.URL_INPUT) as HTMLInputElement;
 	const url = urlInput?.value.trim();
 
 	if (!url) {
@@ -105,8 +136,8 @@ async function handleSave(): Promise<void> {
  * Shows or hides the settings accordion and updates the chevron icon rotation.
  */
 function toggleSettings(): void {
-	const settingsPanel = document.getElementById("settings-panel");
-	const settingsButton = document.getElementById("settings-button");
+	const settingsPanel = document.getElementById(WEB_ELEMENT_IDS.SETTINGS_PANEL);
+	const settingsButton = document.getElementById(WEB_ELEMENT_IDS.SETTINGS_BUTTON);
 	if (!settingsPanel || !settingsButton) {
 		console.error("Settings panel or button not found", { settingsPanel, settingsButton });
 		return;
@@ -119,14 +150,14 @@ function toggleSettings(): void {
 		settingsPanel.classList.remove("hidden");
 		settingsButton.setAttribute("aria-expanded", "true");
 		if (chevron) {
-			chevron.style.transform = "rotate(180deg)";
+			chevron.style.transform = `rotate(${CHEVRON_ROTATION.EXPANDED})`;
 		}
 		loadApiKeyIntoInput();
 	} else {
 		settingsPanel.classList.add("hidden");
 		settingsButton.setAttribute("aria-expanded", "false");
 		if (chevron) {
-			chevron.style.transform = "rotate(0deg)";
+			chevron.style.transform = `rotate(${CHEVRON_ROTATION.COLLAPSED})`;
 		}
 	}
 }
@@ -154,8 +185,10 @@ function displayRecipeInfo(data: {
 		totalTimeMinutes: number;
 	};
 }): void {
-	const statusDiv = document.getElementById("status");
-	if (!statusDiv) return;
+	const statusDiv = document.getElementById(WEB_ELEMENT_IDS.STATUS);
+	if (!statusDiv) {
+		return;
+	}
 
 	const infoLines: string[] = [];
 	if (data.recipe.author) {
@@ -196,8 +229,10 @@ function displayRecipeInfo(data: {
  * Called when the settings panel is opened.
  */
 async function loadApiKeyIntoInput(): Promise<void> {
-	const input = document.getElementById("api-key-input") as HTMLInputElement;
-	if (!input) return;
+	const input = document.getElementById(WEB_ELEMENT_IDS.API_KEY_INPUT) as HTMLInputElement;
+	if (!input) {
+		return;
+	}
 
 	const apiKey = await storage.getApiKey();
 	if (apiKey) {
@@ -213,8 +248,10 @@ async function loadApiKeyIntoInput(): Promise<void> {
  * Validates that the API key is not empty before saving.
  */
 async function saveApiKeyToStorage(): Promise<void> {
-	const input = document.getElementById("api-key-input") as HTMLInputElement;
-	if (!input) return;
+	const input = document.getElementById(WEB_ELEMENT_IDS.API_KEY_INPUT) as HTMLInputElement;
+	if (!input) {
+		return;
+	}
 
 	const apiKey = input.value.trim();
 	if (!apiKey) {
@@ -227,7 +264,7 @@ async function saveApiKeyToStorage(): Promise<void> {
 		updateStatus("API secret saved successfully", "success");
 		setTimeout(() => {
 			clearStatus();
-		}, 2000);
+		}, SUCCESS_STATUS_CLEAR_DELAY_MS);
 	} catch (error) {
 		updateStatus(error instanceof Error ? error.message : "Failed to save API secret", "error");
 	}
@@ -246,14 +283,14 @@ function handleQueryParameters(): void {
 	if (url) {
 		try {
 			new URL(url);
-			const urlInput = document.getElementById("url-input") as HTMLInputElement;
+			const urlInput = document.getElementById(WEB_ELEMENT_IDS.URL_INPUT) as HTMLInputElement;
 			if (urlInput) {
 				urlInput.value = url;
 				storage.getApiKey().then((apiKey) => {
 					if (apiKey) {
 						setTimeout(() => {
 							handleSave();
-						}, 300);
+						}, AUTO_SUBMIT_DELAY_MS);
 					}
 				});
 			}
@@ -278,8 +315,15 @@ function handleWebShareTarget(): void {
  *
  * Sets up event listeners, handles query parameters, and checks API key configuration.
  */
+/**
+ * Keyboard key constants.
+ */
+const KEYBOARD_KEYS = {
+	ENTER: "Enter",
+} as const;
+
 async function init(): Promise<void> {
-	const saveButton = document.getElementById("save-button");
+	const saveButton = document.getElementById(WEB_ELEMENT_IDS.SAVE_BUTTON);
 	if (saveButton) {
 		saveButton.addEventListener("click", (e) => {
 			e.preventDefault();
@@ -290,7 +334,7 @@ async function init(): Promise<void> {
 		console.error("Save button not found during init");
 	}
 
-	const settingsButton = document.getElementById("settings-button");
+	const settingsButton = document.getElementById(WEB_ELEMENT_IDS.SETTINGS_BUTTON);
 	if (settingsButton) {
 		settingsButton.addEventListener("click", (e) => {
 			e.preventDefault();
@@ -301,17 +345,17 @@ async function init(): Promise<void> {
 		console.error("Settings button not found during init");
 	}
 
-	const saveApiKeyButton = document.getElementById("save-api-key-button");
+	const saveApiKeyButton = document.getElementById(WEB_ELEMENT_IDS.SAVE_API_KEY_BUTTON);
 	if (saveApiKeyButton) {
 		saveApiKeyButton.addEventListener("click", saveApiKeyToStorage);
 	}
 
 	setupApiKeyVisibilityToggle();
 
-	const urlInput = document.getElementById("url-input") as HTMLInputElement;
+	const urlInput = document.getElementById(WEB_ELEMENT_IDS.URL_INPUT) as HTMLInputElement;
 	if (urlInput) {
 		urlInput.addEventListener("keypress", (e) => {
-			if (e.key === "Enter") {
+			if (e.key === KEYBOARD_KEYS.ENTER) {
 				handleSave();
 			}
 		});

@@ -5,6 +5,16 @@
 import type { StorageAdapter } from "./storage.js";
 
 /**
+ * SSE event data prefix pattern.
+ */
+const SSE_DATA_PREFIX = "data: ";
+
+/**
+ * Length of SSE data prefix (for slicing JSON data from event line).
+ */
+const SSE_DATA_PREFIX_LENGTH = 6;
+
+/**
  * Response format from the server API.
  */
 export type RecipeResponse =
@@ -172,9 +182,11 @@ export async function saveRecipe(
 							buffer = lines.pop() || "";
 
 							for (const line of lines) {
-								if (line.startsWith("data: ")) {
+								if (line.startsWith(SSE_DATA_PREFIX)) {
 									try {
-										const data = JSON.parse(line.slice(6)) as ServerProgressEvent;
+										const data = JSON.parse(
+											line.slice(SSE_DATA_PREFIX_LENGTH),
+										) as ServerProgressEvent;
 
 										if (data.type === ServerProgressEventType.Progress) {
 											callbacks.onProgress(data.message);
@@ -200,10 +212,8 @@ export async function saveRecipe(
 											});
 											return;
 										}
-									} catch (_e) {
-										/**
-										 * Ignore parse errors for malformed events.
-										 */
+									} catch {
+										// Ignore parse errors for malformed SSE events
 									}
 								}
 							}
@@ -218,18 +228,7 @@ export async function saveRecipe(
 					});
 				})
 				.catch((error) => {
-					/**
-					 * Network error - server might not be running.
-					 */
-					let errorMessage: string;
-					if (error instanceof TypeError && error.message.includes("fetch")) {
-						errorMessage = `Cannot connect to server.\n\nMake sure the server is running.`;
-					} else if (error instanceof TypeError) {
-						errorMessage = `Connection error: ${error.message}`;
-					} else {
-						errorMessage = error instanceof Error ? error.message : String(error);
-					}
-
+					const errorMessage = formatNetworkError(error);
 					callbacks.onError(errorMessage);
 					resolve({
 						success: false,
@@ -241,4 +240,22 @@ export async function saveRecipe(
 			reject(error);
 		}
 	});
+}
+
+/**
+ * Formats network errors into user-friendly messages.
+ *
+ * @param error - The error that occurred.
+ * @returns Formatted error message string.
+ */
+function formatNetworkError(error: unknown): string {
+	if (error instanceof TypeError && error.message.includes("fetch")) {
+		return "Cannot connect to server.\n\nMake sure the server is running.";
+	}
+
+	if (error instanceof TypeError) {
+		return `Connection error: ${error.message}`;
+	}
+
+	return error instanceof Error ? error.message : String(error);
 }

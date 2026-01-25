@@ -1,10 +1,11 @@
 import type { Recipe } from "./scraper.js";
 import type { RecipeTags } from "./tagger.js";
+import { HealthinessScore } from "./tagger.js";
 
 /**
  * Fallback logger interface matching consola's API.
  */
-interface FallbackLogger {
+type FallbackLogger = {
 	ready(msg: string): void;
 	start(msg: string): void;
 	success(msg: string): void;
@@ -12,7 +13,7 @@ interface FallbackLogger {
 	error(msg: string): void;
 	info(msg: string): void;
 	box(options: { title: string; message: string }): void;
-}
+};
 
 /**
  * Fallback logger when consola is not available (e.g., in serverless environments).
@@ -57,10 +58,10 @@ function getConsola(): FallbackLogger {
 /**
  * Color utility functions interface.
  */
-interface ColorUtils {
+type ColorUtils = {
 	underline(str: string): string;
 	blue(str: string): string;
-}
+};
 
 /**
  * Gets color utilities, falling back to no-op functions if not available.
@@ -131,7 +132,7 @@ export function printRecipeSummary(recipe: Recipe, tags: RecipeTags): void {
 		recipe.author ? `Author:      ${recipe.author}` : null,
 		`Tags:        ${tags.tags.join(", ")}`,
 		`Meal type:   ${tags.mealType.join(", ")}`,
-		`Healthiness: ${tags.healthiness}/10`,
+		`Healthiness: ${tags.healthiness}/${HealthinessScore.Max}`,
 		`Minutes:     ${tags.totalTimeMinutes}`,
 		`Ingredients: ${recipe.ingredients.length} items`,
 		`Steps:       ${recipe.instructions.length} steps`,

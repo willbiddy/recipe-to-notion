@@ -1,4 +1,5 @@
 import { Client } from "@notionhq/client";
+import { DuplicateRecipeError, NotionApiError } from "./errors.js";
 import type { Recipe } from "./scraper.js";
 import type { CategorizedIngredient, RecipeTags } from "./tagger.js";
 import { IngredientCategory } from "./tagger.js";
@@ -26,6 +27,16 @@ const NOTION_API_VERSION = "2022-06-28";
  * Maximum text length for Notion text blocks (characters).
  */
 const MAX_TEXT_LENGTH = 2000;
+
+/**
+ * Maximum number of blocks allowed in a Notion page.
+ */
+const MAX_NOTION_BLOCKS = 100;
+
+/**
+ * Length of ellipsis string ("...") used when truncating text.
+ */
+const ELLIPSIS_LENGTH = 3;
 
 /**
  * Pattern to match escaped double newlines in description text.
@@ -221,6 +232,7 @@ async function checkForDuplicate(
 	 */
 	if (!skipUrlCheck) {
 		const urlDuplicate = await checkForDuplicateByUrl(recipe.sourceUrl, notionApiKey, databaseId);
+
 		if (urlDuplicate) {
 			return urlDuplicate;
 		}
@@ -238,7 +250,7 @@ async function checkForDuplicate(
  * @param response - The failed HTTP response.
  * @param propertyName - The property name to include in the error message.
  * @param propertyType - The expected property type (e.g., "URL", "Title").
- * @throws Error with detailed message about the API failure.
+ * @throws NotionApiError with detailed message about the API failure.
  */
 async function handleNotionApiError(
 	response: Response,
@@ -254,7 +266,7 @@ async function handleNotionApiError(
 		`Notion API error: ${response.status} ${response.statusText}. ${errorMessage}${codeSuffix}. ` +
 		`Check that the property "${propertyName}" exists in your database and is a ${propertyType} type.`;
 
-	throw new Error(fullMessage);
+	throw new NotionApiError(fullMessage, response.status, propertyName, propertyType);
 }
 
 /**
@@ -325,10 +337,9 @@ export async function createRecipePage(
 
 	if (!skipDuplicateCheck) {
 		const duplicate = await checkForDuplicate(recipe, notionApiKey, databaseId);
+
 		if (duplicate) {
-			throw new Error(
-				`Duplicate recipe found: "${duplicate.title}" (${duplicate.url}) already exists in the database. View it at: ${duplicate.notionUrl}`,
-			);
+			throw new DuplicateRecipeError(duplicate.title, duplicate.url, duplicate.notionUrl);
 		}
 	}
 
@@ -397,6 +408,7 @@ function buildIngredientBlocks(
 
 	for (const category of allCategories) {
 		const ingredients = grouped.get(category);
+
 		if (!ingredients || ingredients.length === 0) {
 			continue;
 		}
@@ -454,7 +466,7 @@ function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
 	}
 
 	// Notion has a limit of 100 blocks per page
-	return blocks.slice(0, 100);
+	return blocks.slice(0, MAX_NOTION_BLOCKS);
 }
 
 /**
@@ -562,7 +574,7 @@ function truncate(text: string, maxLength: number): string {
 	if (text.length <= maxLength) {
 		return text;
 	}
-	return `${text.slice(0, maxLength - 3)}...`;
+	return `${text.slice(0, maxLength - ELLIPSIS_LENGTH)}...`;
 }
 
 /**

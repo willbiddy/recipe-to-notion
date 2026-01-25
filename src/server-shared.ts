@@ -1,6 +1,14 @@
 /**
  * Shared server utilities for both Bun server and Vercel serverless functions.
  */
+import {
+	DuplicateRecipeError,
+	NotionApiError,
+	ParseError,
+	ScrapingError,
+	TaggingError,
+	ValidationError,
+} from "./errors.js";
 
 /**
  * HTTP status codes used throughout the server.
@@ -27,11 +35,6 @@ export type RecipeResponse = {
 };
 
 /**
- * Pattern to extract Notion URL from duplicate error messages.
- */
-export const NOTION_URL_EXTRACTION_PATTERN = /View it at: (https:\/\/www\.notion\.so\/[^\s]+)/;
-
-/**
  * Rate limit header names for responses.
  */
 export const RATE_LIMIT_HEADERS = {
@@ -48,9 +51,9 @@ export const DEFAULT_RATE_LIMIT_VALUE = 10;
 /**
  * Logger interface for error logging.
  */
-export interface ErrorLogger {
+export type ErrorLogger = {
 	error(message: string, details?: unknown): void;
-}
+};
 
 /**
  * Sets security headers on responses.
@@ -111,8 +114,66 @@ export function generateRequestId(): string {
 }
 
 /**
+ * Handles duplicate recipe errors.
+ */
+function handleDuplicateError(error: DuplicateRecipeError): {
+	message: string;
+	notionUrl: string;
+	statusCode: number;
+} {
+	return {
+		statusCode: HttpStatus.Conflict,
+		message: error.message,
+		notionUrl: error.notionUrl,
+	};
+}
+
+/**
+ * Handles scraping errors with appropriate client messages.
+ */
+function handleScrapingError(error: ScrapingError): {
+	message: string;
+	statusCode: number;
+} {
+	const statusCode = error.statusCode || HttpStatus.BadGateway;
+	let message: string;
+
+	if (error.statusCode === 403) {
+		message =
+			"The recipe site blocked the request. Try saving the page source and using the --html option.";
+	} else if (error.message.includes("timeout")) {
+		message = "Request timed out. The recipe site may be slow or unresponsive.";
+	} else {
+		message = "Failed to fetch the recipe page. The site may be unavailable or blocking requests.";
+	}
+
+	return { message, statusCode };
+}
+
+/**
+ * Handles generic errors by checking message content.
+ */
+function handleGenericError(errorMessage: string): {
+	message: string;
+	statusCode: number;
+} {
+	if (errorMessage.includes("Invalid URL") || errorMessage.includes("URL")) {
+		return {
+			statusCode: HttpStatus.BadRequest,
+			message: errorMessage,
+		};
+	}
+	return {
+		statusCode: HttpStatus.InternalServerError,
+		message: "An error occurred while processing the recipe. Please try again.",
+	};
+}
+
+/**
  * Sanitizes error messages for client responses.
  * Logs detailed errors server-side but returns generic messages to clients.
+ *
+ * Uses instanceof checks for type-safe error handling with custom error classes.
  *
  * @param error - The error that occurred.
  * @param logger - Logger instance for server-side error logging.
@@ -125,51 +186,51 @@ export function sanitizeError(
 	requestId?: string,
 ): { message: string; notionUrl?: string; statusCode: number } {
 	const fullError = error instanceof Error ? error : new Error(String(error));
-	const errorMessage = fullError.message;
-	const isDuplicate = errorMessage.includes("Duplicate recipe found");
 
 	// Log detailed error server-side
 	const logPrefix = requestId ? `[${requestId}]` : "";
-	logger.error(`${logPrefix} Recipe processing error:`, {
-		message: errorMessage,
+	const errorDetails: Record<string, unknown> = {
+		message: fullError.message,
 		stack: fullError.stack,
 		name: fullError.name,
-	});
+	};
+	if (error instanceof Error && error.cause && typeof error.cause === "object") {
+		errorDetails.cause = error.cause;
+	}
+	logger.error(`${logPrefix} Recipe processing error:`, errorDetails);
 
-	let statusCode: number = HttpStatus.InternalServerError;
-	let clientMessage: string;
-	let notionUrl: string | undefined;
-
-	if (isDuplicate) {
-		statusCode = HttpStatus.Conflict;
-		// Duplicate errors are safe to return as-is (user-friendly)
-		clientMessage = errorMessage;
-		const urlMatch = errorMessage.match(NOTION_URL_EXTRACTION_PATTERN);
-		if (urlMatch) {
-			notionUrl = urlMatch[1];
-		}
-	} else if (errorMessage.includes("Failed to fetch") || errorMessage.includes("403")) {
-		statusCode = HttpStatus.BadGateway;
-		// Network errors: return generic message but keep some context
-		if (errorMessage.includes("403")) {
-			clientMessage =
-				"The recipe site blocked the request. Try saving the page source and using the --html option.";
-		} else if (errorMessage.includes("timeout")) {
-			clientMessage = "Request timed out. The recipe site may be slow or unresponsive.";
-		} else {
-			clientMessage =
-				"Failed to fetch the recipe page. The site may be unavailable or blocking requests.";
-		}
-	} else if (errorMessage.includes("Invalid URL") || errorMessage.includes("URL")) {
-		statusCode = HttpStatus.BadRequest;
-		// URL validation errors are safe to return
-		clientMessage = errorMessage;
-	} else {
-		// Generic internal errors: don't expose details
-		clientMessage = "An error occurred while processing the recipe. Please try again.";
+	// Type-safe error handling using instanceof checks
+	if (error instanceof DuplicateRecipeError) {
+		return handleDuplicateError(error);
 	}
 
-	return { message: clientMessage, notionUrl, statusCode };
+	if (error instanceof ScrapingError) {
+		return handleScrapingError(error);
+	}
+
+	if (error instanceof NotionApiError) {
+		return {
+			statusCode: HttpStatus.BadGateway,
+			message: "Failed to save recipe to Notion. Please check your Notion API configuration.",
+		};
+	}
+
+	if (error instanceof ValidationError) {
+		return {
+			statusCode: HttpStatus.BadRequest,
+			message: error.message,
+		};
+	}
+
+	if (error instanceof ParseError || error instanceof TaggingError) {
+		return {
+			statusCode: HttpStatus.InternalServerError,
+			message: "An error occurred while processing the recipe. Please try again.",
+		};
+	}
+
+	// Generic errors: check message for backward compatibility
+	return handleGenericError(fullError.message);
 }
 
 /**

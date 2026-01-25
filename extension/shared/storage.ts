@@ -11,10 +11,10 @@ const STORAGE_KEY = "apiKey";
 /**
  * Storage interface for API key operations.
  */
-export interface StorageAdapter {
+export type StorageAdapter = {
 	getApiKey(): Promise<string | null>;
 	saveApiKey(apiKey: string): Promise<void>;
-}
+};
 
 /**
  * localStorage adapter for web interface.

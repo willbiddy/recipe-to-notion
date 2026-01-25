@@ -12,7 +12,7 @@
 /**
  * Rate limit configuration.
  */
-export interface RateLimitConfig {
+export type RateLimitConfig = {
 	/**
 	 * Maximum number of requests allowed in the time window.
 	 */
@@ -21,7 +21,7 @@ export interface RateLimitConfig {
 	 * Time window in milliseconds.
 	 */
 	windowMs: number;
-}
+};
 
 /**
  * Default rate limit: 10 requests per minute per IP/API key.
@@ -34,7 +34,7 @@ export const DEFAULT_RATE_LIMIT: RateLimitConfig = {
 /**
  * Request tracking entry.
  */
-interface RateLimitEntry {
+type RateLimitEntry = {
 	/**
 	 * Number of requests made in the current window.
 	 */
@@ -43,7 +43,7 @@ interface RateLimitEntry {
 	 * Timestamp when the window started.
 	 */
 	windowStart: number;
-}
+};
 
 /**
  * In-memory store for rate limit tracking.

@@ -8,26 +8,12 @@ import { createStorageAdapter } from "./shared/storage.js";
 import {
 	clearStatus,
 	hideProgress,
+	StatusType,
 	setLoading,
 	setupApiKeyVisibilityToggle,
 	showProgress,
 	updateStatus,
 } from "./shared/ui.js";
-
-/**
- * Element IDs used in the web interface.
- */
-const WEB_ELEMENT_IDS = {
-	URL_INPUT: "url-input",
-	CLEAR_URL_BUTTON: "clear-url-button",
-	SAVE_BUTTON: "save-button",
-	SETTINGS_BUTTON: "settings-button",
-	SETTINGS_PANEL: "settings-panel",
-	API_KEY_INPUT: "api-key-input",
-	SAVE_API_KEY_BUTTON: "save-api-key-button",
-	STATUS: "status",
-	URL_VALIDATION: "url-validation",
-} as const;
 
 /**
  * Delay before auto-submitting URL from query parameters (milliseconds).
@@ -40,12 +26,19 @@ const AUTO_SUBMIT_DELAY_MS = 300;
 const SUCCESS_STATUS_CLEAR_DELAY_MS = 2000;
 
 /**
- * Chevron rotation values for settings button.
+ * Delay before clearing URL input after successful save (milliseconds).
  */
-const CHEVRON_ROTATION = {
-	EXPANDED: "180deg",
-	COLLAPSED: "0deg",
-} as const;
+const CLEAR_URL_INPUT_DELAY_MS = 500;
+
+/**
+ * Animation duration for settings panel (milliseconds).
+ */
+const SETTINGS_ANIMATION_DURATION_MS = 300;
+
+/**
+ * Delay before retrying to find DOM elements (milliseconds).
+ */
+const DOM_RETRY_DELAY_MS = 100;
 
 /**
  * Gets the server URL from the current origin.
@@ -94,16 +87,16 @@ function saveRecipeWithProgress(url: string) {
  * Validates the URL and initiates recipe saving with progress updates.
  */
 async function handleSave(): Promise<void> {
-	const urlInput = document.getElementById(WEB_ELEMENT_IDS.URL_INPUT) as HTMLInputElement;
+	const urlInput = document.getElementById("url-input") as HTMLInputElement;
 	const url = urlInput?.value.trim();
 
 	if (!url) {
-		updateStatus("Please enter a recipe URL", "error");
+		updateStatus("Please enter a recipe URL", StatusType.ERROR);
 		return;
 	}
 
 	if (!url.startsWith("http://") && !url.startsWith("https://")) {
-		updateStatus("Not a valid web page URL. Must start with http:// or https://", "error");
+		updateStatus("Not a valid web page URL. Must start with http:// or https://", StatusType.ERROR);
 		return;
 	}
 
@@ -117,23 +110,27 @@ async function handleSave(): Promise<void> {
 		if (result.success) {
 			// Recipe info is displayed in displayRecipeInfo callback
 			// Clear the URL input after successful save
-			const urlInput = document.getElementById(WEB_ELEMENT_IDS.URL_INPUT) as HTMLInputElement;
+			const urlInput = document.getElementById("url-input") as HTMLInputElement;
+
 			if (urlInput) {
 				setTimeout(() => {
 					urlInput.value = "";
 					updateUrlValidationState("");
-				}, 500);
+				}, CLEAR_URL_INPUT_DELAY_MS);
 			}
 		} else if (result.error?.includes("Duplicate recipe found") && result.notionUrl) {
 			updateStatus(
 				`This recipe already exists. <a href="${result.notionUrl}" target="_blank" class="underline font-semibold">Open in Notion</a>`,
-				"info",
+				StatusType.INFO,
 			);
 		} else {
-			updateStatus(result.error || "Failed to save recipe", "error");
+			updateStatus(result.error || "Failed to save recipe", StatusType.ERROR);
 		}
 	} catch (error) {
-		updateStatus(error instanceof Error ? error.message : "An unexpected error occurred", "error");
+		updateStatus(
+			error instanceof Error ? error.message : "An unexpected error occurred",
+			StatusType.ERROR,
+		);
 	} finally {
 		setLoading(false);
 		hideProgress();
@@ -146,8 +143,9 @@ async function handleSave(): Promise<void> {
  * Shows or hides the settings accordion and updates the chevron icon rotation.
  */
 function toggleSettings(): void {
-	const settingsPanel = document.getElementById(WEB_ELEMENT_IDS.SETTINGS_PANEL);
-	const settingsButton = document.getElementById(WEB_ELEMENT_IDS.SETTINGS_BUTTON);
+	const settingsPanel = document.getElementById("settings-panel");
+	const settingsButton = document.getElementById("settings-button");
+
 	if (!settingsPanel || !settingsButton) {
 		console.error("Settings panel or button not found", { settingsPanel, settingsButton });
 		return;
@@ -160,7 +158,7 @@ function toggleSettings(): void {
 		settingsPanel.classList.remove("hidden");
 		settingsButton.setAttribute("aria-expanded", "true");
 		if (chevron) {
-			chevron.style.transform = `rotate(${CHEVRON_ROTATION.EXPANDED})`;
+			chevron.style.transform = "rotate(180deg)";
 		}
 		// Trigger animation
 		requestAnimationFrame(() => {
@@ -174,12 +172,12 @@ function toggleSettings(): void {
 		settingsPanel.classList.remove("animate-slide-down");
 		settingsButton.setAttribute("aria-expanded", "false");
 		if (chevron) {
-			chevron.style.transform = `rotate(${CHEVRON_ROTATION.COLLAPSED})`;
+			chevron.style.transform = "rotate(0deg)";
 		}
 		// Wait for animation to complete before hiding
 		setTimeout(() => {
 			settingsPanel.classList.add("hidden");
-		}, 300);
+		}, SETTINGS_ANIMATION_DURATION_MS);
 	}
 }
 
@@ -206,7 +204,8 @@ function displayRecipeInfo(data: {
 		totalTimeMinutes: number;
 	};
 }): void {
-	const statusDiv = document.getElementById(WEB_ELEMENT_IDS.STATUS);
+	const statusDiv = document.getElementById("status");
+
 	if (!statusDiv) {
 		return;
 	}
@@ -255,7 +254,8 @@ function displayRecipeInfo(data: {
  * Called when the settings panel is opened.
  */
 async function loadApiKeyIntoInput(): Promise<void> {
-	const input = document.getElementById(WEB_ELEMENT_IDS.API_KEY_INPUT) as HTMLInputElement;
+	const input = document.getElementById("api-key-input") as HTMLInputElement;
+
 	if (!input) {
 		return;
 	}
@@ -274,25 +274,29 @@ async function loadApiKeyIntoInput(): Promise<void> {
  * Validates that the API key is not empty before saving.
  */
 async function saveApiKeyToStorage(): Promise<void> {
-	const input = document.getElementById(WEB_ELEMENT_IDS.API_KEY_INPUT) as HTMLInputElement;
+	const input = document.getElementById("api-key-input") as HTMLInputElement;
+
 	if (!input) {
 		return;
 	}
 
 	const apiKey = input.value.trim();
 	if (!apiKey) {
-		updateStatus("API secret cannot be empty", "error");
+		updateStatus("API secret cannot be empty", StatusType.ERROR);
 		return;
 	}
 
 	try {
 		await storage.saveApiKey(apiKey);
-		updateStatus("API secret saved successfully", "success");
+		updateStatus("API secret saved successfully", StatusType.SUCCESS);
 		setTimeout(() => {
 			clearStatus();
 		}, SUCCESS_STATUS_CLEAR_DELAY_MS);
 	} catch (error) {
-		updateStatus(error instanceof Error ? error.message : "Failed to save API secret", "error");
+		updateStatus(
+			error instanceof Error ? error.message : "Failed to save API secret",
+			StatusType.ERROR,
+		);
 	}
 }
 
@@ -309,7 +313,7 @@ function handleQueryParameters(): void {
 	if (url) {
 		try {
 			new URL(url);
-			const urlInput = document.getElementById(WEB_ELEMENT_IDS.URL_INPUT) as HTMLInputElement;
+			const urlInput = document.getElementById("url-input") as HTMLInputElement;
 			if (urlInput) {
 				urlInput.value = url;
 				storage.getApiKey().then((apiKey) => {
@@ -341,13 +345,6 @@ function handleWebShareTarget(): void {
  *
  * Sets up event listeners, handles query parameters, and checks API key configuration.
  */
-/**
- * Keyboard key constants.
- */
-const KEYBOARD_KEYS = {
-	ENTER: "Enter",
-	ESCAPE: "Escape",
-} as const;
 
 /**
  * Keyboard modifier keys.
@@ -382,11 +379,9 @@ function validateUrl(url: string): boolean {
  * @param url - The current URL value.
  */
 function updateUrlValidationState(url: string): void {
-	const urlInput = document.getElementById(WEB_ELEMENT_IDS.URL_INPUT) as HTMLInputElement;
-	const clearButton = document.getElementById(
-		WEB_ELEMENT_IDS.CLEAR_URL_BUTTON,
-	) as HTMLButtonElement;
-	const validationDiv = document.getElementById(WEB_ELEMENT_IDS.URL_VALIDATION);
+	const urlInput = document.getElementById("url-input") as HTMLInputElement;
+	const clearButton = document.getElementById("clear-url-button") as HTMLButtonElement;
+	const validationDiv = document.getElementById("url-validation");
 
 	if (!urlInput || !clearButton) {
 		return;
@@ -423,7 +418,7 @@ function updateUrlValidationState(url: string): void {
  * Clears the URL input field.
  */
 function clearUrlInput(): void {
-	const urlInput = document.getElementById(WEB_ELEMENT_IDS.URL_INPUT) as HTMLInputElement;
+	const urlInput = document.getElementById("url-input") as HTMLInputElement;
 	if (urlInput) {
 		urlInput.value = "";
 		urlInput.focus();
@@ -433,7 +428,7 @@ function clearUrlInput(): void {
 }
 
 async function init(): Promise<void> {
-	const saveButton = document.getElementById(WEB_ELEMENT_IDS.SAVE_BUTTON);
+	const saveButton = document.getElementById("save-button");
 	if (saveButton) {
 		saveButton.addEventListener("click", (e) => {
 			e.preventDefault();
@@ -444,7 +439,7 @@ async function init(): Promise<void> {
 		console.error("Save button not found during init");
 	}
 
-	const settingsButton = document.getElementById(WEB_ELEMENT_IDS.SETTINGS_BUTTON);
+	const settingsButton = document.getElementById("settings-button");
 	if (settingsButton) {
 		const handleSettingsClick = (e: Event) => {
 			e.preventDefault();
@@ -461,7 +456,7 @@ async function init(): Promise<void> {
 		console.error("Settings button not found during init");
 		// Retry after a short delay in case DOM isn't fully ready
 		setTimeout(() => {
-			const retryButton = document.getElementById(WEB_ELEMENT_IDS.SETTINGS_BUTTON);
+			const retryButton = document.getElementById("settings-button");
 			if (retryButton) {
 				retryButton.addEventListener(
 					"click",
@@ -479,17 +474,17 @@ async function init(): Promise<void> {
 			} else {
 				console.error("Settings button still not found after retry");
 			}
-		}, 100);
+		}, DOM_RETRY_DELAY_MS);
 	}
 
-	const saveApiKeyButton = document.getElementById(WEB_ELEMENT_IDS.SAVE_API_KEY_BUTTON);
+	const saveApiKeyButton = document.getElementById("save-api-key-button");
 	if (saveApiKeyButton) {
 		saveApiKeyButton.addEventListener("click", saveApiKeyToStorage);
 	}
 
 	setupApiKeyVisibilityToggle();
 
-	const urlInput = document.getElementById(WEB_ELEMENT_IDS.URL_INPUT) as HTMLInputElement;
+	const urlInput = document.getElementById("url-input") as HTMLInputElement;
 	if (urlInput) {
 		// Real-time URL validation
 		urlInput.addEventListener("input", (e) => {
@@ -499,7 +494,7 @@ async function init(): Promise<void> {
 
 		// Keyboard shortcuts: Enter to submit, Cmd/Ctrl+Enter also submits
 		urlInput.addEventListener("keydown", (e) => {
-			if (e.key === KEYBOARD_KEYS.ENTER) {
+			if (e.key === "Enter") {
 				if (e.metaKey || e.ctrlKey) {
 					e.preventDefault();
 					handleSave();
@@ -512,7 +507,7 @@ async function init(): Promise<void> {
 		});
 
 		// Clear button functionality
-		const clearButton = document.getElementById(WEB_ELEMENT_IDS.CLEAR_URL_BUTTON);
+		const clearButton = document.getElementById("clear-url-button");
 		if (clearButton) {
 			clearButton.addEventListener("click", (e) => {
 				e.preventDefault();
@@ -533,7 +528,7 @@ async function init(): Promise<void> {
 
 	const apiKey = await storage.getApiKey();
 	if (!apiKey) {
-		updateStatus("⚠️ API secret not configured. Click Settings to set it up.", "error");
+		updateStatus("⚠️ API secret not configured. Click Settings to set it up.", StatusType.ERROR);
 	}
 }
 

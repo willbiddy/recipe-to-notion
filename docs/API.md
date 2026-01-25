@@ -109,7 +109,7 @@ curl https://your-server.com/api/health
 ```json
 {
   "status": "ok",
-  "service": "recipe-clipper-for-notion"
+  "service": "recipe-to-notion"
 }
 ```
 

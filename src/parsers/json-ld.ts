@@ -1,4 +1,5 @@
 import type * as cheerio from "cheerio";
+import { ParseError } from "../errors.js";
 import type { Recipe } from "../scraper.js";
 import {
 	cleanRecipeName,
@@ -155,8 +156,9 @@ function findRecipeInLd(
  */
 function extractFromJsonLd(data: Record<string, unknown>, sourceUrl: string): Recipe {
 	if (!data.name || typeof data.name !== "string") {
-		throw new Error(
+		throw new ParseError(
 			`Recipe name is required but was missing or invalid in JSON-LD data from ${sourceUrl}`,
+			sourceUrl,
 		);
 	}
 

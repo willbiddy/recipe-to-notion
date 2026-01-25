@@ -58,7 +58,7 @@
 			"biome format --write"
 		],
 		"*.{json,md,css}": [
-			"biome format --write"
+			"biome format --write --no-errors-on-unmatched"
 		]
 	}
 }

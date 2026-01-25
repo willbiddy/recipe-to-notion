@@ -1,4 +1,5 @@
 import * as cheerio from "cheerio";
+import { ParseError, ScrapingError } from "./errors.js";
 import { extractAuthorFromHtml, parseHtml } from "./parsers/html.js";
 import { parseJsonLd } from "./parsers/json-ld.js";
 
@@ -118,8 +119,9 @@ function parseRecipeFromHtml(html: string, sourceUrl: string): Recipe {
 	const recipe = parseJsonLd($, sourceUrl) ?? parseHtml($, sourceUrl);
 
 	if (!recipe) {
-		throw new Error(
+		throw new ParseError(
 			`Could not extract recipe data from ${sourceUrl}. The page may be fully paywalled or not contain a recipe.`,
+			sourceUrl,
 		);
 	}
 
@@ -169,13 +171,19 @@ export async function scrapeRecipe(url: string): Promise<Recipe> {
 
 		if (!response.ok) {
 			if (response.status === 403) {
-				throw new Error(
+				throw new ScrapingError(
 					`Failed to fetch ${url}: 403 Forbidden. This site blocks automated requests.\n` +
 						`  Tip: Save the page source in your browser and use --html:\n` +
 						`  bun src/cli.ts --html ~/Downloads/recipe.html "${url}"`,
+					url,
+					403,
 				);
 			}
-			throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
+			throw new ScrapingError(
+				`Failed to fetch ${url}: ${response.status} ${response.statusText}`,
+				url,
+				response.status,
+			);
 		}
 
 		const html = await response.text();
@@ -183,11 +191,24 @@ export async function scrapeRecipe(url: string): Promise<Recipe> {
 	} catch (error) {
 		clearTimeout(timeoutId);
 		if (error instanceof Error && error.name === "AbortError") {
-			throw new Error(
+			throw new ScrapingError(
 				`Request timeout: Failed to fetch ${url} within ${REQUEST_TIMEOUT_MS / 1000} seconds. The server may be slow or unresponsive.`,
+				url,
+				undefined,
+				error,
 			);
 		}
-		throw error;
+		// Re-throw ScrapingError and ParseError as-is
+		if (error instanceof ScrapingError || error instanceof ParseError) {
+			throw error;
+		}
+		// Wrap other errors in ScrapingError
+		throw new ScrapingError(
+			`Failed to fetch ${url}: ${error instanceof Error ? error.message : String(error)}`,
+			url,
+			undefined,
+			error,
+		);
 	}
 }
 
@@ -209,11 +230,14 @@ export async function scrapeRecipeFromHtml(htmlPath: string, sourceUrl: string):
 	try {
 		return parseRecipeFromHtml(html, sourceUrl);
 	} catch (error) {
-		if (error instanceof Error && error.message.includes("Could not extract recipe data")) {
-			throw new Error(
+		if (error instanceof ParseError) {
+			throw new ParseError(
 				`Could not extract recipe data from ${htmlPath}. The file may not contain valid recipe markup.`,
+				sourceUrl,
+				error,
 			);
 		}
+		// Re-throw other errors as-is
 		throw error;
 	}
 }

@@ -1,4 +1,5 @@
 import { loadConfig } from "./config.js";
+import { DuplicateRecipeError } from "./errors.js";
 import type { RecipeLogger } from "./logger.js";
 import {
 	checkForDuplicateByTitle,
@@ -32,20 +33,31 @@ export type ProcessResult = {
 /**
  * Progress event types during recipe processing.
  */
+export enum ProgressType {
+	CHECKING_DUPLICATES = "checking_duplicates",
+	SCRAPING = "scraping",
+	TAGGING = "tagging",
+	SAVING = "saving",
+	STARTING = "starting",
+}
+
+/**
+ * Progress event types during recipe processing.
+ */
 export type ProgressEvent =
-	| { type: "checking_duplicates"; message: string }
-	| { type: "scraping"; message: string }
-	| { type: "tagging"; message: string }
-	| { type: "saving"; message: string };
+	| { type: ProgressType.CHECKING_DUPLICATES; message: string }
+	| { type: ProgressType.SCRAPING; message: string }
+	| { type: ProgressType.TAGGING; message: string }
+	| { type: ProgressType.SAVING; message: string };
 
 /**
  * Progress messages for each stage of recipe processing.
  */
 const PROGRESS_MESSAGES = {
-	checking_duplicates: "Checking for duplicates...",
-	scraping: "Scraping recipe...",
-	tagging: "Generating AI tags and scores...",
-	saving: "Saving to Notion...",
+	[ProgressType.CHECKING_DUPLICATES]: "Checking for duplicates...",
+	[ProgressType.SCRAPING]: "Scraping recipe...",
+	[ProgressType.TAGGING]: "Generating AI tags and scores...",
+	[ProgressType.SAVING]: "Saving to Notion...",
 } as const;
 
 /**
@@ -72,13 +84,17 @@ export async function processRecipe(
 	logger?.onStart?.();
 
 	// Step 1: Check for duplicate URL
-	onProgress?.({ type: "checking_duplicates", message: PROGRESS_MESSAGES.checking_duplicates });
+	onProgress?.({
+		type: ProgressType.CHECKING_DUPLICATES,
+		message: PROGRESS_MESSAGES[ProgressType.CHECKING_DUPLICATES],
+	});
 	logger?.onCheckingDuplicates?.();
 	const urlDuplicate = await checkForDuplicateByUrl(
 		url,
 		config.NOTION_API_KEY,
 		config.NOTION_DATABASE_ID,
 	);
+
 	if (urlDuplicate) {
 		logger?.onDuplicateFound?.(urlDuplicate.title, urlDuplicate.notionUrl);
 		throw createDuplicateError(urlDuplicate);
@@ -86,13 +102,13 @@ export async function processRecipe(
 	logger?.onNoDuplicateFound?.();
 
 	// Step 2: Scrape recipe from URL
-	onProgress?.({ type: "scraping", message: PROGRESS_MESSAGES.scraping });
+	onProgress?.({ type: ProgressType.SCRAPING, message: PROGRESS_MESSAGES[ProgressType.SCRAPING] });
 	logger?.onScraping?.();
 	const recipe = await scrapeRecipe(url);
 	logger?.onScraped?.(recipe);
 
 	// Step 3: Generate AI tags and scores
-	onProgress?.({ type: "tagging", message: PROGRESS_MESSAGES.tagging });
+	onProgress?.({ type: ProgressType.TAGGING, message: PROGRESS_MESSAGES[ProgressType.TAGGING] });
 	logger?.onTagging?.();
 	const tags = await tagRecipe(recipe, config.ANTHROPIC_API_KEY);
 	logger?.onTagged?.();
@@ -103,13 +119,14 @@ export async function processRecipe(
 		config.NOTION_API_KEY,
 		config.NOTION_DATABASE_ID,
 	);
+
 	if (titleDuplicate) {
 		logger?.onDuplicateFound?.(titleDuplicate.title, titleDuplicate.notionUrl);
 		throw createDuplicateError(titleDuplicate);
 	}
 
 	// Step 5: Save to Notion
-	onProgress?.({ type: "saving", message: PROGRESS_MESSAGES.saving });
+	onProgress?.({ type: ProgressType.SAVING, message: PROGRESS_MESSAGES[ProgressType.SAVING] });
 	logger?.onSaving?.();
 	const pageId = await createRecipePage(
 		recipe,
@@ -126,13 +143,15 @@ export async function processRecipe(
 }
 
 /**
- * Creates a standardized duplicate error message.
+ * Creates a standardized duplicate error.
  *
  * @param duplicate - Duplicate recipe information.
- * @returns Error with formatted duplicate message.
+ * @returns DuplicateRecipeError with structured metadata.
  */
-function createDuplicateError(duplicate: { title: string; url: string; notionUrl: string }): Error {
-	return new Error(
-		`Duplicate recipe found: "${duplicate.title}" (${duplicate.url}) already exists in the database. View it at: ${duplicate.notionUrl}`,
-	);
+function createDuplicateError(duplicate: {
+	title: string;
+	url: string;
+	notionUrl: string;
+}): DuplicateRecipeError {
+	return new DuplicateRecipeError(duplicate.title, duplicate.url, duplicate.notionUrl);
 }

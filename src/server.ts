@@ -10,76 +10,18 @@ import {
 	validateRecipeRequest,
 	validateRequestSize,
 } from "./security.js";
+import {
+	DEFAULT_RATE_LIMIT_VALUE,
+	generateRequestId,
+	HttpStatus,
+	handleRecipeError,
+	RATE_LIMIT_HEADERS,
+	type RecipeResponse,
+	sanitizeError,
+	setCorsHeaders,
+	setSecurityHeaders,
+} from "./server-shared.js";
 import { ServerProgressEventType } from "./shared/api.js";
-
-/**
- * HTTP status codes used throughout the server.
- */
-enum HttpStatus {
-	OK = 200,
-	NoContent = 204,
-	BadRequest = 400,
-	NotFound = 404,
-	MethodNotAllowed = 405,
-	Conflict = 409,
-	InternalServerError = 500,
-	BadGateway = 502,
-}
-
-/**
- * Response format for the /api/recipes endpoint.
- */
-export type RecipeResponse = {
-	success: boolean;
-	pageId?: string;
-	notionUrl?: string;
-	error?: string;
-};
-
-/**
- * Pattern to extract Notion URL from duplicate error messages.
- */
-const NOTION_URL_EXTRACTION_PATTERN = /View it at: (https:\/\/www\.notion\.so\/[^\s]+)/;
-
-/**
- * Rate limit header names for responses.
- */
-const RATE_LIMIT_HEADERS = {
-	LIMIT: "X-RateLimit-Limit",
-	REMAINING: "X-RateLimit-Remaining",
-	RESET: "X-RateLimit-Reset",
-} as const;
-
-/**
- * Default rate limit value (requests per minute).
- */
-const DEFAULT_RATE_LIMIT_VALUE = 10;
-
-/**
- * Sets security headers on responses.
- *
- * @param response - The response object to add security headers to.
- */
-function setSecurityHeaders(response: Response): void {
-	response.headers.set("X-Content-Type-Options", "nosniff");
-	response.headers.set("X-Frame-Options", "DENY");
-	response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-}
-
-/**
- * Handles CORS headers for browser extension requests.
- *
- * Includes headers for Server-Sent Events (SSE) support.
- *
- * @param response - The response object to add CORS headers to.
- */
-function setCorsHeaders(response: Response): void {
-	response.headers.set("Access-Control-Allow-Origin", "*");
-	response.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-	response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
-	response.headers.set("Access-Control-Expose-Headers", "*");
-	response.headers.set("Access-Control-Allow-Credentials", "false");
-}
 
 /**
  * Handles OPTIONS preflight requests for CORS.
@@ -101,15 +43,6 @@ function handleHealth(): Response {
 	const response = Response.json({ status: "ok", service: "recipe-to-notion" });
 	setCorsHeaders(response);
 	return response;
-}
-
-/**
- * Generates a unique request correlation ID.
- *
- * @returns A unique request ID string.
- */
-function generateRequestId(): string {
-	return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 }
 
 /**
@@ -173,7 +106,7 @@ function handleRecipeStream(_request: Request, url: string, requestId?: string):
 					notionUrl,
 				});
 			} catch (error) {
-				const { message, notionUrl } = sanitizeError(error, requestId);
+				const { message, notionUrl } = sanitizeError(error, { error: consola.error }, requestId);
 
 				sendEvent({
 					type: ServerProgressEventType.Error,
@@ -211,91 +144,6 @@ function createErrorResponse(error: string, status: number): Response {
 		error,
 	};
 	const response = Response.json(errorResponse, { status });
-	setSecurityHeaders(response);
-	setCorsHeaders(response);
-	return response;
-}
-
-/**
- * Sanitizes error messages for client responses.
- * Logs detailed errors server-side but returns generic messages to clients.
- *
- * @param error - The error that occurred.
- * @param requestId - Optional request correlation ID for logging.
- * @returns Sanitized error message for client and extracted Notion URL if duplicate.
- */
-function sanitizeError(
-	error: unknown,
-	requestId?: string,
-): { message: string; notionUrl?: string; statusCode: number } {
-	const fullError = error instanceof Error ? error : new Error(String(error));
-	const errorMessage = fullError.message;
-	const isDuplicate = errorMessage.includes("Duplicate recipe found");
-
-	// Log detailed error server-side
-	const logPrefix = requestId ? `[${requestId}]` : "";
-	consola.error(`${logPrefix} Recipe processing error:`, {
-		message: errorMessage,
-		stack: fullError.stack,
-		name: fullError.name,
-	});
-
-	let statusCode = HttpStatus.InternalServerError;
-	let clientMessage: string;
-	let notionUrl: string | undefined;
-
-	if (isDuplicate) {
-		statusCode = HttpStatus.Conflict;
-		// Duplicate errors are safe to return as-is (user-friendly)
-		clientMessage = errorMessage;
-		const urlMatch = errorMessage.match(NOTION_URL_EXTRACTION_PATTERN);
-		if (urlMatch) {
-			notionUrl = urlMatch[1];
-		}
-	} else if (errorMessage.includes("Failed to fetch") || errorMessage.includes("403")) {
-		statusCode = HttpStatus.BadGateway;
-		// Network errors: return generic message but keep some context
-		if (errorMessage.includes("403")) {
-			clientMessage =
-				"The recipe site blocked the request. Try saving the page source and using the --html option.";
-		} else if (errorMessage.includes("timeout")) {
-			clientMessage = "Request timed out. The recipe site may be slow or unresponsive.";
-		} else {
-			clientMessage =
-				"Failed to fetch the recipe page. The site may be unavailable or blocking requests.";
-		}
-	} else if (errorMessage.includes("Invalid URL") || errorMessage.includes("URL")) {
-		statusCode = HttpStatus.BadRequest;
-		// URL validation errors are safe to return
-		clientMessage = errorMessage;
-	} else {
-		// Generic internal errors: don't expose details
-		clientMessage = "An error occurred while processing the recipe. Please try again.";
-	}
-
-	return { message: clientMessage, notionUrl, statusCode };
-}
-
-/**
- * Handles errors from recipe processing and returns appropriate response.
- *
- * Determines the correct HTTP status code based on error type (duplicate, scraping failure, etc.)
- * and extracts Notion URL from duplicate error messages.
- *
- * @param error - The error that occurred during recipe processing.
- * @param requestId - Optional request correlation ID for logging.
- * @returns Response with appropriate status code and error details.
- */
-function handleRecipeError(error: unknown, requestId?: string): Response {
-	const { message, notionUrl, statusCode } = sanitizeError(error, requestId);
-
-	const errorResponse: RecipeResponse = {
-		success: false,
-		error: message,
-		...(notionUrl && { notionUrl }),
-	};
-
-	const response = Response.json(errorResponse, { status: statusCode });
 	setSecurityHeaders(response);
 	setCorsHeaders(response);
 	return response;
@@ -393,7 +241,7 @@ async function handleRecipe(request: Request, requestId?: string): Promise<Respo
 		setCorsHeaders(response);
 		return response;
 	} catch (error) {
-		return handleRecipeError(error, requestId);
+		return handleRecipeError(error, { error: consola.error }, requestId);
 	}
 }
 

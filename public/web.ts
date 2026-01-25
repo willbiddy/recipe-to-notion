@@ -19,12 +19,14 @@ import {
  */
 const WEB_ELEMENT_IDS = {
 	URL_INPUT: "url-input",
+	CLEAR_URL_BUTTON: "clear-url-button",
 	SAVE_BUTTON: "save-button",
 	SETTINGS_BUTTON: "settings-button",
 	SETTINGS_PANEL: "settings-panel",
 	API_KEY_INPUT: "api-key-input",
 	SAVE_API_KEY_BUTTON: "save-api-key-button",
 	STATUS: "status",
+	URL_VALIDATION: "url-validation",
 } as const;
 
 /**
@@ -114,6 +116,14 @@ async function handleSave(): Promise<void> {
 
 		if (result.success) {
 			// Recipe info is displayed in displayRecipeInfo callback
+			// Clear the URL input after successful save
+			const urlInput = document.getElementById(WEB_ELEMENT_IDS.URL_INPUT) as HTMLInputElement;
+			if (urlInput) {
+				setTimeout(() => {
+					urlInput.value = "";
+					updateUrlValidationState("");
+				}, 500);
+			}
 		} else if (result.error?.includes("Duplicate recipe found") && result.notionUrl) {
 			updateStatus(
 				`This recipe already exists. <a href="${result.notionUrl}" target="_blank" class="underline font-semibold">Open in Notion</a>`,
@@ -152,13 +162,24 @@ function toggleSettings(): void {
 		if (chevron) {
 			chevron.style.transform = `rotate(${CHEVRON_ROTATION.EXPANDED})`;
 		}
-		loadApiKeyIntoInput();
+		// Trigger animation
+		requestAnimationFrame(() => {
+			settingsPanel.classList.add("animate-slide-down");
+		});
+		// Load API key asynchronously without blocking the UI
+		loadApiKeyIntoInput().catch((error) => {
+			console.error("Error loading API key:", error);
+		});
 	} else {
-		settingsPanel.classList.add("hidden");
+		settingsPanel.classList.remove("animate-slide-down");
 		settingsButton.setAttribute("aria-expanded", "false");
 		if (chevron) {
 			chevron.style.transform = `rotate(${CHEVRON_ROTATION.COLLAPSED})`;
 		}
+		// Wait for animation to complete before hiding
+		setTimeout(() => {
+			settingsPanel.classList.add("hidden");
+		}, 300);
 	}
 }
 
@@ -205,13 +226,18 @@ function displayRecipeInfo(data: {
 	const notionLink = `<a href="${data.notionUrl}" target="_blank" class="font-semibold underline hover:text-orange-900 transition-colors">${recipeTitle}</a>`;
 
 	statusDiv.innerHTML = `
-		<div class="bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-orange-200 rounded-2xl p-5 space-y-3">
-			<h3 class="text-lg font-bold text-orange-900 mb-3">${recipeTitle}</h3>
-			<div class="space-y-2 text-sm text-orange-800">
+		<div class="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-2xl p-5 space-y-3">
+			<div class="flex items-center gap-3 mb-2">
+				<svg class="w-6 h-6 text-green-600 animate-checkmark flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+				</svg>
+				<h3 class="text-lg font-bold text-green-900">${recipeTitle}</h3>
+			</div>
+			<div class="space-y-2 text-sm text-green-800">
 				${infoLines.map((line) => `<div>${line}</div>`).join("")}
 			</div>
-			<div class="pt-3 border-t border-orange-200">
-				<p class="text-sm text-orange-900">
+			<div class="pt-3 border-t border-green-200">
+				<p class="text-sm text-green-900">
 					Recipe saved! Open in Notion: ${notionLink}
 				</p>
 			</div>
@@ -219,7 +245,7 @@ function displayRecipeInfo(data: {
 	`;
 
 	statusDiv.className =
-		"py-4 px-5 rounded-xl text-sm leading-relaxed animate-[fadeIn_0.2s_ease-in] shadow-sm";
+		"py-4 px-5 rounded-2xl text-sm leading-relaxed animate-[fadeIn_0.2s_ease-in] shadow-sm";
 	statusDiv.classList.remove("hidden");
 }
 
@@ -320,7 +346,91 @@ function handleWebShareTarget(): void {
  */
 const KEYBOARD_KEYS = {
 	ENTER: "Enter",
+	ESCAPE: "Escape",
 } as const;
+
+/**
+ * Keyboard modifier keys.
+ */
+const _MODIFIER_KEYS = {
+	META: "Meta",
+	CONTROL: "Control",
+} as const;
+
+/**
+ * Validates a URL and updates the UI accordingly.
+ *
+ * @param url - The URL to validate.
+ * @returns True if the URL is valid, false otherwise.
+ */
+function validateUrl(url: string): boolean {
+	if (!url.trim()) {
+		return false;
+	}
+
+	try {
+		const urlObj = new URL(url);
+		return urlObj.protocol === "http:" || urlObj.protocol === "https:";
+	} catch {
+		return false;
+	}
+}
+
+/**
+ * Updates the URL input validation state and clear button visibility.
+ *
+ * @param url - The current URL value.
+ */
+function updateUrlValidationState(url: string): void {
+	const urlInput = document.getElementById(WEB_ELEMENT_IDS.URL_INPUT) as HTMLInputElement;
+	const clearButton = document.getElementById(
+		WEB_ELEMENT_IDS.CLEAR_URL_BUTTON,
+	) as HTMLButtonElement;
+	const validationDiv = document.getElementById(WEB_ELEMENT_IDS.URL_VALIDATION);
+
+	if (!urlInput || !clearButton) {
+		return;
+	}
+
+	const trimmedUrl = url.trim();
+	const isValid = validateUrl(trimmedUrl);
+	const hasValue = trimmedUrl.length > 0;
+
+	// Show/hide clear button
+	if (hasValue) {
+		clearButton.style.display = "flex";
+		clearButton.tabIndex = 0;
+	} else {
+		clearButton.style.display = "none";
+		clearButton.tabIndex = -1;
+	}
+
+	// Update validation state
+	if (hasValue) {
+		urlInput.setAttribute("aria-invalid", isValid ? "false" : "true");
+		if (validationDiv) {
+			validationDiv.textContent = isValid ? "Valid URL" : "Invalid URL format";
+		}
+	} else {
+		urlInput.setAttribute("aria-invalid", "false");
+		if (validationDiv) {
+			validationDiv.textContent = "";
+		}
+	}
+}
+
+/**
+ * Clears the URL input field.
+ */
+function clearUrlInput(): void {
+	const urlInput = document.getElementById(WEB_ELEMENT_IDS.URL_INPUT) as HTMLInputElement;
+	if (urlInput) {
+		urlInput.value = "";
+		urlInput.focus();
+		updateUrlValidationState("");
+		clearStatus();
+	}
+}
 
 async function init(): Promise<void> {
 	const saveButton = document.getElementById(WEB_ELEMENT_IDS.SAVE_BUTTON);
@@ -336,13 +446,40 @@ async function init(): Promise<void> {
 
 	const settingsButton = document.getElementById(WEB_ELEMENT_IDS.SETTINGS_BUTTON);
 	if (settingsButton) {
-		settingsButton.addEventListener("click", (e) => {
+		const handleSettingsClick = (e: Event) => {
 			e.preventDefault();
 			e.stopPropagation();
-			toggleSettings();
-		});
+			try {
+				toggleSettings();
+			} catch (error) {
+				console.error("Error toggling settings:", error);
+			}
+		};
+
+		settingsButton.addEventListener("click", handleSettingsClick, { passive: false });
 	} else {
 		console.error("Settings button not found during init");
+		// Retry after a short delay in case DOM isn't fully ready
+		setTimeout(() => {
+			const retryButton = document.getElementById(WEB_ELEMENT_IDS.SETTINGS_BUTTON);
+			if (retryButton) {
+				retryButton.addEventListener(
+					"click",
+					(e) => {
+						e.preventDefault();
+						e.stopPropagation();
+						try {
+							toggleSettings();
+						} catch (error) {
+							console.error("Error toggling settings:", error);
+						}
+					},
+					{ passive: false },
+				);
+			} else {
+				console.error("Settings button still not found after retry");
+			}
+		}, 100);
 	}
 
 	const saveApiKeyButton = document.getElementById(WEB_ELEMENT_IDS.SAVE_API_KEY_BUTTON);
@@ -354,11 +491,40 @@ async function init(): Promise<void> {
 
 	const urlInput = document.getElementById(WEB_ELEMENT_IDS.URL_INPUT) as HTMLInputElement;
 	if (urlInput) {
-		urlInput.addEventListener("keypress", (e) => {
+		// Real-time URL validation
+		urlInput.addEventListener("input", (e) => {
+			const value = (e.target as HTMLInputElement).value;
+			updateUrlValidationState(value);
+		});
+
+		// Keyboard shortcuts: Enter to submit, Cmd/Ctrl+Enter also submits
+		urlInput.addEventListener("keydown", (e) => {
 			if (e.key === KEYBOARD_KEYS.ENTER) {
-				handleSave();
+				if (e.metaKey || e.ctrlKey) {
+					e.preventDefault();
+					handleSave();
+				} else {
+					// Regular Enter also submits
+					e.preventDefault();
+					handleSave();
+				}
 			}
 		});
+
+		// Clear button functionality
+		const clearButton = document.getElementById(WEB_ELEMENT_IDS.CLEAR_URL_BUTTON);
+		if (clearButton) {
+			clearButton.addEventListener("click", (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				clearUrlInput();
+			});
+		}
+
+		// Initial validation state
+		updateUrlValidationState(urlInput.value);
+
+		// Auto-focus on load
 		urlInput.focus();
 	}
 

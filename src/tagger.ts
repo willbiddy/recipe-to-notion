@@ -15,7 +15,7 @@ export type CategorizedIngredient = {
 	 */
 	name: string;
 	/**
-	 * Shopping category (e.g. "Produce", "Dairy & Eggs", "Meat & Seafood").
+	 * Shopping category (e.g. "Produce", "Dairy & eggs", "Meat & seafood").
 	 */
 	category: string;
 };
@@ -47,7 +47,7 @@ export type RecipeTags = {
 	description: string;
 	/**
 	 * Ingredients categorized by shopping aisle/category.
-	 * Ordered for standard grocery store flow: Produce → Meat & Seafood → Pantry → Dairy & Eggs.
+	 * Ordered for standard grocery store flow: Produce → Bakery → Meat & seafood → Pantry → Dairy & eggs → Frozen → Other.
 	 */
 	ingredients: CategorizedIngredient[];
 };

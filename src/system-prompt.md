@@ -132,11 +132,12 @@ Categorize each ingredient for grocery shopping. Return the same number of ingre
 **Category guidelines (standard grocery store flow):**
 
 1. **Produce** — Fresh fruits, vegetables, herbs, garlic, onions, potatoes, etc.
-2. **Deli & Bakery** — Sliced meats, rotisserie chicken, bread, baked goods
-3. **Meat & Seafood** — Raw meats, poultry, fish, seafood (not from deli)
+2. **Bakery** — Bread, baked goods, pastries
+3. **Meat & seafood** — Raw meats, poultry, fish, seafood
 4. **Pantry** — Pasta, canned goods, cereal, peanut butter, rice, beans, flour, sugar, spices, oils, condiments, etc.
-5. **Dairy & Eggs** — Milk, butter, cheese, yogurt, eggs, cream
-6. **Frozen Foods** — Frozen pizza, frozen vegetables, ice cream, frozen meals
+5. **Dairy & eggs** — Milk, butter, cheese, yogurt, eggs, cream
+6. **Frozen** — Frozen pizza, frozen vegetables, ice cream, frozen meals
+7. **Other** — Use this category if no other category fits well. Always use "Other" as the fallback when uncertain.
 
 **Handling duplicate ingredients:**
 
@@ -162,7 +163,7 @@ Saucy, Spiced Shrimp and White Beans →
   "ingredients": [
     {
       "name": "1 lb. large shrimp, peeled, deveined",
-      "category": "Meat & Seafood"
+      "category": "Meat & seafood"
     },
     {
       "name": "2 tsp. Diamond Crystal or 1 tsp. Morton kosher salt, divided, plus more",
@@ -245,7 +246,7 @@ Panang Curry →
     },
     {
       "name": "1 pound boneless, skinless chicken breasts or thighs",
-      "category": "Meat & Seafood"
+      "category": "Meat & seafood"
     },
     {
       "name": "2 teaspoons fish sauce, plus more as needed",
@@ -288,7 +289,7 @@ Chocolate Chip Skillet Cookie →
   "ingredients": [
     {
       "name": "8 ounces unsalted butter (2 sticks; 225 g), soft but cool, about 65°F (18°C), plus more for greasing skillet",
-      "category": "Dairy & Eggs"
+      "category": "Dairy & eggs"
     },
     {
       "name": "4 1/2 ounces granulated sugar (2/3 cup; 125 g)",
@@ -324,7 +325,7 @@ Chocolate Chip Skillet Cookie →
     },
     {
       "name": "1 large egg (about 1 3/4 ounces; 50 g), straight from the fridge",
-      "category": "Dairy & Eggs"
+      "category": "Dairy & eggs"
     },
     {
       "name": "12 1/2 ounces all-purpose flour (2 3/4 cups, spooned; 355 g), such as Gold Medal",
@@ -336,7 +337,7 @@ Chocolate Chip Skillet Cookie →
     },
     {
       "name": "Vanilla ice cream, to serve (optional)",
-      "category": "Frozen Foods"
+      "category": "Frozen"
     }
   ]
 }

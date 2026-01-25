@@ -183,15 +183,31 @@ async function handleRecipeFromHtml(
 	config: Config,
 ): Promise<boolean> {
 	// Check for duplicate URL
-	if (await isDuplicate(url, config)) {
+	consola.start("Checking for duplicates...");
+	const urlDuplicate = await checkForDuplicateByUrl(
+		url,
+		config.NOTION_API_KEY,
+		config.NOTION_DATABASE_ID,
+	);
+	if (urlDuplicate) {
+		consola.warn(`Duplicate: "${urlDuplicate.title}" already exists at ${urlDuplicate.notionUrl}`);
 		return false;
 	}
+	consola.success("No duplicate URL found");
 
 	// Fetch and parse recipe from HTML file
 	const recipe = await fetchRecipe(url, htmlPath);
 
 	// Check for duplicate title
-	if (await isTitleDuplicate(recipe.name, config)) {
+	const titleDuplicate = await checkForDuplicateByTitle(
+		recipe.name,
+		config.NOTION_API_KEY,
+		config.NOTION_DATABASE_ID,
+	);
+	if (titleDuplicate) {
+		consola.warn(
+			`Duplicate: "${titleDuplicate.title}" already exists at ${titleDuplicate.notionUrl}`,
+		);
 		return false;
 	}
 
@@ -202,53 +218,6 @@ async function handleRecipeFromHtml(
 	// Save to Notion
 	await saveToNotion(recipe, tags, config);
 	return true;
-}
-
-/**
- * Checks if a recipe URL already exists in Notion.
- *
- * @param url - Recipe URL to check for duplicates.
- * @param config - Application configuration with API keys.
- * @returns True if a duplicate exists, false otherwise.
- */
-async function isDuplicate(url: string, config: Config): Promise<boolean> {
-	consola.start("Checking for duplicates...");
-
-	const duplicate = await checkForDuplicateByUrl(
-		url,
-		config.NOTION_API_KEY,
-		config.NOTION_DATABASE_ID,
-	);
-
-	if (duplicate) {
-		consola.warn(`Duplicate: "${duplicate.title}" already exists at ${duplicate.notionUrl}`);
-		return true;
-	}
-
-	consola.success("No duplicate URL found");
-	return false;
-}
-
-/**
- * Checks if a recipe with the same title already exists in Notion.
- *
- * @param title - Recipe title to check for duplicates.
- * @param config - Application configuration with API keys.
- * @returns True if a duplicate exists, false otherwise.
- */
-async function isTitleDuplicate(title: string, config: Config): Promise<boolean> {
-	const duplicate = await checkForDuplicateByTitle(
-		title,
-		config.NOTION_API_KEY,
-		config.NOTION_DATABASE_ID,
-	);
-
-	if (duplicate) {
-		consola.warn(`Duplicate: "${duplicate.title}" already exists at ${duplicate.notionUrl}`);
-		return true;
-	}
-
-	return false;
 }
 
 /**

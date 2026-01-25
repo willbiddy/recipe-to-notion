@@ -79,7 +79,7 @@ NOTION_DATABASE_ID=abc123...
 📚 **Detailed Guides:**
 - **[Browser Extension Setup](docs/EXTENSION.md)** - Complete guide for setting up and using the browser extension
 - **[API Reference](docs/API.md)** - Full REST API documentation with examples
-- **[Deployment Guide](docs/DEPLOYMENT.md)** - Deploy to Vercel, Railway, Fly.io, Render, and more
+- **[Deployment Guide](docs/DEPLOYMENT.md)** - Deploy to Vercel
 
 ---
 
@@ -112,8 +112,8 @@ Save recipes with one click directly from your browser!
 
 **Quick Start:**
 
-1. Build: `bun run build:extension`
-2. Choose server: Local (`bun run server`) or Vercel (see [Deployment Guide](docs/DEPLOYMENT.md))
+1. Deploy to Vercel (see [Deployment Guide](docs/DEPLOYMENT.md))
+2. Build: `bun run build:extension`
 3. Load in Chrome: `chrome://extensions/` → Enable Developer mode → Load unpacked → Select `extension/` directory
 
 ### 3. HTTP API
@@ -162,8 +162,8 @@ src/
     └── shared.ts      Shared utilities (type guards, helpers)
 
 api/                   Vercel serverless functions
-├── health.ts         Health check endpoint
-└── recipes.ts        Recipe processing endpoint
+├── health.ts          Health check endpoint
+└── recipes.ts         Recipe processing endpoint
 
 extension/
 ├── manifest.json      Chrome extension manifest (Manifest V3)
@@ -176,14 +176,29 @@ extension/
 └── icons/             Extension icons (SVG source files)
 ```
 
-**Technologies:** [Bun](https://bun.sh/) (runtime), [TypeScript](https://www.typescriptlang.org/) (type safety), [Vercel](https://vercel.com/) (deployment), [Cheerio](https://cheerio.js.org/) (HTML parsing), [Anthropic SDK](https://docs.anthropic.com/en/api/client-sdks) (Claude API), [Notion SDK](https://github.com/makenotion/notion-sdk-js) (Notion API), [Citty](https://github.com/unjs/citty) (CLI parsing), [Consola](https://github.com/unjs/consola) (logging), [Zod](https://zod.dev/) (validation), [Tailwind CSS](https://tailwindcss.com/) (styling), [SSE](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) (progress updates), [Biome](https://biomejs.dev/) (linting)
+**Technologies:**
+
+- [Bun](https://bun.sh/) - JavaScript runtime
+- [TypeScript](https://www.typescriptlang.org/) - Static typing
+- [Vercel](https://vercel.com/) - Serverless hosting
+- [Cheerio](https://cheerio.js.org/) - HTML parsing
+- [Anthropic SDK](https://docs.anthropic.com/en/api/client-sdks) - Claude AI API client
+- [Notion SDK](https://github.com/makenotion/notion-sdk-js) - Notion API client
+- [Citty](https://github.com/unjs/citty) - CLI argument parsing
+- [Consola](https://github.com/unjs/consola) - Logging
+- [Zod](https://zod.dev/) - Schema validation
+- [Tailwind CSS](https://tailwindcss.com/) - CSS framework
+- [SSE](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) - Real-time updates
+- [Biome](https://biomejs.dev/) - Linting & formatting
 
 ---
 
 ## Scripts
 
-- `bun run start` / `bun src/cli.ts` - CLI tool
-- `bun run server` - Local HTTP server
-- `bun run build:extension` - Build extension
-- `bun run typecheck` / `lint` / `format` - Code quality
+- **`bun run start`** / **`bun src/cli.ts`** - Run the CLI tool to save recipes from the command line
+- **`bun run server`** - Start local HTTP server for development (runs on `localhost:3000`)
+- **`bun run build:extension`** - Compile TypeScript and Tailwind CSS for the browser extension
+- **`bun run typecheck`** - Check TypeScript types for errors
+- **`bun run lint`** - Run linter to find code issues
+- **`bun run format`** - Auto-format code with Biome
 

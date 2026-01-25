@@ -49,7 +49,7 @@ type RecipeRequest = {
 function setCorsHeaders(response: Response): void {
 	response.headers.set("Access-Control-Allow-Origin", "*");
 	response.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-	response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+	response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
 	/**
 	 * For SSE.
 	 */
@@ -173,6 +173,55 @@ function handleRecipeStream(_request: Request, url: string): Response {
 }
 
 /**
+ * Validates the API key from the Authorization header.
+ * Returns null if valid, or an error response if invalid.
+ */
+function validateApiKey(request: Request): Response | null {
+	const authHeader = request.headers.get("Authorization");
+	if (!authHeader) {
+		const response = Response.json(
+			{ success: false, error: "Missing Authorization header" },
+			{ status: HttpStatus.BadRequest },
+		);
+		setCorsHeaders(response);
+		return response;
+	}
+
+	if (!authHeader.startsWith("Bearer ")) {
+		const response = Response.json(
+			{ success: false, error: "Invalid Authorization format. Expected: Bearer <token>" },
+			{ status: HttpStatus.BadRequest },
+		);
+		setCorsHeaders(response);
+		return response;
+	}
+
+	const providedKey = authHeader.slice(7); // Remove "Bearer " prefix
+	const expectedKey = process.env.API_SECRET;
+
+	if (!expectedKey) {
+		consola.error("API_SECRET environment variable is not set");
+		const response = Response.json(
+			{ success: false, error: "Server configuration error" },
+			{ status: HttpStatus.InternalServerError },
+		);
+		setCorsHeaders(response);
+		return response;
+	}
+
+	if (providedKey !== expectedKey) {
+		const response = Response.json(
+			{ success: false, error: "Invalid API key" },
+			{ status: HttpStatus.BadRequest },
+		);
+		setCorsHeaders(response);
+		return response;
+	}
+
+	return null;
+}
+
+/**
  * Validates the request body and returns an error response if invalid.
  */
 function validateRecipeRequest(body: unknown): Response | null {
@@ -263,6 +312,14 @@ function handleRecipeError(error: unknown): Response {
  * Handles recipe processing requests (non-streaming, for backwards compatibility).
  */
 async function handleRecipe(request: Request): Promise<Response> {
+	/**
+	 * Validate API key authentication.
+	 */
+	const authError = validateApiKey(request);
+	if (authError) {
+		return authError;
+	}
+
 	try {
 		const body = (await request.json()) as RecipeRequest;
 

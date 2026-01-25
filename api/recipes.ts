@@ -49,21 +49,40 @@ type RecipeResponse = {
 function setCorsHeaders(response: Response): void {
 	response.headers.set("Access-Control-Allow-Origin", "*");
 	response.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-	response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+	response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
 	response.headers.set("Access-Control-Expose-Headers", "*");
 }
 
 /**
- * Handles OPTIONS preflight requests.
- * This must work without any module imports to avoid initialization issues.
+ * Validates the API key from the Authorization header.
+ * Returns null if valid, or an error response if invalid.
  */
-function handleOptions(): Response {
-	const headers = new Headers();
-	headers.set("Access-Control-Allow-Origin", "*");
-	headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-	headers.set("Access-Control-Allow-Headers", "Content-Type");
-	headers.set("Access-Control-Expose-Headers", "*");
-	return new Response(null, { status: HttpStatus.NoContent, headers });
+function validateApiKey(req: Request): Response | null {
+	const authHeader = req.headers.get("Authorization");
+	if (!authHeader) {
+		return createErrorResponse("Missing Authorization header", HttpStatus.BadRequest);
+	}
+
+	if (!authHeader.startsWith("Bearer ")) {
+		return createErrorResponse(
+			"Invalid Authorization format. Expected: Bearer <token>",
+			HttpStatus.BadRequest,
+		);
+	}
+
+	const providedKey = authHeader.slice(7); // Remove "Bearer " prefix
+	const expectedKey = process.env.API_SECRET;
+
+	if (!expectedKey) {
+		console.error("API_SECRET environment variable is not set");
+		return createErrorResponse("Server configuration error", HttpStatus.InternalServerError);
+	}
+
+	if (providedKey !== expectedKey) {
+		return createErrorResponse("Invalid API key", HttpStatus.BadRequest);
+	}
+
+	return null;
 }
 
 /**
@@ -324,6 +343,14 @@ export default {
 			);
 			setCorsHeaders(response);
 			return response;
+		}
+
+		/**
+		 * Validate API key authentication.
+		 */
+		const authError = validateApiKey(req);
+		if (authError) {
+			return authError;
 		}
 
 		try {

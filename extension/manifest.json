@@ -3,7 +3,7 @@
 	"name": "Recipe to Notion",
 	"version": "1.0.0",
 	"description": "One-click save recipes to Notion with AI-generated tags",
-	"permissions": ["activeTab", "contextMenus"],
+	"permissions": ["activeTab", "contextMenus", "storage"],
 	"host_permissions": ["http://localhost/*", "http://127.0.0.1/*"],
 	"action": {
 		"default_popup": "popup.html",

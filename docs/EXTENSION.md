@@ -41,6 +41,16 @@ This compiles TypeScript files and Tailwind CSS for the extension UI.
    bun run build:extension
    ```
 
+3. Load the extension in Chrome (see Step 4)
+
+4. **Configure API Key:**
+   - Click the extension icon in your browser toolbar
+   - Click the settings icon (⚙️) in the top-right corner
+   - Enter your `API_SECRET` value (from your Vercel environment variables)
+   - Click "Save API Key"
+
+   > **Important:** The API key is required for authentication. Without it, the extension cannot save recipes.
+
 ### Step 4: Load the Extension in Chrome
 
 1. Open Chrome and go to `chrome://extensions/`
@@ -79,6 +89,8 @@ This compiles TypeScript files and Tailwind CSS for the extension UI.
 ### Connection Errors
 
 - Verify your Vercel deployment URL is correct in `extension/config.ts`
+- **Check that your API key is configured** - Click the settings icon and verify the API key is set
+- Verify the API key matches your `API_SECRET` environment variable in Vercel
 - Check that environment variables are set in your Vercel deployment
 - Test the health endpoint: `curl https://your-app.vercel.app/api/health`
 - Make sure your Vercel deployment is active (check the Vercel dashboard)
@@ -100,7 +112,9 @@ This compiles TypeScript files and Tailwind CSS for the extension UI.
 
 ## Configuration
 
-The extension configuration is in `extension/config.ts`:
+### Server URL
+
+The extension server URL is configured in `extension/config.ts`:
 
 ```typescript
 export const SERVER_URL = "https://your-app.vercel.app";
@@ -110,6 +124,17 @@ export const SERVER_URL = "https://your-app.vercel.app";
 
 1. Rebuild the extension: `bun run build:extension`
 2. Reload the extension in Chrome (click the reload icon on the extension card in `chrome://extensions/`)
+
+### API Key
+
+The API key is stored securely in the browser's sync storage and can be configured through the extension popup:
+
+1. Click the extension icon
+2. Click the settings icon (⚙️) in the top-right
+3. Enter your `API_SECRET` value
+4. Click "Save API Key"
+
+The API key is required for all API requests and prevents unauthorized usage of your deployment.
 
 ---
 

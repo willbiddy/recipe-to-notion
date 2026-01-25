@@ -26,8 +26,11 @@ bunx vercel --prod
    - `ANTHROPIC_API_KEY` - Your Anthropic API key (starts with `sk-ant-`)
    - `NOTION_API_KEY` - Your Notion integration secret (starts with `ntn_`)
    - `NOTION_DATABASE_ID` - Your Notion database ID (32-character hex string)
+   - `API_SECRET` - A secret key for API authentication (use a strong, random value - you'll need this to configure the browser extension)
 4. Select all environments (Production, Preview, Development)
 5. Redeploy after adding variables (or wait for auto-deploy)
+
+> **Security Note:** The `API_SECRET` prevents unauthorized access to your API. Use a strong, random value (e.g., generate with `openssl rand -hex 32`). You'll need to configure this in the browser extension.
 
 ### Step 4: Get Your Deployment URL
 
@@ -45,8 +48,11 @@ bunx vercel --prod
 ```bash
 curl -X POST https://your-app.vercel.app/api/recipes \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_SECRET" \
   -d '{"url": "https://cooking.nytimes.com/recipes/1234-example"}'
 ```
+
+Replace `YOUR_API_SECRET` with the value you set for the `API_SECRET` environment variable.
 
 ---
 
@@ -60,10 +66,11 @@ curl -X POST https://your-app.vercel.app/api/recipes \
 
 ### Environment Variables
 
-All three environment variables are required:
+All four environment variables are required:
 - `ANTHROPIC_API_KEY` - Used for Claude API calls
 - `NOTION_API_KEY` - Used for Notion API calls
 - `NOTION_DATABASE_ID` - Target Notion database
+- `API_SECRET` - Secret key for API authentication (prevents unauthorized usage)
 
 Make sure to add these in the Vercel dashboard before testing.
 

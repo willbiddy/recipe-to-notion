@@ -61,9 +61,26 @@ function hideProgress(): void {
 }
 
 /**
+ * Gets the API key from storage.
+ */
+async function getApiKey(): Promise<string | null> {
+	const result = await chrome.storage.sync.get("apiKey");
+	const apiKey = result.apiKey;
+	return typeof apiKey === "string" ? apiKey : null;
+}
+
+/**
  * Saves a recipe by sending the URL to the server with progress streaming.
  */
-function saveRecipe(url: string): Promise<RecipeResponse> {
+async function saveRecipe(url: string): Promise<RecipeResponse> {
+	const apiKey = await getApiKey();
+	if (!apiKey) {
+		return {
+			success: false,
+			error: "API key not configured. Please set it in the extension settings.",
+		};
+	}
+
 	const serverUrl = getServerUrl();
 	const apiUrl = `${serverUrl}/api/recipes`;
 
@@ -76,6 +93,7 @@ function saveRecipe(url: string): Promise<RecipeResponse> {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
+					Authorization: `Bearer ${apiKey}`,
 				},
 				body: JSON.stringify({ url, stream: true }),
 			})
@@ -354,6 +372,61 @@ async function handleSave(): Promise<void> {
 }
 
 /**
+ * Toggles the settings panel visibility.
+ */
+function toggleSettings(): void {
+	const settingsPanel = document.getElementById("settings-panel");
+	if (!settingsPanel) return;
+
+	const isHidden = settingsPanel.classList.contains("hidden");
+	if (isHidden) {
+		settingsPanel.classList.remove("hidden");
+		loadApiKeyIntoInput();
+	} else {
+		settingsPanel.classList.add("hidden");
+	}
+}
+
+/**
+ * Loads the API key from storage into the input field.
+ */
+async function loadApiKeyIntoInput(): Promise<void> {
+	const input = document.getElementById("api-key-input") as HTMLInputElement;
+	if (!input) return;
+
+	const apiKey = await getApiKey();
+	if (apiKey) {
+		input.value = apiKey;
+	} else {
+		input.value = "";
+	}
+}
+
+/**
+ * Saves the API key to storage.
+ */
+async function saveApiKey(): Promise<void> {
+	const input = document.getElementById("api-key-input") as HTMLInputElement;
+	if (!input) return;
+
+	const apiKey = input.value.trim();
+	if (!apiKey) {
+		updateStatus("API key cannot be empty", "error");
+		return;
+	}
+
+	try {
+		await chrome.storage.sync.set({ apiKey });
+		updateStatus("API key saved successfully", "success");
+		setTimeout(() => {
+			clearStatus();
+		}, 2000);
+	} catch (error) {
+		updateStatus(error instanceof Error ? error.message : "Failed to save API key", "error");
+	}
+}
+
+/**
  * Initializes the popup UI.
  */
 async function init(): Promise<void> {
@@ -369,6 +442,24 @@ async function init(): Promise<void> {
 	const saveButton = document.getElementById("save-button");
 	if (saveButton) {
 		saveButton.addEventListener("click", handleSave);
+	}
+
+	const settingsButton = document.getElementById("settings-button");
+	if (settingsButton) {
+		settingsButton.addEventListener("click", toggleSettings);
+	}
+
+	const saveApiKeyButton = document.getElementById("save-api-key-button");
+	if (saveApiKeyButton) {
+		saveApiKeyButton.addEventListener("click", saveApiKey);
+	}
+
+	/**
+	 * Check if API key is configured and show warning if not.
+	 */
+	const apiKey = await getApiKey();
+	if (!apiKey) {
+		updateStatus("⚠️ API key not configured. Click the settings icon to set it up.", "error");
 	}
 }
 

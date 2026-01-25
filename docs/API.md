@@ -1,12 +1,11 @@
 # API Reference
 
-The recipe-to-notion server provides a REST API for processing recipes. The API can be used with a local server or deployed to Vercel.
+The recipe-to-notion server provides a REST API for processing recipes. Deploy to Vercel to use the API.
 
 ---
 
 ## Base URL
 
-- **Local:** `http://localhost:3000`
 - **Vercel:** `https://your-app.vercel.app`
 
 ---
@@ -152,12 +151,12 @@ The API does not require authentication. However, it requires valid environment 
 - `NOTION_API_KEY` - For Notion API calls
 - `NOTION_DATABASE_ID` - Target Notion database
 
-These should be configured in your deployment environment or `.env` file for local development.
+These should be configured in your Vercel deployment environment variables.
 
 ---
 
 ## Related Documentation
 
 - [Extension Setup](./EXTENSION.md) - Browser extension that uses this API
-- [Deployment Guide](./DEPLOYMENT.md) - Deploy the API server
+- [Deployment Guide](./DEPLOYMENT.md) - Deploy to Vercel
 - [Main README](../README.md) - Project overview

@@ -1,24 +1,39 @@
 # Browser Extension Setup
 
-Save recipes with one click directly from your browser! The extension works with either a local server or a cloud-deployed server (Vercel).
+Save recipes with one click directly from your browser! The extension connects to your Vercel-deployed server.
 
 ---
 
 ## Quick Start
 
-1. **Build the extension:** `bun run build:extension`
-2. **Choose server option** (see options below)
-3. **Load in Chrome:** `chrome://extensions/` → Enable Developer mode → Load unpacked → Select `extension/` directory
+1. **Deploy to Vercel** (see [Deployment Guide](./DEPLOYMENT.md))
+2. **Build the extension:** `bun run build:extension`
+3. **Configure the extension** with your Vercel URL
+4. **Load in Chrome:** `chrome://extensions/` → Enable Developer mode → Load unpacked → Select `extension/` directory
 
 ---
 
-## Server Options
+## Setup Steps
 
-### Option A: Local Server
+### Step 1: Deploy to Vercel
 
-Perfect for development and testing.
+First, deploy your server to Vercel. This is a one-time setup.
 
-#### Step 1: Build the Extension
+> 📖 **Full Instructions:** See [Deployment Guide](./DEPLOYMENT.md) for complete Vercel deployment steps.
+
+**Quick Deploy:**
+
+```bash
+bunx vercel login
+bunx vercel --prod
+```
+
+Then add environment variables in the Vercel dashboard:
+- `ANTHROPIC_API_KEY`
+- `NOTION_API_KEY`
+- `NOTION_DATABASE_ID`
+
+### Step 2: Build the Extension
 
 ```bash
 bun run build:extension
@@ -26,79 +41,24 @@ bun run build:extension
 
 This compiles TypeScript files and Tailwind CSS for the extension UI.
 
-#### Step 2: Start the Local Server
+### Step 3: Configure the Extension
 
-```bash
-bun run server
-```
+1. Edit `extension/config.ts` and set `SERVER_URL` to your Vercel deployment URL:
+   ```typescript
+   export const SERVER_URL = "https://your-app.vercel.app";
+   ```
 
-The server runs on `http://localhost:3000` by default (configurable via `SERVER_PORT` env var).
+2. Rebuild the extension:
+   ```bash
+   bun run build:extension
+   ```
 
-#### Step 3: Configure the Extension
-
-1. Edit `extension/config.ts` and set `SERVER_URL` to `"http://localhost:3000"`
-2. Rebuild: `bun run build:extension`
-3. Reload the extension in Chrome
-
-#### Step 4: Load the Extension in Chrome
+### Step 4: Load the Extension in Chrome
 
 1. Open Chrome and go to `chrome://extensions/`
 2. Enable "Developer mode" (toggle in top-right)
 3. Click "Load unpacked"
 4. Select the `extension/` directory
-
----
-
-### Option B: Vercel Deployment (Recommended)
-
-Deploy the server to Vercel so you don't need to run a local server.
-
-> 📖 **Full Deployment Guide:** See [Deployment Guide](./DEPLOYMENT.md#vercel) for detailed Vercel instructions.
-
-#### Step 1: Build the Extension
-
-```bash
-bun run build:extension
-```
-
-#### Step 2: Deploy to Vercel
-
-```bash
-bunx vercel login
-bunx vercel --prod
-```
-
-Add environment variables in Vercel dashboard (Settings → Environment Variables):
-- `ANTHROPIC_API_KEY`
-- `NOTION_API_KEY`
-- `NOTION_DATABASE_ID`
-
-#### Step 3: Configure the Extension
-
-1. Edit `extension/config.ts` and set `SERVER_URL` to your Vercel deployment URL (e.g., `"https://recipe-to-notion-xi.vercel.app"`)
-2. Rebuild: `bun run build:extension`
-3. Reload the extension in Chrome
-
-#### Step 4: Load the Extension in Chrome
-
-1. Open Chrome and go to `chrome://extensions/`
-2. Enable "Developer mode" (toggle in top-right)
-3. Click "Load unpacked"
-4. Select the `extension/` directory
-
----
-
-### Option C: Other Platforms
-
-The server can also be deployed to Railway, Fly.io, Render, DigitalOcean, or any VPS.
-
-> 📖 **Platform Guides:** See [Deployment Guide](./DEPLOYMENT.md) for platform-specific instructions.
-
-**Quick Steps:**
-
-1. Deploy `cli-server.ts` to your platform (defaults to port 3000, configurable via `SERVER_PORT`)
-2. Set `SERVER_URL` in `extension/config.ts` to your deployment URL
-3. Rebuild and load the extension
 
 ---
 
@@ -130,20 +90,23 @@ The server can also be deployed to Railway, Fly.io, Render, DigitalOcean, or any
 
 ### Connection Errors
 
-**For local server:**
-- Ensure `bun run server` is running
-- Verify `SERVER_URL` in `extension/config.ts` matches your server URL
-
-**For Vercel/cloud deployment:**
-- Verify your deployment URL is correct in `extension/config.ts`
-- Check that environment variables are set in your deployment
-- Test the health endpoint: `curl https://your-deployment.com/api/health`
+- Verify your Vercel deployment URL is correct in `extension/config.ts`
+- Check that environment variables are set in your Vercel deployment
+- Test the health endpoint: `curl https://your-app.vercel.app/api/health`
+- Make sure your Vercel deployment is active (check the Vercel dashboard)
 
 ### Build Errors
 
 - Make sure all dependencies are installed: `bun install`
 - Check that TypeScript compiles: `bun run typecheck`
 - Verify Tailwind CSS builds: Check that `extension/styles.css` exists after building
+
+### Recipe Processing Fails
+
+- Check Vercel function logs in the dashboard for errors
+- Verify all environment variables are set correctly
+- Ensure your Notion integration has access to the database
+- Check that your Anthropic API key has sufficient credits
 
 ---
 
@@ -152,7 +115,7 @@ The server can also be deployed to Railway, Fly.io, Render, DigitalOcean, or any
 The extension configuration is in `extension/config.ts`:
 
 ```typescript
-export const SERVER_URL = "http://localhost:3000"; // or your Vercel URL
+export const SERVER_URL = "https://your-app.vercel.app";
 ```
 
 **After changing the config:**
@@ -162,8 +125,20 @@ export const SERVER_URL = "http://localhost:3000"; // or your Vercel URL
 
 ---
 
+## Development: Local Server (Optional)
+
+For development and testing, you can use a local server instead of Vercel:
+
+1. Start the local server: `bun run server`
+2. Set `SERVER_URL` in `extension/config.ts` to `"http://localhost:3000"`
+3. Rebuild and reload the extension
+
+> **Note:** For production use, always use Vercel deployment.
+
+---
+
 ## Related Documentation
 
+- [Deployment Guide](./DEPLOYMENT.md) - Deploy your server to Vercel
 - [API Reference](./API.md) - Understand the API the extension uses
-- [Deployment Guide](./DEPLOYMENT.md) - Deploy your server to various platforms
 - [Main README](../README.md) - Project overview and other usage methods

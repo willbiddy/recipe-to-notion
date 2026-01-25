@@ -70,7 +70,7 @@ export async function checkForDuplicateByUrl(
 		method: "POST",
 		headers: {
 			Authorization: `Bearer ${notionApiKey}`,
-			"Notion-Version": "2022-06-28",
+			"Notion-Version": NOTION_API_VERSION,
 			"Content-Type": "application/json",
 		},
 		body: JSON.stringify({
@@ -137,7 +137,7 @@ export async function checkForDuplicateByTitle(
 		method: "POST",
 		headers: {
 			Authorization: `Bearer ${notionApiKey}`,
-			"Notion-Version": "2022-06-28",
+			"Notion-Version": NOTION_API_VERSION,
 			"Content-Type": "application/json",
 		},
 		body: JSON.stringify({
@@ -415,7 +415,7 @@ function paragraph(text: string): unknown {
 		object: "block",
 		type: "paragraph",
 		paragraph: {
-			rich_text: [{ type: "text", text: { content: truncate(text, 2000) } }],
+			rich_text: [{ type: "text", text: { content: truncate(text, MAX_TEXT_LENGTH) } }],
 		},
 	};
 }
@@ -463,7 +463,7 @@ function bulletItem(text: string): unknown {
 		object: "block",
 		type: "bulleted_list_item",
 		bulleted_list_item: {
-			rich_text: [{ type: "text", text: { content: truncate(text, 2000) } }],
+			rich_text: [{ type: "text", text: { content: truncate(text, MAX_TEXT_LENGTH) } }],
 		},
 	};
 }
@@ -479,7 +479,7 @@ function numberedItem(text: string): unknown {
 		object: "block",
 		type: "numbered_list_item",
 		numbered_list_item: {
-			rich_text: [{ type: "text", text: { content: truncate(text, 2000) } }],
+			rich_text: [{ type: "text", text: { content: truncate(text, MAX_TEXT_LENGTH) } }],
 		},
 	};
 }

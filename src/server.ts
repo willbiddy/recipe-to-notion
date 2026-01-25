@@ -9,6 +9,7 @@ import {
 	validateRecipeRequest,
 	validateRequestSize,
 } from "./security.js";
+import { ServerProgressEventType } from "./shared/api.js";
 
 /**
  * HTTP status codes used throughout the server.
@@ -102,7 +103,7 @@ function handleRecipeStream(_request: Request, url: string): Response {
 					url,
 					(event: ProgressEvent) => {
 						sendEvent({
-							type: "progress",
+							type: ServerProgressEventType.Progress,
 							message: event.message,
 							progressType: event.type,
 						});
@@ -117,7 +118,7 @@ function handleRecipeStream(_request: Request, url: string): Response {
 
 				const notionUrl = getNotionPageUrl(result.pageId);
 				sendEvent({
-					type: "complete",
+					type: ServerProgressEventType.Complete,
 					success: true,
 					pageId: result.pageId,
 					notionUrl,
@@ -143,7 +144,7 @@ function handleRecipeStream(_request: Request, url: string): Response {
 				}
 
 				sendEvent({
-					type: "error",
+					type: ServerProgressEventType.Error,
 					success: false,
 					error: errorMessage,
 					...(notionUrl && { notionUrl }),

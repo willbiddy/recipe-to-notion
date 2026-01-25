@@ -20,21 +20,42 @@ export type RecipeResponse =
 	  };
 
 /**
+ * Server-Sent Event types for recipe processing progress.
+ */
+export enum ServerProgressEventType {
+	Progress = "progress",
+	Complete = "complete",
+	Error = "error",
+}
+
+/**
  * Progress event from server.
  */
 export type ServerProgressEvent =
 	| {
-			type: "progress";
+			type: ServerProgressEventType.Progress;
 			message: string;
 	  }
 	| {
-			type: "complete";
+			type: ServerProgressEventType.Complete;
 			success: true;
 			pageId: string;
 			notionUrl: string;
+			recipe: {
+				name: string;
+				author: string | null;
+				ingredients: string[];
+				instructions: string[];
+			};
+			tags: {
+				tags: string[];
+				mealType: string[];
+				healthiness: number;
+				totalTimeMinutes: number;
+			};
 	  }
 	| {
-			type: "error";
+			type: ServerProgressEventType.Error;
 			success: false;
 			error: string;
 			notionUrl?: string;
@@ -45,7 +66,22 @@ export type ServerProgressEvent =
  */
 export interface ProgressCallbacks {
 	onProgress: (message: string) => void;
-	onComplete: (data: { pageId: string; notionUrl: string }) => void;
+	onComplete: (data: {
+		pageId: string;
+		notionUrl: string;
+		recipe: {
+			name: string;
+			author: string | null;
+			ingredients: string[];
+			instructions: string[];
+		};
+		tags: {
+			tags: string[];
+			mealType: string[];
+			healthiness: number;
+			totalTimeMinutes: number;
+		};
+	}) => void;
 	onError: (error: string, notionUrl?: string) => void;
 }
 
@@ -140,12 +176,14 @@ export async function saveRecipe(
 									try {
 										const data = JSON.parse(line.slice(6)) as ServerProgressEvent;
 
-										if (data.type === "progress") {
+										if (data.type === ServerProgressEventType.Progress) {
 											callbacks.onProgress(data.message);
-										} else if (data.type === "complete") {
+										} else if (data.type === ServerProgressEventType.Complete) {
 											callbacks.onComplete({
 												pageId: data.pageId,
 												notionUrl: data.notionUrl,
+												recipe: data.recipe,
+												tags: data.tags,
 											});
 											resolve({
 												success: true,
@@ -153,7 +191,7 @@ export async function saveRecipe(
 												notionUrl: data.notionUrl,
 											});
 											return;
-										} else if (data.type === "error") {
+										} else if (data.type === ServerProgressEventType.Error) {
 											callbacks.onError(data.error || "Unknown error", data.notionUrl);
 											resolve({
 												success: false,

@@ -12,6 +12,7 @@ import {
 	validateRecipeRequest,
 	validateRequestSize,
 } from "../src/security.js";
+import { ServerProgressEventType } from "../src/shared/api.js";
 
 /**
  * HTTP status codes used throughout the API.
@@ -83,7 +84,7 @@ function handleRecipeStream(url: string): Response {
 				 * Send initial progress event immediately so extension knows connection is working.
 				 */
 				sendEvent({
-					type: "progress",
+					type: ServerProgressEventType.Progress,
 					message: "Starting...",
 					progressType: "starting",
 				});
@@ -104,7 +105,7 @@ function handleRecipeStream(url: string): Response {
 					url,
 					(event) => {
 						sendEvent({
-							type: "progress",
+							type: ServerProgressEventType.Progress,
 							message: event.message,
 							progressType: event.type,
 						});
@@ -119,10 +120,22 @@ function handleRecipeStream(url: string): Response {
 
 				const notionUrl = getNotionPageUrl(result.pageId);
 				sendEvent({
-					type: "complete",
+					type: ServerProgressEventType.Complete,
 					success: true,
 					pageId: result.pageId,
 					notionUrl,
+					recipe: {
+						name: result.recipe.name,
+						author: result.recipe.author,
+						ingredients: result.recipe.ingredients,
+						instructions: result.recipe.instructions,
+					},
+					tags: {
+						tags: result.tags.tags,
+						mealType: result.tags.mealType,
+						healthiness: result.tags.healthiness,
+						totalTimeMinutes: result.tags.totalTimeMinutes,
+					},
 				});
 			} catch (error) {
 				/**
@@ -172,7 +185,7 @@ function handleRecipeStream(url: string): Response {
 
 				try {
 					sendEvent({
-						type: "error",
+						type: ServerProgressEventType.Error,
 						success: false,
 						error: errorMessage,
 						...(notionUrl && { notionUrl }),

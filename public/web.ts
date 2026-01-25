@@ -39,9 +39,10 @@ function saveRecipeWithProgress(url: string) {
 			showProgress(message);
 			setLoading(true);
 		},
-		onComplete: () => {
+		onComplete: (data) => {
 			hideProgress();
 			setLoading(false);
+			displayRecipeInfo(data);
 		},
 		onError: () => {
 			hideProgress();
@@ -78,24 +79,16 @@ async function handleSave(): Promise<void> {
 		const result = await saveRecipeWithProgress(url);
 
 		if (result.success) {
-			updateStatus("Recipe saved successfully!", "success");
-			/**
-			 * Show "Opening..." message, then open the Notion page.
-			 */
-			setTimeout(() => {
-				updateStatus("Opening Notion page...", "info");
-				setTimeout(() => {
-					window.open(result.notionUrl, "_blank");
-				}, 500);
-			}, 500);
+			// Recipe info is displayed in displayRecipeInfo callback
+			// No need to show status here
 		} else if (result.error?.includes("Duplicate recipe found") && result.notionUrl) {
 			/**
 			 * Handle duplicate errors specially.
 			 */
-			updateStatus(`This recipe already exists. Opening...`, "info");
-			setTimeout(() => {
-				window.open(result.notionUrl, "_blank");
-			}, 500);
+			updateStatus(
+				`This recipe already exists. <a href="${result.notionUrl}" target="_blank" class="underline font-semibold">Open in Notion</a>`,
+				"info",
+			);
 		} else {
 			updateStatus(result.error || "Failed to save recipe", "error");
 		}
@@ -114,7 +107,7 @@ function toggleSettings(): void {
 	const settingsPanel = document.getElementById("settings-panel");
 	const settingsButton = document.getElementById("settings-button");
 	if (!settingsPanel || !settingsButton) {
-		console.error("Settings panel or button not found");
+		console.error("Settings panel or button not found", { settingsPanel, settingsButton });
 		return;
 	}
 
@@ -135,6 +128,61 @@ function toggleSettings(): void {
 			chevron.style.transform = "rotate(0deg)";
 		}
 	}
+}
+
+/**
+ * Displays recipe information after successful save, similar to CLI output.
+ */
+function displayRecipeInfo(data: {
+	pageId: string;
+	notionUrl: string;
+	recipe: {
+		name: string;
+		author: string | null;
+		ingredients: string[];
+		instructions: string[];
+	};
+	tags: {
+		tags: string[];
+		mealType: string[];
+		healthiness: number;
+		totalTimeMinutes: number;
+	};
+}): void {
+	const statusDiv = document.getElementById("status");
+	if (!statusDiv) return;
+
+	const infoLines: string[] = [];
+	if (data.recipe.author) {
+		infoLines.push(`<strong>Author:</strong> ${data.recipe.author}`);
+	}
+	infoLines.push(`<strong>Tags:</strong> ${data.tags.tags.join(", ")}`);
+	infoLines.push(`<strong>Meal type:</strong> ${data.tags.mealType.join(", ")}`);
+	infoLines.push(`<strong>Healthiness:</strong> ${data.tags.healthiness}/10`);
+	infoLines.push(`<strong>Minutes:</strong> ${data.tags.totalTimeMinutes}`);
+	infoLines.push(`<strong>Ingredients:</strong> ${data.recipe.ingredients.length} items`);
+	infoLines.push(`<strong>Steps:</strong> ${data.recipe.instructions.length} steps`);
+
+	const recipeTitle = data.recipe.name;
+	const notionLink = `<a href="${data.notionUrl}" target="_blank" class="font-semibold underline hover:text-orange-900 transition-colors">${recipeTitle}</a>`;
+
+	statusDiv.innerHTML = `
+		<div class="bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-orange-200 rounded-2xl p-5 space-y-3">
+			<h3 class="text-lg font-bold text-orange-900 mb-3">${recipeTitle}</h3>
+			<div class="space-y-2 text-sm text-orange-800">
+				${infoLines.map((line) => `<div>${line}</div>`).join("")}
+			</div>
+			<div class="pt-3 border-t border-orange-200">
+				<p class="text-sm text-orange-900">
+					Recipe saved! Open in Notion: ${notionLink}
+				</p>
+			</div>
+		</div>
+	`;
+
+	statusDiv.className =
+		"py-4 px-5 rounded-xl text-sm leading-relaxed animate-[fadeIn_0.2s_ease-in] shadow-sm";
+	statusDiv.classList.remove("hidden");
 }
 
 /**
@@ -184,18 +232,25 @@ function handleQueryParameters(): void {
 	const url = urlParams.get("url");
 
 	if (url) {
-		const urlInput = document.getElementById("url-input") as HTMLInputElement;
-		if (urlInput) {
-			urlInput.value = url;
-			// Auto-submit if API key exists
-			storage.getApiKey().then((apiKey) => {
-				if (apiKey) {
-					// Small delay to ensure UI is ready
-					setTimeout(() => {
-						handleSave();
-					}, 300);
-				}
-			});
+		// Validate that it's actually a URL, not a title or other text
+		try {
+			new URL(url);
+			const urlInput = document.getElementById("url-input") as HTMLInputElement;
+			if (urlInput) {
+				urlInput.value = url;
+				// Auto-submit if API key exists
+				storage.getApiKey().then((apiKey) => {
+					if (apiKey) {
+						// Small delay to ensure UI is ready
+						setTimeout(() => {
+							handleSave();
+						}, 300);
+					}
+				});
+			}
+		} catch {
+			// Not a valid URL, ignore it
+			console.warn("Invalid URL in query parameters:", url);
 		}
 	}
 }
@@ -225,7 +280,13 @@ async function init(): Promise<void> {
 
 	const settingsButton = document.getElementById("settings-button");
 	if (settingsButton) {
-		settingsButton.addEventListener("click", toggleSettings);
+		settingsButton.addEventListener("click", (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			toggleSettings();
+		});
+	} else {
+		console.error("Settings button not found during init");
 	}
 
 	const saveApiKeyButton = document.getElementById("save-api-key-button");

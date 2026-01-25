@@ -35,12 +35,7 @@ export function loadConfig(): Config {
 	if (!parseResult.success) {
 		const missingVars = parseResult.error.issues.map((issue) => issue.path.join(".")).join(", ");
 
-		const requiredVars = [
-			"ANTHROPIC_API_KEY",
-			"NOTION_API_KEY",
-			"NOTION_DATABASE_ID",
-			"API_SECRET",
-		].join(", ");
+		const requiredVars = Object.keys(envSchema.shape).join(", ");
 
 		throw new ValidationError(
 			`Missing or invalid environment variables: ${missingVars}\n` +

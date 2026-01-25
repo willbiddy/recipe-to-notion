@@ -330,7 +330,7 @@ function toggleSettings(): void {
 	if (!settingsPanel || !settingsButton) return;
 
 	const isHidden = settingsPanel.classList.contains("hidden");
-	const chevron = settingsButton.querySelector(".settings-chevron");
+	const chevron = settingsButton.querySelector(".settings-chevron") as HTMLElement | null;
 	
 	if (isHidden) {
 		settingsPanel.classList.remove("hidden");

@@ -9,7 +9,7 @@
 const CONTEXT_MENU = {
 	ID: "save-recipe",
 	TITLE: "Save Recipe with recipe-to-notion",
-	CONTEXTS: ["page"] as chrome.contextMenus.ContextType[],
+	CONTEXTS: ["page" as chrome.contextMenus.ContextType],
 } as const;
 
 /**
@@ -20,7 +20,7 @@ chrome.runtime.onInstalled.addListener(() => {
 		chrome.contextMenus.create({
 			id: CONTEXT_MENU.ID,
 			title: CONTEXT_MENU.TITLE,
-			contexts: CONTEXT_MENU.CONTEXTS,
+			contexts: [...CONTEXT_MENU.CONTEXTS],
 		});
 	}
 });

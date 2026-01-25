@@ -110,37 +110,33 @@ export async function checkForDuplicateByUrl(
 	});
 
 	if (!response.ok) {
-		const errorBody = await response.json().catch(() => ({}));
-		const errorMessage = errorBody.message || response.statusText;
-		const code = errorBody.code || "";
-		throw new Error(
-			`Notion API error: ${response.status} ${response.statusText}. ${errorMessage}${code ? ` (code: ${code})` : ""}. ` +
-				`Check that the property "${PropertyNames.SOURCE}" exists in your database and is a URL type.`,
-		);
+		await handleNotionApiError(response, PropertyNames.SOURCE, "URL");
 	}
 
 	const urlQuery = await response.json();
 
-	if (urlQuery.results.length > 0) {
-		const page = urlQuery.results[0];
-		const pageId = page.id;
-		const title =
-			page.properties && PropertyNames.NAME in page.properties
-				? extractTitle(page.properties[PropertyNames.NAME])
-				: "Unknown Recipe";
-		const foundUrl =
-			page.properties && PropertyNames.SOURCE in page.properties
-				? extractUrl(page.properties[PropertyNames.SOURCE])
-				: url;
-		return {
-			title,
-			url: foundUrl,
-			pageId,
-			notionUrl: getNotionPageUrl(pageId),
-		};
+	if (urlQuery.results.length === 0) {
+		return null;
 	}
 
-	return null;
+	const page = urlQuery.results[0];
+	const pageId = page.id;
+	const properties = page.properties || {};
+
+	const title =
+		PropertyNames.NAME in properties
+			? extractTitle(properties[PropertyNames.NAME])
+			: "Unknown Recipe";
+
+	const foundUrl =
+		PropertyNames.SOURCE in properties ? extractUrl(properties[PropertyNames.SOURCE]) : url;
+
+	return {
+		title,
+		url: foundUrl,
+		pageId,
+		notionUrl: getNotionPageUrl(pageId),
+	};
 }
 
 /**
@@ -177,32 +173,31 @@ export async function checkForDuplicateByTitle(
 	});
 
 	if (!response.ok) {
-		const errorBody = await response.json().catch(() => ({}));
-		const errorMessage = errorBody.message || response.statusText;
-		const code = errorBody.code || "";
-		throw new Error(
-			`Notion API error: ${response.status} ${response.statusText}. ${errorMessage}${code ? ` (code: ${code})` : ""}. ` +
-				`Check that the property "${PropertyNames.NAME}" exists in your database and is a Title type.`,
-		);
+		await handleNotionApiError(response, PropertyNames.NAME, "Title");
 	}
 
 	const titleQuery = await response.json();
 
-	if (titleQuery.results.length > 0) {
-		const page = titleQuery.results[0];
-		const pageId = page.id;
-		const title =
-			page.properties && PropertyNames.NAME in page.properties
-				? extractTitle(page.properties[PropertyNames.NAME])
-				: recipeName;
-		const url =
-			page.properties && PropertyNames.SOURCE in page.properties
-				? extractUrl(page.properties[PropertyNames.SOURCE])
-				: "";
-		return { title, url, pageId, notionUrl: getNotionPageUrl(pageId) };
+	if (titleQuery.results.length === 0) {
+		return null;
 	}
 
-	return null;
+	const page = titleQuery.results[0];
+	const pageId = page.id;
+	const properties = page.properties || {};
+
+	const title =
+		PropertyNames.NAME in properties ? extractTitle(properties[PropertyNames.NAME]) : recipeName;
+
+	const url =
+		PropertyNames.SOURCE in properties ? extractUrl(properties[PropertyNames.SOURCE]) : "";
+
+	return {
+		title,
+		url,
+		pageId,
+		notionUrl: getNotionPageUrl(pageId),
+	};
 }
 
 /**
@@ -214,7 +209,7 @@ export async function checkForDuplicateByTitle(
  * @param skipUrlCheck - If true, skips URL duplicate check (assumes already checked).
  * @returns Information about the duplicate if found, null otherwise.
  */
-export async function checkForDuplicate(
+async function checkForDuplicate(
 	recipe: Recipe,
 	notionApiKey: string,
 	databaseId: string,
@@ -237,25 +232,55 @@ export async function checkForDuplicate(
 }
 
 /**
+ * Handles Notion API error responses by extracting error information.
+ *
+ * @param response - The failed HTTP response.
+ * @param propertyName - The property name to include in the error message.
+ * @param propertyType - The expected property type (e.g., "URL", "Title").
+ * @throws Error with detailed message about the API failure.
+ */
+async function handleNotionApiError(
+	response: Response,
+	propertyName: string,
+	propertyType: string,
+): Promise<never> {
+	const errorBody = await response.json().catch(() => ({}));
+	const errorMessage = errorBody.message || response.statusText;
+	const code = errorBody.code || "";
+
+	const codeSuffix = code ? ` (code: ${code})` : "";
+	const fullMessage =
+		`Notion API error: ${response.status} ${response.statusText}. ${errorMessage}${codeSuffix}. ` +
+		`Check that the property "${propertyName}" exists in your database and is a ${propertyType} type.`;
+
+	throw new Error(fullMessage);
+}
+
+/**
  * Extracts the title text from a Notion title property.
  *
  * @param property - The Notion title property object.
  * @returns The plain text title, or empty string if not found.
  */
 function extractTitle(property: unknown): string {
-	if (
-		property &&
-		typeof property === "object" &&
-		"title" in property &&
-		Array.isArray(property.title) &&
-		property.title.length > 0 &&
-		typeof property.title[0] === "object" &&
-		property.title[0] !== null &&
-		"plain_text" in property.title[0]
-	) {
-		return String(property.title[0].plain_text);
+	if (!property || typeof property !== "object" || property === null) {
+		return "";
 	}
-	return "";
+
+	if (!("title" in property) || !Array.isArray(property.title)) {
+		return "";
+	}
+
+	if (property.title.length === 0) {
+		return "";
+	}
+
+	const firstTitle = property.title[0];
+	if (typeof firstTitle !== "object" || firstTitle === null || !("plain_text" in firstTitle)) {
+		return "";
+	}
+
+	return String(firstTitle.plain_text);
 }
 
 /**
@@ -265,10 +290,15 @@ function extractTitle(property: unknown): string {
  * @returns The URL string, or empty string if not found.
  */
 function extractUrl(property: unknown): string {
-	if (property && typeof property === "object" && "url" in property && property.url !== null) {
-		return String(property.url);
+	if (!property || typeof property !== "object" || property === null) {
+		return "";
 	}
-	return "";
+
+	if (!("url" in property) || property.url === null) {
+		return "";
+	}
+
+	return String(property.url);
 }
 
 /**
@@ -355,22 +385,22 @@ export async function createRecipePage(
 function buildIngredientBlocks(grouped: Map<string, Array<{ name: string }>>): unknown[] {
 	const blocks: unknown[] = [];
 	const orderedCategories = getCategoryOrder();
-	const otherCategories: string[] = [];
 
-	for (const category of grouped.keys()) {
-		if (!orderedCategories.includes(category)) {
-			otherCategories.push(category);
-		}
-	}
-	otherCategories.sort();
+	const otherCategories = Array.from(grouped.keys())
+		.filter((category) => !orderedCategories.includes(category))
+		.sort();
 
-	for (const category of [...orderedCategories, ...otherCategories]) {
+	const allCategories = [...orderedCategories, ...otherCategories];
+
+	for (const category of allCategories) {
 		const ingredients = grouped.get(category);
-		if (ingredients && ingredients.length > 0) {
-			blocks.push(heading3(category));
-			for (const ingredient of ingredients) {
-				blocks.push(bulletItem(ingredient.name));
-			}
+		if (!ingredients || ingredients.length === 0) {
+			continue;
+		}
+
+		blocks.push(heading3(category));
+		for (const ingredient of ingredients) {
+			blocks.push(bulletItem(ingredient.name));
 		}
 	}
 
@@ -398,16 +428,14 @@ function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
 	if (tags.ingredients && tags.ingredients.length > 0) {
 		blocks.push(heading1("Ingredients"));
 		const grouped = groupIngredientsByCategory(tags.ingredients);
-		const converted = new Map<string, Array<{ name: string }>>();
+		const simplified = new Map<string, Array<{ name: string }>>();
 		for (const [category, ingredients] of grouped.entries()) {
-			converted.set(
+			simplified.set(
 				category,
-				ingredients.map((ing) => ({
-					name: ing.name,
-				})),
+				ingredients.map((ing) => ({ name: ing.name })),
 			);
 		}
-		blocks.push(...buildIngredientBlocks(converted));
+		blocks.push(...buildIngredientBlocks(simplified));
 	} else if (recipe.ingredients.length > 0) {
 		blocks.push(heading1("Ingredients"));
 		for (const ingredient of recipe.ingredients) {
@@ -556,19 +584,12 @@ function groupIngredientsByCategory(
 
 /**
  * Returns the standard grocery store category order.
- * Produce → Deli & Bakery → Meat & Seafood → Pantry → Dairy & Eggs → Frozen Foods
+ * Produce → Bakery → Meat & seafood → Pantry → Dairy & eggs → Frozen → Other
  *
- * Categories not in this list will appear after Frozen Foods in alphabetical order.
+ * Categories not in this list will appear after Frozen in alphabetical order.
  *
  * @returns Array of category names in shopping order.
  */
 function getCategoryOrder(): string[] {
-	return [
-		"Produce",
-		"Deli & Bakery",
-		"Meat & Seafood",
-		"Pantry",
-		"Dairy & Eggs",
-		"Frozen Foods",
-	];
+	return ["Produce", "Bakery", "Meat & seafood", "Pantry", "Dairy & eggs", "Frozen", "Other"];
 }

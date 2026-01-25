@@ -26,6 +26,27 @@ const BUTTON_TEXT = {
 } as const;
 
 /**
+ * Gets the icon SVG for a status type.
+ *
+ * @param type - The type of status (info, success, or error).
+ * @returns SVG string for the icon.
+ */
+function getStatusIcon(type: "info" | "success" | "error"): string {
+	const icons = {
+		info: `<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+		</svg>`,
+		success: `<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+		</svg>`,
+		error: `<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+		</svg>`,
+	};
+	return icons[type];
+}
+
+/**
  * Updates the status message in the UI.
  *
  * @param message - The status message to display.
@@ -45,9 +66,6 @@ export function updateStatus(
 		return;
 	}
 
-	statusEl.textContent = message;
-	statusEl.classList.remove("hidden");
-
 	const textSize = options?.textSize ?? "sm";
 	const textSizeClass =
 		textSize === "xs" ? "text-xs" : textSize === "base" ? "text-base" : "text-sm";
@@ -57,10 +75,21 @@ export function updateStatus(
 		`py-4 px-5 rounded-2xl ${textSizeClass} leading-relaxed animate-[fadeIn_0.2s_ease-in] block shadow-sm`;
 	const typeClasses = {
 		info: "bg-orange-50 text-orange-800 border-2 border-orange-200",
-		success: "bg-amber-50 text-amber-800 border-2 border-amber-300",
-		error: "bg-red-50 text-red-800 border-2 border-red-200 whitespace-pre-line",
+		success: "bg-green-50 text-green-800 border-2 border-green-300",
+		error: "bg-red-50 text-red-800 border-2 border-red-300 whitespace-pre-line",
 	};
+
+	const icon = getStatusIcon(type);
+	const isHTML = message.includes("<") && message.includes(">");
+
+	if (isHTML) {
+		statusEl.innerHTML = `<div class="flex items-start gap-3">${icon}<div class="flex-1">${message}</div></div>`;
+	} else {
+		statusEl.innerHTML = `<div class="flex items-start gap-3">${icon}<div class="flex-1">${message}</div></div>`;
+	}
+
 	statusEl.className = `${baseClasses} ${typeClasses[type]}`;
+	statusEl.classList.remove("hidden");
 }
 
 /**
@@ -71,6 +100,7 @@ export function clearStatus(): void {
 	if (statusEl) {
 		statusEl.classList.add("hidden");
 		statusEl.textContent = "";
+		statusEl.innerHTML = "";
 	}
 }
 
@@ -114,6 +144,36 @@ export function setLoading(loading: boolean): void {
 
 	saveButton.disabled = loading;
 	buttonText.textContent = loading ? BUTTON_TEXT.LOADING : BUTTON_TEXT.NORMAL;
+
+	// Add spinner to button when loading
+	const existingSpinner = saveButton.querySelector(".button-spinner");
+	if (loading && !existingSpinner) {
+		const spinner = document.createElement("div");
+		spinner.className =
+			"button-spinner w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin flex-shrink-0";
+		spinner.setAttribute("aria-hidden", "true");
+		const checkIcon = saveButton.querySelector("svg");
+		if (checkIcon) {
+			checkIcon.replaceWith(spinner);
+		}
+	} else if (!loading && existingSpinner) {
+		const checkIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+		checkIcon.setAttribute(
+			"class",
+			"w-5 h-5 group-hover:translate-x-0.5 transition-transform duration-200",
+		);
+		checkIcon.setAttribute("fill", "none");
+		checkIcon.setAttribute("stroke", "currentColor");
+		checkIcon.setAttribute("viewBox", "0 0 24 24");
+		checkIcon.setAttribute("aria-hidden", "true");
+		const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+		path.setAttribute("stroke-linecap", "round");
+		path.setAttribute("stroke-linejoin", "round");
+		path.setAttribute("stroke-width", "2");
+		path.setAttribute("d", "M5 13l4 4L19 7");
+		checkIcon.appendChild(path);
+		existingSpinner.replaceWith(checkIcon);
+	}
 }
 
 /**

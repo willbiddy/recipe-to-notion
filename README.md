@@ -14,18 +14,18 @@ Save recipes to Notion without copying and pasting. Paste a URL from almost any 
 ## How It Works
 
 ```
-CLI/Extension/API → Check duplicates → Scrape recipe (JSON-LD) → Claude scores/tags → Notion page
+CLI/Extension/API → Check duplicates → Scrape recipe → Claude scores/tags → Notion page
 ```
 
-1. **Entry Point** — Recipe URL is provided via CLI command, browser extension click, or HTTP API request.
+1. **CLI/Extension/API** — Recipe URL is provided via CLI command, browser extension click, or HTTP API request.
 
-2. **Check Duplicates** — Before processing, checks if a recipe with the same URL or title already exists in your Notion database. If found, the tool rejects the duplicate and provides a link to the existing recipe.
+2. **Check duplicates** — Before processing, checks if a recipe with the same URL or title already exists in your Notion database. If found, the tool rejects the duplicate and provides a link to the existing recipe.
 
-3. **Scrape** — Fetches the page HTML and extracts structured recipe data from [JSON-LD](https://json-ld.org/) (`schema.org/Recipe`). Most recipe sites embed this for SEO, including paywalled sites like NYT Cooking. If JSON-LD isn't available, falls back to microdata attributes and common CSS class patterns.
+3. **Scrape recipe** — Fetches the page HTML and extracts structured recipe data from [JSON-LD](https://json-ld.org/) (`schema.org/Recipe`). Most recipe sites embed this for SEO, including paywalled sites like NYT Cooking. If JSON-LD isn't available, falls back to microdata attributes and common CSS class patterns.
 
-4. **Tag** — Sends the recipe to Claude, which returns tags, meal type, healthiness score (0-10), time estimate, description, and ingredient categories grouped by shopping aisle.
+4. **Claude scores/tags** — Sends the recipe to Claude, which returns tags, meal type, healthiness score (0-10), time estimate, description, and ingredient categories grouped by shopping aisle.
 
-5. **Save** — Creates a Notion page with all properties, cover image, AI description, ingredients grouped by shopping category, and numbered instructions.
+5. **Notion page** — Creates a Notion page with all properties, cover image, AI description, ingredients grouped by shopping category, and numbered instructions.
 
 ## Cost
 
@@ -123,11 +123,9 @@ When processing multiple URLs, each is processed sequentially. Failures (duplica
 
 Save recipes with one click directly from your browser!
 
-> 📖 **Setup:** See [Extension Setup Guide](docs/EXTENSION.md) for complete instructions.
+> 📖 See [Extension Setup Guide](docs/EXTENSION.md) for complete setup instructions.
 >
-> **Quick Start:**
-> 1. Deploy to Vercel (see [Deployment Guide](docs/DEPLOYMENT.md))
-> 2. Build and load the extension
+> **Quick Start:** Deploy to Vercel (see [Deployment Guide](docs/DEPLOYMENT.md)), then build and load the extension.
 
 ### 3. HTTP API
 

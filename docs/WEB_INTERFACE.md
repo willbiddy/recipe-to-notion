@@ -94,17 +94,19 @@ Android Chrome supports the Web Share Target API natively. No setup required!
 
 The recipe URL is automatically sent to the web interface and processed.
 
-### iOS Safari (Requires Setup)
+### iOS Browsers (Safari, Chrome, Firefox, etc.) - Requires Setup
 
-iOS Safari doesn't support Web Share Target API natively. However, you can achieve the same functionality using iOS Shortcuts.
+iOS browsers don't support Web Share Target API natively. However, you can achieve the same functionality using iOS Shortcuts, which work with **any browser** on iOS (Safari, Chrome, Firefox, Edge, etc.).
 
 **Setup Steps:**
 
 1. Install the iOS Shortcut (see [iOS Shortcut Setup](./IOS_SHORTCUT.md))
 2. After setup, "Save Recipe to Notion" appears in your Share Sheet
-3. Tap Share → "Save Recipe to Notion" → Done
+3. From any browser, tap Share → "Save Recipe to Notion" → Done
 
 The shortcut opens the web interface with the recipe URL, and if your API key is configured, it automatically processes the recipe.
+
+> **Note:** iOS Shortcuts work with the system Share Sheet, so they work from Safari, Chrome, Firefox, Edge, and any other iOS browser that supports sharing URLs.
 
 ---
 
@@ -214,8 +216,9 @@ On iOS and Android, you can add the web interface to your home screen for quick 
 
 - Make sure you've installed the iOS Shortcut (see [iOS Shortcut Setup](./IOS_SHORTCUT.md))
 - Verify the shortcut is enabled in Settings → Shortcuts → Allow Untrusted Shortcuts
-- Check that the shortcut appears in your Share Sheet
+- Check that the shortcut appears in your Share Sheet (works from Safari, Chrome, Firefox, etc.)
 - Try re-running the shortcut setup if it's not working
+- Test from a different browser to rule out browser-specific issues
 
 ---
 

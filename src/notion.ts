@@ -1,6 +1,6 @@
 import { Client } from "@notionhq/client";
 import type { Recipe } from "./scraper.js";
-import type { RecipeTags } from "./tagger.js";
+import type { CategorizedIngredient, RecipeTags } from "./tagger.js";
 
 /**
  * Notion database property names.
@@ -328,9 +328,8 @@ export async function createRecipePage(
 function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
 	const blocks: unknown[] = [];
 
-	// Add description if available
+	// Add description if available (no heading)
 	if (tags.description) {
-		blocks.push(heading("About"));
 		// Split on double newlines to create separate paragraphs
 		const paragraphs = tags.description.split("\n\n").filter((p) => p.trim());
 		for (const p of paragraphs) {
@@ -338,15 +337,43 @@ function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
 		}
 	}
 
-	if (recipe.ingredients.length > 0) {
-		blocks.push(heading("Ingredients"));
+	if (tags.ingredients && tags.ingredients.length > 0) {
+		blocks.push(heading1("Ingredients"));
+		const grouped = groupIngredientsByCategory(tags.ingredients);
+		const orderedCategories = getCategoryOrder();
+		const otherCategories: string[] = [];
+
+		// Collect categories not in the standard order
+		for (const category of grouped.keys()) {
+			if (!orderedCategories.includes(category)) {
+				otherCategories.push(category);
+			}
+		}
+		otherCategories.sort();
+
+		// Display categories in order
+		for (const category of [...orderedCategories, ...otherCategories]) {
+			const ingredients = grouped.get(category);
+			if (ingredients && ingredients.length > 0) {
+				blocks.push(heading3(category));
+				for (const ingredient of ingredients) {
+					const displayText = ingredient.usage
+						? `${ingredient.original} (${ingredient.usage})`
+						: ingredient.original;
+					blocks.push(bulletItem(displayText));
+				}
+			}
+		}
+	} else if (recipe.ingredients.length > 0) {
+		// Fallback to original flat list if categorization failed
+		blocks.push(heading1("Ingredients"));
 		for (const ingredient of recipe.ingredients) {
 			blocks.push(bulletItem(ingredient));
 		}
 	}
 
 	if (recipe.instructions.length > 0) {
-		blocks.push(heading("Instructions"));
+		blocks.push(heading1("Instructions"));
 		for (const step of recipe.instructions) {
 			blocks.push(numberedItem(step));
 		}
@@ -372,16 +399,32 @@ function paragraph(text: string): unknown {
 }
 
 /**
- * Creates a heading_2 block for Notion.
+ * Creates a heading_1 block for Notion.
  *
  * @param text - The heading text content.
- * @returns A Notion heading_2 block object.
+ * @returns A Notion heading_1 block object.
  */
-function heading(text: string): unknown {
+function heading1(text: string): unknown {
 	return {
 		object: "block",
-		type: "heading_2",
-		heading_2: {
+		type: "heading_1",
+		heading_1: {
+			rich_text: [{ type: "text", text: { content: text } }],
+		},
+	};
+}
+
+/**
+ * Creates a heading_3 block for Notion (for ingredient categories).
+ *
+ * @param text - The heading text content.
+ * @returns A Notion heading_3 block object.
+ */
+function heading3(text: string): unknown {
+	return {
+		object: "block",
+		type: "heading_3",
+		heading_3: {
 			rich_text: [{ type: "text", text: { content: text } }],
 		},
 	};
@@ -429,4 +472,46 @@ function numberedItem(text: string): unknown {
 function truncate(text: string, maxLength: number): string {
 	if (text.length <= maxLength) return text;
 	return `${text.slice(0, maxLength - 3)}...`;
+}
+
+/**
+ * Groups ingredients by their shopping category.
+ *
+ * @param ingredients - Array of categorized ingredients.
+ * @returns Map of category name to array of ingredients in that category.
+ */
+function groupIngredientsByCategory(
+	ingredients: CategorizedIngredient[],
+): Map<string, CategorizedIngredient[]> {
+	const grouped = new Map<string, CategorizedIngredient[]>();
+	for (const ingredient of ingredients) {
+		const category = ingredient.category;
+		if (!grouped.has(category)) {
+			grouped.set(category, []);
+		}
+		grouped.get(category)!.push(ingredient);
+	}
+	return grouped;
+}
+
+/**
+ * Returns the standard grocery store category order.
+ * Produce → Deli & Bakery → Meat & Seafood → Pantry Aisles → Snacks & Soda → Dairy & Eggs → Frozen Foods → Household & Health → Checkout
+ *
+ * Categories not in this list will appear after Checkout in alphabetical order.
+ *
+ * @returns Array of category names in shopping order.
+ */
+function getCategoryOrder(): string[] {
+	return [
+		"Produce",
+		"Deli & Bakery",
+		"Meat & Seafood",
+		"Pantry Aisles",
+		"Snacks & Soda",
+		"Dairy & Eggs",
+		"Frozen Foods",
+		"Household & Health",
+		"Checkout",
+	];
 }

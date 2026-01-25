@@ -24,7 +24,8 @@ Return ONLY valid JSON with these exact keys:
   "mealType": [...],
   "healthiness": N,
   "totalTimeMinutes": N,
-  "description": "..."
+  "description": "...",
+  "ingredients": [...]
 }
 
 No markdown, no code fences, no explanation. Just the JSON object.
@@ -124,6 +125,35 @@ Two paragraphs:
 
 Use complete sentences, not fragments — they don't need to be particularly wordy, just grammatically complete. Casual tone, like telling a friend. No dashes. No AI-sounding phrases. Separate paragraphs with \n\n.
 
+### ingredients (array of objects)
+
+Categorize each ingredient for grocery shopping. Return the same number of ingredients as provided, preserving the original text exactly.
+
+**Category guidelines (standard grocery store flow):**
+
+1. **Produce** — Fresh fruits, vegetables, herbs, garlic, onions, potatoes, etc.
+2. **Deli & Bakery** — Sliced meats, rotisserie chicken, bread, baked goods
+3. **Meat & Seafood** — Raw meats, poultry, fish, seafood (not from deli)
+4. **Pantry Aisles** — Pasta, canned goods, cereal, peanut butter, rice, beans, flour, sugar, spices, oils, condiments, etc.
+5. **Snacks & Soda** — Chips, cookies, crackers, sparkling water, soda, packaged snacks
+6. **Dairy & Eggs** — Milk, butter, cheese, yogurt, eggs, cream
+7. **Frozen Foods** — Frozen pizza, frozen vegetables, ice cream, frozen meals
+8. **Household & Health** — Paper towels, cleaning supplies, personal care items (rarely needed for recipes)
+9. **Checkout** — Magazines, gum, candy (rarely needed for recipes)
+
+**usage field (optional):**
+
+If an ingredient appears multiple times in the recipe (e.g., "Fine sea salt and black pepper" in both marinade and main sections), add a brief usage note to distinguish them:
+- Use short phrases like "for marinade", "for salmon", "for sauce", "for seasoning"
+- Only include if the ingredient appears multiple times and has distinct usage
+- Leave as `null` for most ingredients (especially if they only appear once)
+
+**Important:**
+- Preserve the original ingredient text exactly as provided
+- Don't modify quantities or descriptions
+- Order categories: Produce → Deli & Bakery → Meat & Seafood → Pantry Aisles → Snacks & Soda → Dairy & Eggs → Frozen Foods → Household & Health → Checkout
+- Most recipe ingredients will fall into Produce, Meat & Seafood, Pantry Aisles, Dairy & Eggs, or Frozen Foods
+
 ## Examples
 
 Saucy, Spiced Shrimp and White Beans →
@@ -132,7 +162,78 @@ Saucy, Spiced Shrimp and White Beans →
   "mealType": ["Dinner"],
   "healthiness": 9,
   "totalTimeMinutes": 40,
-  "description": "Shrimp and creamy white beans in a warmly spiced tomato sauce with coriander, cumin, and smoked paprika. Cook the tomato paste until it darkens for deeper flavor. Great with warm flatbread for swiping through the sauce.\n\nThis is a nutritional standout with lean protein from shrimp, fiber from white beans, and healthy fats from olive oil."
+  "description": "Shrimp and creamy white beans in a warmly spiced tomato sauce with coriander, cumin, and smoked paprika. Cook the tomato paste until it darkens for deeper flavor. Great with warm flatbread for swiping through the sauce.\n\nThis is a nutritional standout with lean protein from shrimp, fiber from white beans, and healthy fats from olive oil.",
+  "ingredients": [
+    {
+      "original": "1 lb. large shrimp, peeled, deveined",
+      "category": "Meat & Seafood",
+      "usage": null
+    },
+    {
+      "original": "2 tsp. Diamond Crystal or 1 tsp. Morton kosher salt, divided, plus more",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "Freshly ground pepper",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "¼ cup extra-virgin olive oil",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "1 large shallot, quartered, thinly sliced",
+      "category": "Produce",
+      "usage": null
+    },
+    {
+      "original": "5 garlic cloves, finely chopped",
+      "category": "Produce",
+      "usage": null
+    },
+    {
+      "original": "1 Tbsp. ground coriander",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "1 Tbsp. ground cumin",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "1 Tbsp. smoked paprika",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "1 tsp. sugar",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "½ tsp. crushed red pepper flakes",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "¼ cup double-concentrated tomato paste",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "1 15.5-oz. can white beans (such as cannellini), rinsed",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "Coarsely chopped mint and dill and warm flatbread (for serving)",
+      "category": "Produce"
+    }
+  ]
 }
 
 Panang Curry →
@@ -141,25 +242,68 @@ Panang Curry →
   "mealType": ["Dinner"],
   "healthiness": 6,
   "totalTimeMinutes": 35,
-  "description": "Rich Thai curry with chicken in a creamy coconut and peanut sauce, brightened with makrut lime leaves. Make your own paste by toasting coriander and cumin seeds, or use store bought. Serve alongside rice.\n\nThis is reasonably balanced but the coconut milk adds saturated fat and the white rice is refined carbs. You could try light coconut milk, add more vegetables like bell peppers or snap peas, or serve over brown rice. A simple cucumber salad with lime and cilantro would pair nicely and add freshness."
-}
-
-Enchiladas Suizas →
-{
-  "tags": ["Mexican", "Enchiladas", "Chicken"],
-  "mealType": ["Dinner"],
-  "healthiness": 5,
-  "totalTimeMinutes": 50,
-  "description": "Chicken enchiladas smothered in a creamy roasted tomatillo sauce with melted cheese. Roasting the tomatillos and chiles under the broiler builds a lot of flavor. Rich and indulgent.\n\nThis is heavier with cheese and cream adding saturated fat without much vegetable content. You could ease up on the cheese, try Greek yogurt instead of sour cream, or serve with a crunchy cabbage slaw or black bean salad to add fiber and balance the richness."
-}
-
-Blistered Green Beans With Garlic →
-{
-  "tags": ["Chinese", "Vegetables"],
-  "mealType": ["Side Dish"],
-  "healthiness": 8,
-  "totalTimeMinutes": 15,
-  "description": "Sichuan-inspired green beans blistered in a hot skillet until shriveled and charred, finished with garlic, capers, and red pepper flakes. Resist the urge to stir too much and let them get real color.\n\nThis is a healthy side. Green beans are high in fiber and the blistering technique uses minimal oil."
+  "description": "Rich Thai curry with chicken in a creamy coconut and peanut sauce, brightened with makrut lime leaves. Make your own paste by toasting coriander and cumin seeds, or use store bought. Serve alongside rice.\n\nThis is reasonably balanced but the coconut milk adds saturated fat and the white rice is refined carbs. You could try light coconut milk, add more vegetables like bell peppers or snap peas, or serve over brown rice. A simple cucumber salad with lime and cilantro would pair nicely and add freshness.",
+  "ingredients": [
+    {
+      "original": "½ teaspoon coriander seeds",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "½ teaspoon cumin seeds",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "¼ cup/1 ounce dry-roasted, unsalted peanuts",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "2 to 4 tablespoons red curry paste, to taste",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "1 pound boneless, skinless chicken breasts or thighs",
+      "category": "Meat & Seafood",
+      "usage": null
+    },
+    {
+      "original": "2 teaspoons fish sauce, plus more as needed",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "1 (13.5-ounce) can full-fat coconut milk (do not shake)",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "8 makrut lime leaves, deveined, 6 torn and 2 thinly sliced, or 1 teaspoon grated lime zest, for serving",
+      "category": "Produce",
+      "usage": null
+    },
+    {
+      "original": "1½ teaspoons palm, granulated or brown sugar, plus more as needed",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "1 small, mild, thin-skinned pepper, such as a Fresno, Anaheim or banana pepper, or ½ small red bell pepper, thinly sliced",
+      "category": "Produce",
+      "usage": null
+    },
+    {
+      "original": "Thai basil, thinly sliced, for serving (optional, if makrut lime leaves are not used)",
+      "category": "Produce",
+      "usage": null
+    },
+    {
+      "original": "Rice, for serving",
+      "category": "Pantry Aisles"
+    }
+  ]
 }
 
 Chocolate Chip Skillet Cookie →
@@ -168,5 +312,72 @@ Chocolate Chip Skillet Cookie →
   "mealType": ["Dessert"],
   "healthiness": 1,
   "totalTimeMinutes": 135,
-  "description": "A giant chocolate chip cookie baked in cast iron, crispy at the edges and gooey in the middle. Use a mix of chopped dark, milk, and white chocolate for depth. Best served warm with ice cream.\n\nThis is pure indulgence with sugar and butter as the main ingredients. If you want to lighten it a bit, you could reduce the sugar by a quarter without losing much sweetness, or swap half the butter for applesauce."
+  "description": "A giant chocolate chip cookie baked in cast iron, crispy at the edges and gooey in the middle. Use a mix of chopped dark, milk, and white chocolate for depth. Best served warm with ice cream.\n\nThis is pure indulgence with sugar and butter as the main ingredients. If you want to lighten it a bit, you could reduce the sugar by a quarter without losing much sweetness, or swap half the butter for applesauce.",
+  "ingredients": [
+    {
+      "original": "8 ounces unsalted butter (2 sticks; 225 g), soft but cool, about 65°F (18°C), plus more for greasing skillet",
+      "category": "Dairy & Eggs",
+      "usage": null
+    },
+    {
+      "original": "4 1/2 ounces granulated sugar (2/3 cup; 125 g)",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "8 ounces light brown sugar (1 cup, gently packed; 225 g)",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "1 ounce malted milk powder (about 1/4 cup; 25 g)",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "1/2 ounce vanilla extract (1 tablespoon; 15 g)",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "2 1/2 teaspoons (8 g) Diamond Crystal kosher salt; for table salt, use about half as much by volume or the same weight",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "1 teaspoon (5 g) baking soda",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "1/2 teaspoon baking powder",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "1/8 teaspoon grated nutmeg",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "1 large egg (about 1 3/4 ounces; 50 g), straight from the fridge",
+      "category": "Dairy & Eggs",
+      "usage": null
+    },
+    {
+      "original": "12 1/2 ounces all-purpose flour (2 3/4 cups, spooned; 355 g), such as Gold Medal",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "12 ounces assorted dark, milk, or white chocolate (not commercial chips), roughly chopped (about 2 cups; 340 g)",
+      "category": "Pantry Aisles",
+      "usage": null
+    },
+    {
+      "original": "Vanilla ice cream, to serve (optional)",
+      "category": "Frozen Foods",
+      "usage": null
+    }
+  ]
 }

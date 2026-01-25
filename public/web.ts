@@ -113,7 +113,10 @@ async function handleSave(): Promise<void> {
 function toggleSettings(): void {
 	const settingsPanel = document.getElementById("settings-panel");
 	const settingsButton = document.getElementById("settings-button");
-	if (!settingsPanel || !settingsButton) return;
+	if (!settingsPanel || !settingsButton) {
+		console.error("Settings panel or button not found");
+		return;
+	}
 
 	const isHidden = settingsPanel.classList.contains("hidden");
 	const chevron = settingsButton.querySelector(".settings-chevron") as HTMLElement | null;

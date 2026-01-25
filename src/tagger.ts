@@ -160,20 +160,49 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
 
 	const userMessage = buildPrompt(recipe);
 
-	const response = await client.messages.create({
-		model: ClaudeModel.Sonnet,
-		max_tokens: ClaudeLimit.MaxTokens,
-		system: SYSTEM_PROMPT,
-		tools: [
-			{
-				name: "tag_recipe",
-				description: "Output structured recipe tags and metadata",
-				input_schema: z.toJSONSchema(claudeResponseSchema) as Anthropic.Tool.InputSchema,
-			},
-		],
-		tool_choice: { type: "tool", name: "tag_recipe" },
-		messages: [{ role: "user", content: userMessage }],
-	});
+	let response: Anthropic.Messages.Message;
+	try {
+		response = await client.messages.create({
+			model: ClaudeModel.Sonnet,
+			max_tokens: ClaudeLimit.MaxTokens,
+			system: SYSTEM_PROMPT,
+			tools: [
+				{
+					name: "tag_recipe",
+					description: "Output structured recipe tags and metadata",
+					input_schema: z.toJSONSchema(claudeResponseSchema) as Anthropic.Tool.InputSchema,
+				},
+			],
+			tool_choice: { type: "tool", name: "tag_recipe" },
+			messages: [{ role: "user", content: userMessage }],
+		});
+	} catch (error) {
+		/**
+		 * Handle Anthropic API errors with better error messages.
+		 */
+		if (error instanceof Anthropic.APIError) {
+			throw new Error(
+				`Anthropic API error (${error.status}): ${error.message || "Unknown error"}. ` +
+					`Details: ${JSON.stringify(error.error || {})}`,
+			);
+		}
+		/**
+		 * Handle other errors (network, timeout, etc.).
+		 */
+		if (error instanceof Error) {
+			/**
+			 * Check for error cause which might contain more details.
+			 */
+			const causeMessage =
+				error.cause && typeof error.cause === "object" && "message" in error.cause
+					? String(error.cause.message)
+					: undefined;
+			throw new Error(
+				`Failed to call Anthropic API: ${error.message}${causeMessage ? `. Cause: ${causeMessage}` : ""}`,
+			);
+		}
+		throw new Error(`Failed to call Anthropic API: ${String(error)}`);
+	}
 
 	const toolUse = response.content.find(
 		(block): block is Anthropic.Messages.ToolUseBlock => block.type === "tool_use",

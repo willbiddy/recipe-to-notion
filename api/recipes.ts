@@ -4,7 +4,6 @@
  *
  * Supports both streaming (SSE) and non-streaming responses.
  */
-import type { ProgressEvent } from "../src/index.js";
 
 /**
  * HTTP status codes used throughout the API.
@@ -146,7 +145,7 @@ function handleRecipeStream(url: string): Response {
 				 */
 				const result = await processRecipe(
 					url,
-					(event: ProgressEvent) => {
+					(event) => {
 						sendEvent({
 							type: "progress",
 							message: event.message,
@@ -169,8 +168,41 @@ function handleRecipeStream(url: string): Response {
 					notionUrl,
 				});
 			} catch (error) {
+				/**
+				 * Log full error details for debugging.
+				 */
 				console.error("Recipe processing error in stream:", error);
-				const errorMessage = error instanceof Error ? error.message : String(error);
+				if (error instanceof Error) {
+					console.error("Error name:", error.name);
+					console.error("Error message:", error.message);
+					console.error("Error stack:", error.stack);
+					if ("cause" in error && error.cause) {
+						console.error("Error cause:", error.cause);
+					}
+				} else {
+					console.error("Error type:", typeof error);
+					console.error("Error value:", JSON.stringify(error, null, 2));
+				}
+
+				/**
+				 * Extract error message, handling various error types.
+				 */
+				let errorMessage: string;
+				if (error instanceof Error) {
+					errorMessage = error.message || error.name || "Unknown error";
+				} else if (typeof error === "object" && error !== null) {
+					/**
+					 * Try to extract meaningful error info from object.
+					 */
+					const errorObj = error as Record<string, unknown>;
+					errorMessage =
+						(typeof errorObj.message === "string" && errorObj.message) ||
+						(typeof errorObj.error === "string" && errorObj.error) ||
+						JSON.stringify(error).substring(0, 200);
+				} else {
+					errorMessage = String(error);
+				}
+
 				const isDuplicate = errorMessage.includes("Duplicate recipe found");
 
 				let notionUrl: string | undefined;

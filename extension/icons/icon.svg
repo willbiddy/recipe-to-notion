@@ -1,5 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-  <!-- Full blue background with plus sign -->
-  <rect x="0" y="0" width="128" height="128" fill="#1976d2"/>
-  <path d="M 64 32 L 64 96 M 32 64 L 96 64" stroke="#fff" stroke-width="14" stroke-linecap="round"/>
+  <!-- Warm gradient background -->
+  <defs>
+    <linearGradient id="warmGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fb923c;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#f59e0b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ea580c;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="128" height="128" rx="20" fill="url(#warmGradient)"/>
+  <!-- Fork icon - centered, optimized for small sizes -->
+  <g transform="translate(64, 64)">
+    <!-- Handle (vertical line) -->
+    <line x1="0" y1="8" x2="0" y2="48" stroke="#ffffff" stroke-width="10" stroke-linecap="round"/>
+    <!-- Tines (3 prongs at top) -->
+    <line x1="-10" y1="-16" x2="-10" y2="-4" stroke="#ffffff" stroke-width="7" stroke-linecap="round"/>
+    <line x1="0" y1="-16" x2="0" y2="-4" stroke="#ffffff" stroke-width="7" stroke-linecap="round"/>
+    <line x1="10" y1="-16" x2="10" y2="-4" stroke="#ffffff" stroke-width="7" stroke-linecap="round"/>
+  </g>
 </svg>

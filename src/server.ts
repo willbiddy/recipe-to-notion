@@ -1,5 +1,4 @@
 import { consola } from "consola";
-import { nanoid } from "nanoid";
 import { type ProgressEvent, processRecipe } from "./index.js";
 import { createCliLogger, printRecipeSummary } from "./logger.js";
 import { getNotionPageUrl } from "./notion.js";
@@ -80,7 +79,7 @@ function handleOptions(): Response {
  * @returns Response with health status and CORS headers.
  */
 function handleHealth(): Response {
-	const response = Response.json({ status: "ok", service: "recipe-clipper-for-notion" });
+	const response = Response.json({ status: "ok", service: "recipe-to-notion" });
 	setCorsHeaders(response);
 	return response;
 }
@@ -91,7 +90,7 @@ function handleHealth(): Response {
  * @returns A unique request ID string.
  */
 function generateRequestId(): string {
-	return nanoid();
+	return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 }
 
 /**

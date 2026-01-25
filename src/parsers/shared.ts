@@ -85,16 +85,20 @@ export function parseDuration(iso: string | undefined): number | null {
 }
 
 /**
- * Cleans up a recipe name by removing trailing "Recipe" suffix.
+ * Cleans up a recipe name by removing trailing "Recipe" suffix and author names.
  *
- * Many recipe sites append "Recipe" to the title (e.g., "Chicken Parmesan Recipe").
- * This removes that suffix for cleaner display.
+ * Many recipe sites append "Recipe" to the title (e.g., "Chicken Parmesan Recipe")
+ * or include author names (e.g., "Well-fried Beans - Rick Bayless").
+ * This removes those suffixes for cleaner display.
  *
  * @param name - The raw recipe name.
  * @returns The cleaned recipe name.
  */
 export function cleanRecipeName(name: string): string {
-	return name.replace(/\s+Recipe$/i, "").trim();
+	return name
+		.replace(/\s+Recipe$/i, "")
+		.replace(/\s*-\s*[^-]+$/, "") // Remove " - Author Name" pattern
+		.trim();
 }
 
 /**
@@ -119,14 +123,33 @@ export function normalizeIngredientParentheses(ingredient: string): string {
 /**
  * Filters out editor's notes and similar editorial content from instruction arrays.
  *
- * Removes instruction steps that contain patterns like "Editor's note:",
- * "Editor note:", or similar editorial markers that are not part of the
- * actual recipe instructions.
+ * Removes instruction steps that are entirely editor's notes, and strips
+ * editor's notes that appear within instruction text (e.g., at the end of a step).
+ * Handles patterns like "Editor's note:", "Editor note:", or similar editorial markers.
  *
  * @param instructions - Array of instruction step strings.
- * @returns Filtered array with editor's notes removed.
+ * @returns Filtered array with editor's notes removed and cleaned.
  */
 export function filterEditorNotes(instructions: string[]): string[] {
-	const editorNotePattern = /^Editor'?s?\s+note:?/i;
-	return instructions.filter((instruction) => !editorNotePattern.test(instruction.trim()));
+	return instructions
+		.map((instruction) => {
+			const trimmed = instruction.trim();
+			/**
+			 * Check if the instruction is entirely an editor's note.
+			 */
+			const isEntirelyNote = /^Editor'?s?\s+note:?/i.test(trimmed);
+			if (isEntirelyNote) {
+				/**
+				 * Return empty string to filter it out later.
+				 */
+				return "";
+			}
+			/**
+			 * Remove editor's note from within the instruction text.
+			 * Matches "Editor's note:" or "Editor note:" and everything after it to the end.
+			 */
+			const cleaned = trimmed.replace(/\s*Editor'?s?\s+note:?.*$/i, "").trim();
+			return cleaned;
+		})
+		.filter((instruction) => instruction.length > 0);
 }

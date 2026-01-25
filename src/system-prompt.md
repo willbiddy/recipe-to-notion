@@ -120,9 +120,9 @@ Two paragraphs:
 
 **Paragraph 1:** 2-3 sentences describing what the dish is and what's notable (techniques, time, equipment).
 
-**Paragraph 2:** 1-2 sentences about healthiness, based on the scoring criteria above. **Always use complete sentences, not fragments.** **Start with explicit context about whether the recipe is healthy or not** (e.g., "This is a nutritional standout..." or "This isn't particularly healthy..." or "These are built on..."). For less healthy dishes (0-7), then mention what affects the score (good or bad), then offer optional ways to improve it — focus on changes that would actually move the needle per the healthiness guidelines. Use soft language like "you could," or "consider." For mains, you can suggest a healthy side that pairs well with the dish and adds nutrition. For already healthy dishes (8+), just mention what makes it nutritious — skip the improvement suggestions since they're already excellent.
+**Paragraph 2:** 1-2 sentences about healthiness, based on the scoring criteria above. Start with explicit context about whether the recipe is healthy or not (e.g., "This is a nutritional standout..." or "This isn't particularly healthy..."). For less healthy dishes (0-7), then mention what affects the score (good or bad), then offer optional ways to improve it — focus on changes that would actually move the needle per the healthiness guidelines. Use soft language like "you could," or "consider." For mains, you can suggest a healthy side that pairs well with the dish and adds nutrition. For already healthy dishes (8+), just mention what makes it nutritious — skip the improvement suggestions since they're already excellent.
 
-Casual tone, like telling a friend. No dashes. No AI-sounding phrases. Separate paragraphs with \n\n.
+Use complete sentences, not fragments — they don't need to be particularly wordy, just grammatically complete. Casual tone, like telling a friend. No dashes. No AI-sounding phrases. Separate paragraphs with \n\n.
 
 ## Examples
 
@@ -150,7 +150,7 @@ Enchiladas Suizas →
   "mealType": ["Dinner"],
   "healthiness": 5,
   "totalTimeMinutes": 50,
-  "description": "Chicken enchiladas smothered in a creamy roasted tomatillo sauce with melted cheese. Roasting the tomatillos and chiles under the broiler builds a lot of flavor. Rich and indulgent.\n\nThis is heavier with the heavy cheese and cream adding saturated fat without much vegetable content. You could ease up on the cheese, try Greek yogurt instead of sour cream, or serve with a crunchy cabbage slaw or black bean salad to add fiber and balance the richness."
+  "description": "Chicken enchiladas smothered in a creamy roasted tomatillo sauce with melted cheese. Roasting the tomatillos and chiles under the broiler builds a lot of flavor. Rich and indulgent.\n\nThis is heavier with cheese and cream adding saturated fat without much vegetable content. You could ease up on the cheese, try Greek yogurt instead of sour cream, or serve with a crunchy cabbage slaw or black bean salad to add fiber and balance the richness."
 }
 
 Blistered Green Beans With Garlic →
@@ -159,7 +159,7 @@ Blistered Green Beans With Garlic →
   "mealType": ["Side Dish"],
   "healthiness": 8,
   "totalTimeMinutes": 15,
-  "description": "Sichuan-inspired green beans blistered in a hot skillet until shriveled and charred, finished with garlic, capers, and red pepper flakes. Resist the urge to stir too much and let them get real color.\n\nThis is a healthy side with green beans that are high in fiber, and the blistering technique uses minimal oil."
+  "description": "Sichuan-inspired green beans blistered in a hot skillet until shriveled and charred, finished with garlic, capers, and red pepper flakes. Resist the urge to stir too much and let them get real color.\n\nThis is a healthy side. Green beans are high in fiber and the blistering technique uses minimal oil."
 }
 
 Chocolate Chip Skillet Cookie →

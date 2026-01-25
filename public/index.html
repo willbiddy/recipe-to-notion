@@ -12,54 +12,83 @@
 		<meta name="apple-mobile-web-app-status-bar-style" content="default" />
 		<meta name="apple-mobile-web-app-title" content="Recipe to Notion" />
 	</head>
-	<body class="min-h-screen bg-gray-50 text-gray-900 text-sm font-sans">
+	<body class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 text-gray-900 text-sm font-sans">
 		<div class="max-w-2xl mx-auto px-4 py-8">
-			<header class="mb-8">
-				<h1 class="text-3xl font-bold text-gray-900 mb-2">Recipe to Notion</h1>
-				<p class="text-gray-600">Save recipes from any website to your Notion database</p>
+			<header class="mb-10 text-center">
+				<div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg mb-4 transform hover:scale-105 transition-transform duration-300">
+					<svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+					</svg>
+				</div>
+				<h1 class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-3">Recipe to Notion</h1>
+				<p class="text-gray-600 text-base">Save recipes from any website to your Notion database with AI-powered tags</p>
 			</header>
 
-			<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-6">
+			<div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 space-y-6">
 				<div class="flex flex-col gap-3">
-					<label for="url-input" class="text-sm font-medium text-gray-700">
+					<label for="url-input" class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+						<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+						</svg>
 						Recipe URL
 					</label>
-					<input
-						type="url"
-						id="url-input"
-						placeholder="https://example.com/recipe"
-						class="px-4 py-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-					/>
-					<p class="text-xs text-gray-500">
+					<div class="relative">
+						<input
+							type="url"
+							id="url-input"
+							placeholder="https://example.com/recipe"
+							class="w-full px-4 py-3.5 pl-11 text-base border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/50"
+						/>
+						<svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+						</svg>
+					</div>
+					<p class="text-xs text-gray-500 flex items-start gap-1.5">
+						<svg class="w-3.5 h-3.5 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+						</svg>
 						Paste a recipe URL from any website. The recipe will be scraped, analyzed, and saved to your Notion database.
 					</p>
 				</div>
 
 				<button
 					id="save-button"
-					class="w-full px-5 py-3 bg-blue-600 text-white border-none rounded-lg text-base font-semibold cursor-pointer transition-all duration-200 shadow-sm hover:bg-blue-700 hover:shadow-md active:bg-blue-800 disabled:bg-gray-400 disabled:cursor-not-allowed"
+					class="w-full px-5 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-none rounded-xl text-base font-semibold cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:bg-gray-400 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-sm flex items-center justify-center gap-2 group"
 				>
+					<svg class="w-5 h-5 group-hover:translate-x-0.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+					</svg>
 					<span class="button-text">Save Recipe</span>
 				</button>
 
 				<div
 					id="progress-container"
-					class="hidden flex items-center gap-3 py-3.5 px-4 bg-blue-50 border border-blue-200 rounded-lg animate-[fadeIn_0.2s_ease-in]"
+					class="hidden flex items-center gap-3 py-4 px-5 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl animate-[fadeIn_0.2s_ease-in] shadow-sm"
 				>
 					<div
-						class="spinner w-[18px] h-[18px] border-[2.5px] border-blue-100 border-t-blue-600 rounded-full animate-spin flex-shrink-0"
+						class="spinner w-5 h-5 border-[3px] border-blue-100 border-t-blue-600 rounded-full animate-spin flex-shrink-0"
 					></div>
 					<div id="progress-message" class="text-sm text-blue-800 font-medium"></div>
 				</div>
 
 				<div
 					id="status"
-					class="hidden py-3 px-4 rounded-lg text-sm leading-relaxed animate-[fadeIn_0.2s_ease-in]"
+					class="hidden py-4 px-5 rounded-xl text-sm leading-relaxed animate-[fadeIn_0.2s_ease-in] shadow-sm"
 				></div>
 
-				<div id="settings-panel" class="hidden flex flex-col gap-3 pt-4 border-t border-gray-200">
-					<div class="flex flex-col gap-1.5">
-						<label for="api-key-input" class="text-sm font-medium text-gray-700">
+				<div id="settings-panel" class="hidden flex flex-col gap-4 pt-6 border-t-2 border-gray-200">
+					<div class="flex items-center gap-2 mb-1">
+						<svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+						</svg>
+						<h3 class="text-base font-semibold text-gray-800">Settings</h3>
+					</div>
+					<div class="flex flex-col gap-2">
+						<label for="api-key-input" class="text-sm font-medium text-gray-700 flex items-center gap-2">
+							<svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+							</svg>
 							API Key
 						</label>
 						<div class="relative">
@@ -67,7 +96,7 @@
 								type="password"
 								id="api-key-input"
 								placeholder="Enter your API key"
-								class="px-3 py-2 pr-10 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full"
+								class="px-4 py-3 pr-10 text-sm border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/50 w-full"
 							/>
 							<button
 								type="button"
@@ -91,16 +120,19 @@
 					</div>
 					<button
 						id="save-api-key-button"
-						class="px-4 py-2 bg-gray-600 text-white border-none rounded-lg text-sm font-semibold cursor-pointer transition-all duration-200 hover:bg-gray-700"
+						class="px-5 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white border-none rounded-xl text-sm font-semibold cursor-pointer transition-all duration-200 hover:from-gray-700 hover:to-gray-800 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
 					>
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+						</svg>
 						Save API Key
 					</button>
 				</div>
 
-				<div class="flex items-center justify-between pt-2 border-t border-gray-200">
+				<div class="flex items-center justify-between pt-4 border-t-2 border-gray-200">
 					<button
 						id="settings-button"
-						class="text-gray-500 hover:text-gray-700 transition-colors cursor-pointer bg-transparent border-none p-2 flex items-center gap-2 text-sm"
+						class="text-gray-600 hover:text-gray-800 transition-all duration-200 cursor-pointer bg-transparent border-none p-2.5 flex items-center gap-2 text-sm font-medium rounded-lg hover:bg-gray-100"
 						title="Settings"
 					>
 						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -112,15 +144,23 @@
 					<a
 						href="https://github.com/willbiddy/recipe-to-notion/blob/main/docs/WEB_INTERFACE.md"
 						target="_blank"
-						class="text-blue-600 hover:text-blue-700 text-sm underline"
+						class="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1.5 transition-colors duration-200 hover:underline"
 					>
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+						</svg>
 						Documentation
 					</a>
 				</div>
 			</div>
 
-			<div class="mt-6 text-center text-xs text-gray-500">
-				<p>Works on mobile and desktop. Add to home screen for quick access.</p>
+			<div class="mt-8 text-center">
+				<p class="text-xs text-gray-500 flex items-center justify-center gap-1.5">
+					<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+					</svg>
+					Works on mobile and desktop. Add to home screen for quick access.
+				</p>
 			</div>
 		</div>
 

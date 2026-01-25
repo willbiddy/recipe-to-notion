@@ -6,13 +6,20 @@
 		<title>Recipe to Notion</title>
 		<link rel="stylesheet" href="styles.css" />
 	</head>
-	<body class="w-[360px] min-h-[200px] bg-white text-gray-900 text-sm font-sans">
-		<div class="flex flex-col bg-white">
-			<header class="px-5 py-[18px] border-b border-gray-200 bg-gradient-to-b from-gray-50 to-white flex items-center justify-between">
-				<h1 class="text-[17px] font-semibold text-gray-900 tracking-tight">Recipe to Notion</h1>
+	<body class="w-[360px] min-h-[200px] bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 text-gray-900 text-sm font-sans">
+		<div class="flex flex-col bg-white/80 backdrop-blur-sm">
+			<header class="px-5 py-4 border-b-2 border-gray-200/50 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 flex items-center justify-between">
+				<div class="flex items-center gap-2.5">
+					<div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-sm">
+						<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+						</svg>
+					</div>
+					<h1 class="text-[17px] font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent tracking-tight">Recipe to Notion</h1>
+				</div>
 				<button
 					id="settings-button"
-					class="text-gray-500 hover:text-gray-700 transition-colors cursor-pointer bg-transparent border-none p-1"
+					class="text-gray-600 hover:text-gray-800 transition-all duration-200 cursor-pointer bg-transparent border-none p-1.5 rounded-lg hover:bg-gray-100/50"
 					title="Settings"
 				>
 					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -23,38 +30,57 @@
 			</header>
 
 			<div class="p-5 flex flex-col gap-4">
-				<div class="flex flex-col gap-1.5">
+				<div class="flex flex-col gap-2">
+					<label class="text-[12px] font-semibold text-gray-600 uppercase tracking-wide flex items-center gap-1.5">
+						<svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+						</svg>
+						Current Page
+					</label>
 					<div
 						id="url-display"
-						class="text-[15px] text-gray-700 p-3 bg-gray-50 border border-gray-200 rounded-md break-words leading-relaxed transition-all duration-200 font-medium text-left hover:bg-gray-100 hover:border-gray-300"
+						class="text-[14px] text-gray-700 p-3.5 bg-white/60 border-2 border-gray-200 rounded-xl break-words leading-relaxed transition-all duration-200 font-medium text-left hover:bg-white hover:border-blue-300 shadow-sm"
 					></div>
 				</div>
 
 				<button
 					id="save-button"
-					class="px-5 py-3 bg-blue-600 text-white border-none rounded-lg text-[15px] font-semibold cursor-pointer transition-all duration-200 shadow-sm relative overflow-hidden hover:bg-blue-700 hover:shadow-md hover:-translate-y-px active:bg-blue-800 active:translate-y-0 active:shadow-sm disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
+					class="px-5 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-none rounded-xl text-[15px] font-semibold cursor-pointer transition-all duration-200 shadow-lg relative overflow-hidden hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:bg-gray-400 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-sm flex items-center justify-center gap-2 group"
 				>
+					<svg class="w-4.5 h-4.5 group-hover:translate-x-0.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+					</svg>
 					<span class="button-text relative z-10">Save Recipe</span>
 				</button>
 
 				<div
 					id="progress-container"
-					class="hidden flex items-center gap-3 py-3.5 px-4 bg-blue-50 border border-blue-200 rounded-lg animate-[fadeIn_0.2s_ease-in]"
+					class="hidden flex items-center gap-3 py-3.5 px-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl animate-[fadeIn_0.2s_ease-in] shadow-sm"
 				>
 					<div
-						class="spinner w-[18px] h-[18px] border-[2.5px] border-blue-100 border-t-blue-600 rounded-full animate-spin flex-shrink-0"
+						class="spinner w-5 h-5 border-[3px] border-blue-100 border-t-blue-600 rounded-full animate-spin flex-shrink-0"
 					></div>
 					<div id="progress-message" class="text-[13px] text-blue-800 font-medium"></div>
 				</div>
 
 				<div
 					id="status"
-					class="hidden py-3 px-4 rounded-lg text-[13px] leading-relaxed animate-[fadeIn_0.2s_ease-in]"
+					class="hidden py-3.5 px-4 rounded-xl text-[13px] leading-relaxed animate-[fadeIn_0.2s_ease-in] shadow-sm"
 				></div>
 
-				<div id="settings-panel" class="hidden flex flex-col gap-3 pt-2 border-t border-gray-200">
-					<div class="flex flex-col gap-1.5">
-						<label for="api-key-input" class="text-[13px] font-medium text-gray-700">
+				<div id="settings-panel" class="hidden flex flex-col gap-3 pt-4 border-t-2 border-gray-200">
+					<div class="flex items-center gap-2 mb-1">
+						<svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+						</svg>
+						<h3 class="text-[13px] font-semibold text-gray-800">API Configuration</h3>
+					</div>
+					<div class="flex flex-col gap-2">
+						<label for="api-key-input" class="text-[12px] font-medium text-gray-700 flex items-center gap-1.5">
+							<svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+							</svg>
 							API Key
 						</label>
 						<div class="relative">
@@ -62,7 +88,7 @@
 								type="password"
 								id="api-key-input"
 								placeholder="Enter your API key"
-								class="px-3 py-2 pr-10 text-[13px] border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full"
+								class="px-3.5 py-2.5 pr-10 text-[13px] border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/60 w-full"
 							/>
 							<button
 								type="button"
@@ -86,8 +112,11 @@
 					</div>
 					<button
 						id="save-api-key-button"
-						class="px-4 py-2 bg-gray-600 text-white border-none rounded-lg text-[13px] font-semibold cursor-pointer transition-all duration-200 hover:bg-gray-700"
+						class="px-4 py-2.5 bg-gradient-to-r from-gray-600 to-gray-700 text-white border-none rounded-xl text-[13px] font-semibold cursor-pointer transition-all duration-200 hover:from-gray-700 hover:to-gray-800 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-1.5"
 					>
+						<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+						</svg>
 						Save API Key
 					</button>
 				</div>

@@ -44,5 +44,8 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .DS_Store
 .vercel
 
+# Screenshots (should be in docs/ if needed)
+Screenshot*.png
+
 # Claude AI settings (not part of project)
 .claude

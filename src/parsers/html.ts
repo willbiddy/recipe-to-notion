@@ -256,8 +256,12 @@ type ExtractMicrodataPropertyOptions = {
  * @param options - Options for extracting the microdata property.
  * @returns The extracted value, or null if not found.
  */
-function extractMicrodataProperty(options: ExtractMicrodataPropertyOptions): string | null {
-	const { $, container, itemprop, isImage = false } = options;
+function extractMicrodataProperty({
+	$,
+	container,
+	itemprop,
+	isImage = false,
+}: ExtractMicrodataPropertyOptions): string | null {
 	const selector = container
 		? container.find(`[itemprop="${itemprop}"]`)
 		: $(`[itemprop="${itemprop}"]`);

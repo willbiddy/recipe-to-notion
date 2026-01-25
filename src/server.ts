@@ -37,6 +37,11 @@ export type RecipeResponse = {
 };
 
 /**
+ * Pattern to extract Notion URL from duplicate error messages.
+ */
+const NOTION_URL_EXTRACTION_PATTERN = /View it at: (https:\/\/www\.notion\.so\/[^\s]+)/;
+
+/**
  * Sets security headers on responses.
  *
  * @param response - The response object to add security headers to.
@@ -229,7 +234,7 @@ function sanitizeError(
 		statusCode = HttpStatus.Conflict;
 		// Duplicate errors are safe to return as-is (user-friendly)
 		clientMessage = errorMessage;
-		const urlMatch = errorMessage.match(/View it at: (https:\/\/www\.notion\.so\/[^\s]+)/);
+		const urlMatch = errorMessage.match(NOTION_URL_EXTRACTION_PATTERN);
 		if (urlMatch) {
 			notionUrl = urlMatch[1];
 		}

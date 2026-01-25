@@ -25,15 +25,13 @@ import { type RecipeTags, tagRecipe } from "./tagger.js";
 const main = defineCommand({
 	meta: {
 		name: "recipe-to-notion",
-		description:
-			"Scrape recipe URL(s), generate AI scores/tags, and save to Notion",
+		description: "Scrape recipe URL(s), generate AI scores/tags, and save to Notion",
 		version: "1.0.0",
 	},
 	args: {
 		html: {
 			type: "string",
-			description:
-				"Use saved HTML file instead of fetching (for sites that block requests)",
+			description: "Use saved HTML file instead of fetching (for sites that block requests)",
 		},
 	},
 	async run({ args }) {
@@ -101,9 +99,7 @@ async function processUrlsSequentially(
 
 	for (let i = 0; i < urls.length; i++) {
 		if (urls.length > 1) {
-			consola.info(
-				`${pc.cyan(`[${i + 1}/${urls.length}]`)} ${pc.dim(urls[i])}`,
-			);
+			consola.info(`${pc.cyan(`[${i + 1}/${urls.length}]`)} ${pc.dim(urls[i])}`);
 		}
 
 		const success = await handleRecipe(urls[i], config);
@@ -135,11 +131,7 @@ async function processUrlsSequentially(
  * @param htmlPath - Optional path to saved HTML file (bypasses fetching).
  * @returns True if the recipe was saved successfully, false otherwise.
  */
-async function handleRecipe(
-	url: string,
-	config: Config,
-	htmlPath?: string,
-): Promise<boolean> {
+async function handleRecipe(url: string, config: Config, htmlPath?: string): Promise<boolean> {
 	try {
 		if (await isDuplicate(url, config)) {
 			return false;
@@ -180,9 +172,7 @@ async function isDuplicate(url: string, config: Config): Promise<boolean> {
 	);
 
 	if (duplicate) {
-		consola.warn(
-			`Duplicate: "${duplicate.title}" already exists at ${duplicate.notionUrl}`,
-		);
+		consola.warn(`Duplicate: "${duplicate.title}" already exists at ${duplicate.notionUrl}`);
 		return true;
 	}
 
@@ -197,10 +187,7 @@ async function isDuplicate(url: string, config: Config): Promise<boolean> {
  * @param config - Application configuration with API keys.
  * @returns True if a duplicate exists, false otherwise.
  */
-async function isTitleDuplicate(
-	title: string,
-	config: Config,
-): Promise<boolean> {
+async function isTitleDuplicate(title: string, config: Config): Promise<boolean> {
 	const duplicate = await checkForDuplicateByTitle(
 		title,
 		config.NOTION_API_KEY,
@@ -208,9 +195,7 @@ async function isTitleDuplicate(
 	);
 
 	if (duplicate) {
-		consola.warn(
-			`Duplicate: "${duplicate.title}" already exists at ${duplicate.notionUrl}`,
-		);
+		consola.warn(`Duplicate: "${duplicate.title}" already exists at ${duplicate.notionUrl}`);
 		return true;
 	}
 
@@ -225,16 +210,11 @@ async function isTitleDuplicate(
  * @returns Parsed recipe data.
  */
 async function fetchRecipe(url: string, htmlPath?: string): Promise<Recipe> {
-	consola.start(
-		htmlPath ? `Parsing recipe from ${htmlPath}...` : "Scraping recipe...",
-	);
+	consola.start(htmlPath ? `Parsing recipe from ${htmlPath}...` : "Scraping recipe...");
 
-	const recipe = htmlPath
-		? await scrapeRecipeFromHtml(htmlPath, url)
-		: await scrapeRecipe(url);
+	const recipe = htmlPath ? await scrapeRecipeFromHtml(htmlPath, url) : await scrapeRecipe(url);
 
-	const methodLabel =
-		recipe.scrapeMethod === "json-ld" ? "(JSON-LD)" : "(HTML fallback)";
+	const methodLabel = recipe.scrapeMethod === "json-ld" ? "(JSON-LD)" : "(HTML fallback)";
 	consola.success(`Scraped: ${recipe.name} ${methodLabel}`);
 	return recipe;
 }
@@ -246,10 +226,7 @@ async function fetchRecipe(url: string, htmlPath?: string): Promise<Recipe> {
  * @param config - Application configuration with API keys.
  * @returns AI-generated tags and scores for the recipe.
  */
-async function generateTags(
-	recipe: Recipe,
-	config: Config,
-): Promise<RecipeTags> {
+async function generateTags(recipe: Recipe, config: Config): Promise<RecipeTags> {
 	consola.start("Generating AI scores and tags...");
 	const tags = await tagRecipe(recipe, config.ANTHROPIC_API_KEY);
 	consola.success("Tagged recipe");
@@ -263,11 +240,7 @@ async function generateTags(
  * @param tags - AI-generated tags and scores.
  * @param config - Application configuration with API keys.
  */
-async function saveToNotion(
-	recipe: Recipe,
-	tags: RecipeTags,
-	config: Config,
-): Promise<void> {
+async function saveToNotion(recipe: Recipe, tags: RecipeTags, config: Config): Promise<void> {
 	consola.start("Saving to Notion...");
 
 	const pageId = await createRecipePage(

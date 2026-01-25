@@ -1,9 +1,5 @@
 import { loadConfig } from "./config.js";
-import {
-	checkForDuplicateByTitle,
-	checkForDuplicateByUrl,
-	createRecipePage,
-} from "./notion.js";
+import { checkForDuplicateByTitle, checkForDuplicateByUrl, createRecipePage } from "./notion.js";
 import type { Recipe } from "./scraper.js";
 import { scrapeRecipe } from "./scraper.js";
 import type { RecipeTags } from "./tagger.js";

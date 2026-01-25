@@ -108,11 +108,7 @@ enum ErrorDisplay {
 const claudeResponseSchema = z.object({
 	tags: z.array(z.string()).min(1, "At least one tag is required"),
 	mealType: z.array(z.string()).min(1, "At least one meal type is required"),
-	healthiness: z
-		.number()
-		.int()
-		.min(HealthinessScore.Min)
-		.max(HealthinessScore.Max),
+	healthiness: z.number().int().min(HealthinessScore.Min).max(HealthinessScore.Max),
 	totalTimeMinutes: z.number().int().positive(),
 	description: z.string().min(1, "Description is required"),
 });
@@ -126,10 +122,7 @@ const claudeResponseSchema = z.object({
  * @returns AI-generated tags and scores for the recipe.
  * @throws If the Claude API call fails or returns unparseable JSON.
  */
-export async function tagRecipe(
-	recipe: Recipe,
-	apiKey: string,
-): Promise<RecipeTags> {
+export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeTags> {
 	const client = new Anthropic({ apiKey });
 
 	const userMessage = buildPrompt(recipe);
@@ -188,11 +181,7 @@ export async function tagRecipe(
 	return {
 		tags: validated.tags,
 		mealType: validated.mealType,
-		healthiness: clamp(
-			validated.healthiness,
-			HealthinessScore.Min,
-			HealthinessScore.Max,
-		),
+		healthiness: clamp(validated.healthiness, HealthinessScore.Min, HealthinessScore.Max),
 		totalTimeMinutes: clamp(finalTime, RecipeTime.Min, RecipeTime.Max),
 		description: validated.description.trim(),
 	};
@@ -231,10 +220,7 @@ function buildPrompt(recipe: Recipe): string {
 	);
 
 	if (recipe.totalTimeMinutes) {
-		lines.push(
-			"",
-			`${PromptLabel.Minutes}: ${recipe.totalTimeMinutes} minutes`,
-		);
+		lines.push("", `${PromptLabel.Minutes}: ${recipe.totalTimeMinutes} minutes`);
 	} else {
 		lines.push("", `${PromptLabel.Minutes}: not provided (please estimate)`);
 	}

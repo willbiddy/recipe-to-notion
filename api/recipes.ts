@@ -4,9 +4,7 @@
  *
  * Supports both streaming (SSE) and non-streaming responses.
  */
-import { type ProgressEvent, processRecipe } from "../src/index.js";
-import { createCliLogger, printRecipeSummary } from "../src/logger.js";
-import { getNotionPageUrl } from "../src/notion.js";
+import type { ProgressEvent } from "../src/index.js";
 
 /**
  * HTTP status codes used throughout the API.
@@ -133,6 +131,13 @@ function handleRecipeStream(url: string): Response {
 					message: "Starting...",
 					progressType: "starting",
 				});
+
+				/**
+				 * Lazy load modules to avoid initialization issues.
+				 */
+				const { processRecipe } = await import("../src/index.js");
+				const { createCliLogger, printRecipeSummary } = await import("../src/logger.js");
+				const { getNotionPageUrl } = await import("../src/notion.js");
 
 				const logger = createCliLogger();
 
@@ -299,7 +304,12 @@ export default {
 
 			/**
 			 * Process the recipe (non-streaming).
+			 * Lazy load modules to avoid initialization issues.
 			 */
+			const { processRecipe } = await import("../src/index.js");
+			const { createCliLogger, printRecipeSummary } = await import("../src/logger.js");
+			const { getNotionPageUrl } = await import("../src/notion.js");
+
 			const logger = createCliLogger();
 			const result = await processRecipe(body.url, undefined, logger);
 

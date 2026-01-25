@@ -225,15 +225,6 @@ All shortcuts can use the same actions - just change the name and icon.
 
 ---
 
-## Security Notes
-
-- The shortcut only opens your web interface - it doesn't store or share your API key
-- Your API key is stored securely in the web interface (localStorage)
-- The shortcut URL is only used to pass the recipe URL to the web interface
-- No data is sent to third-party services
-
----
-
 ## Next Steps
 
 - [Web Interface Guide](./WEB_INTERFACE.md) - Complete web interface documentation

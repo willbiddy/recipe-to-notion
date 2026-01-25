@@ -15,11 +15,13 @@ export interface StorageAdapter {
  * localStorage adapter for web interface.
  */
 export class LocalStorageAdapter implements StorageAdapter {
+	// biome-ignore lint/suspicious/useAwait: Methods are async to match StorageAdapter interface, even though localStorage is synchronous
 	async getApiKey(): Promise<string | null> {
 		const apiKey = localStorage.getItem("apiKey");
 		return apiKey ? apiKey.trim() : null;
 	}
 
+	// biome-ignore lint/suspicious/useAwait: Methods are async to match StorageAdapter interface, even though localStorage is synchronous
 	async saveApiKey(apiKey: string): Promise<void> {
 		localStorage.setItem("apiKey", apiKey);
 	}

@@ -21,7 +21,8 @@ export function updateStatus(
 
 	// Use provided text size or default based on context
 	const textSize = options?.textSize || "sm";
-	const textSizeClass = textSize === "xs" ? "text-xs" : textSize === "base" ? "text-base" : "text-sm";
+	const textSizeClass =
+		textSize === "xs" ? "text-xs" : textSize === "base" ? "text-base" : "text-sm";
 
 	const baseClasses =
 		options?.baseClasses ||

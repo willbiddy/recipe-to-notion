@@ -329,9 +329,7 @@ export async function createRecipePage(
  * @param grouped - Map of category names to arrays of ingredients.
  * @returns Array of Notion block objects for ingredients.
  */
-function buildIngredientBlocks(
-	grouped: Map<string, Array<{ name: string }>>,
-): unknown[] {
+function buildIngredientBlocks(grouped: Map<string, Array<{ name: string }>>): unknown[] {
 	const blocks: unknown[] = [];
 	const orderedCategories = getCategoryOrder();
 	const otherCategories: string[] = [];

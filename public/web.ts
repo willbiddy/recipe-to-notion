@@ -3,6 +3,8 @@
  * Handles API key management, URL submission, and SSE progress updates.
  */
 
+import { saveRecipe } from "./shared/api.js";
+import { createStorageAdapter } from "./shared/storage.js";
 import {
 	clearStatus,
 	hideProgress,
@@ -11,8 +13,6 @@ import {
 	showProgress,
 	updateStatus,
 } from "./shared/ui.js";
-import { saveRecipe } from "./shared/api.js";
-import { createStorageAdapter } from "./shared/storage.js";
 
 /**
  * Gets the server URL from the current origin.
@@ -30,7 +30,7 @@ const storage = createStorageAdapter();
 /**
  * Saves a recipe by sending the URL to the server with progress streaming.
  */
-async function saveRecipeWithProgress(url: string) {
+function saveRecipeWithProgress(url: string) {
 	const serverUrl = getServerUrl();
 	const apiUrl = `${serverUrl}/api/recipes`;
 

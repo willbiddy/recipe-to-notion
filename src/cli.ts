@@ -9,6 +9,8 @@ import { defineCommand, runMain } from "citty";
 import { consola } from "consola";
 import { colors } from "consola/utils";
 import { type Config, loadConfig } from "./config.js";
+import { processRecipe } from "./index.js";
+import { createCliLogger, printRecipeSummary } from "./logger.js";
 import {
 	checkForDuplicateByTitle,
 	checkForDuplicateByUrl,
@@ -142,20 +144,29 @@ async function processUrlsSequentially(
  */
 async function handleRecipe(url: string, config: Config, htmlPath?: string): Promise<boolean> {
 	try {
-		if (await isDuplicate(url, config)) {
-			return false;
+		// For --html flag, use the old manual pipeline
+		if (htmlPath) {
+			if (await isDuplicate(url, config)) {
+				return false;
+			}
+
+			const recipe = await fetchRecipe(url, htmlPath);
+
+			if (await isTitleDuplicate(recipe.name, config)) {
+				return false;
+			}
+
+			const tags = await generateTags(recipe, config);
+			printRecipeSummary(recipe, tags);
+
+			await saveToNotion(recipe, tags, config);
+			return true;
 		}
 
-		const recipe = await fetchRecipe(url, htmlPath);
-
-		if (await isTitleDuplicate(recipe.name, config)) {
-			return false;
-		}
-
-		const tags = await generateTags(recipe, config);
-		printRecipeSummary(recipe, tags);
-
-		await saveToNotion(recipe, tags, config);
+		// For normal URLs, use the shared processRecipe with logger
+		const logger = createCliLogger();
+		const result = await processRecipe(url, undefined, logger);
+		printRecipeSummary(result.recipe, result.tags);
 		return true;
 	} catch (err) {
 		const message = err instanceof Error ? err.message : String(err);
@@ -267,31 +278,6 @@ async function saveToNotion(recipe: Recipe, tags: RecipeTags, config: Config): P
 // ─────────────────────────────────────────────────────────────────────────────
 // Output
 // ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Displays a formatted summary of the scraped and tagged recipe.
- *
- * @param recipe - The scraped recipe data.
- * @param tags - AI-generated tags and scores.
- */
-function printRecipeSummary(recipe: Recipe, tags: RecipeTags): void {
-	const message = [
-		recipe.author ? `Author:      ${recipe.author}` : null,
-		`Tags:        ${tags.tags.join(", ")}`,
-		`Meal type:   ${tags.mealType.join(", ")}`,
-		`Healthiness: ${tags.healthiness}/10`,
-		`Minutes:     ${tags.totalTimeMinutes}`,
-		`Ingredients: ${recipe.ingredients.length} items`,
-		`Steps:       ${recipe.instructions.length} steps`,
-	]
-		.filter((line) => line !== null)
-		.join("\n");
-
-	consola.box({
-		title: recipe.name,
-		message,
-	});
-}
 
 /**
  * Prints final summary when processing multiple recipes.

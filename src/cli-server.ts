@@ -12,7 +12,7 @@ import { handleRequest } from "./server.js";
 const DEFAULT_PORT = 3000;
 const port = parseInt(process.env.SERVER_PORT || String(DEFAULT_PORT), 10);
 
-if (isNaN(port) || port < 1 || port > 65535) {
+if (Number.isNaN(port) || port < 1 || port > 65535) {
 	consola.fatal(`Invalid port: ${process.env.SERVER_PORT}. Must be between 1 and 65535.`);
 	process.exit(1);
 }
@@ -43,7 +43,7 @@ async function killProcessOnPort(port: number): Promise<boolean> {
 				// Try graceful kill first
 				execSync(`kill ${pid}`, { encoding: "utf-8", stdio: "ignore" });
 				await new Promise((resolve) => setTimeout(resolve, 500));
-				
+
 				// Check if still running, force kill if needed
 				try {
 					execSync(`lsof -ti:${port}`, { encoding: "utf-8", stdio: "ignore" });
@@ -53,16 +53,16 @@ async function killProcessOnPort(port: number): Promise<boolean> {
 				} catch {
 					// Process is gone
 				}
-				
+
 				consola.success(`Process ${pid} killed`);
 				return true;
-			} catch (killError) {
+			} catch (_killError) {
 				consola.warn(`Failed to kill process ${pid}`);
 				return false;
 			}
 		}
 		return true; // Port not in use
-	} catch (error) {
+	} catch (_error) {
 		// Port is not in use, or lsof failed (which is fine)
 		return true;
 	}

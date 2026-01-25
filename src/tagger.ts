@@ -176,8 +176,7 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
 	});
 
 	const toolUse = response.content.find(
-		(block): block is Anthropic.Messages.ToolUseBlock =>
-			block.type === "tool_use",
+		(block): block is Anthropic.Messages.ToolUseBlock => block.type === "tool_use",
 	);
 
 	if (!toolUse) {
@@ -286,7 +285,6 @@ function buildHints(recipe: Recipe): string[] {
 	if (recipe.category) hints.push(`Category: ${recipe.category}`);
 	return hints;
 }
-
 
 /**
  * Clamps a number to the range [min, max].

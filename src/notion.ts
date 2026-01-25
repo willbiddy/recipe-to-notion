@@ -325,6 +325,44 @@ export async function createRecipePage(
  * @param tags - AI-generated tags including description.
  * @returns An array of Notion block objects.
  */
+/**
+ * Builds ingredient blocks grouped by category.
+ */
+function buildIngredientBlocks(
+	grouped: Map<string, Array<{ original: string; usage?: string }>>,
+): unknown[] {
+	const blocks: unknown[] = [];
+	const orderedCategories = getCategoryOrder();
+	const otherCategories: string[] = [];
+
+	// Collect categories not in the standard order
+	for (const category of grouped.keys()) {
+		if (!orderedCategories.includes(category)) {
+			otherCategories.push(category);
+		}
+	}
+	otherCategories.sort();
+
+	// Display categories in order
+	for (const category of [...orderedCategories, ...otherCategories]) {
+		const ingredients = grouped.get(category);
+		if (ingredients && ingredients.length > 0) {
+			blocks.push(heading3(category));
+			for (const ingredient of ingredients) {
+				const displayText = ingredient.usage
+					? `${ingredient.original} (${ingredient.usage})`
+					: ingredient.original;
+				blocks.push(bulletItem(displayText));
+			}
+		}
+	}
+
+	return blocks;
+}
+
+/**
+ * Builds the main body content for a Notion recipe page.
+ */
 function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
 	const blocks: unknown[] = [];
 
@@ -337,33 +375,11 @@ function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
 		}
 	}
 
+	// Add ingredients section
 	if (tags.ingredients && tags.ingredients.length > 0) {
 		blocks.push(heading1("Ingredients"));
 		const grouped = groupIngredientsByCategory(tags.ingredients);
-		const orderedCategories = getCategoryOrder();
-		const otherCategories: string[] = [];
-
-		// Collect categories not in the standard order
-		for (const category of grouped.keys()) {
-			if (!orderedCategories.includes(category)) {
-				otherCategories.push(category);
-			}
-		}
-		otherCategories.sort();
-
-		// Display categories in order
-		for (const category of [...orderedCategories, ...otherCategories]) {
-			const ingredients = grouped.get(category);
-			if (ingredients && ingredients.length > 0) {
-				blocks.push(heading3(category));
-				for (const ingredient of ingredients) {
-					const displayText = ingredient.usage
-						? `${ingredient.original} (${ingredient.usage})`
-						: ingredient.original;
-					blocks.push(bulletItem(displayText));
-				}
-			}
-		}
+		blocks.push(...buildIngredientBlocks(grouped));
 	} else if (recipe.ingredients.length > 0) {
 		// Fallback to original flat list if categorization failed
 		blocks.push(heading1("Ingredients"));
@@ -372,6 +388,7 @@ function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
 		}
 	}
 
+	// Add instructions section
 	if (recipe.instructions.length > 0) {
 		blocks.push(heading1("Instructions"));
 		for (const step of recipe.instructions) {
@@ -489,7 +506,7 @@ function groupIngredientsByCategory(
 		if (!grouped.has(category)) {
 			grouped.set(category, []);
 		}
-		grouped.get(category)!.push(ingredient);
+		grouped.get(category)?.push(ingredient);
 	}
 	return grouped;
 }

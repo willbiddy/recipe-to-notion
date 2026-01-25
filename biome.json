@@ -29,12 +29,12 @@
 			"style": {
 				"noNegationElse": "off",
 				"useCollapsedElseIf": "off",
-				"useThrowOnlyError": "off"
+				"useThrowOnlyError": "error"
 			},
 			"complexity": {
 				"noExcessiveCognitiveComplexity": "off",
 				"noUselessStringConcat": "error",
-				"noUselessUndefinedInitialization": "off",
+				"noUselessUndefinedInitialization": "error",
 				"useDateNow": "error"
 			},
 			"nursery": {
@@ -46,12 +46,12 @@
 				}
 			},
 			"performance": {
-				"noAccumulatingSpread": "off",
+				"noAccumulatingSpread": "error",
 				"noBarrelFile": "off"
 			},
 			"suspicious": {
 				"noConsole": "off",
-				"noEvolvingTypes": "off",
+				"noEvolvingTypes": "error",
 				"useAwait": "error",
 				"noUnknownAtRules": "off"
 			}

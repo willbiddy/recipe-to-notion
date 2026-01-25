@@ -172,7 +172,6 @@ export async function saveRecipe({
 					let buffer = "";
 
 					const readChunk = (): Promise<void> => {
-						// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: SSE parsing logic is inherently complex
 						return reader.read().then(({ done, value }) => {
 							if (done) {
 								resolve({ success: false, error: "Stream ended unexpectedly" });

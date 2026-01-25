@@ -40,7 +40,6 @@ import { ServerProgressEventType } from "../src/shared/api.js";
  */
 function handleRecipeStream(url: string, requestId?: string): Response {
 	const stream = new ReadableStream({
-		// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: SSE stream handling is inherently complex
 		async start(controller) {
 			const encoder = new TextEncoder();
 

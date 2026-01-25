@@ -121,10 +121,12 @@ enum HealthinessScore {
 
 /**
  * Recipe time configuration (in minutes).
+ *
+ * Allows for quick no-cook recipes (5 min) and slow-cooked dishes (8 hours).
  */
 enum RecipeTime {
-	Min = 15,
-	Max = 180,
+	Min = 5,
+	Max = 480,
 }
 
 /**
@@ -189,22 +191,13 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
 			messages: [{ role: "user", content: userMessage }],
 		});
 	} catch (error) {
-		/**
-		 * Handle Anthropic API errors with better error messages.
-		 */
 		if (error instanceof Anthropic.APIError) {
 			throw new Error(
 				`Anthropic API error (${error.status}): ${error.message || "Unknown error"}. ` +
 					`Details: ${JSON.stringify(error.error || {})}`,
 			);
 		}
-		/**
-		 * Handle other errors (network, timeout, etc.).
-		 */
 		if (error instanceof Error) {
-			/**
-			 * Check for error cause which might contain more details.
-			 */
 			const causeMessage =
 				error.cause && typeof error.cause === "object" && "message" in error.cause
 					? String(error.cause.message)
@@ -230,9 +223,6 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
 		);
 	}
 
-	/**
-	 * Runtime validation as a safety check (belt-and-suspenders approach).
-	 */
 	const validationResult = claudeResponseSchema.safeParse(toolUse.input);
 	if (!validationResult.success) {
 		const issues = validationResult.error.issues
@@ -251,10 +241,6 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
 	const scrapedTime = recipe.totalTimeMinutes;
 	const aiEstimatedTime = validated.totalTimeMinutes;
 
-	/**
-	 * Use scraped time if available, otherwise use AI estimate.
-	 * Both should be validated by the schema, but we prefer scraped time.
-	 */
 	const finalTime = scrapedTime ?? aiEstimatedTime;
 
 	if (finalTime === null || finalTime === undefined) {
@@ -290,9 +276,6 @@ function buildPrompt(recipe: Recipe): string {
 		lines.push("", `${PromptLabel.Description}: ${recipe.description}`);
 	}
 
-	/**
-	 * Add hints section if any hints are available.
-	 */
 	const hints = buildHints(recipe);
 	if (hints.length > 0) {
 		lines.push("", `${PromptLabel.Hints}:`, ...hints.map((h) => `- ${h}`));

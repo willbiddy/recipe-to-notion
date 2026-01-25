@@ -4,6 +4,10 @@
 
 /**
  * Updates the status message in the UI.
+ *
+ * @param message - The status message to display.
+ * @param type - The type of status (info, success, or error).
+ * @param options - Optional configuration for text size and base classes.
  */
 export function updateStatus(
 	message: string,
@@ -19,7 +23,6 @@ export function updateStatus(
 	statusEl.textContent = message;
 	statusEl.classList.remove("hidden");
 
-	// Use provided text size or default based on context
 	const textSize = options?.textSize || "sm";
 	const textSizeClass =
 		textSize === "xs" ? "text-xs" : textSize === "base" ? "text-base" : "text-sm";
@@ -36,7 +39,7 @@ export function updateStatus(
 }
 
 /**
- * Clears the status message.
+ * Clears the status message from the UI.
  */
 export function clearStatus(): void {
 	const statusEl = document.getElementById("status");
@@ -47,7 +50,9 @@ export function clearStatus(): void {
 }
 
 /**
- * Shows progress with spinner and message.
+ * Shows progress indicator with spinner and message.
+ *
+ * @param message - The progress message to display.
  */
 export function showProgress(message: string): void {
 	const progressContainer = document.getElementById("progress-container");
@@ -59,7 +64,7 @@ export function showProgress(message: string): void {
 }
 
 /**
- * Hides the progress indicator.
+ * Hides the progress indicator from the UI.
  */
 export function hideProgress(): void {
 	const progressContainer = document.getElementById("progress-container");
@@ -70,6 +75,8 @@ export function hideProgress(): void {
 
 /**
  * Sets the loading state of the save button.
+ *
+ * @param loading - True to show loading state, false to show normal state.
  */
 export function setLoading(loading: boolean): void {
 	const saveButton = document.getElementById("save-button") as HTMLButtonElement;
@@ -81,7 +88,9 @@ export function setLoading(loading: boolean): void {
 }
 
 /**
- * Sets up the API key visibility toggle.
+ * Sets up the API key visibility toggle button.
+ *
+ * Allows users to show/hide the API key input field.
  */
 export function setupApiKeyVisibilityToggle(): void {
 	const toggleVisibilityButton = document.getElementById("toggle-api-key-visibility");

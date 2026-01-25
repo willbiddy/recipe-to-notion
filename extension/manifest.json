@@ -1,6 +1,6 @@
 {
 	"manifest_version": 3,
-	"name": "Recipe to Notion",
+	"name": "Recipe Clipper for Notion",
 	"version": "1.0.0",
 	"description": "One-click save recipes to Notion with AI-generated tags",
 	"permissions": ["activeTab", "contextMenus", "storage"],

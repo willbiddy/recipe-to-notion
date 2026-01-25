@@ -61,26 +61,17 @@ function searchNestedPatterns(
 	data: Record<string, unknown>,
 	visited: WeakSet<object>,
 ): Record<string, unknown> | null {
-	/**
-	 * Handle @graph arrays.
-	 */
 	if (isArray(data["@graph"])) {
 		const found = findRecipeInLd(data["@graph"], visited);
 		if (found) return found;
 	}
 
-	/**
-	 * Handle WebPage patterns: mainEntity and mainEntityOfPage.
-	 */
 	const mainEntity = data.mainEntity ?? data.mainEntityOfPage;
 	if (mainEntity) {
 		const found = findRecipeInLd(mainEntity, visited);
 		if (found) return found;
 	}
 
-	/**
-	 * Handle ItemList patterns: itemListElement.
-	 */
 	if (isArray(data.itemListElement)) {
 		const found = findRecipeInLd(data.itemListElement, visited);
 		if (found) return found;
@@ -101,9 +92,6 @@ function searchObjectProperties(
 	visited: WeakSet<object>,
 ): Record<string, unknown> | null {
 	for (const value of Object.values(data)) {
-		/**
-		 * Skip @context and @id as they're metadata, not content.
-		 */
 		if (isObject(value)) {
 			const found = findRecipeInLd(value, visited);
 			if (found) return found;
@@ -144,22 +132,13 @@ function findRecipeInLd(
 	if (visited.has(data)) return null;
 	visited.add(data);
 
-	/**
-	 * Check if this object is a Recipe.
-	 */
 	if (isRecipeType(data)) {
 		return data;
 	}
 
-	/**
-	 * Search common nested patterns.
-	 */
 	const nestedResult = searchNestedPatterns(data, visited);
 	if (nestedResult) return nestedResult;
 
-	/**
-	 * Recursively search all object properties (for other nested patterns).
-	 */
 	return searchObjectProperties(data, visited);
 }
 
@@ -181,9 +160,6 @@ function extractFromJsonLd(data: Record<string, unknown>, sourceUrl: string): Re
 		);
 	}
 
-	/**
-	 * Try author first, fall back to publisher name.
-	 */
 	const author = parseAuthor(data.author) ?? parseAuthor(data.publisher);
 
 	return {
@@ -291,16 +267,10 @@ function parseImage(image: unknown): string | null {
 	if (isString(image)) return image;
 
 	if (isArray(image) && image.length > 0) {
-		/**
-		 * Check if first item has width info (ImageObject array).
-		 */
 		const firstItem = image[0];
 		if (hasProperty(firstItem, "url") && hasProperty(firstItem, "width")) {
 			return findBestImageByWidth(image);
 		}
-		/**
-		 * Array of strings/objects - take the last one (usually full-size).
-		 */
 		return extractImageUrl(image[image.length - 1]);
 	}
 

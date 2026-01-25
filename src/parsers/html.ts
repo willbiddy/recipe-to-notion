@@ -20,9 +20,6 @@ import {
  * @returns The author name if found, null otherwise.
  */
 export function extractAuthorFromHtml($: cheerio.CheerioAPI): string | null {
-	/**
-	 * Try structured data patterns first.
-	 */
 	const structuredAuthor =
 		$('[itemprop="author"]').first().text().trim() ||
 		$('[itemprop="author"] [itemprop="name"]').first().text().trim() ||
@@ -32,7 +29,6 @@ export function extractAuthorFromHtml($: cheerio.CheerioAPI): string | null {
 
 	if (structuredAuthor) return structuredAuthor;
 
-	// Try common class patterns
 	const classAuthor =
 		$('[class*="recipe-author"]').first().text().trim() ||
 		$('[class*="author-name"]').first().text().trim() ||
@@ -41,9 +37,6 @@ export function extractAuthorFromHtml($: cheerio.CheerioAPI): string | null {
 
 	if (classAuthor) return classAuthor;
 
-	/**
-	 * For personal blogs, use the site name as author (last resort).
-	 */
 	const siteName = $('meta[property="og:site_name"]').attr("content");
 	if (siteName && siteName.length < 50) return siteName;
 
@@ -63,25 +56,13 @@ export function extractAuthorFromHtml($: cheerio.CheerioAPI): string | null {
  * @returns Parsed recipe data if found, null otherwise.
  */
 export function parseHtml($: cheerio.CheerioAPI, sourceUrl: string): Recipe | null {
-	/**
-	 * Find recipe container with itemtype="http://schema.org/Recipe" or "https://schema.org/Recipe".
-	 */
 	const container = findRecipeContainer($);
 
-	/**
-	 * Extract name from microdata first, then fall back to og:title/h1.
-	 */
 	const name = extractRecipeName($, container);
 	if (!name) return null;
 
-	/**
-	 * Extract author from microdata, then fall back to other patterns.
-	 */
 	const author = extractRecipeAuthor($, container);
 
-	/**
-	 * Extract image from microdata, then fall back to og:image/twitter:image.
-	 */
 	const imageUrl =
 		extractMicrodataProperty($, container, "image", true) ||
 		extractAttributeWithFallback(
@@ -92,9 +73,6 @@ export function parseHtml($: cheerio.CheerioAPI, sourceUrl: string): Recipe | nu
 		) ||
 		null;
 
-	/**
-	 * Extract description from microdata, then fall back to og:description/meta description.
-	 */
 	const description =
 		extractAttributeWithFallback(
 			$,
@@ -103,47 +81,26 @@ export function parseHtml($: cheerio.CheerioAPI, sourceUrl: string): Recipe | nu
 			'meta[name="description"]',
 		) || null;
 
-	/**
-	 * Extract time from microdata.
-	 */
 	const totalTimeMinutes = extractMicrodataTime($, container);
 
-	/**
-	 * Extract servings from microdata.
-	 */
 	const servings = extractMicrodataProperty($, container, "recipeYield") || null;
 
-	/**
-	 * Extract cuisine from microdata.
-	 */
 	const cuisine = extractMicrodataProperty($, container, "recipeCuisine") || null;
 
-	/**
-	 * Extract category from microdata.
-	 */
 	const category = extractMicrodataProperty($, container, "recipeCategory") || null;
 
-	/**
-	 * Extract ingredients from microdata, then fall back to CSS classes.
-	 */
 	const ingredients = extractMicrodataArray($, container, "recipeIngredient");
 	let finalIngredients =
 		ingredients.length > 0
 			? ingredients
 			: extractTextArray($, '[itemprop="recipeIngredient"]', '[class*="ingredient"]');
 
-	/**
-	 * If ingredients were extracted from a container, filter out header text.
-	 */
 	if (finalIngredients.length > 0) {
 		finalIngredients = finalIngredients.filter(
 			(ing) => !/^(INGREDIENTS|INGREDIENT LIST)$/i.test(ing.trim()),
 		);
 	}
 
-	/**
-	 * Extract instructions from microdata, then fall back to CSS classes.
-	 */
 	const instructions = extractRecipeInstructions($, container);
 
 	if (finalIngredients.length === 0 && instructions.length === 0) return null;
@@ -229,24 +186,14 @@ function extractRecipeInstructions(
 		}
 	}
 	if (instructions.length === 0) {
-		/**
-		 * Try extracting from instruction containers, excluding headers.
-		 * Look for <p> tags or <li> tags within instruction containers.
-		 */
 		const instructionContainers = $('[class*="instruction"], [class*="direction"]');
 		if (instructionContainers.length > 0) {
 			instructionContainers.each((_, container) => {
-				/**
-				 * Exclude headers (h1-h6) and extract from <p> or <li> tags.
-				 */
 				$(container)
 					.find("p, li")
 					.not("h1, h2, h3, h4, h5, h6")
 					.each((_, el) => {
 						const text = $(el).text().trim();
-						/**
-						 * Filter out common header text that might appear in paragraphs.
-						 */
 						if (text && !/^(INSTRUCTIONS|DIRECTIONS|STEPS)$/i.test(text)) {
 							instructions.push(decodeHtmlEntities(text));
 						}
@@ -315,24 +262,15 @@ function extractMicrodataProperty(
 	const first = selector.first();
 
 	if (isImage) {
-		/**
-		 * For images, try src, content, or href attributes.
-		 */
 		return first.attr("src") || first.attr("content") || first.attr("href") || null;
 	}
 
-	/**
-	 * For text, try nested itemprop="name" first, then direct text.
-	 */
 	const nestedName = first.find('[itemprop="name"]').first().text().trim();
 	if (nestedName) return nestedName;
 
 	const text = first.text().trim();
 	if (text) return text;
 
-	/**
-	 * Fallback to content attribute for meta tags.
-	 */
 	return first.attr("content") || null;
 }
 
@@ -357,9 +295,6 @@ function extractMicrodataArray(
 	selector.each((_, el) => {
 		const text = $(el).text().trim();
 		if (text) {
-			/**
-			 * Normalize parentheses for ingredients.
-			 */
 			const normalized =
 				itemprop === "recipeIngredient"
 					? normalizeIngredientParentheses(decodeHtmlEntities(text))
@@ -420,9 +355,6 @@ function extractAttributeWithFallback(
  * @returns Array of non-empty text values.
  */
 function extractTextArray($: cheerio.CheerioAPI, ...selectors: string[]): string[] {
-	/**
-	 * Check if any selector is for ingredients (to normalize parentheses).
-	 */
 	const isIngredientExtraction = selectors.some(
 		(sel) => sel.includes("ingredient") || sel.includes("recipeIngredient"),
 	);
@@ -432,9 +364,6 @@ function extractTextArray($: cheerio.CheerioAPI, ...selectors: string[]): string
 		$(selector).each((_, el) => {
 			const text = $(el).text().trim();
 			if (text) {
-				/**
-				 * Normalize parentheses for ingredients.
-				 */
 				const normalized = isIngredientExtraction
 					? normalizeIngredientParentheses(decodeHtmlEntities(text))
 					: decodeHtmlEntities(text);
@@ -464,9 +393,6 @@ function extractMicrodataTime(
 	$: cheerio.CheerioAPI,
 	container: cheerio.Cheerio<Element> | null,
 ): number | null {
-	/**
-	 * Try totalTime first, then calculate from cookTime + prepTime.
-	 */
 	const totalTime = extractMicrodataProperty($, container, "totalTime");
 	if (totalTime) {
 		return parseDuration(totalTime);

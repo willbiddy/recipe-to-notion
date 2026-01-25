@@ -44,9 +44,13 @@ export class ChromeStorageAdapter implements StorageAdapter {
 
 /**
  * Creates a storage adapter based on the environment.
+ *
+ * Returns ChromeStorageAdapter if running in a Chrome extension context,
+ * otherwise returns LocalStorageAdapter for web interface.
+ *
+ * @returns Storage adapter appropriate for the current environment.
  */
 export function createStorageAdapter(): StorageAdapter {
-	// Check if we're in a Chrome extension context
 	if (typeof chrome !== "undefined" && chrome.storage) {
 		return new ChromeStorageAdapter();
 	}

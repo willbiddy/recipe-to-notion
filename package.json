@@ -1,15 +1,15 @@
 {
-	"name": "recipe-to-notion",
+	"name": "recipe-clipper-for-notion",
 	"version": "1.0.0",
 	"description": "CLI tool that scrapes recipe URLs, generates AI scores/tags with Claude, and saves to Notion",
 	"type": "module",
 	"bin": {
-		"recipe-to-notion": "./src/cli.ts"
+		"recipe-clipper-for-notion": "./src/cli.ts"
 	},
 	"scripts": {
 		"start": "bun src/cli.ts",
 		"server": "bun src/cli-server.ts",
-		"build": "bun build src/cli.ts --compile --outfile recipe-to-notion",
+		"build": "bun build src/cli.ts --compile --outfile recipe-clipper-for-notion",
 		"build:extension": "cp -r src/shared extension/shared && tsc -p extension/tsconfig.json && bunx tailwindcss -i extension/input.css -o extension/styles.css --minify",
 		"build:web": "cp -r src/shared public/shared && tsc -p public/tsconfig.json && bunx tailwindcss -i public/input.css -o public/web.css --minify",
 		"typecheck": "tsc --noEmit",

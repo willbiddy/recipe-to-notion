@@ -89,7 +89,7 @@ Android Chrome supports the Web Share Target API natively. No setup required!
 
 1. Navigate to a recipe page in Chrome
 2. Tap the Share button
-3. "Recipe to Notion" appears in your share options
+3. "Recipe Clipper for Notion" appears in your share options
 4. Tap it to save the recipe
 
 The recipe URL is automatically sent to the web interface and processed.
@@ -101,8 +101,8 @@ iOS browsers don't support Web Share Target API natively. However, you can achie
 **Setup Steps:**
 
 1. Install the iOS Shortcut (see [iOS Shortcut Setup](./IOS_SHORTCUT.md))
-2. After setup, "Save Recipe to Notion" appears in your Share Sheet
-3. From any browser, tap Share → "Save Recipe to Notion" → Done
+2. After setup, "Save Recipe with Recipe Clipper for Notion" appears in your Share Sheet
+3. From any browser, tap Share → "Save Recipe with Recipe Clipper for Notion" → Done
 
 The shortcut opens the web interface with the recipe URL, and if your API key is configured, it automatically processes the recipe.
 

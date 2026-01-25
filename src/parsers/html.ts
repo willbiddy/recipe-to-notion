@@ -127,10 +127,19 @@ export function parseHtml($: cheerio.CheerioAPI, sourceUrl: string): Recipe | nu
 	 * Extract ingredients from microdata, then fall back to CSS classes.
 	 */
 	const ingredients = extractMicrodataArray($, container, "recipeIngredient");
-	const finalIngredients =
+	let finalIngredients =
 		ingredients.length > 0
 			? ingredients
 			: extractTextArray($, '[itemprop="recipeIngredient"]', '[class*="ingredient"]');
+
+	/**
+	 * If ingredients were extracted from a container, filter out header text.
+	 */
+	if (finalIngredients.length > 0) {
+		finalIngredients = finalIngredients.filter(
+			(ing) => !/^(INGREDIENTS|INGREDIENT LIST)$/i.test(ing.trim()),
+		);
+	}
 
 	/**
 	 * Extract instructions from microdata, then fall back to CSS classes.
@@ -220,13 +229,33 @@ function extractRecipeInstructions(
 		}
 	}
 	if (instructions.length === 0) {
-		instructions = extractTextArray(
-			$,
-			'[itemprop="recipeInstructions"] li',
-			'[itemprop="step"]',
-			'[class*="instruction"]',
-			'[class*="direction"]',
-		);
+		/**
+		 * Try extracting from instruction containers, excluding headers.
+		 * Look for <p> tags or <li> tags within instruction containers.
+		 */
+		const instructionContainers = $('[class*="instruction"], [class*="direction"]');
+		if (instructionContainers.length > 0) {
+			instructionContainers.each((_, container) => {
+				/**
+				 * Exclude headers (h1-h6) and extract from <p> or <li> tags.
+				 */
+				$(container)
+					.find("p, li")
+					.not("h1, h2, h3, h4, h5, h6")
+					.each((_, el) => {
+						const text = $(el).text().trim();
+						/**
+						 * Filter out common header text that might appear in paragraphs.
+						 */
+						if (text && !/^(INSTRUCTIONS|DIRECTIONS|STEPS)$/i.test(text)) {
+							instructions.push(decodeHtmlEntities(text));
+						}
+					});
+			});
+		}
+		if (instructions.length === 0) {
+			instructions = extractTextArray($, '[itemprop="recipeInstructions"] li', '[itemprop="step"]');
+		}
 	}
 	return filterEditorNotes(instructions);
 }

@@ -1,19 +1,14 @@
 import { getServerUrl } from "./config.js";
-
-/**
- * Response format from the server API.
- */
-type RecipeResponse =
-	| {
-			success: true;
-			pageId: string;
-			notionUrl: string;
-	  }
-	| {
-			success: false;
-			error: string;
-			notionUrl?: string; // May be present for duplicate errors
-	  };
+import {
+	clearStatus,
+	hideProgress,
+	setLoading,
+	setupApiKeyVisibilityToggle,
+	showProgress,
+	updateStatus,
+} from "./shared/ui.js";
+import { saveRecipe } from "./shared/api.js";
+import { createStorageAdapter } from "./shared/storage.js";
 
 /**
  * Gets the current active tab URL and title.
@@ -27,229 +22,9 @@ async function getCurrentTab(): Promise<{ url: string | null; title: string | nu
 }
 
 /**
- * Progress event types from server.
+ * Storage adapter for this interface.
  */
-enum ProgressEventType {
-	Progress = "progress",
-	Complete = "complete",
-	Error = "error",
-}
-
-/**
- * Progress event from server.
- */
-type ProgressEvent =
-	| {
-			type: ProgressEventType.Progress;
-			message: string;
-	  }
-	| {
-			type: ProgressEventType.Complete;
-			success: true;
-			pageId: string;
-			notionUrl: string;
-	  }
-	| {
-			type: ProgressEventType.Error;
-			success: false;
-			error: string;
-			notionUrl?: string;
-	  };
-
-/**
- * Shows progress with spinner and message.
- */
-function showProgress(message: string): void {
-	const progressContainer = document.getElementById("progress-container");
-	const progressMessage = document.getElementById("progress-message");
-	if (!progressContainer || !progressMessage) return;
-
-	progressMessage.textContent = message;
-	progressContainer.classList.remove("hidden");
-
-	/**
-	 * Update button to show simple loading state.
-	 */
-	setLoading(true);
-}
-
-/**
- * Hides the progress indicator.
- */
-function hideProgress(): void {
-	const progressContainer = document.getElementById("progress-container");
-	if (progressContainer) {
-		progressContainer.classList.add("hidden");
-	}
-}
-
-/**
- * Gets the API key from storage.
- * Uses chrome.storage.local (not sync) to avoid syncing sensitive data to Google servers.
- */
-async function getApiKey(): Promise<string | null> {
-	const result = await chrome.storage.local.get("apiKey");
-	const apiKey = result.apiKey;
-	return typeof apiKey === "string" ? apiKey : null;
-}
-
-/**
- * Saves a recipe by sending the URL to the server with progress streaming.
- */
-async function saveRecipe(url: string): Promise<RecipeResponse> {
-	const apiKey = await getApiKey();
-	if (!apiKey) {
-		return {
-			success: false,
-			error: "API secret not configured. Please set it in the extension settings.",
-		};
-	}
-
-	const serverUrl = getServerUrl();
-	const apiUrl = `${serverUrl}/api/recipes`;
-
-	return new Promise((resolve, reject) => {
-		try {
-			/**
-			 * Use Server-Sent Events for progress updates.
-			 */
-			fetch(apiUrl, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${apiKey}`,
-				},
-				body: JSON.stringify({ url, stream: true }),
-			})
-				.then((response) => {
-					if (!response.ok) {
-						/**
-						 * Try to parse as JSON for error details.
-						 */
-						return response
-							.json()
-							.then((errorData) => {
-								// Include the status code in the error message for debugging
-								const errorMessage = errorData.error || errorData.message || "Unknown error";
-								resolve({
-									success: false,
-									error: `Server error (${response.status}): ${errorMessage}`,
-									...errorData,
-								} as RecipeResponse);
-							})
-							.catch(async () => {
-								// If JSON parsing fails, try to get text response
-								const text = await response.text().catch(() => "");
-								resolve({
-									success: false,
-									error: `Server error (${response.status}): ${response.statusText}${text ? ` - ${text}` : ""}`,
-								});
-							});
-					}
-
-					/**
-					 * Read SSE stream.
-					 */
-					const reader = response.body?.getReader();
-					const decoder = new TextDecoder();
-
-					if (!reader) {
-						resolve({
-							success: false,
-							error: "Failed to read response stream",
-						});
-						return;
-					}
-
-					let buffer = "";
-
-					const readChunk = (): Promise<void> => {
-						// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: SSE parsing logic is inherently complex
-						return reader.read().then(({ done, value }) => {
-							if (done) {
-								resolve({
-									success: false,
-									error: "Stream ended unexpectedly",
-								});
-								return;
-							}
-
-							buffer += decoder.decode(value, { stream: true });
-							const lines = buffer.split("\n");
-							buffer = lines.pop() || "";
-
-							for (const line of lines) {
-								if (line.startsWith("data: ")) {
-									try {
-										const data = JSON.parse(line.slice(6)) as ProgressEvent;
-
-										if (data.type === ProgressEventType.Progress) {
-											showProgress(data.message);
-										} else if (data.type === ProgressEventType.Complete) {
-											hideProgress();
-											resolve({
-												success: true,
-												pageId: data.pageId,
-												notionUrl: data.notionUrl,
-											});
-											return;
-										} else if (data.type === ProgressEventType.Error) {
-											hideProgress();
-											resolve({
-												success: false,
-												error: data.error || "Unknown error",
-												notionUrl: data.notionUrl,
-											});
-											return;
-										}
-									} catch (_e) {
-										/**
-										 * Ignore parse errors for malformed events.
-										 */
-									}
-								}
-							}
-
-							return readChunk();
-						});
-					};
-
-					readChunk().catch((error) => {
-						hideProgress();
-						reject(error);
-					});
-				})
-				.catch((error) => {
-					hideProgress();
-					/**
-					 * Network error - server might not be running.
-					 */
-					if (error instanceof TypeError && error.message.includes("fetch")) {
-						resolve({
-							success: false,
-							error: `Cannot connect to server at ${serverUrl}.\n\nMake sure the server is running:\n  bun run server`,
-						});
-					} else if (error instanceof TypeError) {
-						/**
-						 * Other network errors (CORS, timeout, etc.).
-						 */
-						resolve({
-							success: false,
-							error: `Connection error: ${error.message}\n\nCheck that the server is running: bun run server`,
-						});
-					} else {
-						resolve({
-							success: false,
-							error: error instanceof Error ? error.message : String(error),
-						});
-					}
-				});
-		} catch (error) {
-			hideProgress();
-			reject(error);
-		}
-	});
-}
+const storage = createStorageAdapter();
 
 /**
  * Updates the UI to show the current page title.
@@ -307,49 +82,26 @@ function updateUrlDisplay(url: string | null, title: string | null): void {
 }
 
 /**
- * Updates the status message in the UI.
+ * Saves a recipe by sending the URL to the server with progress streaming.
  */
-function updateStatus(message: string, type: "info" | "success" | "error" = "info"): void {
-	const statusEl = document.getElementById("status");
-	if (!statusEl) return;
+async function saveRecipeWithProgress(url: string) {
+	const serverUrl = getServerUrl();
+	const apiUrl = `${serverUrl}/api/recipes`;
 
-	// Remove hidden class and inline display style to ensure the element is visible
-	statusEl.classList.remove("hidden");
-	statusEl.style.display = "";
-
-	statusEl.textContent = message;
-	const baseClasses =
-		"py-3.5 px-4 rounded-2xl text-[13px] leading-relaxed animate-[fadeIn_0.2s_ease-in] block shadow-sm";
-	const typeClasses = {
-		info: "bg-orange-50 text-orange-800 border-2 border-orange-200",
-		success: "bg-amber-50 text-amber-800 border-2 border-amber-300",
-		error: "bg-red-50 text-red-800 border-2 border-red-200 whitespace-pre-line",
-	};
-	statusEl.className = `${baseClasses} ${typeClasses[type]}`;
-}
-
-/**
- * Clears the status message.
- */
-function clearStatus(): void {
-	const statusEl = document.getElementById("status");
-	if (statusEl) {
-		statusEl.style.display = "none";
-		statusEl.textContent = "";
-		statusEl.className = "status";
-	}
-}
-
-/**
- * Sets the loading state of the save button.
- */
-function setLoading(loading: boolean): void {
-	const saveButton = document.getElementById("save-button") as HTMLButtonElement;
-	const buttonText = saveButton?.querySelector(".button-text");
-	if (!saveButton || !buttonText) return;
-
-	saveButton.disabled = loading;
-	buttonText.textContent = loading ? "Processing..." : "Save Recipe";
+	return saveRecipe(url, apiUrl, storage, {
+		onProgress: (message) => {
+			showProgress(message);
+			setLoading(true);
+		},
+		onComplete: () => {
+			hideProgress();
+			setLoading(false);
+		},
+		onError: () => {
+			hideProgress();
+			setLoading(false);
+		},
+	});
 }
 
 /**
@@ -358,7 +110,7 @@ function setLoading(loading: boolean): void {
 async function handleSave(): Promise<void> {
 	const { url } = await getCurrentTab();
 	if (!url) {
-		updateStatus("No URL found. Please navigate to a recipe page.", "error");
+		updateStatus("No URL found. Please navigate to a recipe page.", "error", { textSize: "xs" });
 		return;
 	}
 
@@ -366,7 +118,7 @@ async function handleSave(): Promise<void> {
 	 * Validate URL.
 	 */
 	if (!url.startsWith("http://") && !url.startsWith("https://")) {
-		updateStatus("Not a valid web page URL.", "error");
+		updateStatus("Not a valid web page URL.", "error", { textSize: "xs" });
 		return;
 	}
 
@@ -375,15 +127,15 @@ async function handleSave(): Promise<void> {
 	showProgress("Starting...");
 
 	try {
-		const result = await saveRecipe(url);
+		const result = await saveRecipeWithProgress(url);
 
 		if (result.success) {
-			updateStatus("Recipe saved successfully!", "success");
+			updateStatus("Recipe saved successfully!", "success", { textSize: "xs" });
 			/**
 			 * Show "Opening..." message, then open the Notion page.
 			 */
 			setTimeout(() => {
-				updateStatus("Opening...", "info");
+				updateStatus("Opening...", "info", { textSize: "xs" });
 				setTimeout(() => {
 					chrome.tabs.create({ url: result.notionUrl });
 				}, 500);
@@ -392,15 +144,17 @@ async function handleSave(): Promise<void> {
 			/**
 			 * Handle duplicate errors specially.
 			 */
-			updateStatus(`This recipe already exists. Opening...`, "info");
+			updateStatus(`This recipe already exists. Opening...`, "info", { textSize: "xs" });
 			setTimeout(() => {
 				chrome.tabs.create({ url: result.notionUrl });
 			}, 500);
 		} else {
-			updateStatus(result.error || "Failed to save recipe", "error");
+			updateStatus(result.error || "Failed to save recipe", "error", { textSize: "xs" });
 		}
 	} catch (error) {
-		updateStatus(error instanceof Error ? error.message : "An unexpected error occurred", "error");
+		updateStatus(error instanceof Error ? error.message : "An unexpected error occurred", "error", {
+			textSize: "xs",
+		});
 	} finally {
 		setLoading(false);
 		hideProgress();
@@ -430,7 +184,7 @@ async function loadApiKeyIntoInput(): Promise<void> {
 	const input = document.getElementById("api-key-input") as HTMLInputElement;
 	if (!input) return;
 
-	const apiKey = await getApiKey();
+	const apiKey = await storage.getApiKey();
 	if (apiKey) {
 		input.value = apiKey;
 	} else {
@@ -447,19 +201,21 @@ async function saveApiKey(): Promise<void> {
 
 	const apiKey = input.value.trim();
 	if (!apiKey) {
-		updateStatus("API secret cannot be empty", "error");
+		updateStatus("API secret cannot be empty", "error", { textSize: "xs" });
 		return;
 	}
 
 	try {
 		// Use chrome.storage.local instead of sync to avoid syncing sensitive API secret to Google servers
-		await chrome.storage.local.set({ apiKey });
-		updateStatus("API secret saved successfully", "success");
+		await storage.saveApiKey(apiKey);
+		updateStatus("API secret saved successfully", "success", { textSize: "xs" });
 		setTimeout(() => {
 			clearStatus();
 		}, 2000);
 	} catch (error) {
-		updateStatus(error instanceof Error ? error.message : "Failed to save API secret", "error");
+		updateStatus(error instanceof Error ? error.message : "Failed to save API secret", "error", {
+			textSize: "xs",
+		});
 	}
 }
 
@@ -494,26 +250,16 @@ async function init(): Promise<void> {
 	/**
 	 * Set up API key visibility toggle.
 	 */
-	const toggleVisibilityButton = document.getElementById("toggle-api-key-visibility");
-	const apiKeyInput = document.getElementById("api-key-input") as HTMLInputElement;
-	const eyeIcon = document.getElementById("eye-icon");
-	const eyeOffIcon = document.getElementById("eye-off-icon");
-
-	if (toggleVisibilityButton && apiKeyInput && eyeIcon && eyeOffIcon) {
-		toggleVisibilityButton.addEventListener("click", () => {
-			const isPassword = apiKeyInput.type === "password";
-			apiKeyInput.type = isPassword ? "text" : "password";
-			eyeIcon.classList.toggle("hidden", !isPassword);
-			eyeOffIcon.classList.toggle("hidden", isPassword);
-		});
-	}
+	setupApiKeyVisibilityToggle();
 
 	/**
 	 * Check if API key is configured and show warning if not.
 	 */
-	const apiKey = await getApiKey();
+	const apiKey = await storage.getApiKey();
 	if (!apiKey) {
-		updateStatus("⚠️ API secret not configured. Click the settings icon to set it up.", "error");
+		updateStatus("⚠️ API secret not configured. Click the settings icon to set it up.", "error", {
+			textSize: "xs",
+		});
 	}
 }
 

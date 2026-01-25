@@ -10,11 +10,15 @@ recipe-to-notion
 # extension build output
 extension/*.js
 extension/*.js.map
+extension/shared/*.js
+extension/shared/*.js.map
 
 # web interface build output
 public/web.js
 public/web.js.map
 public/web.css
+public/shared/*.js
+public/shared/*.js.map
 
 # code coverage
 coverage

@@ -6,8 +6,8 @@
  */
 
 import {
-	type RecipeRequest,
 	MAX_REQUEST_BODY_SIZE,
+	type RecipeRequest,
 	validateApiKeyHeader,
 	validateRecipeRequest,
 	validateRequestSize,
@@ -46,7 +46,6 @@ function setCorsHeaders(response: Response): void {
 	response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
 	response.headers.set("Access-Control-Expose-Headers", "*");
 }
-
 
 /**
  * Creates an error response with CORS headers.
@@ -284,14 +283,11 @@ export default {
 		 * Validate API key authentication.
 		 */
 		const authHeader = req.headers.get("Authorization");
-		const authError = validateApiKeyHeader(
-			authHeader,
-			(error, status) => {
-				// Log authentication failures for debugging (without exposing the key)
-				console.error(`Authentication failed: ${error}`);
-				return createErrorResponse(error, status);
-			},
-		);
+		const authError = validateApiKeyHeader(authHeader, (error, status) => {
+			// Log authentication failures for debugging (without exposing the key)
+			console.error(`Authentication failed: ${error}`);
+			return createErrorResponse(error, status);
+		});
 		if (authError) {
 			return authError;
 		}
@@ -300,14 +296,10 @@ export default {
 		 * Check Content-Length header to prevent large request body attacks.
 		 */
 		const contentLength = req.headers.get("Content-Length");
-		const sizeError = validateRequestSize(
-			contentLength,
-			MAX_REQUEST_BODY_SIZE,
-			(error, status) => {
-				console.error(`Request size validation failed: ${error}`);
-				return createErrorResponse(error, status);
-			},
-		);
+		const sizeError = validateRequestSize(contentLength, MAX_REQUEST_BODY_SIZE, (error, status) => {
+			console.error(`Request size validation failed: ${error}`);
+			return createErrorResponse(error, status);
+		});
 		if (sizeError) {
 			return sizeError;
 		}
@@ -318,13 +310,10 @@ export default {
 			/**
 			 * Validate request.
 			 */
-			const validationError = validateRecipeRequest(
-				body,
-				(error, status) => {
-					console.error(`Request validation failed: ${error}`);
-					return createErrorResponse(error, status);
-				},
-			);
+			const validationError = validateRecipeRequest(body, (error, status) => {
+				console.error(`Request validation failed: ${error}`);
+				return createErrorResponse(error, status);
+			});
 			if (validationError) {
 				return validationError;
 			}

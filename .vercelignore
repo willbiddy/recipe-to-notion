@@ -33,6 +33,7 @@ bun.lock
 # Extension source (not needed for server)
 extension/
 !extension/tsconfig.json
+!extension/icons/
 
 # Test files
 *.test.ts

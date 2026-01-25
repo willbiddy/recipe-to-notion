@@ -1,6 +1,13 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-	content: ["./extension/popup.html", "./extension/popup.ts", "./extension/popup.js"],
+	content: [
+		"./extension/popup.html",
+		"./extension/popup.ts",
+		"./extension/popup.js",
+		"./public/index.html",
+		"./public/web.ts",
+		"./public/web.js",
+	],
 	theme: {
 		extend: {
 			keyframes: {

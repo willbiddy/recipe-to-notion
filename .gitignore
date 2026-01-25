@@ -11,6 +11,11 @@ recipe-to-notion
 extension/*.js
 extension/*.js.map
 
+# web interface build output
+public/web.js
+public/web.js.map
+public/web.css
+
 # code coverage
 coverage
 *.lcov
@@ -38,3 +43,6 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 # Finder (MacOS) folder config
 .DS_Store
 .vercel
+
+# Claude AI settings (not part of project)
+.claude

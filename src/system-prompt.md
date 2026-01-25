@@ -121,7 +121,7 @@ Two paragraphs:
 
 **Paragraph 1:** 2-3 sentences describing what the dish is and what's notable (techniques, time, equipment). If the recipe requires unusual equipment that a well-stocked kitchen wouldn't already have (e.g., immersion circulator, dehydrator, smoker, tagine, pasta maker, ice cream maker, spiralizer), mention it. Don't mention standard equipment like pots, pans, skillets, food processors, stand mixers, or ovens.
 
-**Paragraph 2:** 1-2 sentences about healthiness, based on the scoring criteria above. Start with explicit context about whether the recipe is healthy or not (e.g., "This is a nutritional standout..." or "This isn't particularly healthy..."). For less healthy dishes (0-7), then mention what affects the score (good or bad), then offer optional ways to improve it — focus on changes that would actually move the needle per the healthiness guidelines. Use soft language like "you could," or "consider." For main dishes, almost always suggest a healthy side that pairs well with the dish and adds nutrition, regardless of the main dish's healthiness score. For already healthy dishes (8+), mention what makes it nutritious, then still suggest a complementary healthy side to round out the meal.
+**Paragraph 2:** 1-2 sentences about healthiness. Always mention what makes the recipe healthy or not healthy. For less healthy dishes (0-7), mention what could be done to make it healthier. For main dishes, recommend healthy side(s).
 
 Use complete sentences, not fragments — they don't need to be particularly wordy, just grammatically complete. Casual tone, like telling a friend. No dashes. No AI-sounding phrases. Separate paragraphs with \n\n.
 

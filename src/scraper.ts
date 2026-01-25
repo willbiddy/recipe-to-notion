@@ -262,29 +262,60 @@ function parseJsonLd($: cheerio.CheerioAPI, sourceUrl: string): Recipe | null {
  * Recursively searches a JSON-LD structure for an object with `@type: "Recipe"`.
  *
  * Handles various JSON-LD structures including top-level arrays,
- * `@graph` arrays, and direct Recipe objects. Recursively traverses
- * nested structures to find Recipe objects.
+ * `@graph` arrays, direct Recipe objects, and nested patterns like
+ * WebPage containing Recipe in `mainEntity` or `mainEntityOfPage`,
+ * ItemList containing Recipe objects, and other schema.org variations.
  *
  * @param data - The JSON-LD data structure to search.
+ * @param visited - Set of visited objects to prevent infinite loops.
  * @returns The Recipe object if found, null otherwise.
  */
-function findRecipeInLd(data: unknown): Record<string, unknown> | null {
+function findRecipeInLd(data: unknown, visited = new WeakSet<object>()): Record<string, unknown> | null {
 	if (!isObject(data)) return null;
 
 	if (isArray(data)) {
 		for (const item of data) {
-			const found = findRecipeInLd(item);
+			const found = findRecipeInLd(item, visited);
 			if (found) return found;
 		}
 		return null;
 	}
 
+	// Prevent infinite loops with circular references
+	if (visited.has(data)) return null;
+	visited.add(data);
+
+	// Check if this object is a Recipe
 	if (data["@type"] === "Recipe" || (isArray(data["@type"]) && data["@type"].includes("Recipe"))) {
 		return data;
 	}
 
+	// Handle @graph arrays
 	if (isArray(data["@graph"])) {
-		return findRecipeInLd(data["@graph"]);
+		const found = findRecipeInLd(data["@graph"], visited);
+		if (found) return found;
+	}
+
+	// Handle WebPage patterns: mainEntity and mainEntityOfPage
+	const mainEntity = data.mainEntity ?? data.mainEntityOfPage;
+	if (mainEntity) {
+		const found = findRecipeInLd(mainEntity, visited);
+		if (found) return found;
+	}
+
+	// Handle ItemList patterns: itemListElement
+	if (isArray(data.itemListElement)) {
+		const found = findRecipeInLd(data.itemListElement, visited);
+		if (found) return found;
+	}
+
+	// Recursively search all object properties (for other nested patterns)
+	for (const value of Object.values(data)) {
+		// Skip @context and @id as they're metadata, not content
+		if (isObject(value)) {
+			const found = findRecipeInLd(value, visited);
+			if (found) return found;
+		}
 	}
 
 	return null;

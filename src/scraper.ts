@@ -2,6 +2,34 @@ import { readFile } from "node:fs/promises";
 import * as cheerio from "cheerio";
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Constants
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Browser-like HTTP headers to avoid bot detection.
+ */
+const BROWSER_HEADERS = {
+	"User-Agent":
+		"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+	Accept:
+		"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+	"Accept-Language": "en-US,en;q=0.9",
+	"Accept-Encoding": "gzip, deflate, br",
+	"Cache-Control": "no-cache",
+	Connection: "keep-alive",
+	DNT: "1",
+	Pragma: "no-cache",
+	"Sec-Ch-Ua": '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+	"Sec-Ch-Ua-Mobile": "?0",
+	"Sec-Ch-Ua-Platform": '"macOS"',
+	"Sec-Fetch-Dest": "document",
+	"Sec-Fetch-Mode": "navigate",
+	"Sec-Fetch-Site": "none",
+	"Sec-Fetch-User": "?1",
+	"Upgrade-Insecure-Requests": "1",
+} as const;
+
+// ─────────────────────────────────────────────────────────────────────────────
 // HTML entity decoding
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -141,30 +169,38 @@ export interface Recipe {
  * @returns Parsed recipe data.
  * @throws If the page cannot be fetched or no recipe data is found.
  */
+/**
+ * Parses recipe data from HTML content.
+ *
+ * @param html - The HTML content to parse.
+ * @param sourceUrl - The original URL of the recipe (for reference).
+ * @returns Parsed recipe data.
+ * @throws If no recipe data is found.
+ */
+function parseRecipeFromHtml(html: string, sourceUrl: string): Recipe {
+	const $ = cheerio.load(html);
+	const recipe = parseJsonLd($, sourceUrl) ?? parseFallback($, sourceUrl);
+
+	if (!recipe) {
+		throw new Error(
+			`Could not extract recipe data from ${sourceUrl}. The page may be fully paywalled or not contain a recipe.`,
+		);
+	}
+
+	// If author wasn't found in JSON-LD, try HTML fallback
+	if (!recipe.author) {
+		recipe.author = extractAuthorFromHtml($);
+	}
+
+	return recipe;
+}
+
 export async function scrapeRecipe(url: string): Promise<Recipe> {
 	const parsedUrl = new URL(url);
 
-	// Use comprehensive browser-like headers to avoid bot detection
 	const response = await fetch(url, {
 		headers: {
-			"User-Agent":
-				"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-			Accept:
-				"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-			"Accept-Language": "en-US,en;q=0.9",
-			"Accept-Encoding": "gzip, deflate, br",
-			"Cache-Control": "no-cache",
-			Connection: "keep-alive",
-			DNT: "1",
-			Pragma: "no-cache",
-			"Sec-Ch-Ua": '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
-			"Sec-Ch-Ua-Mobile": "?0",
-			"Sec-Ch-Ua-Platform": '"macOS"',
-			"Sec-Fetch-Dest": "document",
-			"Sec-Fetch-Mode": "navigate",
-			"Sec-Fetch-Site": "none",
-			"Sec-Fetch-User": "?1",
-			"Upgrade-Insecure-Requests": "1",
+			...BROWSER_HEADERS,
 			Referer: `${parsedUrl.protocol}//${parsedUrl.host}/`,
 		},
 	});
@@ -181,22 +217,7 @@ export async function scrapeRecipe(url: string): Promise<Recipe> {
 	}
 
 	const html = await response.text();
-	const $ = cheerio.load(html);
-
-	const recipe = parseJsonLd($, url) ?? parseFallback($, url);
-
-	if (!recipe) {
-		throw new Error(
-			`Could not extract recipe data from ${url}. The page may be fully paywalled or not contain a recipe.`,
-		);
-	}
-
-	// If author wasn't found in JSON-LD, try HTML fallback
-	if (!recipe.author) {
-		recipe.author = extractAuthorFromHtml($);
-	}
-
-	return recipe;
+	return parseRecipeFromHtml(html, url);
 }
 
 /**
@@ -212,22 +233,16 @@ export async function scrapeRecipe(url: string): Promise<Recipe> {
  */
 export async function scrapeRecipeFromHtml(htmlPath: string, sourceUrl: string): Promise<Recipe> {
 	const html = await readFile(htmlPath, "utf-8");
-	const $ = cheerio.load(html);
-
-	const recipe = parseJsonLd($, sourceUrl) ?? parseFallback($, sourceUrl);
-
-	if (!recipe) {
-		throw new Error(
-			`Could not extract recipe data from ${htmlPath}. The file may not contain valid recipe markup.`,
-		);
+	try {
+		return parseRecipeFromHtml(html, sourceUrl);
+	} catch (error) {
+		if (error instanceof Error && error.message.includes("Could not extract recipe data")) {
+			throw new Error(
+				`Could not extract recipe data from ${htmlPath}. The file may not contain valid recipe markup.`,
+			);
+		}
+		throw error;
 	}
-
-	// If author wasn't found in JSON-LD, try HTML fallback
-	if (!recipe.author) {
-		recipe.author = extractAuthorFromHtml($);
-	}
-
-	return recipe;
 }
 
 /**
@@ -430,39 +445,6 @@ function extractImageUrl(item: unknown): string | null {
 }
 
 /**
- * Finds the image with the largest width from an array of ImageObjects.
- *
- * @param images - Array of ImageObject items with `url` and `width` properties.
- * @returns The URL of the largest image.
- */
-function findLargestImageByWidth(images: unknown[]): string {
-	let bestUrl = "";
-	let bestWidth = -1;
-
-	for (const item of images) {
-		if (!hasProperty(item, "url") || !hasProperty(item, "width")) continue;
-		const width = typeof item.width === "number" ? item.width : 0;
-		if (width > bestWidth) {
-			bestUrl = String(item.url);
-			bestWidth = width;
-		}
-	}
-
-	return bestUrl;
-}
-
-/**
- * Checks if an array contains ImageObjects with width information.
- *
- * @param images - Array to check.
- * @returns True if the first item has both `url` and `width` properties.
- */
-function hasWidthInfo(images: unknown[]): boolean {
-	const firstItem = images[0];
-	return hasProperty(firstItem, "url") && hasProperty(firstItem, "width");
-}
-
-/**
  * Extracts the best (largest) image URL from JSON-LD `image` formats.
  *
  * Handles multiple image formats: direct string URLs, arrays of
@@ -478,9 +460,21 @@ function parseImage(image: unknown): string | null {
 	if (isString(image)) return image;
 
 	if (isArray(image) && image.length > 0) {
-		// Array of ImageObjects with width info - find the largest
-		if (hasWidthInfo(image)) {
-			return findLargestImageByWidth(image);
+		// Check if first item has width info (ImageObject array)
+		const firstItem = image[0];
+		if (hasProperty(firstItem, "url") && hasProperty(firstItem, "width")) {
+			// Find the largest image by width
+			let bestUrl = "";
+			let bestWidth = -1;
+			for (const item of image) {
+				if (!hasProperty(item, "url") || !hasProperty(item, "width")) continue;
+				const width = typeof item.width === "number" ? item.width : 0;
+				if (width > bestWidth) {
+					bestUrl = String(item.url);
+					bestWidth = width;
+				}
+			}
+			return bestUrl || null;
 		}
 		// Array of strings/objects - take the last one (usually full-size)
 		return extractImageUrl(image[image.length - 1]);
@@ -602,69 +596,281 @@ function extractAuthorFromHtml($: cheerio.CheerioAPI): string | null {
 }
 
 /**
+ * Finds the recipe container element with itemtype="http://schema.org/Recipe" or "https://schema.org/Recipe".
+ *
+ * @param $ - Cheerio instance loaded with the page HTML.
+ * @returns The recipe container element, or null if not found.
+ */
+function findRecipeContainer($: cheerio.CheerioAPI): cheerio.Cheerio<any> | null {
+	const containers = $(
+		'[itemtype="http://schema.org/Recipe"], [itemtype="https://schema.org/Recipe"]',
+	);
+	if (containers.length > 0) {
+		return $(containers[0]);
+	}
+	return null;
+}
+
+/**
+ * Extracts text content from a microdata itemprop attribute.
+ *
+ * Handles both direct text content and nested itemprop="name" patterns.
+ * For images, extracts the src or content attribute.
+ *
+ * @param $ - Cheerio instance loaded with the page HTML.
+ * @param container - The recipe container element (or root if null).
+ * @param itemprop - The itemprop attribute value to search for.
+ * @param isImage - If true, extracts src/content attributes instead of text.
+ * @returns The extracted value, or null if not found.
+ */
+function extractMicrodataProperty(
+	$: cheerio.CheerioAPI,
+	container: cheerio.Cheerio<any> | null,
+	itemprop: string,
+	isImage = false,
+): string | null {
+	const selector = container
+		? container.find(`[itemprop="${itemprop}"]`)
+		: $(`[itemprop="${itemprop}"]`);
+
+	if (selector.length === 0) return null;
+
+	const first = selector.first();
+
+	if (isImage) {
+		// For images, try src, content, or href attributes
+		return first.attr("src") || first.attr("content") || first.attr("href") || null;
+	}
+
+	// For text, try nested itemprop="name" first, then direct text
+	const nestedName = first.find('[itemprop="name"]').first().text().trim();
+	if (nestedName) return nestedName;
+
+	const text = first.text().trim();
+	if (text) return text;
+
+	// Fallback to content attribute for meta tags
+	return first.attr("content") || null;
+}
+
+/**
+ * Extracts all items with a specific itemprop attribute (for arrays like ingredients).
+ *
+ * @param $ - Cheerio instance loaded with the page HTML.
+ * @param container - The recipe container element (or root if null).
+ * @param itemprop - The itemprop attribute value to search for.
+ * @returns Array of extracted text values.
+ */
+function extractMicrodataArray(
+	$: cheerio.CheerioAPI,
+	container: cheerio.Cheerio<any> | null,
+	itemprop: string,
+): string[] {
+	const selector = container
+		? container.find(`[itemprop="${itemprop}"]`)
+		: $(`[itemprop="${itemprop}"]`);
+
+	const items: string[] = [];
+	selector.each((_, el) => {
+		const text = $(el).text().trim();
+		if (text) items.push(decodeHtmlEntities(text));
+	});
+	return items;
+}
+
+/**
+ * Extracts text from elements matching CSS selectors, with fallback chain.
+ *
+ * @param $ - Cheerio instance loaded with the page HTML.
+ * @param selectors - Array of CSS selectors to try in order.
+ * @returns First non-empty text found, or null.
+ */
+function extractTextWithFallback($: cheerio.CheerioAPI, ...selectors: string[]): string | null {
+	for (const selector of selectors) {
+		const text = $(selector).first().text().trim();
+		if (text) return text;
+	}
+	return null;
+}
+
+/**
+ * Extracts attribute value from elements matching CSS selectors, with fallback chain.
+ *
+ * @param $ - Cheerio instance loaded with the page HTML.
+ * @param attribute - The attribute name to extract.
+ * @param selectors - Array of CSS selectors to try in order.
+ * @returns First non-empty attribute value found, or null.
+ */
+function extractAttributeWithFallback(
+	$: cheerio.CheerioAPI,
+	attribute: string,
+	...selectors: string[]
+): string | null {
+	for (const selector of selectors) {
+		const value = $(selector).first().attr(attribute);
+		if (value) return value;
+	}
+	return null;
+}
+
+/**
+ * Extracts array of text values from elements matching CSS selectors.
+ *
+ * @param $ - Cheerio instance loaded with the page HTML.
+ * @param selectors - Array of CSS selectors to try in order.
+ * @returns Array of non-empty text values.
+ */
+function extractTextArray($: cheerio.CheerioAPI, ...selectors: string[]): string[] {
+	for (const selector of selectors) {
+		const items: string[] = [];
+		$(selector).each((_, el) => {
+			const text = $(el).text().trim();
+			if (text) items.push(decodeHtmlEntities(text));
+		});
+		if (items.length > 0) return items;
+	}
+	return [];
+}
+
+/**
+ * Extracts time duration from microdata and parses it to minutes.
+ *
+ * @param $ - Cheerio instance loaded with the page HTML.
+ * @param container - The recipe container element (or root if null).
+ * @returns Total time in minutes, or null if not found.
+ */
+function extractMicrodataTime(
+	$: cheerio.CheerioAPI,
+	container: cheerio.Cheerio<any> | null,
+): number | null {
+	// Try totalTime first, then calculate from cookTime + prepTime
+	const totalTime = extractMicrodataProperty($, container, "totalTime");
+	if (totalTime) {
+		return parseDuration(totalTime);
+	}
+
+	const cookTime = extractMicrodataProperty($, container, "cookTime");
+	const prepTime = extractMicrodataProperty($, container, "prepTime");
+
+	if (cookTime || prepTime) {
+		const cookMinutes = cookTime ? parseDuration(cookTime) : 0;
+		const prepMinutes = prepTime ? parseDuration(prepTime) : 0;
+		const total = (cookMinutes || 0) + (prepMinutes || 0);
+		return total > 0 ? total : null;
+	}
+
+	return null;
+}
+
+/**
  * Fallback scraper that extracts recipe data from microdata attributes
  * and common CSS class patterns when JSON-LD is unavailable.
  *
  * Attempts to extract recipe information using microdata attributes
- * (itemprop) and common CSS class name patterns. Falls back to
- * Open Graph meta tags for title and image.
+ * (itemprop) scoped to schema.org/Recipe containers, then falls back
+ * to common CSS class name patterns and Open Graph meta tags.
  *
  * @param $ - Cheerio instance loaded with the page HTML.
  * @param sourceUrl - Original URL of the recipe page.
  * @returns Parsed recipe data if found, null otherwise.
  */
 function parseFallback($: cheerio.CheerioAPI, sourceUrl: string): Recipe | null {
-	const rawName = $('meta[property="og:title"]').attr("content") || $("h1").first().text().trim();
+	// Find recipe container with itemtype="http://schema.org/Recipe" or "https://schema.org/Recipe"
+	const container = findRecipeContainer($);
+
+	// Extract name from microdata first, then fall back to og:title/h1
+	const rawName =
+		extractMicrodataProperty($, container, "name") ||
+		extractAttributeWithFallback($, "content", 'meta[property="og:title"]') ||
+		extractTextWithFallback($, "h1");
 
 	if (!rawName) return null;
 
-	const name = cleanRecipeName(rawName);
+	const name = cleanRecipeName(decodeHtmlEntities(rawName));
 
+	// Extract author from microdata, then fall back to other patterns
 	const author =
-		$('[itemprop="author"]').first().text().trim() ||
-		$('meta[name="author"]').attr("content") ||
-		$('[class*="author"] a').first().text().trim() ||
-		$('[class*="author"]').first().text().trim() ||
+		extractMicrodataProperty($, container, "author") ||
+		extractTextWithFallback($, '[itemprop="author"] [itemprop="name"]') ||
+		extractAttributeWithFallback($, "content", 'meta[name="author"]') ||
+		extractTextWithFallback($, '[class*="author"] a', '[class*="author"]') ||
 		null;
 
+	// Extract image from microdata, then fall back to og:image/twitter:image
 	const imageUrl =
-		$('meta[property="og:image"]').attr("content") ||
-		$('meta[name="twitter:image"]').attr("content") ||
+		extractMicrodataProperty($, container, "image", true) ||
+		extractAttributeWithFallback($, "content", 'meta[property="og:image"]', 'meta[name="twitter:image"]') ||
 		null;
 
+	// Extract description from microdata, then fall back to og:description/meta description
 	const description =
-		$('meta[property="og:description"]').attr("content") ||
-		$('meta[name="description"]').attr("content") ||
+		extractMicrodataProperty($, container, "description") ||
+		extractAttributeWithFallback($, "content", 'meta[property="og:description"]', 'meta[name="description"]') ||
 		null;
 
-	const ingredients: string[] = [];
-	$('[class*="ingredient"], [itemprop="recipeIngredient"]').each((_, el) => {
-		const text = $(el).text().trim();
-		if (text) ingredients.push(text);
-	});
+	// Extract time from microdata
+	const totalTimeMinutes = extractMicrodataTime($, container);
 
-	const instructions: string[] = [];
-	$(
-		'[class*="instruction"], [class*="direction"], [itemprop="recipeInstructions"] li, [itemprop="step"]',
-	).each((_, el) => {
-		const text = $(el).text().trim();
-		if (text) instructions.push(text);
-	});
+	// Extract servings from microdata
+	const servings =
+		extractMicrodataProperty($, container, "recipeYield") ||
+		null;
 
-	if (ingredients.length === 0 && instructions.length === 0) return null;
+	// Extract cuisine from microdata
+	const cuisine =
+		extractMicrodataProperty($, container, "recipeCuisine") ||
+		null;
+
+	// Extract category from microdata
+	const category =
+		extractMicrodataProperty($, container, "recipeCategory") ||
+		null;
+
+	// Extract ingredients from microdata, then fall back to CSS classes
+	const ingredients = extractMicrodataArray($, container, "recipeIngredient");
+	const finalIngredients =
+		ingredients.length > 0
+			? ingredients
+			: extractTextArray($, '[itemprop="recipeIngredient"]', '[class*="ingredient"]');
+
+	// Extract instructions from microdata, then fall back to CSS classes
+	let instructions: string[] = [];
+	if (container) {
+		const instructionsContainer = container.find('[itemprop="recipeInstructions"]');
+		if (instructionsContainer.length > 0) {
+			instructionsContainer.find('[itemprop="step"], li').each((_, el) => {
+				const text = $(el).text().trim();
+				if (text) instructions.push(decodeHtmlEntities(text));
+			});
+		}
+		if (instructions.length === 0) {
+			instructions = extractMicrodataArray($, container, "step");
+		}
+	}
+	if (instructions.length === 0) {
+		instructions = extractTextArray(
+			$,
+			'[itemprop="recipeInstructions"] li',
+			'[itemprop="step"]',
+			'[class*="instruction"]',
+			'[class*="direction"]',
+		);
+	}
+
+	if (finalIngredients.length === 0 && instructions.length === 0) return null;
 
 	return {
 		name,
 		sourceUrl,
 		scrapeMethod: "html-fallback",
-		author: author || null,
-		totalTimeMinutes: null,
-		servings: null,
+		author: author ? decodeHtmlEntities(author) : null,
+		totalTimeMinutes,
+		servings: servings ? decodeHtmlEntities(servings) : null,
 		imageUrl,
-		ingredients,
+		ingredients: finalIngredients,
 		instructions,
-		description,
-		cuisine: null,
-		category: null,
+		description: description ? decodeHtmlEntities(description) : null,
+		cuisine: cuisine ? decodeHtmlEntities(cuisine) : null,
+		category: category ? decodeHtmlEntities(category) : null,
 	};
 }

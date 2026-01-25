@@ -228,8 +228,12 @@ type CheckForDuplicateOptions = {
  * @param options - Options for checking duplicates.
  * @returns Information about the duplicate if found, null otherwise.
  */
-async function checkForDuplicate(options: CheckForDuplicateOptions): Promise<DuplicateInfo | null> {
-	const { recipe, notionApiKey, databaseId, skipUrlCheck = false } = options;
+async function checkForDuplicate({
+	recipe,
+	notionApiKey,
+	databaseId,
+	skipUrlCheck = false,
+}: CheckForDuplicateOptions): Promise<DuplicateInfo | null> {
 	/**
 	 * First check for URL duplicates (unless already checked).
 	 */
@@ -342,8 +346,13 @@ export type CreateRecipePageOptions = {
  * @returns The ID of the newly created Notion page.
  * @throws If a duplicate recipe (same title or URL) already exists and skipDuplicateCheck is false.
  */
-export async function createRecipePage(options: CreateRecipePageOptions): Promise<string> {
-	const { recipe, tags, notionApiKey, databaseId, skipDuplicateCheck = false } = options;
+export async function createRecipePage({
+	recipe,
+	tags,
+	notionApiKey,
+	databaseId,
+	skipDuplicateCheck = false,
+}: CreateRecipePageOptions): Promise<string> {
 	const notion = new Client({ auth: notionApiKey });
 
 	if (!skipDuplicateCheck) {

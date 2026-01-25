@@ -115,8 +115,12 @@ export type SaveRecipeOptions = {
  * @param options - Configuration object containing URL, API URL, storage adapter, and callbacks.
  * @returns Promise resolving to the recipe response with success status and optional error/notionUrl.
  */
-export async function saveRecipe(options: SaveRecipeOptions): Promise<RecipeResponse> {
-	const { url, apiUrl, storage, callbacks } = options;
+export async function saveRecipe({
+	url,
+	apiUrl,
+	storage,
+	callbacks,
+}: SaveRecipeOptions): Promise<RecipeResponse> {
 	const apiKey = await storage.getApiKey();
 
 	if (!apiKey) {

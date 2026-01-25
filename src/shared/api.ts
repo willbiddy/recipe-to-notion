@@ -115,8 +115,12 @@ export type SaveRecipeOptions = {
  * @param options - Options for saving the recipe.
  * @returns Promise that resolves with the recipe response.
  */
-export async function saveRecipe(options: SaveRecipeOptions): Promise<RecipeResponse> {
-	const { url, apiUrl, storage, callbacks } = options;
+export async function saveRecipe({
+	url,
+	apiUrl,
+	storage,
+	callbacks,
+}: SaveRecipeOptions): Promise<RecipeResponse> {
 	const apiKey = await storage.getApiKey();
 
 	if (!apiKey) {

@@ -156,9 +156,17 @@ On iOS and Android, you can add the web interface to your home screen for quick 
 ### API Key Storage
 
 - API keys are stored in browser localStorage (client-side only)
-- Keys are never sent to any server except your own Vercel deployment
-- Keys are never shared or exposed in URLs
-- Each browser/device stores its own API key independently
+- **Storage details:**
+  - Stored locally on your device (not synced to cloud)
+  - Only accessible by JavaScript from the same domain (same-origin policy)
+  - Not sent to any server except your own Vercel deployment (in Authorization header)
+  - Keys are never shared or exposed in URLs
+  - Each browser/device stores its own API key independently
+- **Security considerations:**
+  - **Not encrypted** - stored in plaintext (anyone with device access can view via DevTools)
+  - Vulnerable to XSS attacks if the site is compromised (low risk for a simple single-page app)
+  - More secure than `chrome.storage.sync` (which syncs to Google servers)
+  - For maximum security: use a strong, unique `API_SECRET` and don't share your device
 
 ### Authentication
 

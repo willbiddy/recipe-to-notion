@@ -108,9 +108,9 @@ while (retries > 0 && !started) {
 			port,
 			fetch: handleRequest,
 			/**
-			 * 2 minutes - recipe processing can take 30+ seconds.
+			 * 1 mniute - recipe processing can take 15-30 seconds.
 			 */
-			idleTimeout: 120,
+			idleTimeout: 60,
 			/**
 			 * Handle server errors.
 			 */

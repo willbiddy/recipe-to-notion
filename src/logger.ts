@@ -13,7 +13,12 @@ const fallbackLogger = {
 	info: (msg: string) => console.info(`ℹ ${msg}`),
 	box: ({ title, message }: { title: string; message: string }) => {
 		console.log(`\n╭─${title}─╮`);
-		console.log(message.split("\n").map((line) => `│ ${line}`).join("\n"));
+		console.log(
+			message
+				.split("\n")
+				.map((line) => `│ ${line}`)
+				.join("\n"),
+		);
 		console.log("╰─────────╯\n");
 	},
 };

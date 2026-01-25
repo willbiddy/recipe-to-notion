@@ -155,6 +155,7 @@ const claudeResponseSchema = z.object({
  * @returns AI-generated tags and scores for the recipe.
  * @throws If the Claude API call fails, tool_use is missing, or validation fails.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Recipe tagging logic with validation and error handling is inherently complex
 export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeTags> {
 	const client = new Anthropic({ apiKey });
 

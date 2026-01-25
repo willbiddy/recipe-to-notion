@@ -31,7 +31,8 @@ import { ServerProgressEventType } from "../src/shared/api.js";
 /**
  * Handles recipe processing requests with Server-Sent Events for progress.
  *
- * Streams progress updates to the client as the recipe is processed.
+ * Streams progress updates to the client as the recipe is processed. Encodes events
+ * as SSE format and handles errors gracefully by sending error events through the stream.
  *
  * @param url - The recipe URL to process.
  * @param requestId - Optional request correlation ID for logging.
@@ -181,7 +182,6 @@ export default {
 			return response;
 		}
 
-		// Check rate limit before processing
 		const clientId = getClientIdentifier(req);
 		const rateLimit = checkRateLimit(clientId);
 		if (!rateLimit.allowed) {

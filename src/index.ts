@@ -68,6 +68,13 @@ export type ProgressCallback = (event: ProgressEvent) => void;
 /**
  * Orchestrates the full recipe pipeline: scrape -> tag -> save.
  *
+ * Processing steps:
+ * 1. Check for duplicate URL (early detection before scraping)
+ * 2. Scrape recipe from URL
+ * 3. Generate AI tags and scores using Claude
+ * 4. Check for duplicate title (after scraping to get accurate title)
+ * 5. Save to Notion with recipe metadata, ingredients, and instructions
+ *
  * @param url - Recipe page URL to process.
  * @param onProgress - Optional callback for progress updates (for SSE/streaming).
  * @param logger - Optional logger for detailed step-by-step logging.
@@ -83,7 +90,6 @@ export async function processRecipe(
 
 	logger?.onStart?.();
 
-	// Step 1: Check for duplicate URL
 	onProgress?.({
 		type: ProgressType.CHECKING_DUPLICATES,
 		message: PROGRESS_MESSAGES[ProgressType.CHECKING_DUPLICATES],
@@ -101,19 +107,16 @@ export async function processRecipe(
 	}
 	logger?.onNoDuplicateFound?.();
 
-	// Step 2: Scrape recipe from URL
 	onProgress?.({ type: ProgressType.SCRAPING, message: PROGRESS_MESSAGES[ProgressType.SCRAPING] });
 	logger?.onScraping?.();
 	const recipe = await scrapeRecipe(url);
 	logger?.onScraped?.(recipe);
 
-	// Step 3: Generate AI tags and scores
 	onProgress?.({ type: ProgressType.TAGGING, message: PROGRESS_MESSAGES[ProgressType.TAGGING] });
 	logger?.onTagging?.();
 	const tags = await tagRecipe(recipe, config.ANTHROPIC_API_KEY);
 	logger?.onTagged?.();
 
-	// Step 4: Check for duplicate title (after scraping to get accurate title)
 	const titleDuplicate = await checkForDuplicateByTitle(
 		recipe.name,
 		config.NOTION_API_KEY,
@@ -125,16 +128,15 @@ export async function processRecipe(
 		throw createDuplicateError(titleDuplicate);
 	}
 
-	// Step 5: Save to Notion
 	onProgress?.({ type: ProgressType.SAVING, message: PROGRESS_MESSAGES[ProgressType.SAVING] });
 	logger?.onSaving?.();
-	const pageId = await createRecipePage(
+	const pageId = await createRecipePage({
 		recipe,
 		tags,
-		config.NOTION_API_KEY,
-		config.NOTION_DATABASE_ID,
-		true,
-	);
+		notionApiKey: config.NOTION_API_KEY,
+		databaseId: config.NOTION_DATABASE_ID,
+		skipDuplicateCheck: true,
+	});
 
 	const notionUrl = getNotionPageUrl(pageId);
 	logger?.onSaved?.(notionUrl);

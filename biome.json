@@ -37,6 +37,14 @@
 				"noUselessUndefinedInitialization": "warn",
 				"useDateNow": "error"
 			},
+			"nursery": {
+				"useMaxParams": {
+					"level": "error",
+					"options": {
+						"max": 3
+					}
+				}
+			},
 			"performance": {
 				"noAccumulatingSpread": "warn",
 				"noBarrelFile": "warn"

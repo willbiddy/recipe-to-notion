@@ -29,7 +29,8 @@ chrome.runtime.onInstalled.addListener(() => {
  * Handles context menu clicks.
  *
  * Attempts to open the extension popup when the save recipe menu item is selected.
- * Falls back gracefully if popup cannot be opened programmatically.
+ * Falls back gracefully if popup cannot be opened programmatically (popup cannot
+ * be opened programmatically, user must click extension icon).
  */
 if (chrome.contextMenus) {
 	chrome.contextMenus.onClicked.addListener(async (info, tab) => {
@@ -37,7 +38,7 @@ if (chrome.contextMenus) {
 			try {
 				await chrome.action.openPopup();
 			} catch {
-				// Popup cannot be opened programmatically, user must click extension icon
+				// Silently fail - popup must be opened by user clicking extension icon
 			}
 		}
 	});

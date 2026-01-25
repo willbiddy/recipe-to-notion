@@ -68,6 +68,7 @@ function searchNestedPatterns(
 	}
 
 	const mainEntity = data.mainEntity ?? data.mainEntityOfPage;
+
 	if (mainEntity) {
 		const found = findRecipeInLd(mainEntity, visited);
 		if (found) return found;
@@ -108,6 +109,7 @@ function searchObjectProperties(
  * `@graph` arrays, direct Recipe objects, and nested patterns like
  * WebPage containing Recipe in `mainEntity` or `mainEntityOfPage`,
  * ItemList containing Recipe objects, and other schema.org variations.
+ * Uses a visited set to prevent infinite loops with circular references.
  *
  * @param data - The JSON-LD data structure to search.
  * @param visited - Set of visited objects to prevent infinite loops.
@@ -127,9 +129,6 @@ function findRecipeInLd(
 		return null;
 	}
 
-	/**
-	 * Prevent infinite loops with circular references.
-	 */
 	if (visited.has(data)) return null;
 	visited.add(data);
 
@@ -138,6 +137,7 @@ function findRecipeInLd(
 	}
 
 	const nestedResult = searchNestedPatterns(data, visited);
+
 	if (nestedResult) return nestedResult;
 
 	return searchObjectProperties(data, visited);
@@ -194,6 +194,7 @@ function extractFromJsonLd(data: Record<string, unknown>, sourceUrl: string): Re
  */
 function parseServings(yield_: unknown): string | null {
 	if (!yield_) return null;
+
 	if (isString(yield_)) return yield_;
 	if (typeof yield_ === "number") return `${yield_} servings`;
 	if (isArray(yield_)) return String(yield_[0]);
@@ -211,12 +212,14 @@ function parseServings(yield_: unknown): string | null {
  */
 function parseAuthor(author: unknown): string | null {
 	if (!author) return null;
+
 	if (isString(author)) return author;
 	if (isArray(author)) {
 		const first = author[0];
 		if (isString(first)) return first;
 		if (hasProperty(first, "name")) return String(first.name);
 	}
+
 	if (hasProperty(author, "name")) return String(author.name);
 	return null;
 }
@@ -229,6 +232,7 @@ function parseAuthor(author: unknown): string | null {
  */
 function extractImageUrl(item: unknown): string | null {
 	if (isString(item)) return item;
+
 	if (hasProperty(item, "url")) return String(item.url);
 	return null;
 }
@@ -266,6 +270,7 @@ function findBestImageByWidth(imageArray: unknown[]): string | null {
  */
 function parseImage(image: unknown): string | null {
 	if (!image) return null;
+
 	if (isString(image)) return image;
 
 	if (isArray(image) && image.length > 0) {
@@ -291,9 +296,11 @@ function parseImage(image: unknown): string | null {
  */
 function parseStringArray(data: unknown): string[] {
 	if (!data) return [];
+
 	if (isArray(data)) {
 		return data.map((item) => normalizeIngredientParentheses(decodeHtmlEntities(String(item))));
 	}
+
 	if (isString(data)) {
 		return [normalizeIngredientParentheses(decodeHtmlEntities(data))];
 	}
@@ -311,6 +318,7 @@ function parseStringArray(data: unknown): string[] {
  */
 function parseFirstString(data: unknown): string | null {
 	if (!data) return null;
+
 	if (isString(data)) return data;
 	if (isArray(data) && data.length > 0) return String(data[0]);
 	return null;
@@ -330,6 +338,7 @@ function parseFirstString(data: unknown): string | null {
  */
 function parseInstructions(data: unknown): string[] {
 	if (!data) return [];
+
 	if (isString(data)) return filterEditorNotes([decodeHtmlEntities(data)]);
 	if (!isArray(data)) return [];
 

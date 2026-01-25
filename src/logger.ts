@@ -141,10 +141,7 @@ export function printRecipeSummary(recipe: Recipe, tags: RecipeTags): void {
 		.join("\n");
 
 	const consola = getConsola();
-	consola.box({
-		title: recipe.name,
-		message,
-	});
+	consola.box({ title: recipe.name, message });
 }
 
 /**

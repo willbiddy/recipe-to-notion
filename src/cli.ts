@@ -141,8 +141,10 @@ async function processUrlsSequentially(
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Handles a single recipe URL through the full pipeline with CLI logging:
- * duplicate check → scrape → AI tag → save to Notion.
+ * Handles a single recipe URL through the full pipeline with CLI logging.
+ *
+ * For HTML file mode, uses the legacy pipeline with manual steps. For normal URLs,
+ * uses the shared processRecipe pipeline.
  *
  * @param url - The recipe URL to process.
  * @param config - Application configuration with API keys.
@@ -151,12 +153,10 @@ async function processUrlsSequentially(
  */
 async function handleRecipe(url: string, config: Config, htmlPath?: string): Promise<boolean> {
 	try {
-		// For HTML file mode, use the legacy pipeline with manual steps
 		if (htmlPath) {
 			return await handleRecipeFromHtml(url, htmlPath, config);
 		}
 
-		// For normal URLs, use the shared processRecipe pipeline
 		const logger = createCliLogger();
 		const result = await processRecipe(url, undefined, logger);
 		printRecipeSummary(result.recipe, result.tags);
@@ -170,7 +170,13 @@ async function handleRecipe(url: string, config: Config, htmlPath?: string): Pro
 
 /**
  * Handles recipe processing from a saved HTML file (legacy mode).
- * This bypasses the shared pipeline to support the --html flag.
+ *
+ * This bypasses the shared pipeline to support the --html flag. Processing steps:
+ * 1. Check for duplicate URL
+ * 2. Fetch and parse recipe from HTML file
+ * 3. Check for duplicate title
+ * 4. Generate AI tags
+ * 5. Save to Notion
  *
  * @param url - The recipe URL (for reference).
  * @param htmlPath - Path to saved HTML file.
@@ -182,28 +188,27 @@ async function handleRecipeFromHtml(
 	htmlPath: string,
 	config: Config,
 ): Promise<boolean> {
-	// Check for duplicate URL
 	consola.start("Checking for duplicates...");
 	const urlDuplicate = await checkForDuplicateByUrl(
 		url,
 		config.NOTION_API_KEY,
 		config.NOTION_DATABASE_ID,
 	);
+
 	if (urlDuplicate) {
 		consola.warn(`Duplicate: "${urlDuplicate.title}" already exists at ${urlDuplicate.notionUrl}`);
 		return false;
 	}
 	consola.success("No duplicate URL found");
 
-	// Fetch and parse recipe from HTML file
 	const recipe = await fetchRecipe(url, htmlPath);
 
-	// Check for duplicate title
 	const titleDuplicate = await checkForDuplicateByTitle(
 		recipe.name,
 		config.NOTION_API_KEY,
 		config.NOTION_DATABASE_ID,
 	);
+
 	if (titleDuplicate) {
 		consola.warn(
 			`Duplicate: "${titleDuplicate.title}" already exists at ${titleDuplicate.notionUrl}`,
@@ -211,11 +216,9 @@ async function handleRecipeFromHtml(
 		return false;
 	}
 
-	// Generate AI tags
 	const tags = await generateTags(recipe, config);
 	printRecipeSummary(recipe, tags);
 
-	// Save to Notion
 	await saveToNotion(recipe, tags, config);
 	return true;
 }
@@ -261,13 +264,13 @@ async function generateTags(recipe: Recipe, config: Config): Promise<RecipeTags>
 async function saveToNotion(recipe: Recipe, tags: RecipeTags, config: Config): Promise<void> {
 	consola.start("Saving to Notion...");
 
-	const pageId = await createRecipePage(
+	const pageId = await createRecipePage({
 		recipe,
 		tags,
-		config.NOTION_API_KEY,
-		config.NOTION_DATABASE_ID,
-		true,
-	);
+		notionApiKey: config.NOTION_API_KEY,
+		databaseId: config.NOTION_DATABASE_ID,
+		skipDuplicateCheck: true,
+	});
 
 	const notionUrl = getNotionPageUrl(pageId);
 	consola.success(`Saved to Notion: ${colors.underline(colors.blue(notionUrl))}`);

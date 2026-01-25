@@ -97,6 +97,7 @@ export function createErrorResponse(
 		error,
 	};
 	const response = Response.json(errorResponse, { status });
+
 	if (includeSecurityHeaders) {
 		setSecurityHeaders(response);
 	}
@@ -115,6 +116,12 @@ export function generateRequestId(): string {
 
 /**
  * Handles duplicate recipe errors.
+ *
+ * Extracts the Notion URL from the duplicate error and returns it along with
+ * the error message for client display.
+ *
+ * @param error - The duplicate recipe error.
+ * @returns Error response with Conflict status code, message, and Notion URL.
  */
 function handleDuplicateError(error: DuplicateRecipeError): {
 	message: string;
@@ -130,6 +137,13 @@ function handleDuplicateError(error: DuplicateRecipeError): {
 
 /**
  * Handles scraping errors with appropriate client messages.
+ *
+ * Provides user-friendly error messages based on the error type: 403 Forbidden
+ * suggests using the --html option, timeout errors indicate slow/unresponsive sites,
+ * and other errors indicate general fetch failures.
+ *
+ * @param error - The scraping error that occurred.
+ * @returns Error response with appropriate status code and user-friendly message.
  */
 function handleScrapingError(error: ScrapingError): {
 	message: string;
@@ -151,7 +165,13 @@ function handleScrapingError(error: ScrapingError): {
 }
 
 /**
- * Handles generic errors by checking message content.
+ * Handles generic errors by checking message content for backward compatibility.
+ *
+ * Checks if the error message contains URL-related keywords to determine if it's
+ * a validation error (BadRequest) or a generic server error (InternalServerError).
+ *
+ * @param errorMessage - The error message to analyze.
+ * @returns Error response with appropriate status code and message.
  */
 function handleGenericError(errorMessage: string): {
 	message: string;
@@ -171,9 +191,11 @@ function handleGenericError(errorMessage: string): {
 
 /**
  * Sanitizes error messages for client responses.
- * Logs detailed errors server-side but returns generic messages to clients.
  *
- * Uses instanceof checks for type-safe error handling with custom error classes.
+ * Logs detailed errors server-side with full stack traces and error details, but returns
+ * generic messages to clients for security. Uses instanceof checks for type-safe error
+ * handling with custom error classes. For generic errors, checks message content for
+ * backward compatibility with legacy error formats.
  *
  * @param error - The error that occurred.
  * @param logger - Logger instance for server-side error logging.
@@ -187,19 +209,18 @@ export function sanitizeError(
 ): { message: string; notionUrl?: string; statusCode: number } {
 	const fullError = error instanceof Error ? error : new Error(String(error));
 
-	// Log detailed error server-side
 	const logPrefix = requestId ? `[${requestId}]` : "";
 	const errorDetails: Record<string, unknown> = {
 		message: fullError.message,
 		stack: fullError.stack,
 		name: fullError.name,
 	};
+
 	if (error instanceof Error && error.cause && typeof error.cause === "object") {
 		errorDetails.cause = error.cause;
 	}
 	logger.error(`${logPrefix} Recipe processing error:`, errorDetails);
 
-	// Type-safe error handling using instanceof checks
 	if (error instanceof DuplicateRecipeError) {
 		return handleDuplicateError(error);
 	}
@@ -229,7 +250,6 @@ export function sanitizeError(
 		};
 	}
 
-	// Generic errors: check message for backward compatibility
 	return handleGenericError(fullError.message);
 }
 

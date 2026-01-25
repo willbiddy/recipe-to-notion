@@ -213,20 +213,23 @@ export async function checkForDuplicateByTitle(
 }
 
 /**
+ * Options for checking for duplicate recipes.
+ */
+type CheckForDuplicateOptions = {
+	recipe: Recipe;
+	notionApiKey: string;
+	databaseId: string;
+	skipUrlCheck?: boolean;
+};
+
+/**
  * Checks if a recipe with the same title or URL already exists in the database.
  *
- * @param recipe - Scraped recipe data to check for duplicates.
- * @param notionApiKey - Notion integration API key.
- * @param databaseId - Target Notion database ID.
- * @param skipUrlCheck - If true, skips URL duplicate check (assumes already checked).
+ * @param options - Options for checking duplicates.
  * @returns Information about the duplicate if found, null otherwise.
  */
-async function checkForDuplicate(
-	recipe: Recipe,
-	notionApiKey: string,
-	databaseId: string,
-	skipUrlCheck: boolean = false,
-): Promise<DuplicateInfo | null> {
+async function checkForDuplicate(options: CheckForDuplicateOptions): Promise<DuplicateInfo | null> {
+	const { recipe, notionApiKey, databaseId, skipUrlCheck = false } = options;
 	/**
 	 * First check for URL duplicates (unless already checked).
 	 */
@@ -266,7 +269,12 @@ async function handleNotionApiError(
 		`Notion API error: ${response.status} ${response.statusText}. ${errorMessage}${codeSuffix}. ` +
 		`Check that the property "${propertyName}" exists in your database and is a ${propertyType} type.`;
 
-	throw new NotionApiError(fullMessage, response.status, propertyName, propertyType);
+	throw new NotionApiError({
+		message: fullMessage,
+		statusCode: response.status,
+		propertyName,
+		propertyType,
+	});
 }
 
 /**
@@ -289,6 +297,7 @@ function extractTitle(property: unknown): string {
 	}
 
 	const firstTitle = property.title[0];
+
 	if (typeof firstTitle !== "object" || firstTitle === null || !("plain_text" in firstTitle)) {
 		return "";
 	}
@@ -315,28 +324,34 @@ function extractUrl(property: unknown): string {
 }
 
 /**
+ * Options for creating a recipe page in Notion.
+ */
+export type CreateRecipePageOptions = {
+	recipe: Recipe;
+	tags: RecipeTags;
+	notionApiKey: string;
+	databaseId: string;
+	skipDuplicateCheck?: boolean;
+};
+
+/**
  * Creates a new page in the Notion recipe database with the recipe's metadata,
  * cover image, and body content (ingredients + instructions).
  *
- * @param recipe - Scraped recipe data.
- * @param tags - AI-generated scores and classifications.
- * @param notionApiKey - Notion integration API key.
- * @param databaseId - Target Notion database ID.
- * @param skipDuplicateCheck - If true, skips duplicate checking (useful when duplicates are already checked earlier).
+ * @param options - Options for creating the recipe page.
  * @returns The ID of the newly created Notion page.
  * @throws If a duplicate recipe (same title or URL) already exists and skipDuplicateCheck is false.
  */
-export async function createRecipePage(
-	recipe: Recipe,
-	tags: RecipeTags,
-	notionApiKey: string,
-	databaseId: string,
-	skipDuplicateCheck: boolean = false,
-): Promise<string> {
+export async function createRecipePage(options: CreateRecipePageOptions): Promise<string> {
+	const { recipe, tags, notionApiKey, databaseId, skipDuplicateCheck = false } = options;
 	const notion = new Client({ auth: notionApiKey });
 
 	if (!skipDuplicateCheck) {
-		const duplicate = await checkForDuplicate(recipe, notionApiKey, databaseId);
+		const duplicate = await checkForDuplicate({
+			recipe,
+			notionApiKey,
+			databaseId,
+		});
 
 		if (duplicate) {
 			throw new DuplicateRecipeError(duplicate.title, duplicate.url, duplicate.notionUrl);
@@ -425,9 +440,13 @@ function buildIngredientBlocks(
 /**
  * Builds the main body content for a Notion recipe page.
  *
+ * Creates blocks in order: description (if available), ingredients (grouped by category if AI-tagged,
+ * otherwise as simple list), and instructions. Limits output to MAX_NOTION_BLOCKS to comply with
+ * Notion's 100 block per page limit.
+ *
  * @param recipe - The recipe data to build the page body from.
  * @param tags - AI-generated tags including description.
- * @returns An array of Notion block objects.
+ * @returns An array of Notion block objects (limited to MAX_NOTION_BLOCKS).
  */
 function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
 	const blocks: unknown[] = [];
@@ -465,7 +484,6 @@ function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
 		}
 	}
 
-	// Notion has a limit of 100 blocks per page
 	return blocks.slice(0, MAX_NOTION_BLOCKS);
 }
 
@@ -551,13 +569,14 @@ function numberedItem(text: string): unknown {
 
 /**
  * Normalizes description text by handling escaped newlines.
+ *
  * Converts both literal \n\n strings (escaped) and actual newlines to proper paragraph breaks.
+ * Processes escaped newlines first, then actual newlines.
  *
  * @param text - The description text to normalize.
  * @returns Normalized text with proper newline handling.
  */
 function normalizeDescriptionText(text: string): string {
-	// Handle escaped newlines first, then actual newlines
 	return text
 		.replace(ESCAPED_DOUBLE_NEWLINE_PATTERN, "\n\n")
 		.replace(ESCAPED_SINGLE_NEWLINE_PATTERN, "\n");

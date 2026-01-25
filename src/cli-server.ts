@@ -66,6 +66,7 @@ function parsePort(envPort: string | undefined): number {
 	}
 
 	const port = parseInt(envPort, 10);
+
 	if (Number.isNaN(port) || port < MIN_PORT || port > MAX_PORT) {
 		throw new ValidationError(
 			`Invalid port: ${envPort}. Must be between ${MIN_PORT} and ${MAX_PORT}.`,
@@ -106,7 +107,6 @@ function handleShutdown(server: ReturnType<typeof Bun.serve>, signal: string): v
 	process.exit(0);
 }
 
-// Parse and validate port
 let requestedPort: number;
 try {
 	requestedPort = parsePort(process.env.SERVER_PORT);
@@ -137,13 +137,12 @@ function startServer(port: number): ReturnType<typeof Bun.serve> {
 
 	consola.ready(`recipe-to-notion server running on http://localhost:${port}`);
 	consola.info("Endpoints:");
-	consola.info(`  POST http://localhost:${port}/api/recipes`);
-	consola.info(`  GET  http://localhost:${port}/health`);
+	consola.info(`POST http://localhost:${port}/api/recipes`);
+	consola.info(`GET http://localhost:${port}/health`);
 
 	return server;
 }
 
-// Start the server
 let server: ReturnType<typeof Bun.serve>;
 try {
 	server = startServer(port);
@@ -153,6 +152,5 @@ try {
 	process.exit(1);
 }
 
-// Set up graceful shutdown handlers
 process.on("SIGINT", () => handleShutdown(server, "SIGINT"));
 process.on("SIGTERM", () => handleShutdown(server, "SIGTERM"));

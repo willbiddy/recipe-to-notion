@@ -55,6 +55,7 @@ function handleHealth(): Response {
  */
 function logRequest(request: Request, requestId?: string): void {
 	const url = new URL(request.url);
+
 	if (url.pathname !== "/health") {
 		const idPrefix = requestId ? `[${requestId}]` : "";
 		consola.info(`${idPrefix} ${request.method} ${url.pathname}`);
@@ -152,17 +153,17 @@ function createErrorResponse(error: string, status: number): Response {
 /**
  * Handles recipe processing requests (non-streaming, for backwards compatibility).
  *
- * Validates authentication, request size, and URL before processing.
- * Supports both streaming and non-streaming responses.
+ * Validates rate limit, authentication, request size, and URL before processing.
+ * Supports both streaming and non-streaming responses based on the request body.
  *
  * @param request - The incoming HTTP request.
  * @param requestId - Optional request correlation ID for logging.
  * @returns Response with recipe processing result or error.
  */
 async function handleRecipe(request: Request, requestId?: string): Promise<Response> {
-	// Check rate limit before processing
 	const clientId = getClientIdentifier(request);
 	const rateLimit = checkRateLimit(clientId);
+
 	if (!rateLimit.allowed) {
 		const response = Response.json(
 			{
@@ -189,6 +190,7 @@ async function handleRecipe(request: Request, requestId?: string): Promise<Respo
 		setCorsHeaders(response);
 		return response;
 	});
+
 	if (authError) {
 		return authError;
 	}
@@ -198,6 +200,7 @@ async function handleRecipe(request: Request, requestId?: string): Promise<Respo
 		MAX_REQUEST_BODY_SIZE,
 		(error, status) => createErrorResponse(error, status),
 	);
+
 	if (sizeError) {
 		return sizeError;
 	}

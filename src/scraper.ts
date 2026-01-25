@@ -107,7 +107,8 @@ export type Recipe = {
  * Attempts JSON-LD (schema.org/Recipe) parsing first, which works for most
  * recipe sites including paywalled ones like NYT Cooking that embed structured
  * data for SEO. Falls back to scraping microdata attributes and common CSS
- * class patterns if JSON-LD is unavailable.
+ * class patterns if JSON-LD is unavailable. If author wasn't found in JSON-LD,
+ * attempts HTML fallback extraction.
  *
  * @param html - The HTML content to parse.
  * @param sourceUrl - The original URL of the recipe (for reference).
@@ -125,9 +126,6 @@ function parseRecipeFromHtml(html: string, sourceUrl: string): Recipe {
 		);
 	}
 
-	/**
-	 * If author wasn't found in JSON-LD, try HTML fallback.
-	 */
 	if (!recipe.author) {
 		recipe.author = extractAuthorFromHtml($);
 	}
@@ -149,6 +147,8 @@ const REQUEST_TIMEOUT_MS = 30_000;
  * data for SEO. Falls back to scraping microdata attributes and common CSS
  * class patterns if JSON-LD is unavailable.
  *
+ * Sets up a timeout to prevent DoS attacks via slow responses or resource exhaustion.
+ *
  * @param url - The recipe page URL to scrape.
  * @returns Parsed recipe data.
  * @throws If the page cannot be fetched or no recipe data is found.
@@ -156,7 +156,6 @@ const REQUEST_TIMEOUT_MS = 30_000;
 export async function scrapeRecipe(url: string): Promise<Recipe> {
 	const parsedUrl = new URL(url);
 
-	// Set up timeout to prevent DoS attacks
 	const controller = new AbortController();
 	const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
@@ -171,19 +170,20 @@ export async function scrapeRecipe(url: string): Promise<Recipe> {
 
 		if (!response.ok) {
 			if (response.status === 403) {
-				throw new ScrapingError(
-					`Failed to fetch ${url}: 403 Forbidden. This site blocks automated requests.\n` +
+				throw new ScrapingError({
+					message:
+						`Failed to fetch ${url}: 403 Forbidden. This site blocks automated requests.\n` +
 						`  Tip: Save the page source in your browser and use --html:\n` +
 						`  bun src/cli.ts --html ~/Downloads/recipe.html "${url}"`,
-					url,
-					403,
-				);
+					originalUrl: url,
+					statusCode: 403,
+				});
 			}
-			throw new ScrapingError(
-				`Failed to fetch ${url}: ${response.status} ${response.statusText}`,
-				url,
-				response.status,
-			);
+			throw new ScrapingError({
+				message: `Failed to fetch ${url}: ${response.status} ${response.statusText}`,
+				originalUrl: url,
+				statusCode: response.status,
+			});
 		}
 
 		const html = await response.text();
@@ -191,24 +191,21 @@ export async function scrapeRecipe(url: string): Promise<Recipe> {
 	} catch (error) {
 		clearTimeout(timeoutId);
 		if (error instanceof Error && error.name === "AbortError") {
-			throw new ScrapingError(
-				`Request timeout: Failed to fetch ${url} within ${REQUEST_TIMEOUT_MS / 1000} seconds. The server may be slow or unresponsive.`,
-				url,
-				undefined,
-				error,
-			);
+			throw new ScrapingError({
+				message: `Request timeout: Failed to fetch ${url} within ${REQUEST_TIMEOUT_MS / 1000} seconds. The server may be slow or unresponsive.`,
+				originalUrl: url,
+				cause: error,
+			});
 		}
-		// Re-throw ScrapingError and ParseError as-is
 		if (error instanceof ScrapingError || error instanceof ParseError) {
 			throw error;
 		}
-		// Wrap other errors in ScrapingError
-		throw new ScrapingError(
-			`Failed to fetch ${url}: ${error instanceof Error ? error.message : String(error)}`,
-			url,
-			undefined,
-			error,
-		);
+
+		throw new ScrapingError({
+			message: `Failed to fetch ${url}: ${error instanceof Error ? error.message : String(error)}`,
+			originalUrl: url,
+			cause: error,
+		});
 	}
 }
 
@@ -237,7 +234,7 @@ export async function scrapeRecipeFromHtml(htmlPath: string, sourceUrl: string):
 				error,
 			);
 		}
-		// Re-throw other errors as-is
+
 		throw error;
 	}
 }

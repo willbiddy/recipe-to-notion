@@ -28,7 +28,7 @@
 			},
 			"style": {
 				"noNegationElse": "off",
-				"useCollapsedElseIf": "off",
+				"useCollapsedElseIf": "error",
 				"useThrowOnlyError": "error"
 			},
 			"complexity": {

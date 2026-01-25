@@ -7,6 +7,7 @@ import {
 	isArray,
 	isObject,
 	isString,
+	normalizeIngredientParentheses,
 	parseDuration,
 } from "./shared.js";
 
@@ -238,15 +239,21 @@ function parseImage(image: unknown): string | null {
  *
  * Normalizes various input formats into a consistent string array.
  * Handles single strings, arrays of strings, and null/undefined values.
- * Decodes HTML entities in all strings.
+ * Decodes HTML entities and normalizes parentheses in all strings.
  *
  * @param data - The data to convert to a string array.
  * @returns An array of strings, empty if input is null/undefined.
  */
 function parseStringArray(data: unknown): string[] {
 	if (!data) return [];
-	if (isArray(data)) return data.map((item) => decodeHtmlEntities(String(item)));
-	if (isString(data)) return [decodeHtmlEntities(data)];
+	if (isArray(data)) {
+		return data.map((item) =>
+			normalizeIngredientParentheses(decodeHtmlEntities(String(item))),
+		);
+	}
+	if (isString(data)) {
+		return [normalizeIngredientParentheses(decodeHtmlEntities(data))];
+	}
 	return [];
 }
 

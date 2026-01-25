@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Recipe to Notion</title>
+		<link rel="stylesheet" href="styles.css" />
+	</head>
+	<body>
+		<div class="container">
+			<header>
+				<h1>Recipe to Notion</h1>
+			</header>
+
+			<div class="content">
+				<div class="url-section">
+					<label class="url-label">Current Page</label>
+					<div id="url-display" class="url-display"></div>
+				</div>
+
+				<button id="save-button" class="save-button">
+					<span class="button-text">Save Recipe</span>
+				</button>
+
+				<div id="progress-container" class="progress-container hidden">
+					<div class="spinner"></div>
+					<div id="progress-message" class="progress-message"></div>
+				</div>
+
+				<div id="status" class="status"></div>
+			</div>
+		</div>
+
+		<script type="module" src="popup.js"></script>
+	</body>
+</html>

@@ -7,6 +7,10 @@ dist
 *.tgz
 recipe-to-notion
 
+# extension build output
+extension/*.js
+extension/*.js.map
+
 # code coverage
 coverage
 *.lcov

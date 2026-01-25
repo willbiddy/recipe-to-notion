@@ -117,6 +117,51 @@ bun src/cli.ts --html ~/Downloads/recipe.html "https://example.com/recipe-url"
 
 When processing multiple URLs, each is processed sequentially. Failures (duplicates, scraping errors) don't stop execution - all URLs are attempted.
 
+## Browser Extension
+
+Save recipes with one click directly from your browser! The extension works with the local HTTP server to provide a seamless recipe-saving experience.
+
+### Setup
+
+1. **Build the extension:**
+   ```bash
+   bun run build:extension
+   ```
+
+2. **Start the local server:**
+   ```bash
+   bun run server
+   ```
+   The server runs on `http://localhost:3000` by default (configurable via `SERVER_PORT` env var).
+
+3. **Load the extension in Chrome:**
+   - Open Chrome and go to `chrome://extensions/`
+   - Enable "Developer mode" (toggle in top-right)
+   - Click "Load unpacked"
+   - Select the `extension/` directory
+
+### Usage
+
+1. Navigate to any recipe page in your browser
+2. Click the extension icon in the toolbar
+3. Click "Save Recipe"
+4. The recipe will be processed and saved to your Notion database
+5. A new tab will open with the saved recipe page
+
+### Configuration
+
+Click "Settings" in the extension popup to configure the server URL (defaults to `http://localhost:3000`).
+
+### Server Endpoints
+
+The HTTP server provides the following endpoints:
+
+- `POST /api/recipes` - Process and save a recipe
+  - Request: `{ "url": "https://example.com/recipe" }`
+  - Response: `{ "success": true, "pageId": "...", "notionUrl": "..." }`
+- `GET /health` - Health check endpoint
+
+
 ### Example output
 
 ```
@@ -170,6 +215,8 @@ Ingredients are automatically grouped by shopping category in standard grocery s
 ```
 src/
 ├── cli.ts             Command-line interface and progress logging
+├── cli-server.ts      HTTP server entry point
+├── server.ts          HTTP server for browser extension
 ├── index.ts           Pipeline orchestration for programmatic use
 ├── scraper.ts         Recipe extraction from URLs and HTML files
 ├── tagger.ts          Claude API integration for AI tagging
@@ -180,6 +227,15 @@ src/
     ├── json-ld.ts     JSON-LD (schema.org) recipe parsing
     ├── html.ts        HTML/microdata fallback parsing
     └── shared.ts      Shared utilities (type guards, helpers)
+
+extension/
+├── manifest.json      Chrome extension manifest (Manifest V3)
+├── popup.html         Extension popup UI
+├── popup.ts           Popup logic and API communication
+├── background.ts      Service worker for context menu
+├── config.ts          Server URL configuration management
+├── styles.css         Extension UI styling
+└── icons/             Extension icons (SVG source files)
 ```
 
 ## Tech Stack
@@ -195,3 +251,12 @@ src/
 | [Consola](https://github.com/unjs/consola) | Console logging with spinners and colors |
 | [Zod](https://zod.dev/) | Schema validation for env vars and API responses |
 | [Biome](https://biomejs.dev/) | Linting and formatting |
+
+## Scripts
+
+- `bun run start` or `bun src/cli.ts` - Run the CLI tool
+- `bun run server` - Start the HTTP server for the browser extension
+- `bun run build:extension` - Compile TypeScript extension files to JavaScript
+- `bun run typecheck` - Type check without emitting files
+- `bun run lint` - Lint code with Biome
+- `bun run format` - Format code with Biome

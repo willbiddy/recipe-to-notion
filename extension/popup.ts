@@ -65,7 +65,7 @@ function updateUrlDisplay(url: string | null, title: string | null): void {
 	if (!url) {
 		urlDisplay.textContent = "No URL found";
 		urlDisplay.className =
-			"text-sm text-red-600 p-3.5 bg-red-50 border-2 border-red-200 rounded-2xl break-words leading-relaxed transition-all duration-200 text-left min-h-[3rem] flex items-center";
+			"text-sm text-error-600 p-3.5 bg-error-50 border-2 border-error-200 rounded-2xl break-words leading-relaxed transition-all duration-200 text-left min-h-[3rem] flex items-center";
 		return;
 	}
 
@@ -75,7 +75,7 @@ function updateUrlDisplay(url: string | null, title: string | null): void {
 	if (!url.startsWith("http://") && !url.startsWith("https://")) {
 		urlDisplay.textContent = "Not a valid web page";
 		urlDisplay.className =
-			"text-sm text-red-600 p-3.5 bg-red-50 border-2 border-red-200 rounded-2xl break-words leading-relaxed transition-all duration-200 text-left min-h-[3rem] flex items-center";
+			"text-sm text-error-600 p-3.5 bg-error-50 border-2 border-error-200 rounded-2xl break-words leading-relaxed transition-all duration-200 text-left min-h-[3rem] flex items-center";
 		return;
 	}
 
@@ -83,7 +83,7 @@ function updateUrlDisplay(url: string | null, title: string | null): void {
 	if (trimmedTitle) {
 		urlDisplay.textContent = trimmedTitle;
 		urlDisplay.className =
-			"text-sm text-gray-700 p-3.5 bg-white border-2 border-orange-200 rounded-2xl break-words leading-relaxed transition-all duration-200 text-left hover:border-orange-300 min-h-[3rem] flex items-center";
+			"text-sm text-gray-700 p-3.5 bg-white border-2 border-primary-200 rounded-2xl break-words leading-relaxed transition-all duration-200 text-left hover:border-primary-300 min-h-[3rem] flex items-center";
 		urlDisplay.title = url;
 	} else {
 		try {
@@ -91,12 +91,12 @@ function updateUrlDisplay(url: string | null, title: string | null): void {
 			const displayText = `${urlObj.hostname}${urlObj.pathname}`;
 			urlDisplay.textContent = displayText;
 			urlDisplay.className =
-				"text-sm text-gray-700 p-3.5 bg-white border-2 border-orange-200 rounded-2xl break-words leading-relaxed transition-all duration-200 text-left hover:border-orange-300 min-h-[3rem] flex items-center";
+				"text-sm text-gray-700 p-3.5 bg-white border-2 border-primary-200 rounded-2xl break-words leading-relaxed transition-all duration-200 text-left hover:border-primary-300 min-h-[3rem] flex items-center";
 			urlDisplay.title = url;
 		} catch {
 			urlDisplay.textContent = url;
 			urlDisplay.className =
-				"text-[14px] text-gray-700 p-3.5 bg-amber-50/60 border-2 border-orange-200 rounded-2xl break-words leading-relaxed transition-all duration-200 font-medium text-left hover:bg-amber-50 hover:border-orange-300 shadow-sm";
+				"text-[14px] text-gray-700 p-3.5 bg-accent-50/60 border-2 border-primary-200 rounded-2xl break-words leading-relaxed transition-all duration-200 font-medium text-left hover:bg-accent-50 hover:border-primary-300 shadow-sm";
 		}
 	}
 }

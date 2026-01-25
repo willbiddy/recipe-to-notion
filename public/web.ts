@@ -223,21 +223,21 @@ function displayRecipeInfo(data: {
 	infoLines.push(`<strong>Steps:</strong> ${data.recipe.instructions.length} steps`);
 
 	const recipeTitle = data.recipe.name;
-	const notionLink = `<a href="${data.notionUrl}" target="_blank" class="font-semibold underline hover:text-orange-900 transition-colors">${recipeTitle}</a>`;
+	const notionLink = `<a href="${data.notionUrl}" target="_blank" class="font-semibold underline hover:text-primary-900 transition-colors">${recipeTitle}</a>`;
 
 	statusDiv.innerHTML = `
-		<div class="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-2xl p-5 space-y-3">
+		<div class="bg-gradient-to-br from-success-50 to-emerald-50 border-2 border-success-300 rounded-2xl p-5 space-y-3">
 			<div class="flex items-center gap-3 mb-2">
-				<svg class="w-6 h-6 text-green-600 animate-checkmark flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+				<svg class="w-6 h-6 text-success-600 animate-checkmark flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
 				</svg>
-				<h3 class="text-lg font-bold text-green-900">${recipeTitle}</h3>
+				<h3 class="text-lg font-bold text-success-900">${recipeTitle}</h3>
 			</div>
-			<div class="space-y-2 text-sm text-green-800">
+			<div class="space-y-2 text-sm text-success-800">
 				${infoLines.map((line) => `<div>${line}</div>`).join("")}
 			</div>
-			<div class="pt-3 border-t border-green-200">
-				<p class="text-sm text-green-900">
+			<div class="pt-3 border-t border-success-200">
+				<p class="text-sm text-success-900">
 					Recipe saved! Open in Notion: ${notionLink}
 				</p>
 			</div>

@@ -13,12 +13,163 @@
 	}
 }
 
-@keyframes pulse-glow {
+@keyframes shimmer {
+	0% {
+		background-position: -1000px 0;
+	}
+	100% {
+		background-position: 1000px 0;
+	}
+}
+
+@keyframes pulse {
 	0%,
 	100% {
-		box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+		opacity: 1;
 	}
 	50% {
-		box-shadow: 0 0 0 4px rgba(59, 130, 246, 0);
+		opacity: 0.5;
+	}
+}
+
+@keyframes checkmark {
+	0% {
+		transform: scale(0);
+		opacity: 0;
+	}
+	50% {
+		transform: scale(1.2);
+	}
+	100% {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
+@keyframes slideDown {
+	from {
+		opacity: 0;
+		max-height: 0;
+		transform: translateY(-10px);
+	}
+	to {
+		opacity: 1;
+		max-height: 1000px;
+		transform: translateY(0);
+	}
+}
+
+@layer components {
+	/* Button Components */
+	.btn-primary {
+		@apply w-full px-5 py-3.5 bg-gradient-to-r from-primary-500 via-accent-500 to-primary-600 text-white border-none rounded-2xl text-base font-semibold cursor-pointer transition-all duration-200 shadow-button hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:bg-gray-400 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-sm flex items-center justify-center gap-2 group;
+	}
+
+	.btn-primary-sm {
+		@apply px-5 py-3 bg-gradient-to-r from-primary-600 to-accent-600 text-white border-none rounded-2xl text-base font-semibold cursor-pointer transition-all duration-200 hover:from-primary-700 hover:to-accent-700 shadow-button-sm hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2;
+	}
+
+	.btn-secondary {
+		@apply text-primary-900 hover:text-primary-950 transition-all duration-200 cursor-pointer bg-primary-50/80 border-2 border-primary-300 hover:bg-primary-100 hover:border-primary-400 p-3 flex items-center gap-2 text-base font-medium rounded-xl shadow-sm hover:shadow;
+	}
+
+	/* Card Components */
+	.card {
+		@apply bg-white/90 backdrop-blur-sm rounded-3xl shadow-card border-2 border-primary-100/50 p-6 space-y-6;
+	}
+
+	/* Status Message Components */
+	.status-info {
+		@apply bg-primary-50 text-primary-800 border-2 border-primary-200;
+	}
+
+	.status-success {
+		@apply bg-success-50 text-success-800 border-2 border-success-300;
+	}
+
+	.status-error {
+		@apply bg-error-50 text-error-800 border-2 border-error-200 whitespace-pre-line;
+	}
+
+	/* Input Components */
+	.input-field {
+		@apply text-base text-gray-900 p-3.5 bg-white border-2 border-primary-300 rounded-2xl break-words leading-relaxed transition-all duration-200 text-left hover:border-primary-400 min-h-[3rem] flex items-center;
+	}
+
+	.input-field-settings {
+		@apply px-4 py-3 pr-10 text-base border-2 border-primary-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 bg-accent-50/70 w-full placeholder:text-primary-600;
+	}
+
+	/* Background Gradient */
+	.gradient-bg {
+		@apply bg-gradient-to-br from-primary-50 via-accent-50 to-yellow-50;
+		background-image:
+			radial-gradient(circle at 20% 50%, rgba(251, 146, 60, 0.1) 0%, transparent 50%),
+			radial-gradient(circle at 80% 80%, rgba(245, 158, 11, 0.1) 0%, transparent 50%);
+	}
+}
+
+@layer utilities {
+	.animate-shimmer {
+		animation: shimmer 2s infinite linear;
+		background: linear-gradient(
+			to right,
+			transparent 0%,
+			rgba(255, 255, 255, 0.3) 50%,
+			transparent 100%
+		);
+		background-size: 1000px 100%;
+	}
+
+	.animate-pulse-slow {
+		animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+	}
+
+	.animate-checkmark {
+		animation: checkmark 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+	}
+
+	.animate-slide-down {
+		animation: slideDown 0.3s ease-out;
+	}
+
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border-width: 0;
+	}
+
+	.sr-only:focus {
+		position: static;
+		width: auto;
+		height: auto;
+		padding: inherit;
+		margin: inherit;
+		overflow: visible;
+		clip: auto;
+		white-space: normal;
+	}
+}
+
+@layer base {
+	/* Enhanced focus states for better accessibility */
+	*:focus-visible {
+		outline: 2px solid #f97316;
+		outline-offset: 2px;
+	}
+
+	/* Smooth transitions for interactive elements */
+	button,
+	a,
+	input {
+		transition-property: color, background-color, border-color, transform, box-shadow;
+		transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+		transition-duration: 200ms;
 	}
 }

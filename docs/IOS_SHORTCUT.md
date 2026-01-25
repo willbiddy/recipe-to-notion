@@ -29,19 +29,24 @@ iOS browsers (Safari, Chrome, Firefox, etc.) don't support Web Share Target API 
 1. Open the **Shortcuts** app on your iPhone/iPad
 2. Tap the **"+"** button in the top-right to create a new shortcut
 3. Tap **"Add Action"**
-4. Search for **"Get URLs from Input"** and add it
+4. Search for **"Get URLs from Input"** and add it (this receives the URL from Share Sheet)
 5. Tap **"Add Action"** again
-6. Search for **"Open URLs"** and add it
-7. Tap on the **"Open URLs"** action
-8. Tap **"Show More"**
-9. Change **"Open URLs"** to **"Open URL"** (singular)
-10. In the URL field, enter your web interface URL with a placeholder:
+6. Search for **"Text"** and add it
+7. In the Text action, enter:
     ```
-    https://your-app.vercel.app/?url=[URL]
+    https://your-app.vercel.app/?url=
     ```
-    Replace `your-app.vercel.app` with your actual Vercel deployment URL.
-    
-    **Important:** Use `[URL]` as a placeholder - Shortcuts will replace it with the shared URL.
+    Replace `your-app.vercel.app` with your actual Vercel deployment URL (e.g., `recipe-to-notion-xi.vercel.app`)
+8. Tap **"Add Action"** again
+9. Search for **"Combine Text"** and add it
+10. In the Combine Text action:
+    - First input: Tap and select the **Text** variable (from step 6)
+    - Second input: Tap and select the **URLs** variable (from step 4 - the "Get URLs from Input" result)
+11. Tap **"Add Action"** again
+12. Search for **"Open URLs"** and add it
+13. In the "Open URLs" action, tap the input field and select the **Combined Text** variable (from step 9)
+14. Tap **"Show More"** on the Open URLs action
+15. Change **"Open URLs"** to **"Open URL"** (singular)
 
 ### Step 2: Configure the Shortcut
 
@@ -90,17 +95,18 @@ If you see a warning about untrusted shortcuts:
 
 ---
 
-## Alternative: Import Pre-Made Shortcut
+## Alternative: Simpler Method (If the above doesn't work)
 
-If you prefer, you can create a shortcut using this recipe structure:
+If you're having trouble with the variable passing, try this simpler approach:
 
 **Shortcut Name:** Save Recipe to Notion
 
 **Actions:**
 1. **Get URLs from Input** (receives URL from Share Sheet)
-2. **Get Variable** → Select the URL from step 1
-3. **URL** → `https://your-app.vercel.app/?url=[Variable]`
-4. **Open URLs** → Open the URL from step 3
+2. **URL** action → Enter: `https://your-app.vercel.app/?url=`
+   - Then tap the "+" next to the URL field and select the **URLs** variable from step 1
+3. **Open URLs** → Tap the input and select the **URL** variable from step 2
+   - Change to "Open URL" (singular) in Show More
 
 **Share Sheet Settings:**
 - Show in Share Sheet: ✅ Enabled
@@ -158,11 +164,22 @@ After setup:
 - Check browser console for errors (if using Safari/Chrome on Mac)
 - Try from a different browser to rule out browser-specific issues
 
-### URL Not Being Passed Correctly
+### URL Not Being Passed Correctly / "Make sure to pass a valid URL" Error
 
-- Verify the shortcut uses "Get URLs from Input" as the first action
-- Check that the URL in the "Open URL" action uses `[URL]` or the variable from step 1
-- Test the shortcut by running it manually (tap the shortcut in the Shortcuts app)
+This error means the URL variable isn't being passed to the "Open URL" action correctly.
+
+**Fix:**
+1. Make sure "Get URLs from Input" is the **first action**
+2. When building the final URL, you need to:
+   - Use a **Text** action with your base URL: `https://your-app.vercel.app/?url=`
+   - Use **Combine Text** to join the base URL with the URL from "Get URLs from Input"
+   - OR use the **URL** action and tap the "+" to add the variable
+3. Make sure the "Open URL" action receives the **combined/final URL**, not just the base URL
+4. Test by running the shortcut manually (tap it in Shortcuts app) - it should open a URL with `?url=something`
+
+**Quick Fix:**
+- Delete the shortcut and recreate it following Step 1 above exactly
+- Make sure you're selecting the **URLs** variable (from "Get URLs from Input") when building the final URL
 
 ### "Allow Untrusted Shortcuts" Not Available
 

@@ -3,13 +3,13 @@
 Save recipes to Notion without copying and pasting. Paste a URL from almost any recipe site and get a Notion page with the cover photo, ingredients grouped by shopping aisle, instructions, and AI-generated tags. Claude automatically analyzes each recipe to add cuisine tags, meal types, healthiness scores, ingredient categories, and a short description, so you can filter and search your collection later.
 
 **Browser Extension Popup** - One-click recipe saving from any recipe page
-<img src="docs/extension-popup.png" alt="Browser extension popup interface" width="600">
+<img src="docs/extension-popup.png" alt="Browser extension popup interface">
 
 **Notion Gallery View** - Browse your recipe collection with cover photos, tags, and meal types
-<img src="docs/notion-gallery.png" alt="Gallery view in Notion showing recipe cards with cover photos, tags, and meal types" width="600">
+<img src="docs/notion-gallery.png" alt="Gallery view in Notion showing recipe cards with cover photos, tags, and meal types">
 
 **Notion Recipe Page** - Individual recipe with properties, AI-generated description, and organized ingredients
-<img src="docs/notion-recipe.png" alt="Individual recipe page in Notion with properties, AI-generated description, and ingredients list" width="600">
+<img src="docs/notion-recipe.png" alt="Individual recipe page in Notion with properties, AI-generated description, and ingredients list">
 
 ## How It Works
 
@@ -74,6 +74,15 @@ NOTION_API_KEY=ntn_...
 NOTION_DATABASE_ID=abc123...
 ```
 
+## Documentation
+
+📚 **Detailed Guides:**
+- **[Browser Extension Setup](docs/EXTENSION.md)** - Complete guide for setting up and using the browser extension
+- **[API Reference](docs/API.md)** - Full REST API documentation with examples
+- **[Deployment Guide](docs/DEPLOYMENT.md)** - Deploy to Vercel, Railway, Fly.io, Render, and more
+
+---
+
 ## Usage
 
 There are three ways to use recipe-to-notion:
@@ -99,41 +108,39 @@ When processing multiple URLs, each is processed sequentially. Failures (duplica
 
 Save recipes with one click directly from your browser!
 
-**Setup:**
+> 📖 **Full Setup Guide:** See [Extension Setup Guide](docs/EXTENSION.md) for complete instructions, troubleshooting, and configuration options.
+
+**Quick Start:**
 
 1. Build: `bun run build:extension`
-2. Choose server option:
-   - **Local:** Start `bun run server`, set `SERVER_URL` in `extension/config.ts` to `"http://localhost:3000"`
-   - **Vercel:** Deploy to Vercel (`bunx vercel login` → `bunx vercel --prod`), add environment variables in dashboard, then set `SERVER_URL` to your deployment URL
-3. Rebuild and reload: `bun run build:extension`, then reload extension in Chrome
-4. Load in Chrome: `chrome://extensions/` → Enable Developer mode → Load unpacked → Select `extension/` directory
-
-Navigate to any recipe page, click the extension icon, then "Save Recipe". The extension uses Server-Sent Events (SSE) for real-time progress updates.
+2. Choose server: Local (`bun run server`) or Vercel (see [Deployment Guide](docs/DEPLOYMENT.md))
+3. Load in Chrome: `chrome://extensions/` → Enable Developer mode → Load unpacked → Select `extension/` directory
 
 ### 3. HTTP API
 
-Use the REST API to integrate recipe-to-notion into your own applications or scripts:
+Use the REST API to integrate recipe-to-notion into your own applications or scripts.
+
+> 📖 **Full API Docs:** See [API Reference](docs/API.md) for complete endpoint documentation, request/response formats, and examples.
+
+**Quick Example:**
 
 ```bash
-# Health check
-curl https://your-server.com/api/health
-
-# Process a recipe (non-streaming)
 curl -X POST https://your-server.com/api/recipes \
   -H "Content-Type: application/json" \
   -d '{"url": "https://cooking.nytimes.com/recipes/1234-example"}'
-
-# Process with Server-Sent Events for progress updates
-curl -X POST https://your-server.com/api/recipes \
-  -H "Content-Type: application/json" \
-  -d '{"url": "https://example.com/recipe", "stream": true}'
 ```
 
-**Endpoints:** `POST /api/recipes` (body: `{ "url": string, "stream"?: boolean }`) and `GET /api/health`
+**Endpoints:** `POST /api/recipes` and `GET /api/health`
+
+---
 
 ## Architecture
 
-All entry points share the same core pipeline (`src/index.ts: processRecipe()`). Flow: URL → Duplicate Check → Scrape (Cheerio + JSON-LD/HTML) → AI Analysis (Claude) → Create Notion Page.
+All entry points share the same core pipeline (`src/index.ts: processRecipe()`).
+
+**Flow:** URL → Duplicate Check → Scrape (Cheerio + JSON-LD/HTML) → AI Analysis (Claude) → Create Notion Page
+
+---
 
 ## Project Structure
 
@@ -170,6 +177,8 @@ extension/
 ```
 
 **Technologies:** [Bun](https://bun.sh/) (runtime), [TypeScript](https://www.typescriptlang.org/) (type safety), [Vercel](https://vercel.com/) (deployment), [Cheerio](https://cheerio.js.org/) (HTML parsing), [Anthropic SDK](https://docs.anthropic.com/en/api/client-sdks) (Claude API), [Notion SDK](https://github.com/makenotion/notion-sdk-js) (Notion API), [Citty](https://github.com/unjs/citty) (CLI parsing), [Consola](https://github.com/unjs/consola) (logging), [Zod](https://zod.dev/) (validation), [Tailwind CSS](https://tailwindcss.com/) (styling), [SSE](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) (progress updates), [Biome](https://biomejs.dev/) (linting)
+
+---
 
 ## Scripts
 

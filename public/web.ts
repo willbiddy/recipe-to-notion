@@ -38,7 +38,7 @@ function getServerUrl(): string {
  */
 function getApiKey(): string | null {
 	const apiKey = localStorage.getItem("apiKey");
-	return apiKey;
+	return apiKey ? apiKey.trim() : null;
 }
 
 /**

@@ -79,8 +79,8 @@ export function validateApiKeyHeader(
 		);
 	}
 
-	const providedKey = authHeader.slice(7); // Remove "Bearer " prefix
-	const expectedKey = process.env.API_SECRET;
+	const providedKey = authHeader.slice(7).trim(); // Remove "Bearer " prefix and trim whitespace
+	const expectedKey = process.env.API_SECRET?.trim();
 
 	if (!expectedKey) {
 		console.error("API_SECRET environment variable is not set");

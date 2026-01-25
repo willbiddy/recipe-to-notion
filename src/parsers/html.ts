@@ -3,6 +3,7 @@ import type { Recipe } from "../scraper.js";
 import {
 	cleanRecipeName,
 	decodeHtmlEntities,
+	normalizeIngredientParentheses,
 	parseDuration,
 } from "./shared.js";
 
@@ -231,7 +232,13 @@ function extractMicrodataArray(
 	const items: string[] = [];
 	selector.each((_, el) => {
 		const text = $(el).text().trim();
-		if (text) items.push(decodeHtmlEntities(text));
+		if (text) {
+			// Normalize parentheses for ingredients
+			const normalized = itemprop === "recipeIngredient"
+				? normalizeIngredientParentheses(decodeHtmlEntities(text))
+				: decodeHtmlEntities(text);
+			items.push(normalized);
+		}
 	});
 	return items;
 }
@@ -279,11 +286,22 @@ function extractAttributeWithFallback(
  * @returns Array of non-empty text values.
  */
 function extractTextArray($: cheerio.CheerioAPI, ...selectors: string[]): string[] {
+	// Check if any selector is for ingredients (to normalize parentheses)
+	const isIngredientExtraction = selectors.some(
+		(sel) => sel.includes("ingredient") || sel.includes("recipeIngredient"),
+	);
+
 	for (const selector of selectors) {
 		const items: string[] = [];
 		$(selector).each((_, el) => {
 			const text = $(el).text().trim();
-			if (text) items.push(decodeHtmlEntities(text));
+			if (text) {
+				// Normalize parentheses for ingredients
+				const normalized = isIngredientExtraction
+					? normalizeIngredientParentheses(decodeHtmlEntities(text))
+					: decodeHtmlEntities(text);
+				items.push(normalized);
+			}
 		});
 		if (items.length > 0) return items;
 	}

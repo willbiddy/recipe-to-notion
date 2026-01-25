@@ -99,3 +99,21 @@ export function parseDuration(iso: string | undefined): number | null {
 export function cleanRecipeName(name: string): string {
 	return name.replace(/\s+Recipe$/i, "").trim();
 }
+
+/**
+ * Normalizes parentheses in ingredient strings by removing double parentheses.
+ *
+ * Some recipe sources include double parentheses like "((julienned))" which should
+ * be normalized to single parentheses "(julienned)" for cleaner display.
+ *
+ * @param ingredient - The raw ingredient string.
+ * @returns The ingredient string with normalized parentheses.
+ */
+export function normalizeIngredientParentheses(ingredient: string): string {
+	// Replace double parentheses ((text)) with single parentheses (text)
+	// Also handles cases with spaces like ( (text) ) or (( text ))
+	// Trims spaces inside the parentheses for cleaner output
+	return ingredient.replace(/\(\s*\(([^)]+)\)\s*\)/g, (_, content) => {
+		return `(${content.trim()})`;
+	}).trim();
+}

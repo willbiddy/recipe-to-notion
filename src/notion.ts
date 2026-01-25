@@ -40,18 +40,21 @@ export type DuplicateInfo = {
 /**
  * Converts a Notion page ID to a clickable URL.
  *
+ * Removes dashes if present and formats as URL.
+ *
  * @param pageId - The Notion page ID (with or without dashes).
  * @returns The Notion page URL.
  */
 export function getNotionPageUrl(pageId: string): string {
-	// Remove dashes if present and format as URL
 	const cleanId = pageId.replace(/-/g, "");
 	return `https://www.notion.so/${cleanId}`;
 }
 
 /**
  * Checks if a recipe with the same URL already exists in the database.
+ *
  * Useful for early duplicate detection before scraping.
+ * Queries for recipes with the same URL using direct API call.
  *
  * @param url - Recipe URL to check for duplicates.
  * @param notionApiKey - Notion integration API key.
@@ -63,7 +66,6 @@ export async function checkForDuplicateByUrl(
 	notionApiKey: string,
 	databaseId: string,
 ): Promise<DuplicateInfo | null> {
-	// Query for recipes with the same URL using direct API call
 	const response = await fetch(`https://api.notion.com/v1/databases/${databaseId}/query`, {
 		method: "POST",
 		headers: {
@@ -117,7 +119,9 @@ export async function checkForDuplicateByUrl(
 
 /**
  * Checks if a recipe with the same title already exists in the database.
+ *
  * Use this after already checking for URL duplicates to avoid redundant API calls.
+ * Queries for recipes with the same title using direct API call.
  *
  * @param recipeName - Recipe name to check for duplicates.
  * @param notionApiKey - Notion integration API key.
@@ -129,7 +133,6 @@ export async function checkForDuplicateByTitle(
 	notionApiKey: string,
 	databaseId: string,
 ): Promise<DuplicateInfo | null> {
-	// Query for recipes with the same title using direct API call
 	const response = await fetch(`https://api.notion.com/v1/databases/${databaseId}/query`, {
 		method: "POST",
 		headers: {
@@ -191,7 +194,9 @@ export async function checkForDuplicate(
 	databaseId: string,
 	skipUrlCheck: boolean = false,
 ): Promise<DuplicateInfo | null> {
-	// First check for URL duplicates (unless already checked)
+	/**
+	 * First check for URL duplicates (unless already checked).
+	 */
 	if (!skipUrlCheck) {
 		const urlDuplicate = await checkForDuplicateByUrl(recipe.sourceUrl, notionApiKey, databaseId);
 		if (urlDuplicate) {
@@ -199,7 +204,9 @@ export async function checkForDuplicate(
 		}
 	}
 
-	// Query for recipes with the same title
+	/**
+	 * Query for recipes with the same title.
+	 */
 	return await checkForDuplicateByTitle(recipe.name, notionApiKey, databaseId);
 }
 
@@ -259,7 +266,9 @@ export async function createRecipePage(
 ): Promise<string> {
 	const notion = new Client({ auth: notionApiKey });
 
-	// Check for duplicates before creating (unless explicitly skipped)
+	/**
+	 * Check for duplicates before creating (unless explicitly skipped).
+	 */
 	if (!skipDuplicateCheck) {
 		const duplicate = await checkForDuplicate(recipe, notionApiKey, databaseId);
 		if (duplicate) {
@@ -315,18 +324,10 @@ export async function createRecipePage(
 }
 
 /**
- * Builds the Notion page body: description, then "Ingredients" heading followed by bulleted
- * list items, then an "Instructions" heading followed by numbered list items.
- *
- * Creates the content blocks for a Notion page, including paragraphs, headings
- * and lists. Truncates to 100 blocks to respect Notion API limits.
- *
- * @param recipe - The recipe data to build the page body from.
- * @param tags - AI-generated tags including description.
- * @returns An array of Notion block objects.
- */
-/**
  * Builds ingredient blocks grouped by category.
+ *
+ * @param grouped - Map of category names to arrays of ingredients.
+ * @returns Array of Notion block objects for ingredients.
  */
 function buildIngredientBlocks(
 	grouped: Map<string, Array<{ original: string; usage?: string }>>,
@@ -335,7 +336,9 @@ function buildIngredientBlocks(
 	const orderedCategories = getCategoryOrder();
 	const otherCategories: string[] = [];
 
-	// Collect categories not in the standard order
+	/**
+	 * Collect categories not in the standard order.
+	 */
 	for (const category of grouped.keys()) {
 		if (!orderedCategories.includes(category)) {
 			otherCategories.push(category);
@@ -343,7 +346,9 @@ function buildIngredientBlocks(
 	}
 	otherCategories.sort();
 
-	// Display categories in order
+	/**
+	 * Display categories in order.
+	 */
 	for (const category of [...orderedCategories, ...otherCategories]) {
 		const ingredients = grouped.get(category);
 		if (ingredients && ingredients.length > 0) {
@@ -362,24 +367,34 @@ function buildIngredientBlocks(
 
 /**
  * Builds the main body content for a Notion recipe page.
+ *
+ * @param recipe - The recipe data to build the page body from.
+ * @param tags - AI-generated tags including description.
+ * @returns An array of Notion block objects.
  */
 function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
 	const blocks: unknown[] = [];
 
-	// Add description if available (no heading)
+	/**
+	 * Add description if available (no heading).
+	 * Split on double newlines to create separate paragraphs.
+	 */
 	if (tags.description) {
-		// Split on double newlines to create separate paragraphs
 		const paragraphs = tags.description.split("\n\n").filter((p) => p.trim());
 		for (const p of paragraphs) {
 			blocks.push(paragraph(p));
 		}
 	}
 
-	// Add ingredients section
+	/**
+	 * Add ingredients section.
+	 */
 	if (tags.ingredients && tags.ingredients.length > 0) {
 		blocks.push(heading1("Ingredients"));
 		const grouped = groupIngredientsByCategory(tags.ingredients);
-		// Convert CategorizedIngredient[] to the format expected by buildIngredientBlocks
+		/**
+		 * Convert CategorizedIngredient[] to the format expected by buildIngredientBlocks.
+		 */
 		const converted = new Map<string, Array<{ original: string; usage?: string }>>();
 		for (const [category, ingredients] of grouped.entries()) {
 			converted.set(
@@ -392,14 +407,18 @@ function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
 		}
 		blocks.push(...buildIngredientBlocks(converted));
 	} else if (recipe.ingredients.length > 0) {
-		// Fallback to original flat list if categorization failed
+		/**
+		 * Fallback to original flat list if categorization failed.
+		 */
 		blocks.push(heading1("Ingredients"));
 		for (const ingredient of recipe.ingredients) {
 			blocks.push(bulletItem(ingredient));
 		}
 	}
 
-	// Add instructions section
+	/**
+	 * Add instructions section.
+	 */
 	if (recipe.instructions.length > 0) {
 		blocks.push(heading1("Instructions"));
 		for (const step of recipe.instructions) {

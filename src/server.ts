@@ -4,6 +4,20 @@ import { createCliLogger, printRecipeSummary } from "./logger.js";
 import { getNotionPageUrl } from "./notion.js";
 
 /**
+ * HTTP status codes used throughout the server.
+ */
+enum HttpStatus {
+	OK = 200,
+	NoContent = 204,
+	BadRequest = 400,
+	NotFound = 404,
+	MethodNotAllowed = 405,
+	Conflict = 409,
+	InternalServerError = 500,
+	BadGateway = 502,
+}
+
+/**
  * Response format for the /api/recipes endpoint.
  */
 export type RecipeResponse = {
@@ -17,18 +31,28 @@ export type RecipeResponse = {
  * Request body format for the /api/recipes endpoint.
  */
 type RecipeRequest = {
+	/**
+	 * Recipe URL to process.
+	 */
 	url: string;
-	stream?: boolean; // If true, use SSE for progress updates
+	/**
+	 * If true, use SSE for progress updates.
+	 */
+	stream?: boolean;
 };
 
 /**
  * Handles CORS headers for browser extension requests.
+ *
+ * Includes headers for Server-Sent Events (SSE) support.
  */
 function setCorsHeaders(response: Response): void {
 	response.headers.set("Access-Control-Allow-Origin", "*");
 	response.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
 	response.headers.set("Access-Control-Allow-Headers", "Content-Type");
-	// For SSE
+	/**
+	 * For SSE.
+	 */
 	response.headers.set("Access-Control-Expose-Headers", "*");
 }
 
@@ -36,7 +60,7 @@ function setCorsHeaders(response: Response): void {
  * Handles OPTIONS preflight requests.
  */
 function handleOptions(): Response {
-	const response = new Response(null, { status: 204 });
+	const response = new Response(null, { status: HttpStatus.NoContent });
 	setCorsHeaders(response);
 	return response;
 }
@@ -52,11 +76,12 @@ function handleHealth(): Response {
 
 /**
  * Logs incoming requests.
+ *
+ * Only logs non-health-check requests.
  */
 function logRequest(request: Request): void {
 	const url = new URL(request.url);
 	if (url.pathname !== "/health") {
-		// Only log non-health-check requests
 		consola.info(`${request.method} ${url.pathname}`);
 	}
 }
@@ -77,7 +102,9 @@ function handleRecipeStream(_request: Request, url: string): Response {
 			try {
 				const logger = createCliLogger();
 
-				// Process with progress callbacks (for SSE) and logger (for server console)
+				/**
+				 * Process with progress callbacks (for SSE) and logger (for server console).
+				 */
 				const result = await processRecipe(
 					url,
 					(event: ProgressEvent) => {
@@ -90,7 +117,9 @@ function handleRecipeStream(_request: Request, url: string): Response {
 					logger,
 				);
 
-				// Print recipe summary box (same as CLI)
+				/**
+				 * Print recipe summary box (same as CLI).
+				 */
 				printRecipeSummary(result.recipe, result.tags);
 
 				const notionUrl = getNotionPageUrl(result.pageId);
@@ -110,9 +139,13 @@ function handleRecipeStream(_request: Request, url: string): Response {
 					if (urlMatch) {
 						notionUrl = urlMatch[1];
 					}
-					// Logger already handled the duplicate warning via onDuplicateFound
+					/**
+					 * Logger already handled the duplicate warning via onDuplicateFound.
+					 */
 				} else {
-					// For non-duplicate errors, log them
+					/**
+					 * For non-duplicate errors, log them.
+					 */
 					consola.error(`Failed: ${errorMessage}`);
 				}
 
@@ -144,15 +177,20 @@ function handleRecipeStream(_request: Request, url: string): Response {
  */
 function validateRecipeRequest(body: unknown): Response | null {
 	if (!body || typeof body !== "object") {
-		return createErrorResponse("Missing request body", 400);
+		return createErrorResponse("Missing request body", HttpStatus.BadRequest);
 	}
 
 	const request = body as RecipeRequest;
 	if (!request.url || typeof request.url !== "string") {
-		return createErrorResponse("Missing or invalid 'url' field in request body", 400);
+		return createErrorResponse(
+			"Missing or invalid 'url' field in request body",
+			HttpStatus.BadRequest,
+		);
 	}
 
-	// Validate URL format
+	/**
+	 * Validate URL format.
+	 */
 	try {
 		new URL(request.url);
 	} catch {
@@ -182,18 +220,26 @@ function handleRecipeError(error: unknown): Response {
 	const errorMessage = error instanceof Error ? error.message : String(error);
 	const isDuplicate = errorMessage.includes("Duplicate recipe found");
 
-	let statusCode = 500;
+	let statusCode = HttpStatus.InternalServerError;
 	if (isDuplicate) {
-		statusCode = 409; // Conflict
-		// Logger already handled the duplicate warning via onDuplicateFound
+		/**
+		 * Conflict status code.
+		 * Logger already handled the duplicate warning via onDuplicateFound.
+		 */
+		statusCode = HttpStatus.Conflict;
 	} else if (errorMessage.includes("Failed to fetch") || errorMessage.includes("403")) {
-		statusCode = 502; // Bad Gateway (scraping failure)
+		/**
+		 * Bad Gateway (scraping failure).
+		 */
+		statusCode = HttpStatus.BadGateway;
 		consola.error(`Failed: ${errorMessage}`);
 	} else {
 		consola.error(`Failed: ${errorMessage}`);
 	}
 
-	// Extract Notion URL from duplicate error message if present
+	/**
+	 * Extract Notion URL from duplicate error message if present.
+	 */
 	let notionUrl: string | undefined;
 	if (isDuplicate) {
 		const urlMatch = errorMessage.match(/View it at: (https:\/\/www\.notion\.so\/[^\s]+)/);
@@ -220,22 +266,30 @@ async function handleRecipe(request: Request): Promise<Response> {
 	try {
 		const body = (await request.json()) as RecipeRequest;
 
-		// Validate request
+		/**
+		 * Validate request.
+		 */
 		const validationError = validateRecipeRequest(body);
 		if (validationError) {
 			return validationError;
 		}
 
-		// Use streaming if requested
+		/**
+		 * Use streaming if requested.
+		 */
 		if (body.stream) {
 			return handleRecipeStream(request, body.url);
 		}
 
-		// Process the recipe (non-streaming)
+		/**
+		 * Process the recipe (non-streaming).
+		 */
 		const logger = createCliLogger();
 		const result = await processRecipe(body.url, undefined, logger);
 
-		// Print recipe summary box (same as CLI)
+		/**
+		 * Print recipe summary box (same as CLI).
+		 */
 		printRecipeSummary(result.recipe, result.tags);
 
 		const savedNotionUrl = getNotionPageUrl(result.pageId);
@@ -246,7 +300,7 @@ async function handleRecipe(request: Request): Promise<Response> {
 			notionUrl: savedNotionUrl,
 		};
 
-		const response = Response.json(successResponse, { status: 200 });
+		const response = Response.json(successResponse, { status: HttpStatus.OK });
 		setCorsHeaders(response);
 		return response;
 	} catch (error) {
@@ -260,26 +314,36 @@ async function handleRecipe(request: Request): Promise<Response> {
 export async function handleRequest(request: Request): Promise<Response> {
 	const url = new URL(request.url);
 
-	// Log incoming requests (except health checks)
+	/**
+	 * Log incoming requests (except health checks).
+	 */
 	logRequest(request);
 
-	// Handle CORS preflight
+	/**
+	 * Handle CORS preflight.
+	 */
 	if (request.method === "OPTIONS") {
 		return handleOptions();
 	}
 
-	// Health check endpoint
+	/**
+	 * Health check endpoint.
+	 */
 	if (url.pathname === "/health" && request.method === "GET") {
 		return handleHealth();
 	}
 
-	// Recipe processing endpoint
+	/**
+	 * Recipe processing endpoint.
+	 */
 	if (url.pathname === "/api/recipes" && request.method === "POST") {
 		return await handleRecipe(request);
 	}
 
-	// 404 for unknown routes
-	const response = Response.json({ error: "Not found" }, { status: 404 });
+	/**
+	 * 404 for unknown routes.
+	 */
+	const response = Response.json({ error: "Not found" }, { status: HttpStatus.NotFound });
 	setCorsHeaders(response);
 	return response;
 }

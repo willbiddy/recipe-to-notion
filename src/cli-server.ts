@@ -9,6 +9,13 @@
 import { consola } from "consola";
 import { handleRequest } from "./server.js";
 
+/**
+ * HTTP status codes used in the server.
+ */
+enum HttpStatus {
+	InternalServerError = 500,
+}
+
 const DEFAULT_PORT = 3000;
 const port = parseInt(process.env.SERVER_PORT || String(DEFAULT_PORT), 10);
 
@@ -17,9 +24,11 @@ if (Number.isNaN(port) || port < 1 || port > 65535) {
 	process.exit(1);
 }
 
-// Validate environment variables are loaded
+/**
+ * Validate environment variables are loaded.
+ * This will throw if env vars are missing.
+ */
 try {
-	// This will throw if env vars are missing
 	const { loadConfig } = await import("./config.js");
 	loadConfig();
 } catch (error) {
@@ -40,18 +49,26 @@ async function killProcessOnPort(port: number): Promise<boolean> {
 		if (pid) {
 			consola.warn(`Port ${port} is in use by process ${pid}. Killing it...`);
 			try {
-				// Try graceful kill first
+				/**
+				 * Try graceful kill first.
+				 */
 				execSync(`kill ${pid}`, { encoding: "utf-8", stdio: "ignore" });
 				await new Promise((resolve) => setTimeout(resolve, 500));
 
-				// Check if still running, force kill if needed
+				/**
+				 * Check if still running, force kill if needed.
+				 */
 				try {
 					execSync(`lsof -ti:${port}`, { encoding: "utf-8", stdio: "ignore" });
-					// Still running, force kill
+					/**
+					 * Still running, force kill.
+					 */
 					execSync(`kill -9 ${pid}`, { encoding: "utf-8", stdio: "ignore" });
 					await new Promise((resolve) => setTimeout(resolve, 500));
 				} catch {
-					// Process is gone
+					/**
+					 * Process is gone.
+					 */
 				}
 
 				consola.success(`Process ${pid} killed`);
@@ -61,17 +78,26 @@ async function killProcessOnPort(port: number): Promise<boolean> {
 				return false;
 			}
 		}
-		return true; // Port not in use
+		/**
+		 * Port not in use.
+		 */
+		return true;
 	} catch (_error) {
-		// Port is not in use, or lsof failed (which is fine)
+		/**
+		 * Port is not in use, or lsof failed (which is fine).
+		 */
 		return true;
 	}
 }
 
-// Try to kill any process on the port before starting
+/**
+ * Try to kill any process on the port before starting.
+ */
 await killProcessOnPort(port);
 
-// Try to start the server, with retry logic if port is still in use
+/**
+ * Try to start the server, with retry logic if port is still in use.
+ */
 let server: ReturnType<typeof Bun.serve>;
 let retries = 3;
 let started = false;
@@ -81,11 +107,16 @@ while (retries > 0 && !started) {
 		server = Bun.serve({
 			port,
 			fetch: handleRequest,
-			idleTimeout: 120, // 2 minutes - recipe processing can take 30+ seconds
+			/**
+			 * 2 minutes - recipe processing can take 30+ seconds.
+			 */
+			idleTimeout: 120,
+			/**
+			 * Handle server errors.
+			 */
 			error(error) {
-				// Handle server errors
 				consola.error(`Server error: ${error.message}`);
-				return new Response("Internal Server Error", { status: 500 });
+				return new Response("Internal Server Error", { status: HttpStatus.InternalServerError });
 			},
 		});
 
@@ -100,13 +131,17 @@ while (retries > 0 && !started) {
 			(errorMessage.includes("EADDRINUSE") || errorMessage.includes("address already in use")) &&
 			retries > 1
 		) {
-			// Port still in use, try killing again and retry
+			/**
+			 * Port still in use, try killing again and retry.
+			 */
 			retries--;
 			consola.warn(`Port ${port} still in use, retrying... (${retries} attempts left)`);
 			await killProcessOnPort(port);
-			await new Promise((resolve) => setTimeout(resolve, 1000));
+			await new Promise((resolve) => setTimeout(resolve, 1_000));
 		} else {
-			// Final failure or non-port error
+			/**
+			 * Final failure or non-port error.
+			 */
 			if (errorMessage.includes("EADDRINUSE") || errorMessage.includes("address already in use")) {
 				consola.fatal(
 					`Port ${port} is still in use after cleanup attempts.\n\n` +
@@ -122,7 +157,9 @@ while (retries > 0 && !started) {
 	}
 }
 
-// Graceful shutdown
+/**
+ * Graceful shutdown handlers.
+ */
 process.on("SIGINT", () => {
 	consola.info("\nShutting down server...");
 	server.stop();

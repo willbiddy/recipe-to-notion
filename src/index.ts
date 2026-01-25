@@ -61,7 +61,9 @@ export async function processRecipe(
 
 	logger?.onStart?.();
 
-	// Check for URL duplicates before scraping to save time and API costs
+	/**
+	 * Check for URL duplicates before scraping to save time and API costs.
+	 */
 	onProgress?.({ type: "checking_duplicates", message: "Checking for duplicates..." });
 	logger?.onCheckingDuplicates?.();
 	const urlDuplicate = await checkForDuplicateByUrl(
@@ -87,8 +89,10 @@ export async function processRecipe(
 	const tags = await tagRecipe(recipe, config.ANTHROPIC_API_KEY);
 	logger?.onTagged?.();
 
-	// Check for title duplicates after scraping (in case same title but different URL)
-	// Skip URL check since we already checked it above
+	/**
+	 * Check for title duplicates after scraping (in case same title but different URL).
+	 * Skip URL check since we already checked it above.
+	 */
 	const titleDuplicate = await checkForDuplicateByTitle(
 		recipe.name,
 		config.NOTION_API_KEY,
@@ -108,7 +112,10 @@ export async function processRecipe(
 		tags,
 		config.NOTION_API_KEY,
 		config.NOTION_DATABASE_ID,
-		true, // Skip duplicate check since we already checked URL and title
+		/**
+		 * Skip duplicate check since we already checked URL and title.
+		 */
+		true,
 	);
 
 	const notionUrl = getNotionPageUrl(pageId);

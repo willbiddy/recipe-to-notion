@@ -124,7 +124,9 @@ function parseRecipeFromHtml(html: string, sourceUrl: string): Recipe {
 		);
 	}
 
-	// If author wasn't found in JSON-LD, try HTML fallback
+	/**
+	 * If author wasn't found in JSON-LD, try HTML fallback.
+	 */
 	if (!recipe.author) {
 		recipe.author = extractAuthorFromHtml($);
 	}

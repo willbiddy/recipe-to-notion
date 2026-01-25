@@ -8,11 +8,37 @@ import { type ProgressEvent, processRecipe } from "../src/index.js";
 import { createCliLogger, printRecipeSummary } from "../src/logger.js";
 import { getNotionPageUrl } from "../src/notion.js";
 
+/**
+ * HTTP status codes used throughout the API.
+ */
+enum HttpStatus {
+	OK = 200,
+	NoContent = 204,
+	BadRequest = 400,
+	NotFound = 404,
+	MethodNotAllowed = 405,
+	Conflict = 409,
+	InternalServerError = 500,
+	BadGateway = 502,
+}
+
+/**
+ * Request body format for the /api/recipes endpoint.
+ */
 type RecipeRequest = {
+	/**
+	 * Recipe URL to process.
+	 */
 	url: string;
+	/**
+	 * If true, use SSE for progress updates.
+	 */
 	stream?: boolean;
 };
 
+/**
+ * Response format for the /api/recipes endpoint.
+ */
 type RecipeResponse = {
 	success: boolean;
 	pageId?: string;
@@ -34,7 +60,7 @@ function setCorsHeaders(response: Response): void {
  * Handles OPTIONS preflight requests.
  */
 function handleOptions(): Response {
-	const response = new Response(null, { status: 204 });
+	const response = new Response(null, { status: HttpStatus.NoContent });
 	setCorsHeaders(response);
 	return response;
 }
@@ -44,15 +70,20 @@ function handleOptions(): Response {
  */
 function validateRecipeRequest(body: unknown): Response | null {
 	if (!body || typeof body !== "object") {
-		return createErrorResponse("Missing request body", 400);
+		return createErrorResponse("Missing request body", HttpStatus.BadRequest);
 	}
 
 	const request = body as RecipeRequest;
 	if (!request.url || typeof request.url !== "string") {
-		return createErrorResponse("Missing or invalid 'url' field in request body", 400);
+		return createErrorResponse(
+			"Missing or invalid 'url' field in request body",
+			HttpStatus.BadRequest,
+		);
 	}
 
-	// Validate URL format
+	/**
+	 * Validate URL format.
+	 */
 	try {
 		new URL(request.url);
 	} catch {
@@ -80,18 +111,34 @@ function createErrorResponse(error: string, status: number): Response {
  */
 function handleRecipeStream(url: string): Response {
 	const stream = new ReadableStream({
+		// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: SSE stream handling is inherently complex
 		async start(controller) {
 			const encoder = new TextEncoder();
 
 			const sendEvent = (data: object) => {
-				const message = `data: ${JSON.stringify(data)}\n\n`;
-				controller.enqueue(encoder.encode(message));
+				try {
+					const message = `data: ${JSON.stringify(data)}\n\n`;
+					controller.enqueue(encoder.encode(message));
+				} catch (e) {
+					console.error("Error sending SSE event:", e);
+				}
 			};
 
 			try {
+				/**
+				 * Send initial progress event immediately so extension knows connection is working.
+				 */
+				sendEvent({
+					type: "progress",
+					message: "Starting...",
+					progressType: "starting",
+				});
+
 				const logger = createCliLogger();
 
-				// Process with progress callbacks (for SSE) and logger (for server console)
+				/**
+				 * Process with progress callbacks (for SSE) and logger (for server console).
+				 */
 				const result = await processRecipe(
 					url,
 					(event: ProgressEvent) => {
@@ -104,7 +151,9 @@ function handleRecipeStream(url: string): Response {
 					logger,
 				);
 
-				// Print recipe summary box (same as CLI)
+				/**
+				 * Print recipe summary box (same as CLI).
+				 */
 				printRecipeSummary(result.recipe, result.tags);
 
 				const notionUrl = getNotionPageUrl(result.pageId);
@@ -115,6 +164,7 @@ function handleRecipeStream(url: string): Response {
 					notionUrl,
 				});
 			} catch (error) {
+				console.error("Recipe processing error in stream:", error);
 				const errorMessage = error instanceof Error ? error.message : String(error);
 				const isDuplicate = errorMessage.includes("Duplicate recipe found");
 
@@ -126,14 +176,22 @@ function handleRecipeStream(url: string): Response {
 					}
 				}
 
-				sendEvent({
-					type: "error",
-					success: false,
-					error: errorMessage,
-					...(notionUrl && { notionUrl }),
-				});
+				try {
+					sendEvent({
+						type: "error",
+						success: false,
+						error: errorMessage,
+						...(notionUrl && { notionUrl }),
+					});
+				} catch (e) {
+					console.error("Error sending error event:", e);
+				}
 			} finally {
-				controller.close();
+				try {
+					controller.close();
+				} catch (e) {
+					console.error("Error closing stream:", e);
+				}
 			}
 		},
 	});
@@ -156,14 +214,22 @@ function handleRecipeError(error: unknown): Response {
 	const errorMessage = error instanceof Error ? error.message : String(error);
 	const isDuplicate = errorMessage.includes("Duplicate recipe found");
 
-	let statusCode = 500;
+	let statusCode = HttpStatus.InternalServerError;
 	if (isDuplicate) {
-		statusCode = 409; // Conflict
+		/**
+		 * Conflict status code.
+		 */
+		statusCode = HttpStatus.Conflict;
 	} else if (errorMessage.includes("Failed to fetch") || errorMessage.includes("403")) {
-		statusCode = 502; // Bad Gateway (scraping failure)
+		/**
+		 * Bad Gateway (scraping failure).
+		 */
+		statusCode = HttpStatus.BadGateway;
 	}
 
-	// Extract Notion URL from duplicate error message if present
+	/**
+	 * Extract Notion URL from duplicate error message if present.
+	 */
 	let notionUrl: string | undefined;
 	if (isDuplicate) {
 		const urlMatch = errorMessage.match(/View it at: (https:\/\/www\.notion\.so\/[^\s]+)/);
@@ -186,52 +252,79 @@ function handleRecipeError(error: unknown): Response {
 /**
  * Main handler for the /api/recipes endpoint.
  */
-export default async function handler(req: Request): Promise<Response> {
-	// Handle CORS preflight
-	if (req.method === "OPTIONS") {
-		return handleOptions();
-	}
-
-	// Only allow POST
-	if (req.method !== "POST") {
-		const response = Response.json({ error: "Method not allowed" }, { status: 405 });
-		setCorsHeaders(response);
-		return response;
-	}
-
-	try {
-		const body = (await req.json()) as RecipeRequest;
-
-		// Validate request
-		const validationError = validateRecipeRequest(body);
-		if (validationError) {
-			return validationError;
+export default {
+	/**
+	 * Vercel serverless function handler.
+	 *
+	 * @param req - The incoming request.
+	 * @returns Response with recipe processing result or error.
+	 */
+	async fetch(req: Request): Promise<Response> {
+		/**
+		 * Handle CORS preflight.
+		 */
+		if (req.method === "OPTIONS") {
+			return handleOptions();
 		}
 
-		// Use streaming if requested
-		if (body.stream) {
-			return handleRecipeStream(body.url);
+		/**
+		 * Only allow POST.
+		 */
+		if (req.method !== "POST") {
+			const response = Response.json(
+				{ error: "Method not allowed" },
+				{ status: HttpStatus.MethodNotAllowed },
+			);
+			setCorsHeaders(response);
+			return response;
 		}
 
-		// Process the recipe (non-streaming)
-		const logger = createCliLogger();
-		const result = await processRecipe(body.url, undefined, logger);
+		try {
+			const body = (await req.json()) as RecipeRequest;
 
-		// Print recipe summary box (same as CLI)
-		printRecipeSummary(result.recipe, result.tags);
+			/**
+			 * Validate request.
+			 */
+			const validationError = validateRecipeRequest(body);
+			if (validationError) {
+				return validationError;
+			}
 
-		const savedNotionUrl = getNotionPageUrl(result.pageId);
+			/**
+			 * Use streaming if requested.
+			 */
+			if (body.stream) {
+				return handleRecipeStream(body.url);
+			}
 
-		const successResponse: RecipeResponse = {
-			success: true,
-			pageId: result.pageId,
-			notionUrl: savedNotionUrl,
-		};
+			/**
+			 * Process the recipe (non-streaming).
+			 */
+			const logger = createCliLogger();
+			const result = await processRecipe(body.url, undefined, logger);
 
-		const response = Response.json(successResponse, { status: 200 });
-		setCorsHeaders(response);
-		return response;
-	} catch (error) {
-		return handleRecipeError(error);
-	}
-}
+			/**
+			 * Print recipe summary box (same as CLI).
+			 */
+			printRecipeSummary(result.recipe, result.tags);
+
+			const savedNotionUrl = getNotionPageUrl(result.pageId);
+
+			const successResponse: RecipeResponse = {
+				success: true,
+				pageId: result.pageId,
+				notionUrl: savedNotionUrl,
+			};
+
+			const response = Response.json(successResponse, { status: HttpStatus.OK });
+			setCorsHeaders(response);
+			return response;
+		} catch (error) {
+			/**
+			 * Log the error for debugging.
+			 */
+			console.error("Recipe processing error:", error);
+			return handleRecipeError(error);
+		}
+	},
+};

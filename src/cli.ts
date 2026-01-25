@@ -53,7 +53,9 @@ const main = defineCommand({
 			process.exit(1);
 		}
 
-		// Handle --html flag (single URL only)
+		/**
+		 * Handle --html flag (single URL only).
+		 */
 		if (args.html) {
 			if (urls.length > 1) {
 				consola.warn("--html option only supports one URL at a time");
@@ -120,7 +122,9 @@ async function processUrlsSequentially(
 			failed++;
 		}
 
-		// Add spacing between recipes (except after the last one)
+		/**
+		 * Add spacing between recipes (except after the last one).
+		 */
 		if (urls.length > 1 && i < urls.length - 1) {
 			console.log();
 		}
@@ -142,9 +146,20 @@ async function processUrlsSequentially(
  * @param htmlPath - Optional path to saved HTML file (bypasses fetching).
  * @returns True if the recipe was saved successfully, false otherwise.
  */
+/**
+ * Handles a single recipe URL through the full pipeline with CLI logging:
+ * duplicate check → scrape → AI tag → save to Notion.
+ *
+ * @param url - The recipe URL to process.
+ * @param config - Application configuration with API keys.
+ * @param htmlPath - Optional path to saved HTML file (bypasses fetching).
+ * @returns True if the recipe was saved successfully, false otherwise.
+ */
 async function handleRecipe(url: string, config: Config, htmlPath?: string): Promise<boolean> {
 	try {
-		// For --html flag, use the old manual pipeline
+		/**
+		 * For --html flag, use the old manual pipeline.
+		 */
 		if (htmlPath) {
 			if (await isDuplicate(url, config)) {
 				return false;
@@ -163,7 +178,9 @@ async function handleRecipe(url: string, config: Config, htmlPath?: string): Pro
 			return true;
 		}
 
-		// For normal URLs, use the shared processRecipe with logger
+		/**
+		 * For normal URLs, use the shared processRecipe with logger.
+		 */
 		const logger = createCliLogger();
 		const result = await processRecipe(url, undefined, logger);
 		printRecipeSummary(result.recipe, result.tags);
@@ -268,7 +285,10 @@ async function saveToNotion(recipe: Recipe, tags: RecipeTags, config: Config): P
 		tags,
 		config.NOTION_API_KEY,
 		config.NOTION_DATABASE_ID,
-		true, // skipDuplicateCheck - already checked above
+		/**
+		 * Skip duplicate check - already checked above.
+		 */
+		true,
 	);
 
 	const notionUrl = getNotionPageUrl(pageId);

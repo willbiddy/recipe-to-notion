@@ -102,14 +102,13 @@ export function cleanRecipeName(name: string): string {
  *
  * Some recipe sources include double parentheses like "((julienned))" which should
  * be normalized to single parentheses "(julienned)" for cleaner display.
+ * Also handles cases with spaces like ( (text) ) or (( text )).
+ * Trims spaces inside the parentheses for cleaner output.
  *
  * @param ingredient - The raw ingredient string.
  * @returns The ingredient string with normalized parentheses.
  */
 export function normalizeIngredientParentheses(ingredient: string): string {
-	// Replace double parentheses ((text)) with single parentheses (text)
-	// Also handles cases with spaces like ( (text) ) or (( text ))
-	// Trims spaces inside the parentheses for cleaner output
 	return ingredient
 		.replace(/\(\s*\(([^)]+)\)\s*\)/g, (_, content) => {
 			return `(${content.trim()})`;

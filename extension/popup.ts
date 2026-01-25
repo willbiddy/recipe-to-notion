@@ -43,8 +43,10 @@ function showProgress(message: string): void {
 
 	progressMessage.textContent = message;
 	progressContainer.classList.remove("hidden");
-	
-	// Update button to show simple loading state
+
+	/**
+	 * Update button to show simple loading state.
+	 */
 	setLoading(true);
 }
 
@@ -61,13 +63,15 @@ function hideProgress(): void {
 /**
  * Saves a recipe by sending the URL to the server with progress streaming.
  */
-async function saveRecipe(url: string): Promise<RecipeResponse> {
+function saveRecipe(url: string): Promise<RecipeResponse> {
 	const serverUrl = getServerUrl();
 	const apiUrl = `${serverUrl}/api/recipes`;
 
 	return new Promise((resolve, reject) => {
 		try {
-			// Use Server-Sent Events for progress updates
+			/**
+			 * Use Server-Sent Events for progress updates.
+			 */
 			fetch(apiUrl, {
 				method: "POST",
 				headers: {
@@ -77,7 +81,9 @@ async function saveRecipe(url: string): Promise<RecipeResponse> {
 			})
 				.then((response) => {
 					if (!response.ok) {
-						// Try to parse as JSON for error details
+						/**
+						 * Try to parse as JSON for error details.
+						 */
 						return response
 							.json()
 							.then((errorData) => {
@@ -91,7 +97,9 @@ async function saveRecipe(url: string): Promise<RecipeResponse> {
 							});
 					}
 
-					// Read SSE stream
+					/**
+					 * Read SSE stream.
+					 */
 					const reader = response.body?.getReader();
 					const decoder = new TextDecoder();
 
@@ -106,6 +114,7 @@ async function saveRecipe(url: string): Promise<RecipeResponse> {
 					let buffer = "";
 
 					const readChunk = (): Promise<void> => {
+						// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: SSE parsing logic is inherently complex
 						return reader.read().then(({ done, value }) => {
 							if (done) {
 								resolve({
@@ -143,8 +152,10 @@ async function saveRecipe(url: string): Promise<RecipeResponse> {
 											});
 											return;
 										}
-									} catch (e) {
-										// Ignore parse errors for malformed events
+									} catch (_e) {
+										/**
+										 * Ignore parse errors for malformed events.
+										 */
 									}
 								}
 							}
@@ -160,14 +171,18 @@ async function saveRecipe(url: string): Promise<RecipeResponse> {
 				})
 				.catch((error) => {
 					hideProgress();
-					// Network error - server might not be running
+					/**
+					 * Network error - server might not be running.
+					 */
 					if (error instanceof TypeError && error.message.includes("fetch")) {
 						resolve({
 							success: false,
 							error: `Cannot connect to server at ${serverUrl}.\n\nMake sure the server is running:\n  bun run server`,
 						});
 					} else if (error instanceof TypeError) {
-						// Other network errors (CORS, timeout, etc.)
+						/**
+						 * Other network errors (CORS, timeout, etc.).
+						 */
 						resolve({
 							success: false,
 							error: `Connection error: ${error.message}\n\nCheck that the server is running: bun run server`,
@@ -200,7 +215,9 @@ function updateUrlDisplay(url: string | null, title: string | null): void {
 		return;
 	}
 
-	// Validate it's an HTTP(S) URL
+	/**
+	 * Validate it's an HTTP(S) URL.
+	 */
 	if (!url.startsWith("http://") && !url.startsWith("https://")) {
 		urlDisplay.textContent = "Not a valid web page";
 		urlDisplay.className =
@@ -208,14 +225,22 @@ function updateUrlDisplay(url: string | null, title: string | null): void {
 		return;
 	}
 
-	// Show the page title if available, otherwise fall back to shortened URL
-	if (title && title.trim()) {
-		urlDisplay.textContent = title.trim();
+	/**
+	 * Show the page title if available, otherwise fall back to shortened URL.
+	 */
+	const trimmedTitle = title?.trim();
+	if (trimmedTitle) {
+		urlDisplay.textContent = trimmedTitle;
 		urlDisplay.className =
 			"text-[15px] text-gray-700 p-3 bg-gray-50 border border-gray-200 rounded-md break-words leading-relaxed transition-all duration-200 font-medium text-left hover:bg-gray-100 hover:border-gray-300";
-		urlDisplay.title = url; // Show full URL in tooltip
+		/**
+		 * Show full URL in tooltip.
+		 */
+		urlDisplay.title = url;
 	} else {
-		// Fallback to shortened URL if no title
+		/**
+		 * Fallback to shortened URL if no title.
+		 */
 		try {
 			const urlObj = new URL(url);
 			const displayText = `${urlObj.hostname}${urlObj.pathname}`;
@@ -239,7 +264,8 @@ function updateStatus(message: string, type: "info" | "success" | "error" = "inf
 	if (!statusEl) return;
 
 	statusEl.textContent = message;
-	const baseClasses = "py-3 px-4 rounded-lg text-[13px] leading-relaxed animate-[fadeIn_0.2s_ease-in] block";
+	const baseClasses =
+		"py-3 px-4 rounded-lg text-[13px] leading-relaxed animate-[fadeIn_0.2s_ease-in] block";
 	const typeClasses = {
 		info: "bg-blue-50 text-blue-800 border border-blue-200",
 		success: "bg-green-50 text-green-800 border border-green-200",
@@ -282,7 +308,9 @@ async function handleSave(): Promise<void> {
 		return;
 	}
 
-	// Validate URL
+	/**
+	 * Validate URL.
+	 */
 	if (!url.startsWith("http://") && !url.startsWith("https://")) {
 		updateStatus("Not a valid web page URL.", "error");
 		return;
@@ -297,29 +325,25 @@ async function handleSave(): Promise<void> {
 
 		if (result.success && result.notionUrl) {
 			updateStatus("Recipe saved successfully!", "success");
-			// Open the Notion page after a short delay
+			/**
+			 * Open the Notion page after a short delay.
+			 */
 			setTimeout(() => {
 				chrome.tabs.create({ url: result.notionUrl });
-			}, 1000);
+			}, 1_000);
+		} else if (result.error?.includes("Duplicate recipe found") && result.notionUrl) {
+			/**
+			 * Handle duplicate errors specially.
+			 */
+			updateStatus(`This recipe already exists. Opening existing recipe...`, "info");
+			setTimeout(() => {
+				chrome.tabs.create({ url: result.notionUrl });
+			}, 1_000);
 		} else {
-			// Handle duplicate errors specially
-			if (result.error?.includes("Duplicate recipe found") && result.notionUrl) {
-				updateStatus(
-					`This recipe already exists. Opening existing recipe...`,
-					"info",
-				);
-				setTimeout(() => {
-					chrome.tabs.create({ url: result.notionUrl });
-				}, 1000);
-			} else {
-				updateStatus(result.error || "Failed to save recipe", "error");
-			}
+			updateStatus(result.error || "Failed to save recipe", "error");
 		}
 	} catch (error) {
-		updateStatus(
-			error instanceof Error ? error.message : "An unexpected error occurred",
-			"error",
-		);
+		updateStatus(error instanceof Error ? error.message : "An unexpected error occurred", "error");
 	} finally {
 		setLoading(false);
 		hideProgress();
@@ -330,18 +354,24 @@ async function handleSave(): Promise<void> {
  * Initializes the popup UI.
  */
 async function init(): Promise<void> {
-	// Get and display current tab info
+	/**
+	 * Get and display current tab info.
+	 */
 	const { url, title } = await getCurrentTab();
 	updateUrlDisplay(url, title);
 
-	// Set up event listeners
+	/**
+	 * Set up event listeners.
+	 */
 	const saveButton = document.getElementById("save-button");
 	if (saveButton) {
 		saveButton.addEventListener("click", handleSave);
 	}
 }
 
-// Initialize when DOM is ready
+/**
+ * Initialize when DOM is ready.
+ */
 if (document.readyState === "loading") {
 	document.addEventListener("DOMContentLoaded", init);
 } else {

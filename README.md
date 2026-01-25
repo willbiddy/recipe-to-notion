@@ -2,9 +2,14 @@
 
 Save recipes to Notion without copying and pasting. Paste a URL from almost any recipe site and get a Notion page with the cover photo, ingredients grouped by shopping aisle, instructions, and AI-generated tags. Claude automatically analyzes each recipe to add cuisine tags, meal types, healthiness scores, ingredient categories, and a short description, so you can filter and search your collection later.
 
-![Gallery view in Notion showing recipe cards with cover photos, tags, and meal types](docs/notion-gallery.png)
+**Browser Extension Popup** - One-click recipe saving from any recipe page
+<img src="docs/extension-popup.png" alt="Browser extension popup interface" width="600">
 
-![Individual recipe page in Notion with properties, AI-generated description, and ingredients list](docs/notion-recipe.png)
+**Notion Gallery View** - Browse your recipe collection with cover photos, tags, and meal types
+<img src="docs/notion-gallery.png" alt="Gallery view in Notion showing recipe cards with cover photos, tags, and meal types" width="600">
+
+**Notion Recipe Page** - Individual recipe with properties, AI-generated description, and organized ingredients
+<img src="docs/notion-recipe.png" alt="Individual recipe page in Notion with properties, AI-generated description, and ingredients list" width="600">
 
 ## How It Works
 
@@ -149,18 +154,11 @@ curl -X POST https://your-app.vercel.app/api/recipes \
 
 ### Other Deployment Options
 
-The server can also be deployed to:
-- **Railway** - Easy setup, excellent Bun support
-- **Fly.io** - Global edge deployment
-- **Render** - Simple web UI
-- **DigitalOcean App Platform** - Professional setup
-- **VPS** (DigitalOcean, Linode, AWS EC2) - Full control
-
-For these platforms, use the existing `cli-server.ts` entry point. The server runs on port 3000 by default (configurable via `SERVER_PORT` env var).
+The server can also be deployed to Railway, Fly.io, Render, DigitalOcean, or any VPS. Use `cli-server.ts` as the entry point (defaults to port 3000, configurable via `SERVER_PORT`).
 
 ## Usage
 
-There are three ways to use recipe-to-notion:
+There are two ways to use recipe-to-notion:
 
 ### 1. Command Line Interface (CLI)
 
@@ -179,15 +177,7 @@ bun src/cli.ts --html ~/Downloads/recipe.html "https://example.com/recipe-url"
 
 When processing multiple URLs, each is processed sequentially. Failures (duplicates, scraping errors) don't stop execution - all URLs are attempted.
 
-### 2. Browser Extension
-
-Save recipes with one click directly from your browser! The extension can work with either:
-- **Local server** (runs on your machine)
-- **Vercel deployment** (cloud-hosted, no local server needed)
-
-See the [Browser Extension](#browser-extension) section below for setup instructions.
-
-### 3. HTTP API
+### 2. HTTP API
 
 Use the REST API to integrate recipe-to-notion into your own applications or scripts:
 
@@ -216,7 +206,7 @@ curl -X POST https://your-server.com/api/recipes \
 
 ## Browser Extension
 
-Save recipes with one click directly from your browser! The extension works with either a local server or a cloud-deployed server (Vercel).
+Save recipes with one click directly from your browser!
 
 ### Option A: Local Server Setup
 
@@ -273,54 +263,27 @@ Deploy the server to Vercel so you don't need to run a local server. See the [De
 
 The extension uses Server-Sent Events (SSE) to show real-time progress updates while processing recipes.
 
-
-### Example output
-
-```
-✔ Processing recipe
-◐ Checking for duplicates...
-✔ No duplicate URL found
-◐ Scraping recipe...
-✔ Scraped: Golden Diner Pancakes (JSON-LD)                                                       
-◐ Generating AI scores and tags...
-✔ Tagged recipe
-
- ╭────────────Golden Diner Pancakes───────────────╮
- │                                                │
- │  Author:      Genevieve Ko                     │
- │  Tags:        American, Pancakes, Eggs, Fruit  │
- │  Meal type:   Breakfast                        │
- │  Healthiness: 3/10                             │
- │  Minutes:     105                              │
- │  Ingredients: 21 items                         │
- │  Steps:       9 steps                          │
- │                                                │
- ╰────────────────────────────────────────────────╯
-
-◐ Saving to Notion...
-✔ Saved to Notion: https://www.notion.so/abc123def456...
-```
-
-## Notion Views
-
-Once you have a few recipes, create custom Notion views to browse your collection. Some ideas:
-
-- Gallery view with cover photos
-- "Quick meals" filter for recipes under 30 minutes
-- "Healthy meals" filter using the healthiness score
-
 ## Ingredient Organization
 
-Ingredients are automatically grouped by shopping category in standard grocery store order:
+Ingredients are automatically grouped by shopping category: Produce → Deli & Bakery → Meat & Seafood → Pantry → Snacks & Soda → Dairy & Eggs → Frozen Foods.
 
-- **Produce** — Fresh fruits, vegetables, herbs
-- **Deli & Bakery** — Sliced meats, rotisserie chicken, bread
-- **Meat & Seafood** — Raw meats, poultry, fish, seafood
-- **Pantry Aisles** — Pasta, canned goods, cereal, peanut butter, rice, beans, flour, sugar, spices, oils, condiments
-- **Snacks & Soda** — Chips, cookies, crackers, sparkling water, soda
-- **Dairy & Eggs** — Milk, butter, cheese, yogurt, eggs
-- **Frozen Foods** — Frozen pizza, frozen vegetables, ice cream
 
+## Architecture & Tech Stack
+
+All entry points (CLI, HTTP server, Vercel functions, browser extension) share the same core pipeline (`src/index.ts: processRecipe()`), ensuring consistent behavior across all interfaces.
+
+**Processing Flow:**
+```
+URL Input
+  ↓
+Duplicate Check (Notion API)
+  ↓
+Scrape Recipe (Cheerio + JSON-LD/HTML parsers)
+  ↓
+AI Analysis (Claude API)
+  ↓
+Create Notion Page (Notion API)
+```
 
 ## Project Structure
 
@@ -356,7 +319,7 @@ extension/
 └── icons/             Extension icons (SVG source files)
 ```
 
-## Tech Stack
+**Technologies:**
 
 | Technology | Purpose |
 |------------|---------|

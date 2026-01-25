@@ -40,6 +40,78 @@ export function parseJsonLd($: cheerio.CheerioAPI, sourceUrl: string): Recipe | 
 }
 
 /**
+ * Checks if an object is a Recipe type.
+ *
+ * @param data - The object to check.
+ * @returns True if the object has @type "Recipe" or includes "Recipe" in an array.
+ */
+function isRecipeType(data: Record<string, unknown>): boolean {
+	return data["@type"] === "Recipe" || (isArray(data["@type"]) && data["@type"].includes("Recipe"));
+}
+
+/**
+ * Searches for Recipe in common nested patterns.
+ *
+ * @param data - The data object to search.
+ * @param visited - Set of visited objects to prevent infinite loops.
+ * @returns The Recipe object if found, null otherwise.
+ */
+function searchNestedPatterns(
+	data: Record<string, unknown>,
+	visited: WeakSet<object>,
+): Record<string, unknown> | null {
+	/**
+	 * Handle @graph arrays.
+	 */
+	if (isArray(data["@graph"])) {
+		const found = findRecipeInLd(data["@graph"], visited);
+		if (found) return found;
+	}
+
+	/**
+	 * Handle WebPage patterns: mainEntity and mainEntityOfPage.
+	 */
+	const mainEntity = data.mainEntity ?? data.mainEntityOfPage;
+	if (mainEntity) {
+		const found = findRecipeInLd(mainEntity, visited);
+		if (found) return found;
+	}
+
+	/**
+	 * Handle ItemList patterns: itemListElement.
+	 */
+	if (isArray(data.itemListElement)) {
+		const found = findRecipeInLd(data.itemListElement, visited);
+		if (found) return found;
+	}
+
+	return null;
+}
+
+/**
+ * Recursively searches object properties for nested Recipe objects.
+ *
+ * @param data - The data object to search.
+ * @param visited - Set of visited objects to prevent infinite loops.
+ * @returns The Recipe object if found, null otherwise.
+ */
+function searchObjectProperties(
+	data: Record<string, unknown>,
+	visited: WeakSet<object>,
+): Record<string, unknown> | null {
+	for (const value of Object.values(data)) {
+		/**
+		 * Skip @context and @id as they're metadata, not content.
+		 */
+		if (isObject(value)) {
+			const found = findRecipeInLd(value, visited);
+			if (found) return found;
+		}
+	}
+	return null;
+}
+
+/**
  * Recursively searches a JSON-LD structure for an object with `@type: "Recipe"`.
  *
  * Handles various JSON-LD structures including top-level arrays,
@@ -51,59 +123,6 @@ export function parseJsonLd($: cheerio.CheerioAPI, sourceUrl: string): Recipe | 
  * @param visited - Set of visited objects to prevent infinite loops.
  * @returns The Recipe object if found, null otherwise.
  */
-/**
- * Checks if an object is a Recipe type.
- */
-function isRecipeType(data: Record<string, unknown>): boolean {
-	return data["@type"] === "Recipe" || (isArray(data["@type"]) && data["@type"].includes("Recipe"));
-}
-
-/**
- * Searches for Recipe in common nested patterns.
- */
-function searchNestedPatterns(
-	data: Record<string, unknown>,
-	visited: WeakSet<object>,
-): Record<string, unknown> | null {
-	// Handle @graph arrays
-	if (isArray(data["@graph"])) {
-		const found = findRecipeInLd(data["@graph"], visited);
-		if (found) return found;
-	}
-
-	// Handle WebPage patterns: mainEntity and mainEntityOfPage
-	const mainEntity = data.mainEntity ?? data.mainEntityOfPage;
-	if (mainEntity) {
-		const found = findRecipeInLd(mainEntity, visited);
-		if (found) return found;
-	}
-
-	// Handle ItemList patterns: itemListElement
-	if (isArray(data.itemListElement)) {
-		const found = findRecipeInLd(data.itemListElement, visited);
-		if (found) return found;
-	}
-
-	return null;
-}
-
-/**
- * Recursively searches object properties for nested Recipe objects.
- */
-function searchObjectProperties(
-	data: Record<string, unknown>,
-	visited: WeakSet<object>,
-): Record<string, unknown> | null {
-	for (const value of Object.values(data)) {
-		// Skip @context and @id as they're metadata, not content
-		if (isObject(value)) {
-			const found = findRecipeInLd(value, visited);
-			if (found) return found;
-		}
-	}
-	return null;
-}
-
 function findRecipeInLd(
 	data: unknown,
 	visited = new WeakSet<object>(),
@@ -118,20 +137,28 @@ function findRecipeInLd(
 		return null;
 	}
 
-	// Prevent infinite loops with circular references
+	/**
+	 * Prevent infinite loops with circular references.
+	 */
 	if (visited.has(data)) return null;
 	visited.add(data);
 
-	// Check if this object is a Recipe
+	/**
+	 * Check if this object is a Recipe.
+	 */
 	if (isRecipeType(data)) {
 		return data;
 	}
 
-	// Search common nested patterns
+	/**
+	 * Search common nested patterns.
+	 */
 	const nestedResult = searchNestedPatterns(data, visited);
 	if (nestedResult) return nestedResult;
 
-	// Recursively search all object properties (for other nested patterns)
+	/**
+	 * Recursively search all object properties (for other nested patterns).
+	 */
 	return searchObjectProperties(data, visited);
 }
 
@@ -153,7 +180,9 @@ function extractFromJsonLd(data: Record<string, unknown>, sourceUrl: string): Re
 		);
 	}
 
-	// Try author first, fall back to publisher name
+	/**
+	 * Try author first, fall back to publisher name.
+	 */
 	const author = parseAuthor(data.author) ?? parseAuthor(data.publisher);
 
 	return {
@@ -226,18 +255,10 @@ function extractImageUrl(item: unknown): string | null {
 }
 
 /**
- * Extracts the best (largest) image URL from JSON-LD `image` formats.
- *
- * Handles multiple image formats: direct string URLs, arrays of
- * strings, arrays of ImageObject objects with `url` properties,
- * and single ImageObject objects. When multiple images are available,
- * prefers the largest one (last in array, or highest width).
- *
- * @param image - The image data in various JSON-LD formats.
- * @returns The image URL string, or null if not found.
- */
-/**
  * Finds the best image URL from an array of ImageObject items by width.
+ *
+ * @param imageArray - Array of ImageObject items.
+ * @returns The URL of the image with the largest width, or null if not found.
  */
 function findBestImageByWidth(imageArray: unknown[]): string | null {
 	let bestUrl = "";
@@ -254,19 +275,31 @@ function findBestImageByWidth(imageArray: unknown[]): string | null {
 }
 
 /**
- * Parses image data which may be a string, ImageObject, or array of either.
+ * Extracts the best (largest) image URL from JSON-LD `image` formats.
+ *
+ * Handles multiple image formats: direct string URLs, arrays of
+ * strings, arrays of ImageObject objects with `url` properties,
+ * and single ImageObject objects. When multiple images are available,
+ * prefers the largest one (last in array, or highest width).
+ *
+ * @param image - The image data in various JSON-LD formats.
+ * @returns The image URL string, or null if not found.
  */
 function parseImage(image: unknown): string | null {
 	if (!image) return null;
 	if (isString(image)) return image;
 
 	if (isArray(image) && image.length > 0) {
-		// Check if first item has width info (ImageObject array)
+		/**
+		 * Check if first item has width info (ImageObject array).
+		 */
 		const firstItem = image[0];
 		if (hasProperty(firstItem, "url") && hasProperty(firstItem, "width")) {
 			return findBestImageByWidth(image);
 		}
-		// Array of strings/objects - take the last one (usually full-size)
+		/**
+		 * Array of strings/objects - take the last one (usually full-size).
+		 */
 		return extractImageUrl(image[image.length - 1]);
 	}
 

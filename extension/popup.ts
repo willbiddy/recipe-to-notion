@@ -1,4 +1,6 @@
 import { getServerUrl } from "./config.js";
+import { saveRecipe } from "./shared/api.js";
+import { createStorageAdapter } from "./shared/storage.js";
 import {
 	clearStatus,
 	hideProgress,
@@ -7,8 +9,6 @@ import {
 	showProgress,
 	updateStatus,
 } from "./shared/ui.js";
-import { saveRecipe } from "./shared/api.js";
-import { createStorageAdapter } from "./shared/storage.js";
 
 /**
  * Gets the current active tab URL and title.
@@ -84,7 +84,7 @@ function updateUrlDisplay(url: string | null, title: string | null): void {
 /**
  * Saves a recipe by sending the URL to the server with progress streaming.
  */
-async function saveRecipeWithProgress(url: string) {
+function saveRecipeWithProgress(url: string) {
 	const serverUrl = getServerUrl();
 	const apiUrl = `${serverUrl}/api/recipes`;
 

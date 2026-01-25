@@ -10,6 +10,9 @@ module.exports = {
 	],
 	theme: {
 		extend: {
+			fontFamily: {
+				sans: ["Nunito", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
+			},
 			keyframes: {
 				fadeIn: {
 					"0%": { opacity: "0", transform: "translateY(-4px)" },

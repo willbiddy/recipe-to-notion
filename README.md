@@ -123,22 +123,21 @@ When processing multiple URLs, each is processed sequentially. Failures (duplica
 ◐ Checking for duplicates...
 ✔ No duplicate URL found
 ◐ Scraping recipe...
-✔ Scraped: Classic Sloppy Joes (JSON-LD)
+✔ Scraped: Golden Diner Pancakes (JSON-LD)                                                       
 ◐ Generating AI scores and tags...
 ✔ Tagged recipe
 
- ╭─Classic Sloppy Joes──────────────────╮
- │                                      │
- │  Author:      Marian Burros          │
- │  Tags:        American, Sandwich,    │
- │               Beef                   │
- │  Meal type:   Lunch, Dinner          │
- │  Healthiness: 4/10                   │
- │  Minutes:     22                     │
- │  Ingredients: 13 items               │
- │  Steps:       3 steps                │
- │                                      │
- ╰──────────────────────────────────────╯
+ ╭────────────Golden Diner Pancakes───────────────╮
+ │                                                │
+ │  Author:      Genevieve Ko                     │
+ │  Tags:        American, Pancakes, Eggs, Fruit  │
+ │  Meal type:   Breakfast                        │
+ │  Healthiness: 3/10                             │
+ │  Minutes:     105                              │
+ │  Ingredients: 21 items                         │
+ │  Steps:       9 steps                          │
+ │                                                │
+ ╰────────────────────────────────────────────────╯
 
 ◐ Saving to Notion...
 ✔ Saved to Notion: https://www.notion.so/abc123def456...

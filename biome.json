@@ -47,7 +47,7 @@
 			},
 			"performance": {
 				"noAccumulatingSpread": "error",
-				"noBarrelFile": "off"
+				"noBarrelFile": "error"
 			},
 			"suspicious": {
 				"noConsole": "off",

@@ -21,6 +21,7 @@ Process and save a recipe to Notion.
 ```bash
 curl -X POST https://your-server.com/api/recipes \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_SECRET" \
   -d '{"url": "https://cooking.nytimes.com/recipes/1234-example"}'
 ```
 
@@ -87,6 +88,7 @@ When `stream: true`, returns Server-Sent Events (SSE) with the following event t
 ```bash
 curl -X POST https://your-server.com/api/recipes \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_SECRET" \
   -d '{"url": "https://example.com/recipe", "stream": true}'
 ```
 
@@ -118,7 +120,7 @@ curl https://your-server.com/api/health
 The API includes CORS headers to allow cross-origin requests from browser extensions and web applications.
 
 - **Allowed Methods:** `GET`, `POST`, `OPTIONS`
-- **Allowed Headers:** `Content-Type`
+- **Allowed Headers:** `Content-Type`, `Authorization`
 - **Allowed Origins:** `*` (all origins)
 
 ---
@@ -145,13 +147,30 @@ Currently, there is no rate limiting implemented. Be mindful of API usage costs 
 
 ## Authentication
 
-The API does not require authentication. However, it requires valid environment variables:
+**The API requires authentication via API key to prevent unauthorized usage.**
+
+All requests must include an `Authorization` header with a Bearer token:
+
+```
+Authorization: Bearer YOUR_API_SECRET
+```
+
+The `API_SECRET` is set as an environment variable in your Vercel deployment. This prevents others from using your API and incurring costs on your API keys.
+
+### Required Environment Variables
+
+The API requires the following environment variables:
 
 - `ANTHROPIC_API_KEY` - For Claude API calls
 - `NOTION_API_KEY` - For Notion API calls
 - `NOTION_DATABASE_ID` - Target Notion database
+- `API_SECRET` - Secret key for API authentication (use a strong, random value)
 
 These should be configured in your Vercel deployment environment variables.
+
+### Error Responses
+
+- **400 Bad Request** - Missing or invalid `Authorization` header, or invalid API key
 
 ---
 

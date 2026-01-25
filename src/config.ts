@@ -4,6 +4,7 @@ const envSchema = z.object({
 	ANTHROPIC_API_KEY: z.string().min(1, "ANTHROPIC_API_KEY is required"),
 	NOTION_API_KEY: z.string().min(1, "NOTION_API_KEY is required"),
 	NOTION_DATABASE_ID: z.string().min(1, "NOTION_DATABASE_ID is required"),
+	API_SECRET: z.string().min(1, "API_SECRET is required"),
 });
 
 /**
@@ -24,7 +25,7 @@ export function loadConfig(): Config {
 		const missing = result.error.issues.map((i) => i.path.join(".")).join(", ");
 		throw new Error(
 			`Missing or invalid environment variables: ${missing}\n` +
-				`Ensure .env file exists with ANTHROPIC_API_KEY, NOTION_API_KEY, and NOTION_DATABASE_ID`,
+				`Ensure .env file exists with ANTHROPIC_API_KEY, NOTION_API_KEY, NOTION_DATABASE_ID, and API_SECRET`,
 		);
 	}
 	return result.data;

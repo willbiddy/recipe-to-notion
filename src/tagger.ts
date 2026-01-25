@@ -117,10 +117,12 @@ const claudeResponseSchema = z.object({
  * Sends recipe data to Claude and receives tags, meal-type classifications,
  * healthiness scores, and time estimates.
  *
+ * Uses Claude's tool_use API to ensure structured, validated responses.
+ *
  * @param recipe - The scraped recipe to analyze.
  * @param apiKey - Anthropic API key.
  * @returns AI-generated tags and scores for the recipe.
- * @throws If the Claude API call fails or returns unparseable JSON.
+ * @throws If the Claude API call fails, tool_use is missing, or validation fails.
  */
 export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeTags> {
 	const client = new Anthropic({ apiKey });
@@ -131,26 +133,34 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
 		model: ClaudeModel.Sonnet,
 		max_tokens: ClaudeLimit.MaxTokens,
 		system: SYSTEM_PROMPT,
+		tools: [
+			{
+				name: "tag_recipe",
+				description: "Output structured recipe tags and metadata",
+				input_schema: z.toJSONSchema(claudeResponseSchema) as Anthropic.Tool.InputSchema,
+			},
+		],
+		tool_choice: { type: "tool", name: "tag_recipe" },
 		messages: [{ role: "user", content: userMessage }],
 	});
 
-	const text = response.content
-		.filter((block) => block.type === "text")
-		.map((block) => block.text)
-		.join("");
+	const toolUse = response.content.find(
+		(block): block is Anthropic.Messages.ToolUseBlock =>
+			block.type === "tool_use",
+	);
 
-	let parsed: unknown;
-	try {
-		const cleanedText = stripMarkdownCodeBlocks(text);
-		parsed = JSON.parse(cleanedText);
-	} catch (error) {
+	if (!toolUse) {
+		const textContent = response.content
+			.filter((block) => block.type === "text")
+			.map((block) => block.text)
+			.join("");
 		throw new Error(
-			`Failed to parse Claude response as JSON. Response: ${text.substring(0, ErrorDisplay.JsonParsePreview)}...\n` +
-				`Parse error: ${error instanceof Error ? error.message : String(error)}`,
+			`Expected tool_use response from Claude, but received text instead. Response: ${textContent.substring(0, ErrorDisplay.JsonParsePreview)}...`,
 		);
 	}
 
-	const validationResult = claudeResponseSchema.safeParse(parsed);
+	// Runtime validation as a safety check (belt-and-suspenders approach)
+	const validationResult = claudeResponseSchema.safeParse(toolUse.input);
 	if (!validationResult.success) {
 		const issues = validationResult.error.issues
 			.map((issue) => {
@@ -159,8 +169,8 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
 			})
 			.join("\n");
 		throw new Error(
-			`Claude response validation failed:\n${issues}\n\n` +
-				`Raw response: ${text.substring(0, ErrorDisplay.ValidationPreview)}...`,
+			`Claude tool response validation failed:\n${issues}\n\n` +
+				`Tool input: ${JSON.stringify(toolUse.input).substring(0, ErrorDisplay.ValidationPreview)}...`,
 		);
 	}
 
@@ -245,28 +255,6 @@ function buildHints(recipe: Recipe): string[] {
 	return hints;
 }
 
-/**
- * Strips markdown code blocks from text (handles ```json, ```, etc.).
- *
- * This is needed because Claude sometimes wraps JSON responses in
- * markdown code blocks. Removes the code fence markers to extract
- * the raw JSON content. Also handles incomplete responses where
- * only the opening fence is present.
- *
- * @param text - The text that may contain markdown code blocks.
- * @returns The text with code block markers removed.
- */
-function stripMarkdownCodeBlocks(text: string): string {
-	let cleaned = text.trim();
-
-	// Remove opening code fence (```json or ```)
-	cleaned = cleaned.replace(/^```(?:json)?\s*\n?/, "");
-
-	// Remove closing code fence
-	cleaned = cleaned.replace(/\n?```\s*$/, "");
-
-	return cleaned.trim();
-}
 
 /**
  * Clamps a number to the range [min, max].

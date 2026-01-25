@@ -3,6 +3,23 @@
 	"bunVersion": "1.x",
 	"buildCommand": "bun run build:web",
 	"outputDirectory": ".",
+	"rewrites": [
+		{
+			"source": "/(.*)",
+			"destination": "/public/$1",
+			"has": [
+				{
+					"type": "header",
+					"key": "accept",
+					"value": "text/html"
+				}
+			]
+		},
+		{
+			"source": "/(.*\\.(js|css|json|png|jpg|svg|ico))",
+			"destination": "/public/$1"
+		}
+	],
 	"functions": {
 		"api/**/*.ts": {
 			"maxDuration": 60

@@ -177,20 +177,10 @@ export function filterEditorNotes(instructions: string[]): string[] {
 	return instructions
 		.map((instruction) => {
 			const trimmed = instruction.trim();
-			/**
-			 * Check if the instruction is entirely an editor's note.
-			 */
 			const isEntirelyNote = /^Editor'?s?\s+note:?/i.test(trimmed);
 			if (isEntirelyNote) {
-				/**
-				 * Return empty string to filter it out later.
-				 */
 				return "";
 			}
-			/**
-			 * Remove editor's note from within the instruction text.
-			 * Matches "Editor's note:" or "Editor note:" and everything after it to the end.
-			 */
 			const cleaned = trimmed.replace(/\s*Editor'?s?\s+note:?.*$/i, "").trim();
 			return cleaned;
 		})

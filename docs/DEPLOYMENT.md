@@ -1,6 +1,6 @@
 # Deployment Guide
 
-Deploy the recipe-to-notion server to Vercel. The code is already configured for Vercel deployment.
+Deploy the Recipe Clipper for Notion server to Vercel. The code is already configured for Vercel deployment.
 
 ---
 

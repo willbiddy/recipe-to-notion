@@ -15,6 +15,13 @@ export const SecurityHttpStatus = {
 export const MAX_REQUEST_BODY_SIZE = 10 * 1024;
 
 /**
+ * Maximum URL length in characters (2048).
+ * Prevents DoS attacks via extremely long URLs.
+ * Browsers typically limit URLs to ~2KB, so this aligns with browser behavior.
+ */
+export const MAX_URL_LENGTH = 2048;
+
+/**
  * Request body format for recipe endpoints.
  */
 export type RecipeRequest = {
@@ -101,6 +108,7 @@ export function validateApiKeyHeader(
 /**
  * Validates a recipe URL to ensure it's safe to process.
  * Only allows HTTP and HTTPS protocols to prevent SSRF attacks.
+ * Also validates URL length to prevent DoS attacks.
  *
  * @param urlString - The URL string to validate.
  * @param createErrorResponse - Function to create error responses.
@@ -110,6 +118,14 @@ export function validateRecipeUrl(
 	urlString: string,
 	createErrorResponse: (error: string, status: number) => Response,
 ): Response | null {
+	// Validate URL length to prevent DoS attacks
+	if (urlString.length > MAX_URL_LENGTH) {
+		return createErrorResponse(
+			`URL too long (max ${MAX_URL_LENGTH} characters)`,
+			SecurityHttpStatus.BadRequest,
+		);
+	}
+
 	try {
 		const url = new URL(urlString);
 		// Only allow HTTP and HTTPS protocols to prevent SSRF attacks

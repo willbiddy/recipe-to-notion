@@ -1,4 +1,4 @@
-# recipe-to-notion
+# Recipe Clipper for Notion
 
 Save recipes to Notion without copying and pasting. Paste a URL from almost any recipe site and get a Notion page with the cover photo, ingredients grouped by shopping aisle, instructions, and AI-generated tags. Claude automatically analyzes each recipe to add cuisine tags, meal types, healthiness scores, ingredient categories, and a short description, so you can filter and search your collection later.
 
@@ -45,7 +45,7 @@ bun install
 
 1. Go to [console.anthropic.com](https://console.anthropic.com/) and sign in or create an account.
 2. Navigate to **API Keys** in the sidebar.
-3. Click **Create Key** and give it a name (e.g., "recipe-to-notion").
+3. Click **Create Key** and give it a name (e.g., "Recipe Clipper for Notion").
 4. Copy the API key (starts with `sk-ant-`). You won't be able to see it again, so save it securely.
 
 ### 3. Create a Notion integration
@@ -105,7 +105,7 @@ API_SECRET=your-secret-api-key-here
 
 ## Usage
 
-There are four ways to use recipe-to-notion:
+There are four ways to use Recipe Clipper for Notion:
 
 ### 1. Command Line Interface (CLI)
 
@@ -142,7 +142,7 @@ Save recipes from your phone or any device using the mobile-friendly web interfa
 
 ### 4. HTTP API
 
-Use the REST API to integrate recipe-to-notion into your own applications or scripts.
+Use the REST API to integrate Recipe Clipper for Notion into your own applications or scripts.
 
 > 📖 **Full API Docs:** See [API Reference](docs/API.md) for complete endpoint documentation, request/response formats, and examples.
 

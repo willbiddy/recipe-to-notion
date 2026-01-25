@@ -12,6 +12,8 @@ import {
 
 /**
  * Gets the current active tab URL and title.
+ *
+ * @returns Object with the current tab's URL and title, or null values if unavailable.
  */
 async function getCurrentTab(): Promise<{ url: string | null; title: string | null }> {
 	const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -27,7 +29,12 @@ async function getCurrentTab(): Promise<{ url: string | null; title: string | nu
 const storage = createStorageAdapter();
 
 /**
- * Updates the UI to show the current page title.
+ * Updates the UI to show the current page title or URL.
+ *
+ * Validates the URL and displays either the page title or a shortened URL.
+ *
+ * @param url - The current tab's URL.
+ * @param title - The current tab's title.
  */
 function updateUrlDisplay(url: string | null, title: string | null): void {
 	const urlDisplay = document.getElementById("url-display");
@@ -50,22 +57,13 @@ function updateUrlDisplay(url: string | null, title: string | null): void {
 		return;
 	}
 
-	/**
-	 * Show the page title if available, otherwise fall back to shortened URL.
-	 */
 	const trimmedTitle = title?.trim();
 	if (trimmedTitle) {
 		urlDisplay.textContent = trimmedTitle;
 		urlDisplay.className =
 			"text-sm text-gray-700 p-3.5 bg-white border-2 border-orange-200 rounded-2xl break-words leading-relaxed transition-all duration-200 text-left hover:border-orange-300 min-h-[3rem] flex items-center";
-		/**
-		 * Show full URL in tooltip.
-		 */
 		urlDisplay.title = url;
 	} else {
-		/**
-		 * Fallback to shortened URL if no title.
-		 */
 		try {
 			const urlObj = new URL(url);
 			const displayText = `${urlObj.hostname}${urlObj.pathname}`;
@@ -83,6 +81,9 @@ function updateUrlDisplay(url: string | null, title: string | null): void {
 
 /**
  * Saves a recipe by sending the URL to the server with progress streaming.
+ *
+ * @param url - The recipe URL to save.
+ * @returns Promise that resolves when the recipe is saved.
  */
 function saveRecipeWithProgress(url: string) {
 	const serverUrl = getServerUrl();
@@ -105,7 +106,9 @@ function saveRecipeWithProgress(url: string) {
 }
 
 /**
- * Handles the save button click.
+ * Handles the save button click event.
+ *
+ * Validates the URL and initiates recipe saving with progress updates.
  */
 async function handleSave(): Promise<void> {
 	const { url } = await getCurrentTab();
@@ -114,9 +117,6 @@ async function handleSave(): Promise<void> {
 		return;
 	}
 
-	/**
-	 * Validate URL.
-	 */
 	if (!url.startsWith("http://") && !url.startsWith("https://")) {
 		updateStatus("Not a valid web page URL.", "error", { textSize: "xs" });
 		return;
@@ -131,9 +131,6 @@ async function handleSave(): Promise<void> {
 
 		if (result.success) {
 			updateStatus("Recipe saved successfully!", "success", { textSize: "xs" });
-			/**
-			 * Show "Opening..." message, then open the Notion page.
-			 */
 			setTimeout(() => {
 				updateStatus("Opening...", "info", { textSize: "xs" });
 				setTimeout(() => {
@@ -141,9 +138,6 @@ async function handleSave(): Promise<void> {
 				}, 500);
 			}, 500);
 		} else if (result.error.includes("Duplicate recipe found") && result.notionUrl) {
-			/**
-			 * Handle duplicate errors specially.
-			 */
 			updateStatus(`This recipe already exists. Opening...`, "info", { textSize: "xs" });
 			setTimeout(() => {
 				chrome.tabs.create({ url: result.notionUrl });
@@ -163,6 +157,8 @@ async function handleSave(): Promise<void> {
 
 /**
  * Toggles the settings panel visibility.
+ *
+ * Shows or hides the settings accordion and updates the chevron icon rotation.
  */
 function toggleSettings(): void {
 	const settingsPanel = document.getElementById("settings-panel");
@@ -193,6 +189,8 @@ function toggleSettings(): void {
 
 /**
  * Loads the API key from storage into the input field.
+ *
+ * Called when the settings panel is opened.
  */
 async function loadApiKeyIntoInput(): Promise<void> {
 	const input = document.getElementById("api-key-input") as HTMLInputElement;
@@ -208,6 +206,8 @@ async function loadApiKeyIntoInput(): Promise<void> {
 
 /**
  * Saves the API key to storage.
+ *
+ * Validates that the API key is not empty before saving.
  */
 async function saveApiKey(): Promise<void> {
 	const input = document.getElementById("api-key-input") as HTMLInputElement;
@@ -220,7 +220,6 @@ async function saveApiKey(): Promise<void> {
 	}
 
 	try {
-		// Use chrome.storage.local instead of sync to avoid syncing sensitive API secret to Google servers
 		await storage.saveApiKey(apiKey);
 		updateStatus("API secret saved successfully", "success", { textSize: "xs" });
 		setTimeout(() => {
@@ -235,17 +234,13 @@ async function saveApiKey(): Promise<void> {
 
 /**
  * Initializes the popup UI.
+ *
+ * Sets up event listeners, displays current tab info, and checks API key configuration.
  */
 async function init(): Promise<void> {
-	/**
-	 * Get and display current tab info.
-	 */
 	const { url, title } = await getCurrentTab();
 	updateUrlDisplay(url, title);
 
-	/**
-	 * Set up event listeners.
-	 */
 	const saveButton = document.getElementById("save-button");
 	if (saveButton) {
 		saveButton.addEventListener("click", handleSave);
@@ -261,14 +256,8 @@ async function init(): Promise<void> {
 		saveApiKeyButton.addEventListener("click", saveApiKey);
 	}
 
-	/**
-	 * Set up API key visibility toggle.
-	 */
 	setupApiKeyVisibilityToggle();
 
-	/**
-	 * Check if API key is configured and show warning if not.
-	 */
 	const apiKey = await storage.getApiKey();
 	if (!apiKey) {
 		updateStatus("⚠️ API secret not configured. Click the settings icon to set it up.", "error", {
@@ -277,9 +266,6 @@ async function init(): Promise<void> {
 	}
 }
 
-/**
- * Initialize when DOM is ready.
- */
 if (document.readyState === "loading") {
 	document.addEventListener("DOMContentLoaded", init);
 } else {

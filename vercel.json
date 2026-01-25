@@ -9,10 +9,6 @@
 		{
 			"source": "/",
 			"destination": "/api/index"
-		},
-		{
-			"source": "/(web\\.js|web\\.css|manifest\\.json|fork-and-knife\\.png|favicon.*\\.png|apple-touch-icon\\.png)",
-			"destination": "/public/$1"
 		}
 	],
 	"functions": {

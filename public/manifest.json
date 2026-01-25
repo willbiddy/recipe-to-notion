@@ -1,6 +1,6 @@
 {
-	"name": "Recipe to Notion",
-	"short_name": "Recipe2Notion",
+	"name": "Recipe Clipper for Notion",
+	"short_name": "RecipeClipper",
 	"description": "Save recipes from any website to your Notion database",
 	"start_url": "/",
 	"display": "standalone",

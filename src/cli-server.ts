@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * CLI entry point for starting the recipe-to-notion HTTP server.
+ * CLI entry point for starting the Recipe Clipper for Notion HTTP server.
  *
  * Usage:
  *   bun src/cli-server.ts
@@ -41,6 +41,12 @@ try {
 
 /**
  * Kills any process using the specified port.
+ *
+ * Attempts to gracefully kill the process first, then force kills if needed.
+ * Returns true if the port is available (either was free or process was killed).
+ *
+ * @param port - The port number to check and free.
+ * @returns True if the port is available, false if kill failed.
  */
 async function killProcessOnPort(port: number): Promise<boolean> {
 	try {
@@ -49,26 +55,15 @@ async function killProcessOnPort(port: number): Promise<boolean> {
 		if (pid) {
 			consola.warn(`Port ${port} is in use by process ${pid}. Killing it...`);
 			try {
-				/**
-				 * Try graceful kill first.
-				 */
 				execSync(`kill ${pid}`, { encoding: "utf-8", stdio: "ignore" });
 				await new Promise((resolve) => setTimeout(resolve, 500));
 
-				/**
-				 * Check if still running, force kill if needed.
-				 */
 				try {
 					execSync(`lsof -ti:${port}`, { encoding: "utf-8", stdio: "ignore" });
-					/**
-					 * Still running, force kill.
-					 */
 					execSync(`kill -9 ${pid}`, { encoding: "utf-8", stdio: "ignore" });
 					await new Promise((resolve) => setTimeout(resolve, 500));
 				} catch {
-					/**
-					 * Process is gone.
-					 */
+					// Process is gone
 				}
 
 				consola.success(`Process ${pid} killed`);
@@ -78,14 +73,8 @@ async function killProcessOnPort(port: number): Promise<boolean> {
 				return false;
 			}
 		}
-		/**
-		 * Port not in use.
-		 */
 		return true;
 	} catch (_error) {
-		/**
-		 * Port is not in use, or lsof failed (which is fine).
-		 */
 		return true;
 	}
 }
@@ -107,20 +96,14 @@ while (retries > 0 && !started) {
 		server = Bun.serve({
 			port,
 			fetch: handleRequest,
-			/**
-			 * 1 mniute - recipe processing can take 15-30 seconds.
-			 */
 			idleTimeout: 60,
-			/**
-			 * Handle server errors.
-			 */
 			error(error) {
 				consola.error(`Server error: ${error.message}`);
 				return new Response("Internal Server Error", { status: HttpStatus.InternalServerError });
 			},
 		});
 
-		consola.ready(`Recipe-to-Notion server running on http://localhost:${port}`);
+		consola.ready(`Recipe Clipper for Notion server running on http://localhost:${port}`);
 		consola.info("Endpoints:");
 		consola.info(`  POST http://localhost:${port}/api/recipes`);
 		consola.info(`  GET  http://localhost:${port}/health`);
@@ -131,17 +114,11 @@ while (retries > 0 && !started) {
 			(errorMessage.includes("EADDRINUSE") || errorMessage.includes("address already in use")) &&
 			retries > 1
 		) {
-			/**
-			 * Port still in use, try killing again and retry.
-			 */
 			retries--;
 			consola.warn(`Port ${port} still in use, retrying... (${retries} attempts left)`);
 			await killProcessOnPort(port);
 			await new Promise((resolve) => setTimeout(resolve, 1_000));
 		} else {
-			/**
-			 * Final failure or non-port error.
-			 */
 			if (errorMessage.includes("EADDRINUSE") || errorMessage.includes("address already in use")) {
 				consola.fatal(
 					`Port ${port} is still in use after cleanup attempts.\n\n` +
@@ -157,9 +134,6 @@ while (retries > 0 && !started) {
 	}
 }
 
-/**
- * Graceful shutdown handlers.
- */
 process.on("SIGINT", () => {
 	consola.info("\nShutting down server...");
 	server.stop();

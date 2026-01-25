@@ -1,6 +1,6 @@
 # iOS Shortcut Setup
 
-Set up an iOS Shortcut to save recipes directly from any browser's Share Sheet (Safari, Chrome, Firefox, etc.). After setup, "Save Recipe to Notion" will appear in your Share Sheet whenever you're viewing a recipe page.
+Set up an iOS Shortcut to save recipes directly from any browser's Share Sheet (Safari, Chrome, Firefox, etc.). After setup, "Save Recipe with Recipe Clipper for Notion" will appear in your Share Sheet whenever you're viewing a recipe page.
 
 ---
 
@@ -69,7 +69,7 @@ If you prefer to create it manually, follow the screenshot below exactly:
 If you added the shortcut using the direct link above:
 
 1. Open the Shortcuts app
-2. Find and open the **"Save Recipe to Notion"** shortcut
+2. Find and open the **"Save Recipe with Recipe Clipper for Notion"** shortcut
 3. Tap on the **"Text"** action (Action 2)
 4. Replace `https://recipe-to-notion-xi.vercel.app/?url=` with your actual Vercel deployment URL
 5. Make sure to include `?url=` at the end
@@ -78,7 +78,7 @@ If you added the shortcut using the direct link above:
 
 1. Tap the **"..."** button (three dots) in the top-right of the shortcut editor
 2. In the **"Details"** screen:
-   - Set the shortcut name to: **"Save Recipe to Notion"**
+   - Set the shortcut name to: **"Save Recipe with Recipe Clipper for Notion"**
    - (Optional) Choose an icon and color
    - (Optional) Tap **"Add to Home Screen"** if you want a home screen shortcut
 3. **IMPORTANT:** Before tapping "Done", make sure you complete Step 4 (Share Sheet) below
@@ -127,7 +127,7 @@ After setup:
 
 1. Navigate to a recipe page in any browser (Safari, Chrome, Firefox, etc.)
 2. Tap the **Share** button (square with arrow)
-3. Scroll down and tap **"Save Recipe to Notion"**
+3. Scroll down and tap **"Save Recipe with Recipe Clipper for Notion"**
 4. The web interface opens with the recipe URL
 5. If your API key is configured, the recipe is automatically processed
 6. The Notion page opens when complete
@@ -205,7 +205,7 @@ This error means the URL variable isn't being passed to the "Open URL" action co
 You can create variations of the shortcut:
 
 - **"Save Recipe"** - Quick name for frequent use
-- **"Recipe to Notion"** - Alternative name
+- **"Recipe Clipper for Notion"** - Alternative name
 - **"Save to Notion"** - Generic name
 
 All shortcuts can use the same actions - just change the name and icon.

@@ -87,6 +87,14 @@ export interface ProgressCallbacks {
 
 /**
  * Saves a recipe by sending the URL to the server with progress streaming.
+ *
+ * Uses Server-Sent Events (SSE) to stream progress updates to the client.
+ *
+ * @param url - The recipe URL to save.
+ * @param apiUrl - The API endpoint URL.
+ * @param storage - Storage adapter for retrieving the API key.
+ * @param callbacks - Callbacks for progress, completion, and error events.
+ * @returns Promise that resolves with the recipe response.
  */
 export async function saveRecipe(
 	url: string,
@@ -104,9 +112,6 @@ export async function saveRecipe(
 
 	return new Promise((resolve, reject) => {
 		try {
-			/**
-			 * Use Server-Sent Events for progress updates.
-			 */
 			fetch(apiUrl, {
 				method: "POST",
 				headers: {
@@ -117,9 +122,6 @@ export async function saveRecipe(
 			})
 				.then((response) => {
 					if (!response.ok) {
-						/**
-						 * Try to parse as JSON for error details.
-						 */
 						return response
 							.json()
 							.then((errorData) => {
@@ -131,7 +133,6 @@ export async function saveRecipe(
 								} as RecipeResponse);
 							})
 							.catch(async () => {
-								// If JSON parsing fails, try to get text response
 								const text = await response.text().catch(() => "");
 								resolve({
 									success: false,
@@ -140,9 +141,6 @@ export async function saveRecipe(
 							});
 					}
 
-					/**
-					 * Read SSE stream.
-					 */
 					const reader = response.body?.getReader();
 					const decoder = new TextDecoder();
 
@@ -201,9 +199,7 @@ export async function saveRecipe(
 											return;
 										}
 									} catch (_e) {
-										/**
-										 * Ignore parse errors for malformed events.
-										 */
+										// Ignore parse errors for malformed events
 									}
 								}
 							}
@@ -218,9 +214,6 @@ export async function saveRecipe(
 					});
 				})
 				.catch((error) => {
-					/**
-					 * Network error - server might not be running.
-					 */
 					let errorMessage: string;
 					if (error instanceof TypeError && error.message.includes("fetch")) {
 						errorMessage = `Cannot connect to server.\n\nMake sure the server is running.`;

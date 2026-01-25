@@ -266,9 +266,6 @@ export async function createRecipePage(
 ): Promise<string> {
 	const notion = new Client({ auth: notionApiKey });
 
-	/**
-	 * Check for duplicates before creating (unless explicitly skipped).
-	 */
 	if (!skipDuplicateCheck) {
 		const duplicate = await checkForDuplicate(recipe, notionApiKey, databaseId);
 		if (duplicate) {
@@ -334,9 +331,6 @@ function buildIngredientBlocks(grouped: Map<string, Array<{ name: string }>>): u
 	const orderedCategories = getCategoryOrder();
 	const otherCategories: string[] = [];
 
-	/**
-	 * Collect categories not in the standard order.
-	 */
 	for (const category of grouped.keys()) {
 		if (!orderedCategories.includes(category)) {
 			otherCategories.push(category);
@@ -344,9 +338,6 @@ function buildIngredientBlocks(grouped: Map<string, Array<{ name: string }>>): u
 	}
 	otherCategories.sort();
 
-	/**
-	 * Display categories in order.
-	 */
 	for (const category of [...orderedCategories, ...otherCategories]) {
 		const ingredients = grouped.get(category);
 		if (ingredients && ingredients.length > 0) {
@@ -370,26 +361,22 @@ function buildIngredientBlocks(grouped: Map<string, Array<{ name: string }>>): u
 function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
 	const blocks: unknown[] = [];
 
-	/**
-	 * Add description if available (no heading).
-	 * Split on double newlines to create separate paragraphs.
-	 */
 	if (tags.description) {
-		const paragraphs = tags.description.split("\n\n").filter((p) => p.trim());
+		let descriptionText = tags.description;
+		// Handle both literal \n\n strings (escaped) and actual newlines
+		// First replace escaped newlines, then split on actual newlines
+		descriptionText = descriptionText.replace(/\\n\\n/g, "\n\n");
+		// Also handle single escaped newlines that might be used for line breaks
+		descriptionText = descriptionText.replace(/\\n/g, "\n");
+		const paragraphs = descriptionText.split("\n\n").filter((p) => p.trim());
 		for (const p of paragraphs) {
 			blocks.push(paragraph(p));
 		}
 	}
 
-	/**
-	 * Add ingredients section.
-	 */
 	if (tags.ingredients && tags.ingredients.length > 0) {
 		blocks.push(heading1("Ingredients"));
 		const grouped = groupIngredientsByCategory(tags.ingredients);
-		/**
-		 * Convert CategorizedIngredient[] to the format expected by buildIngredientBlocks.
-		 */
 		const converted = new Map<string, Array<{ name: string }>>();
 		for (const [category, ingredients] of grouped.entries()) {
 			converted.set(
@@ -401,18 +388,12 @@ function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
 		}
 		blocks.push(...buildIngredientBlocks(converted));
 	} else if (recipe.ingredients.length > 0) {
-		/**
-		 * Fallback to original flat list if categorization failed.
-		 */
 		blocks.push(heading1("Ingredients"));
 		for (const ingredient of recipe.ingredients) {
 			blocks.push(bulletItem(ingredient));
 		}
 	}
 
-	/**
-	 * Add instructions section.
-	 */
 	if (recipe.instructions.length > 0) {
 		blocks.push(heading1("Preparation"));
 		for (const step of recipe.instructions) {

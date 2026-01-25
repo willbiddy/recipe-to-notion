@@ -134,6 +134,12 @@ function parseRecipeFromHtml(html: string, sourceUrl: string): Recipe {
 }
 
 /**
+ * Request timeout in milliseconds (30 seconds).
+ * Prevents DoS attacks via slow responses or resource exhaustion.
+ */
+const REQUEST_TIMEOUT_MS = 30_000;
+
+/**
  * Fetches a recipe URL and extracts structured data.
  *
  * Attempts JSON-LD (schema.org/Recipe) parsing first, which works for most
@@ -148,26 +154,41 @@ function parseRecipeFromHtml(html: string, sourceUrl: string): Recipe {
 export async function scrapeRecipe(url: string): Promise<Recipe> {
 	const parsedUrl = new URL(url);
 
-	const response = await fetch(url, {
-		headers: {
-			...BROWSER_HEADERS,
-			Referer: `${parsedUrl.protocol}//${parsedUrl.host}/`,
-		},
-	});
+	// Set up timeout to prevent DoS attacks
+	const controller = new AbortController();
+	const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
-	if (!response.ok) {
-		if (response.status === 403) {
+	try {
+		const response = await fetch(url, {
+			signal: controller.signal,
+			headers: {
+				...BROWSER_HEADERS,
+				Referer: `${parsedUrl.protocol}//${parsedUrl.host}/`,
+			},
+		});
+
+		if (!response.ok) {
+			if (response.status === 403) {
+				throw new Error(
+					`Failed to fetch ${url}: 403 Forbidden. This site blocks automated requests.\n` +
+						`  Tip: Save the page source in your browser and use --html:\n` +
+						`  bun src/cli.ts --html ~/Downloads/recipe.html "${url}"`,
+				);
+			}
+			throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
+		}
+
+		const html = await response.text();
+		return parseRecipeFromHtml(html, url);
+	} catch (error) {
+		clearTimeout(timeoutId);
+		if (error instanceof Error && error.name === "AbortError") {
 			throw new Error(
-				`Failed to fetch ${url}: 403 Forbidden. This site blocks automated requests.\n` +
-					`  Tip: Save the page source in your browser and use --html:\n` +
-					`  bun src/cli.ts --html ~/Downloads/recipe.html "${url}"`,
+				`Request timeout: Failed to fetch ${url} within ${REQUEST_TIMEOUT_MS / 1000} seconds. The server may be slow or unresponsive.`,
 			);
 		}
-		throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
+		throw error;
 	}
-
-	const html = await response.text();
-	return parseRecipeFromHtml(html, url);
 }
 
 /**
@@ -182,9 +203,9 @@ export async function scrapeRecipe(url: string): Promise<Recipe> {
  * @throws If the file cannot be read or no recipe data is found.
  */
 export async function scrapeRecipeFromHtml(htmlPath: string, sourceUrl: string): Promise<Recipe> {
-	// Use Bun's native file API for faster file reading
 	const file = Bun.file(htmlPath);
 	const html = await file.text();
+
 	try {
 		return parseRecipeFromHtml(html, sourceUrl);
 	} catch (error) {

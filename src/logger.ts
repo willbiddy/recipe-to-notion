@@ -32,13 +32,18 @@ const fallbackColors = {
  * Gets the consola logger, falling back to console if not available.
  * In serverless environments, consola may not be bundled, so we always use the fallback.
  * For local/CLI usage, consola will be available via static imports in other files.
+ *
+ * @returns Logger instance (fallback in serverless, consola in CLI).
  */
 function getConsola() {
-	// In serverless environments, always use fallback to avoid module resolution issues
-	// The CLI and local server will use consola directly via their own imports
 	return fallbackLogger;
 }
 
+/**
+ * Gets color utilities, falling back to no-op functions if not available.
+ *
+ * @returns Color utility functions.
+ */
 function getColors() {
 	return fallbackColors;
 }

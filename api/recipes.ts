@@ -5,6 +5,7 @@
  * Supports both streaming (SSE) and non-streaming responses.
  */
 
+import { checkRateLimit, getClientIdentifier } from "../src/rate-limit.js";
 import {
 	MAX_REQUEST_BODY_SIZE,
 	type RecipeRequest,
@@ -39,17 +40,35 @@ type RecipeResponse = {
 };
 
 /**
+ * Sets security headers on responses.
+ *
+ * @param response - The response object to add security headers to.
+ */
+function setSecurityHeaders(response: Response): void {
+	response.headers.set("X-Content-Type-Options", "nosniff");
+	response.headers.set("X-Frame-Options", "DENY");
+	response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+}
+
+/**
  * Handles CORS headers for browser extension requests.
+ *
+ * @param response - The response object to add CORS headers to.
  */
 function setCorsHeaders(response: Response): void {
 	response.headers.set("Access-Control-Allow-Origin", "*");
 	response.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
 	response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
 	response.headers.set("Access-Control-Expose-Headers", "*");
+	response.headers.set("Access-Control-Allow-Credentials", "false");
 }
 
 /**
  * Creates an error response with CORS headers.
+ *
+ * @param error - The error message to include in the response.
+ * @param status - The HTTP status code for the error.
+ * @returns Response with error details and CORS headers.
  */
 function createErrorResponse(error: string, status: number): Response {
 	const errorResponse: RecipeResponse = {
@@ -63,8 +82,14 @@ function createErrorResponse(error: string, status: number): Response {
 
 /**
  * Handles recipe processing requests with Server-Sent Events for progress.
+ *
+ * Streams progress updates to the client as the recipe is processed.
+ *
+ * @param url - The recipe URL to process.
+ * @param requestId - Optional request correlation ID for logging.
+ * @returns Response with SSE stream for progress updates.
  */
-function handleRecipeStream(url: string): Response {
+function handleRecipeStream(url: string, requestId?: string): Response {
 	const stream = new ReadableStream({
 		// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: SSE stream handling is inherently complex
 		async start(controller) {
@@ -80,27 +105,18 @@ function handleRecipeStream(url: string): Response {
 			};
 
 			try {
-				/**
-				 * Send initial progress event immediately so extension knows connection is working.
-				 */
 				sendEvent({
 					type: ServerProgressEventType.Progress,
 					message: "Starting...",
 					progressType: "starting",
 				});
 
-				/**
-				 * Lazy load modules to avoid initialization issues.
-				 */
 				const { processRecipe } = await import("../src/index.js");
 				const { createCliLogger, printRecipeSummary } = await import("../src/logger.js");
 				const { getNotionPageUrl } = await import("../src/notion.js");
 
 				const logger = createCliLogger();
 
-				/**
-				 * Process with progress callbacks (for SSE) and logger (for server console).
-				 */
 				const result = await processRecipe(
 					url,
 					(event) => {
@@ -113,9 +129,6 @@ function handleRecipeStream(url: string): Response {
 					logger,
 				);
 
-				/**
-				 * Print recipe summary box (same as CLI).
-				 */
 				printRecipeSummary(result.recipe, result.tags);
 
 				const notionUrl = getNotionPageUrl(result.pageId);
@@ -138,9 +151,6 @@ function handleRecipeStream(url: string): Response {
 					},
 				});
 			} catch (error) {
-				/**
-				 * Log full error details for debugging.
-				 */
 				console.error("Recipe processing error in stream:", error);
 				if (error instanceof Error) {
 					console.error("Error name:", error.name);
@@ -154,40 +164,13 @@ function handleRecipeStream(url: string): Response {
 					console.error("Error value:", JSON.stringify(error, null, 2));
 				}
 
-				/**
-				 * Extract error message, handling various error types.
-				 */
-				let errorMessage: string;
-				if (error instanceof Error) {
-					errorMessage = error.message || error.name || "Unknown error";
-				} else if (typeof error === "object" && error !== null) {
-					/**
-					 * Try to extract meaningful error info from object.
-					 */
-					const errorObj = error as Record<string, unknown>;
-					errorMessage =
-						(typeof errorObj.message === "string" && errorObj.message) ||
-						(typeof errorObj.error === "string" && errorObj.error) ||
-						JSON.stringify(error).substring(0, 200);
-				} else {
-					errorMessage = String(error);
-				}
-
-				const isDuplicate = errorMessage.includes("Duplicate recipe found");
-
-				let notionUrl: string | undefined;
-				if (isDuplicate) {
-					const urlMatch = errorMessage.match(/View it at: (https:\/\/www\.notion\.so\/[^\s]+)/);
-					if (urlMatch) {
-						notionUrl = urlMatch[1];
-					}
-				}
+				const { message, notionUrl } = sanitizeError(error, requestId);
 
 				try {
 					sendEvent({
 						type: ServerProgressEventType.Error,
 						success: false,
-						error: errorMessage,
+						error: message,
 						...(notionUrl && { notionUrl }),
 					});
 				} catch (e) {
@@ -215,39 +198,90 @@ function handleRecipeStream(url: string): Response {
 }
 
 /**
- * Handles errors from recipe processing and returns appropriate response.
+ * Generates a unique request correlation ID.
+ *
+ * @returns A unique request ID string.
  */
-function handleRecipeError(error: unknown): Response {
-	const errorMessage = error instanceof Error ? error.message : String(error);
+function generateRequestId(): string {
+	return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+}
+
+/**
+ * Sanitizes error messages for client responses.
+ * Logs detailed errors server-side but returns generic messages to clients.
+ *
+ * @param error - The error that occurred.
+ * @param requestId - Optional request correlation ID for logging.
+ * @returns Sanitized error message for client and extracted Notion URL if duplicate.
+ */
+function sanitizeError(
+	error: unknown,
+	requestId?: string,
+): { message: string; notionUrl?: string; statusCode: number } {
+	const fullError = error instanceof Error ? error : new Error(String(error));
+	const errorMessage = fullError.message;
 	const isDuplicate = errorMessage.includes("Duplicate recipe found");
 
-	let statusCode: number = HttpStatus.InternalServerError;
-	if (isDuplicate) {
-		/**
-		 * Conflict status code.
-		 */
-		statusCode = HttpStatus.Conflict;
-	} else if (errorMessage.includes("Failed to fetch") || errorMessage.includes("403")) {
-		/**
-		 * Bad Gateway (scraping failure).
-		 */
-		statusCode = HttpStatus.BadGateway;
-	}
+	// Log detailed error server-side
+	const logPrefix = requestId ? `[${requestId}]` : "";
+	console.error(`${logPrefix} Recipe processing error:`, {
+		message: errorMessage,
+		stack: fullError.stack,
+		name: fullError.name,
+	});
 
-	/**
-	 * Extract Notion URL from duplicate error message if present.
-	 */
+	let statusCode: number = HttpStatus.InternalServerError;
+	let clientMessage: string;
 	let notionUrl: string | undefined;
+
 	if (isDuplicate) {
+		statusCode = HttpStatus.Conflict;
+		// Duplicate errors are safe to return as-is (user-friendly)
+		clientMessage = errorMessage;
 		const urlMatch = errorMessage.match(/View it at: (https:\/\/www\.notion\.so\/[^\s]+)/);
 		if (urlMatch) {
 			notionUrl = urlMatch[1];
 		}
+	} else if (errorMessage.includes("Failed to fetch") || errorMessage.includes("403")) {
+		statusCode = HttpStatus.BadGateway;
+		// Network errors: return generic message but keep some context
+		if (errorMessage.includes("403")) {
+			clientMessage =
+				"The recipe site blocked the request. Try saving the page source and using the --html option.";
+		} else if (errorMessage.includes("timeout")) {
+			clientMessage = "Request timed out. The recipe site may be slow or unresponsive.";
+		} else {
+			clientMessage =
+				"Failed to fetch the recipe page. The site may be unavailable or blocking requests.";
+		}
+	} else if (errorMessage.includes("Invalid URL") || errorMessage.includes("URL")) {
+		statusCode = HttpStatus.BadRequest;
+		// URL validation errors are safe to return
+		clientMessage = errorMessage;
+	} else {
+		// Generic internal errors: don't expose details
+		clientMessage = "An error occurred while processing the recipe. Please try again.";
 	}
+
+	return { message: clientMessage, notionUrl, statusCode };
+}
+
+/**
+ * Handles errors from recipe processing and returns appropriate response.
+ *
+ * Determines the correct HTTP status code based on error type (duplicate, scraping failure, etc.)
+ * and extracts Notion URL from duplicate error messages.
+ *
+ * @param error - The error that occurred during recipe processing.
+ * @param requestId - Optional request correlation ID for logging.
+ * @returns Response with appropriate status code and error details.
+ */
+function handleRecipeError(error: unknown, requestId?: string): Response {
+	const { message, notionUrl, statusCode } = sanitizeError(error, requestId);
 
 	const errorResponse: RecipeResponse = {
 		success: false,
-		error: errorMessage,
+		error: message,
 		...(notionUrl && { notionUrl }),
 	};
 
@@ -267,50 +301,66 @@ export default {
 	 * @returns Response with recipe processing result or error.
 	 */
 	async fetch(req: Request): Promise<Response> {
-		/**
-		 * Handle CORS preflight immediately without any module dependencies.
-		 * This must work even if the module hasn't fully loaded.
-		 */
+		const requestId = generateRequestId();
+
 		if (req.method === "OPTIONS") {
 			const headers = new Headers();
+			headers.set("X-Content-Type-Options", "nosniff");
+			headers.set("X-Frame-Options", "DENY");
+			headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
 			headers.set("Access-Control-Allow-Origin", "*");
 			headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
 			headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
 			headers.set("Access-Control-Expose-Headers", "*");
+			headers.set("Access-Control-Allow-Credentials", "false");
 			return new Response(null, { status: 204, headers });
 		}
 
-		/**
-		 * Only allow POST.
-		 */
 		if (req.method !== "POST") {
 			const response = Response.json(
 				{ error: "Method not allowed" },
 				{ status: HttpStatus.MethodNotAllowed },
 			);
+			setSecurityHeaders(response);
 			setCorsHeaders(response);
 			return response;
 		}
 
-		/**
-		 * Validate API key authentication.
-		 */
+		// Check rate limit before processing
+		const clientId = getClientIdentifier(req);
+		const rateLimit = checkRateLimit(clientId);
+		if (!rateLimit.allowed) {
+			const response = Response.json(
+				{
+					success: false,
+					error: "Rate limit exceeded. Please try again later.",
+				},
+				{
+					status: 429,
+					headers: {
+						"X-RateLimit-Limit": "10",
+						"X-RateLimit-Remaining": "0",
+						"X-RateLimit-Reset": new Date(rateLimit.resetAt).toISOString(),
+					},
+				},
+			);
+			setSecurityHeaders(response);
+			setCorsHeaders(response);
+			return response;
+		}
+
 		const authHeader = req.headers.get("Authorization");
 		const authError = validateApiKeyHeader(authHeader, (error, status) => {
-			// Log authentication failures for debugging (without exposing the key)
-			console.error(`Authentication failed: ${error}`);
+			console.error(`[${requestId}] Authentication failed: ${error}`);
 			return createErrorResponse(error, status);
 		});
 		if (authError) {
 			return authError;
 		}
 
-		/**
-		 * Check Content-Length header to prevent large request body attacks.
-		 */
 		const contentLength = req.headers.get("Content-Length");
 		const sizeError = validateRequestSize(contentLength, MAX_REQUEST_BODY_SIZE, (error, status) => {
-			console.error(`Request size validation failed: ${error}`);
+			console.error(`[${requestId}] Request size validation failed: ${error}`);
 			return createErrorResponse(error, status);
 		});
 		if (sizeError) {
@@ -320,28 +370,18 @@ export default {
 		try {
 			const body = (await req.json()) as RecipeRequest;
 
-			/**
-			 * Validate request.
-			 */
 			const validationError = validateRecipeRequest(body, (error, status) => {
-				console.error(`Request validation failed: ${error}`);
+				console.error(`[${requestId}] Request validation failed: ${error}`);
 				return createErrorResponse(error, status);
 			});
 			if (validationError) {
 				return validationError;
 			}
 
-			/**
-			 * Use streaming if requested.
-			 */
 			if (body.stream) {
-				return handleRecipeStream(body.url);
+				return handleRecipeStream(body.url, requestId);
 			}
 
-			/**
-			 * Process the recipe (non-streaming).
-			 * Lazy load modules to avoid initialization issues.
-			 */
 			const { processRecipe } = await import("../src/index.js");
 			const { createCliLogger, printRecipeSummary } = await import("../src/logger.js");
 			const { getNotionPageUrl } = await import("../src/notion.js");
@@ -349,9 +389,6 @@ export default {
 			const logger = createCliLogger();
 			const result = await processRecipe(body.url, undefined, logger);
 
-			/**
-			 * Print recipe summary box (same as CLI).
-			 */
 			printRecipeSummary(result.recipe, result.tags);
 
 			const savedNotionUrl = getNotionPageUrl(result.pageId);
@@ -362,15 +399,20 @@ export default {
 				notionUrl: savedNotionUrl,
 			};
 
-			const response = Response.json(successResponse, { status: HttpStatus.OK });
+			const response = Response.json(successResponse, {
+				status: HttpStatus.OK,
+				headers: {
+					"X-RateLimit-Limit": "10",
+					"X-RateLimit-Remaining": rateLimit.remaining.toString(),
+					"X-RateLimit-Reset": new Date(rateLimit.resetAt).toISOString(),
+				},
+			});
+			setSecurityHeaders(response);
 			setCorsHeaders(response);
 			return response;
 		} catch (error) {
-			/**
-			 * Log the error for debugging.
-			 */
 			console.error("Recipe processing error:", error);
-			return handleRecipeError(error);
+			return handleRecipeError(error, requestId);
 		}
 	},
 };

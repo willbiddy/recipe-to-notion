@@ -1,5 +1,5 @@
 /**
- * Web interface for Recipe to Notion.
+ * Web interface for Recipe Clipper for Notion.
  * Handles API key management, URL submission, and SSE progress updates.
  */
 
@@ -16,9 +16,10 @@ import {
 
 /**
  * Gets the server URL from the current origin.
+ *
+ * @returns The current origin URL (works for both localhost and production).
  */
 function getServerUrl(): string {
-	// Use the current origin (works for both localhost and production)
 	return window.location.origin;
 }
 
@@ -29,6 +30,9 @@ const storage = createStorageAdapter();
 
 /**
  * Saves a recipe by sending the URL to the server with progress streaming.
+ *
+ * @param url - The recipe URL to save.
+ * @returns Promise that resolves when the recipe is saved.
  */
 function saveRecipeWithProgress(url: string) {
 	const serverUrl = getServerUrl();
@@ -52,7 +56,9 @@ function saveRecipeWithProgress(url: string) {
 }
 
 /**
- * Handles the save button click.
+ * Handles the save button click event.
+ *
+ * Validates the URL and initiates recipe saving with progress updates.
  */
 async function handleSave(): Promise<void> {
 	const urlInput = document.getElementById("url-input") as HTMLInputElement;
@@ -63,9 +69,6 @@ async function handleSave(): Promise<void> {
 		return;
 	}
 
-	/**
-	 * Validate URL.
-	 */
 	if (!url.startsWith("http://") && !url.startsWith("https://")) {
 		updateStatus("Not a valid web page URL. Must start with http:// or https://", "error");
 		return;
@@ -80,11 +83,7 @@ async function handleSave(): Promise<void> {
 
 		if (result.success) {
 			// Recipe info is displayed in displayRecipeInfo callback
-			// No need to show status here
 		} else if (result.error?.includes("Duplicate recipe found") && result.notionUrl) {
-			/**
-			 * Handle duplicate errors specially.
-			 */
 			updateStatus(
 				`This recipe already exists. <a href="${result.notionUrl}" target="_blank" class="underline font-semibold">Open in Notion</a>`,
 				"info",
@@ -102,6 +101,8 @@ async function handleSave(): Promise<void> {
 
 /**
  * Toggles the settings panel visibility.
+ *
+ * Shows or hides the settings accordion and updates the chevron icon rotation.
  */
 function toggleSettings(): void {
 	const settingsPanel = document.getElementById("settings-panel");
@@ -132,6 +133,10 @@ function toggleSettings(): void {
 
 /**
  * Displays recipe information after successful save, similar to CLI output.
+ *
+ * Shows a formatted card with recipe details and a link to the Notion page.
+ *
+ * @param data - The recipe data including page ID, URL, recipe details, and tags.
  */
 function displayRecipeInfo(data: {
 	pageId: string;
@@ -187,6 +192,8 @@ function displayRecipeInfo(data: {
 
 /**
  * Loads the API key from storage into the input field.
+ *
+ * Called when the settings panel is opened.
  */
 async function loadApiKeyIntoInput(): Promise<void> {
 	const input = document.getElementById("api-key-input") as HTMLInputElement;
@@ -202,6 +209,8 @@ async function loadApiKeyIntoInput(): Promise<void> {
 
 /**
  * Saves the API key to storage.
+ *
+ * Validates that the API key is not empty before saving.
  */
 async function saveApiKeyToStorage(): Promise<void> {
 	const input = document.getElementById("api-key-input") as HTMLInputElement;
@@ -226,22 +235,22 @@ async function saveApiKeyToStorage(): Promise<void> {
 
 /**
  * Parses URL from query parameters and auto-fills the input.
+ *
+ * Used for iOS Shortcuts and other sharing integrations.
+ * Validates that the URL is actually a valid URL before using it.
  */
 function handleQueryParameters(): void {
 	const urlParams = new URLSearchParams(window.location.search);
 	const url = urlParams.get("url");
 
 	if (url) {
-		// Validate that it's actually a URL, not a title or other text
 		try {
 			new URL(url);
 			const urlInput = document.getElementById("url-input") as HTMLInputElement;
 			if (urlInput) {
 				urlInput.value = url;
-				// Auto-submit if API key exists
 				storage.getApiKey().then((apiKey) => {
 					if (apiKey) {
-						// Small delay to ensure UI is ready
 						setTimeout(() => {
 							handleSave();
 						}, 300);
@@ -249,7 +258,6 @@ function handleQueryParameters(): void {
 				});
 			}
 		} catch {
-			// Not a valid URL, ignore it
 			console.warn("Invalid URL in query parameters:", url);
 		}
 	}
@@ -257,25 +265,29 @@ function handleQueryParameters(): void {
 
 /**
  * Handles Web Share Target API (for Android Chrome).
+ *
+ * The share data is passed via URL parameters, which are already handled
+ * by handleQueryParameters().
  */
 function handleWebShareTarget(): void {
-	// Check if this page was opened via Web Share Target API
-	if ("serviceWorker" in navigator) {
-		// The share data is passed via URL parameters when using Web Share Target
-		// We already handle this in handleQueryParameters()
-	}
+	// Web Share Target data is handled via URL parameters in handleQueryParameters()
 }
 
 /**
  * Initializes the web interface.
+ *
+ * Sets up event listeners, handles query parameters, and checks API key configuration.
  */
 async function init(): Promise<void> {
-	/**
-	 * Set up event listeners.
-	 */
 	const saveButton = document.getElementById("save-button");
 	if (saveButton) {
-		saveButton.addEventListener("click", handleSave);
+		saveButton.addEventListener("click", (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			handleSave();
+		});
+	} else {
+		console.error("Save button not found during init");
 	}
 
 	const settingsButton = document.getElementById("settings-button");
@@ -294,14 +306,8 @@ async function init(): Promise<void> {
 		saveApiKeyButton.addEventListener("click", saveApiKeyToStorage);
 	}
 
-	/**
-	 * Set up API key visibility toggle.
-	 */
 	setupApiKeyVisibilityToggle();
 
-	/**
-	 * Allow Enter key to submit URL.
-	 */
 	const urlInput = document.getElementById("url-input") as HTMLInputElement;
 	if (urlInput) {
 		urlInput.addEventListener("keypress", (e) => {
@@ -309,32 +315,18 @@ async function init(): Promise<void> {
 				handleSave();
 			}
 		});
-		// Auto-focus on URL input
 		urlInput.focus();
 	}
 
-	/**
-	 * Handle query parameters (for iOS Shortcuts, sharing, etc.).
-	 */
 	handleQueryParameters();
-
-	/**
-	 * Handle Web Share Target API (Android).
-	 */
 	handleWebShareTarget();
 
-	/**
-	 * Check if API key is configured and show warning if not.
-	 */
 	const apiKey = await storage.getApiKey();
 	if (!apiKey) {
 		updateStatus("⚠️ API secret not configured. Click Settings to set it up.", "error");
 	}
 }
 
-/**
- * Initialize when DOM is ready.
- */
 if (document.readyState === "loading") {
 	document.addEventListener("DOMContentLoaded", init);
 } else {

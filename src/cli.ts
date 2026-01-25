@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * CLI entry point for recipe-to-notion.
+ * CLI entry point for Recipe Clipper for Notion.
  *
  * Usage:
  *   bun src/cli.ts <url> [urls...]
@@ -26,7 +26,7 @@ import { type RecipeTags, tagRecipe } from "./tagger.js";
 
 const main = defineCommand({
 	meta: {
-		name: "recipe-to-notion",
+		name: "recipe-clipper-for-notion",
 		description: "Scrape recipe URL(s), generate AI scores/tags, and save to Notion",
 		version: "1.0.0",
 	},
@@ -122,9 +122,6 @@ async function processUrlsSequentially(
 			failed++;
 		}
 
-		/**
-		 * Add spacing between recipes (except after the last one).
-		 */
 		if (urls.length > 1 && i < urls.length - 1) {
 			console.log();
 		}
@@ -146,20 +143,8 @@ async function processUrlsSequentially(
  * @param htmlPath - Optional path to saved HTML file (bypasses fetching).
  * @returns True if the recipe was saved successfully, false otherwise.
  */
-/**
- * Handles a single recipe URL through the full pipeline with CLI logging:
- * duplicate check → scrape → AI tag → save to Notion.
- *
- * @param url - The recipe URL to process.
- * @param config - Application configuration with API keys.
- * @param htmlPath - Optional path to saved HTML file (bypasses fetching).
- * @returns True if the recipe was saved successfully, false otherwise.
- */
 async function handleRecipe(url: string, config: Config, htmlPath?: string): Promise<boolean> {
 	try {
-		/**
-		 * For --html flag, use the old manual pipeline.
-		 */
 		if (htmlPath) {
 			if (await isDuplicate(url, config)) {
 				return false;
@@ -285,9 +270,6 @@ async function saveToNotion(recipe: Recipe, tags: RecipeTags, config: Config): P
 		tags,
 		config.NOTION_API_KEY,
 		config.NOTION_DATABASE_ID,
-		/**
-		 * Skip duplicate check - already checked above.
-		 */
 		true,
 	);
 

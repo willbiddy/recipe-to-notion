@@ -26,14 +26,11 @@ export default {
 			"Access-Control-Allow-Headers": "Content-Type",
 		};
 
-		/**
-		 * Handle CORS preflight.
-		 */
 		if (req.method === "OPTIONS") {
 			return new Response(null, { status: HttpStatus.NoContent, headers });
 		}
 
-		return new Response(JSON.stringify({ status: "ok", service: "recipe-to-notion" }), {
+		return new Response(JSON.stringify({ status: "ok", service: "recipe-clipper-for-notion" }), {
 			status: HttpStatus.OK,
 			headers,
 		});

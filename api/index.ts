@@ -13,9 +13,13 @@ const __dirname = dirname(__filename);
 const indexPath = join(__dirname, "..", "public", "index.html");
 
 export default {
+	/**
+	 * Serves the web interface index page.
+	 *
+	 * @returns Response with HTML content or 404 error.
+	 */
 	fetch(): Response {
 		try {
-			// Read the index.html file from public directory
 			const html = readFileSync(indexPath, "utf-8");
 
 			return new Response(html, {

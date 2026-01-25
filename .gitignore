@@ -5,7 +5,7 @@ node_modules
 out
 dist
 *.tgz
-recipe-to-notion
+recipe-clipper-for-notion
 
 # extension build output
 extension/*.js

@@ -1,6 +1,6 @@
 # API Reference
 
-The recipe-to-notion server provides a REST API for processing recipes. Deploy to Vercel to use the API.
+The Recipe Clipper for Notion server provides a REST API for processing recipes. Deploy to Vercel to use the API.
 
 ---
 
@@ -109,7 +109,7 @@ curl https://your-server.com/api/health
 ```json
 {
   "status": "ok",
-  "service": "recipe-to-notion"
+  "service": "recipe-clipper-for-notion"
 }
 ```
 
@@ -143,9 +143,39 @@ All errors return JSON responses with appropriate HTTP status codes:
 
 ## Rate Limiting
 
-Currently, there is no rate limiting implemented at the application level. Be mindful of API usage costs (Claude API) when making requests.
+The API implements rate limiting to prevent abuse and control costs. The default limit is **10 requests per minute** per client (IP address or API key).
 
-> **Note:** Vercel's serverless functions have built-in rate limiting based on your plan. For additional protection, consider implementing application-level rate limiting or using Vercel's Edge Middleware for rate limiting.
+### Rate Limit Headers
+
+All responses include rate limit headers:
+
+- `X-RateLimit-Limit` - Maximum number of requests allowed in the time window (default: 10)
+- `X-RateLimit-Remaining` - Number of requests remaining in the current window
+- `X-RateLimit-Reset` - ISO timestamp when the rate limit window resets
+
+### Rate Limit Exceeded
+
+When the rate limit is exceeded, the API returns:
+
+- **Status Code:** `429 Too Many Requests`
+- **Response Body:**
+  ```json
+  {
+    "success": false,
+    "error": "Rate limit exceeded. Please try again later."
+  }
+  ```
+
+### Implementation Notes
+
+- Rate limiting is applied per IP address or API key hash
+- The current implementation uses in-memory storage (suitable for single-instance deployments)
+- For production deployments with multiple serverless function instances, consider using a distributed rate limiting solution like:
+  - [@upstash/ratelimit](https://github.com/upstash/ratelimit) with Redis
+  - Vercel Edge Middleware with a Redis backend
+  - Other distributed caching solutions
+
+> **Note:** Vercel's serverless functions also have platform-level rate limiting based on your plan. Application-level rate limiting provides additional protection and cost control.
 
 ---
 
@@ -178,11 +208,18 @@ The API includes several security measures:
 
 - **Constant-time API key comparison** - Prevents timing attacks on API key validation
 - **URL validation** - Only allows HTTP/HTTPS protocols (blocks file://, javascript:, data:, etc. to prevent SSRF and XSS)
+- **URL length validation** - Maximum URL length of 2048 characters to prevent DoS attacks
 - **Request size limits** - Maximum request body size of 10KB to prevent DoS attacks
+- **Request timeouts** - 30-second timeout on recipe scraping to prevent resource exhaustion
+- **Rate limiting** - 10 requests per minute per client to prevent abuse
+- **Security headers** - X-Content-Type-Options, X-Frame-Options, and Referrer-Policy headers
+- **Error message sanitization** - Detailed errors are logged server-side; generic messages are returned to clients
+- **Request correlation IDs** - All requests are assigned unique IDs for security incident response and debugging
 
 ### Error Responses
 
-- **400 Bad Request** - Missing or invalid `Authorization` header, invalid API key, invalid URL format/protocol, or request body too large
+- **400 Bad Request** - Missing or invalid `Authorization` header, invalid API key, invalid URL format/protocol, URL too long, or request body too large
+- **429 Too Many Requests** - Rate limit exceeded
 
 ---
 

@@ -290,6 +290,10 @@ function updateStatus(message: string, type: "info" | "success" | "error" = "inf
 	const statusEl = document.getElementById("status");
 	if (!statusEl) return;
 
+	// Remove hidden class and inline display style to ensure the element is visible
+	statusEl.classList.remove("hidden");
+	statusEl.style.display = "";
+
 	statusEl.textContent = message;
 	const baseClasses =
 		"py-3 px-4 rounded-lg text-[13px] leading-relaxed animate-[fadeIn_0.2s_ease-in] block";

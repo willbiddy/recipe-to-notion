@@ -24,9 +24,24 @@ iOS browsers (Safari, Chrome, Firefox, etc.) don't support Web Share Target API 
 
 ## Setup Steps
 
-### Step 1: Create the Shortcut
+### Quick Setup: Add the Shortcut Directly (Recommended)
 
-Follow the screenshot below exactly to set up your shortcut:
+**Easiest method:** Click this link on your iPhone/iPad to add the shortcut directly:
+
+👉 **[Add Shortcut to Your Device](https://www.icloud.com/shortcuts/ce2efe6c91a7486896e1c864d9d4855b)**
+
+After adding:
+1. Open the shortcut in the Shortcuts app
+2. Edit the **"Text"** action (Action 2) and replace the URL with your Vercel deployment URL
+3. Follow **Step 4** below to enable Share Sheet
+
+---
+
+### Manual Setup: Create the Shortcut Yourself
+
+If you prefer to create it manually, follow the screenshot below exactly:
+
+<img src="ios-shortcut-setup.png" alt="iOS Shortcut setup showing four actions: Get URLs from Input, Text action with base URL, Combine Text action combining Text and URLs variables, and Open URL action using Combined Text variable">
 
 <img src="ios-shortcut-setup.png" alt="iOS Shortcut setup showing four actions: Get URLs from Input, Text action with base URL, Combine Text action combining Text and URLs variables, and Open URL action using Combined Text variable">
 
@@ -51,17 +66,27 @@ Follow the screenshot below exactly to set up your shortcut:
    - Input: Select **"Combined Text"** variable (from Action 3)
    - Tap "Show More" → Change to **"Open URL"** (singular)
 
-### Step 2: Configure the Shortcut
+### Step 2: Update Your Vercel URL (If Using Direct Link)
+
+If you added the shortcut using the direct link above:
+
+1. Open the Shortcuts app
+2. Find and open the **"Save Recipe to Notion"** shortcut
+3. Tap on the **"Text"** action (Action 2)
+4. Replace `https://recipe-to-notion-xi.vercel.app/?url=` with your actual Vercel deployment URL
+5. Make sure to include `?url=` at the end
+
+### Step 3: Configure the Shortcut (Manual Setup Only)
 
 1. Tap the **"..."** button (three dots) in the top-right of the shortcut editor
 2. In the **"Details"** screen:
    - Set the shortcut name to: **"Save Recipe to Notion"**
    - (Optional) Choose an icon and color
    - (Optional) Tap **"Add to Home Screen"** if you want a home screen shortcut
-3. **IMPORTANT:** Before tapping "Done", make sure you complete Step 3 (Share Sheet) below
+3. **IMPORTANT:** Before tapping "Done", make sure you complete Step 4 (Share Sheet) below
 4. Tap **"Done"** to save the shortcut
 
-### Step 3: Enable Share Sheet (CRITICAL - This makes it appear!)
+### Step 4: Enable Share Sheet (CRITICAL - This makes it appear!)
 
 **This is the most important step! Without this, the shortcut won't appear in your Share Sheet.**
 
@@ -126,17 +151,14 @@ After setup:
    - Make sure **"Show in Share Sheet"** is ON (green toggle)
    - Verify **"URLs"** is checked under "Accepted Types"
 
-2. **Shortcut not saved:**
-   - Make sure you tapped "Done" after configuring the Share Sheet settings
-   - The shortcut should appear in your Shortcuts library
 
-3. **Try these steps:**
+2. **Try these steps:**
    - Force close and reopen the app you're sharing from (Safari, Chrome, etc.)
    - Restart your iPhone/iPad
    - Check Settings → Shortcuts → make sure the shortcut isn't disabled
    - Try sharing from a different app to see if it appears
 
-4. **Still not working?**
+3. **Still not working?**
    - Delete the shortcut and recreate it, making sure to enable Share Sheet before saving
    - Check that you're on iOS 12 or later (required for Share Sheet shortcuts)
 

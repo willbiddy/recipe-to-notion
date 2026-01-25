@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Warm gradient background matching icon.svg -->
+  <defs>
+    <linearGradient id="warmGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fb923c;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#f59e0b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ea580c;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="128" height="128" rx="20" fill="url(#warmGradient)"/>
+  <!-- Fork and knife icon - centered, optimized for small sizes -->
+  <g transform="translate(64, 64)">
+    <!-- Fork (left side) -->
+    <g transform="translate(-20, 0)">
+      <!-- Fork handle -->
+      <line x1="0" y1="8" x2="0" y2="32" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>
+      <!-- Fork tines (3 prongs) -->
+      <line x1="-6" y1="-12" x2="-6" y2="-2" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+      <line x1="0" y1="-12" x2="0" y2="-2" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+      <line x1="6" y1="-12" x2="6" y2="-2" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+    </g>
+    <!-- Knife (right side) -->
+    <g transform="translate(20, 0)">
+      <!-- Knife blade (diagonal) -->
+      <line x1="0" y1="-16" x2="0" y2="28" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>
+      <!-- Knife handle (small rectangle at bottom) -->
+      <rect x="-4" y="24" width="8" height="8" rx="2" fill="#ffffff"/>
+    </g>
+  </g>
+</svg>

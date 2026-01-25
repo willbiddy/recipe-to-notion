@@ -1,4 +1,4 @@
-import * as cheerio from "cheerio";
+import type * as cheerio from "cheerio";
 import type { Recipe } from "../scraper.js";
 import {
 	cleanRecipeName,
@@ -53,21 +53,28 @@ export function extractAuthorFromHtml($: cheerio.CheerioAPI): string | null {
  * @param sourceUrl - Original URL of the recipe page.
  * @returns Parsed recipe data if found, null otherwise.
  */
-export function parseHtml($: cheerio.CheerioAPI, sourceUrl: string): Recipe | null {
-	// Find recipe container with itemtype="http://schema.org/Recipe" or "https://schema.org/Recipe"
-	const container = findRecipeContainer($);
-
-	// Extract name from microdata first, then fall back to og:title/h1
+/**
+ * Extracts recipe name with fallbacks.
+ */
+function extractRecipeName(
+	$: cheerio.CheerioAPI,
+	container: cheerio.Cheerio<cheerio.Element> | null,
+): string | null {
 	const rawName =
 		extractMicrodataProperty($, container, "name") ||
 		extractAttributeWithFallback($, "content", 'meta[property="og:title"]') ||
 		extractTextWithFallback($, "h1");
 
-	if (!rawName) return null;
+	return rawName ? cleanRecipeName(decodeHtmlEntities(rawName)) : null;
+}
 
-	const name = cleanRecipeName(decodeHtmlEntities(rawName));
-
-	// Extract author from microdata, then fall back to other patterns
+/**
+ * Extracts recipe author with fallbacks.
+ */
+function extractRecipeAuthor(
+	$: cheerio.CheerioAPI,
+	container: cheerio.Cheerio<cheerio.Element> | null,
+): string | null {
 	const author =
 		extractMicrodataProperty($, container, "author") ||
 		extractTextWithFallback($, '[itemprop="author"] [itemprop="name"]') ||
@@ -75,44 +82,16 @@ export function parseHtml($: cheerio.CheerioAPI, sourceUrl: string): Recipe | nu
 		extractTextWithFallback($, '[class*="author"] a', '[class*="author"]') ||
 		null;
 
-	// Extract image from microdata, then fall back to og:image/twitter:image
-	const imageUrl =
-		extractMicrodataProperty($, container, "image", true) ||
-		extractAttributeWithFallback($, "content", 'meta[property="og:image"]', 'meta[name="twitter:image"]') ||
-		null;
+	return author ? decodeHtmlEntities(author) : null;
+}
 
-	// Extract description from microdata, then fall back to og:description/meta description
-	const description =
-		extractMicrodataProperty($, container, "description") ||
-		extractAttributeWithFallback($, "content", 'meta[property="og:description"]', 'meta[name="description"]') ||
-		null;
-
-	// Extract time from microdata
-	const totalTimeMinutes = extractMicrodataTime($, container);
-
-	// Extract servings from microdata
-	const servings =
-		extractMicrodataProperty($, container, "recipeYield") ||
-		null;
-
-	// Extract cuisine from microdata
-	const cuisine =
-		extractMicrodataProperty($, container, "recipeCuisine") ||
-		null;
-
-	// Extract category from microdata
-	const category =
-		extractMicrodataProperty($, container, "recipeCategory") ||
-		null;
-
-	// Extract ingredients from microdata, then fall back to CSS classes
-	const ingredients = extractMicrodataArray($, container, "recipeIngredient");
-	const finalIngredients =
-		ingredients.length > 0
-			? ingredients
-			: extractTextArray($, '[itemprop="recipeIngredient"]', '[class*="ingredient"]');
-
-	// Extract instructions from microdata, then fall back to CSS classes
+/**
+ * Extracts recipe instructions with fallbacks.
+ */
+function extractRecipeInstructions(
+	$: cheerio.CheerioAPI,
+	container: cheerio.Cheerio<cheerio.Element> | null,
+): string[] {
 	let instructions: string[] = [];
 	if (container) {
 		const instructionsContainer = container.find('[itemprop="recipeInstructions"]');
@@ -135,6 +114,63 @@ export function parseHtml($: cheerio.CheerioAPI, sourceUrl: string): Recipe | nu
 			'[class*="direction"]',
 		);
 	}
+	return instructions;
+}
+
+export function parseHtml($: cheerio.CheerioAPI, sourceUrl: string): Recipe | null {
+	// Find recipe container with itemtype="http://schema.org/Recipe" or "https://schema.org/Recipe"
+	const container = findRecipeContainer($);
+
+	// Extract name from microdata first, then fall back to og:title/h1
+	const name = extractRecipeName($, container);
+	if (!name) return null;
+
+	// Extract author from microdata, then fall back to other patterns
+	const author = extractRecipeAuthor($, container);
+
+	// Extract image from microdata, then fall back to og:image/twitter:image
+	const imageUrl =
+		extractMicrodataProperty($, container, "image", true) ||
+		extractAttributeWithFallback(
+			$,
+			"content",
+			'meta[property="og:image"]',
+			'meta[name="twitter:image"]',
+		) ||
+		null;
+
+	// Extract description from microdata, then fall back to og:description/meta description
+	const description =
+		extractMicrodataProperty($, container, "description") ||
+		extractAttributeWithFallback(
+			$,
+			"content",
+			'meta[property="og:description"]',
+			'meta[name="description"]',
+		) ||
+		null;
+
+	// Extract time from microdata
+	const totalTimeMinutes = extractMicrodataTime($, container);
+
+	// Extract servings from microdata
+	const servings = extractMicrodataProperty($, container, "recipeYield") || null;
+
+	// Extract cuisine from microdata
+	const cuisine = extractMicrodataProperty($, container, "recipeCuisine") || null;
+
+	// Extract category from microdata
+	const category = extractMicrodataProperty($, container, "recipeCategory") || null;
+
+	// Extract ingredients from microdata, then fall back to CSS classes
+	const ingredients = extractMicrodataArray($, container, "recipeIngredient");
+	const finalIngredients =
+		ingredients.length > 0
+			? ingredients
+			: extractTextArray($, '[itemprop="recipeIngredient"]', '[class*="ingredient"]');
+
+	// Extract instructions from microdata, then fall back to CSS classes
+	const instructions = extractRecipeInstructions($, container);
 
 	if (finalIngredients.length === 0 && instructions.length === 0) return null;
 
@@ -142,7 +178,7 @@ export function parseHtml($: cheerio.CheerioAPI, sourceUrl: string): Recipe | nu
 		name,
 		sourceUrl,
 		scrapeMethod: "html-fallback",
-		author: author ? decodeHtmlEntities(author) : null,
+		author,
 		totalTimeMinutes,
 		servings: servings ? decodeHtmlEntities(servings) : null,
 		imageUrl,
@@ -160,7 +196,7 @@ export function parseHtml($: cheerio.CheerioAPI, sourceUrl: string): Recipe | nu
  * @param $ - Cheerio instance loaded with the page HTML.
  * @returns The recipe container element, or null if not found.
  */
-function findRecipeContainer($: cheerio.CheerioAPI): cheerio.Cheerio<any> | null {
+function findRecipeContainer($: cheerio.CheerioAPI): cheerio.Cheerio<cheerio.Element> | null {
 	const containers = $(
 		'[itemtype="http://schema.org/Recipe"], [itemtype="https://schema.org/Recipe"]',
 	);
@@ -184,7 +220,7 @@ function findRecipeContainer($: cheerio.CheerioAPI): cheerio.Cheerio<any> | null
  */
 function extractMicrodataProperty(
 	$: cheerio.CheerioAPI,
-	container: cheerio.Cheerio<any> | null,
+	container: cheerio.Cheerio<cheerio.Element> | null,
 	itemprop: string,
 	isImage = false,
 ): string | null {
@@ -222,7 +258,7 @@ function extractMicrodataProperty(
  */
 function extractMicrodataArray(
 	$: cheerio.CheerioAPI,
-	container: cheerio.Cheerio<any> | null,
+	container: cheerio.Cheerio<cheerio.Element> | null,
 	itemprop: string,
 ): string[] {
 	const selector = container
@@ -234,9 +270,10 @@ function extractMicrodataArray(
 		const text = $(el).text().trim();
 		if (text) {
 			// Normalize parentheses for ingredients
-			const normalized = itemprop === "recipeIngredient"
-				? normalizeIngredientParentheses(decodeHtmlEntities(text))
-				: decodeHtmlEntities(text);
+			const normalized =
+				itemprop === "recipeIngredient"
+					? normalizeIngredientParentheses(decodeHtmlEntities(text))
+					: decodeHtmlEntities(text);
 			items.push(normalized);
 		}
 	});
@@ -317,7 +354,7 @@ function extractTextArray($: cheerio.CheerioAPI, ...selectors: string[]): string
  */
 function extractMicrodataTime(
 	$: cheerio.CheerioAPI,
-	container: cheerio.Cheerio<any> | null,
+	container: cheerio.Cheerio<cheerio.Element> | null,
 ): number | null {
 	// Try totalTime first, then calculate from cookTime + prepTime
 	const totalTime = extractMicrodataProperty($, container, "totalTime");

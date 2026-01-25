@@ -11,11 +11,14 @@ interface RecipeResponse {
 }
 
 /**
- * Gets the current active tab URL.
+ * Gets the current active tab URL and title.
  */
-async function getCurrentTabUrl(): Promise<string | null> {
+async function getCurrentTab(): Promise<{ url: string | null; title: string | null }> {
 	const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-	return tab?.url || null;
+	return {
+		url: tab?.url || null,
+		title: tab?.title || null,
+	};
 }
 
 /**
@@ -184,35 +187,47 @@ async function saveRecipe(url: string): Promise<RecipeResponse> {
 }
 
 /**
- * Updates the UI to show the current URL.
+ * Updates the UI to show the current page title.
  */
-function updateUrlDisplay(url: string | null): void {
+function updateUrlDisplay(url: string | null, title: string | null): void {
 	const urlDisplay = document.getElementById("url-display");
 	if (!urlDisplay) return;
 
 	if (!url) {
 		urlDisplay.textContent = "No URL found";
-		urlDisplay.className = "url-display error";
+		urlDisplay.className =
+			"text-[15px] text-red-600 p-3 bg-red-50 border border-red-200 rounded-md break-words leading-relaxed transition-all duration-200 font-medium text-left";
 		return;
 	}
 
 	// Validate it's an HTTP(S) URL
 	if (!url.startsWith("http://") && !url.startsWith("https://")) {
 		urlDisplay.textContent = "Not a valid web page";
-		urlDisplay.className = "url-display error";
+		urlDisplay.className =
+			"text-[15px] text-red-600 p-3 bg-red-50 border border-red-200 rounded-md break-words leading-relaxed transition-all duration-200 font-medium text-left";
 		return;
 	}
 
-	// Show a shortened version of the URL
-	try {
-		const urlObj = new URL(url);
-		const displayText = `${urlObj.hostname}${urlObj.pathname}`;
-		urlDisplay.textContent = displayText;
-		urlDisplay.className = "url-display";
-		urlDisplay.title = url;
-	} catch {
-		urlDisplay.textContent = url;
-		urlDisplay.className = "url-display";
+	// Show the page title if available, otherwise fall back to shortened URL
+	if (title && title.trim()) {
+		urlDisplay.textContent = title.trim();
+		urlDisplay.className =
+			"text-[15px] text-gray-700 p-3 bg-gray-50 border border-gray-200 rounded-md break-words leading-relaxed transition-all duration-200 font-medium text-left hover:bg-gray-100 hover:border-gray-300";
+		urlDisplay.title = url; // Show full URL in tooltip
+	} else {
+		// Fallback to shortened URL if no title
+		try {
+			const urlObj = new URL(url);
+			const displayText = `${urlObj.hostname}${urlObj.pathname}`;
+			urlDisplay.textContent = displayText;
+			urlDisplay.className =
+				"text-[15px] text-gray-700 p-3 bg-gray-50 border border-gray-200 rounded-md break-words leading-relaxed transition-all duration-200 font-medium text-left hover:bg-gray-100 hover:border-gray-300";
+			urlDisplay.title = url;
+		} catch {
+			urlDisplay.textContent = url;
+			urlDisplay.className =
+				"text-[15px] text-gray-700 p-3 bg-gray-50 border border-gray-200 rounded-md break-words leading-relaxed transition-all duration-200 font-medium text-left hover:bg-gray-100 hover:border-gray-300";
+		}
 	}
 }
 
@@ -224,8 +239,13 @@ function updateStatus(message: string, type: "info" | "success" | "error" = "inf
 	if (!statusEl) return;
 
 	statusEl.textContent = message;
-	statusEl.className = `status ${type}`;
-	statusEl.style.display = "block";
+	const baseClasses = "py-3 px-4 rounded-lg text-[13px] leading-relaxed animate-[fadeIn_0.2s_ease-in] block";
+	const typeClasses = {
+		info: "bg-blue-50 text-blue-800 border border-blue-200",
+		success: "bg-green-50 text-green-800 border border-green-200",
+		error: "bg-red-50 text-red-800 border border-red-200 whitespace-pre-line",
+	};
+	statusEl.className = `${baseClasses} ${typeClasses[type]}`;
 }
 
 /**
@@ -256,7 +276,7 @@ function setLoading(loading: boolean): void {
  * Handles the save button click.
  */
 async function handleSave(): Promise<void> {
-	const url = await getCurrentTabUrl();
+	const { url } = await getCurrentTab();
 	if (!url) {
 		updateStatus("No URL found. Please navigate to a recipe page.", "error");
 		return;
@@ -310,9 +330,9 @@ async function handleSave(): Promise<void> {
  * Initializes the popup UI.
  */
 async function init(): Promise<void> {
-	// Get and display current URL
-	const url = await getCurrentTabUrl();
-	updateUrlDisplay(url);
+	// Get and display current tab info
+	const { url, title } = await getCurrentTab();
+	updateUrlDisplay(url, title);
 
 	// Set up event listeners
 	const saveButton = document.getElementById("save-button");

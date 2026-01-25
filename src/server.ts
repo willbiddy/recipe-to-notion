@@ -1,6 +1,7 @@
 import { consola } from "consola";
+import { type ProgressEvent, processRecipe } from "./index.js";
+import { createCliLogger, printRecipeSummary } from "./logger.js";
 import { getNotionPageUrl } from "./notion.js";
-import { processRecipe, type ProgressEvent } from "./index.js";
 
 /**
  * Response format for the /api/recipes endpoint.
@@ -63,7 +64,7 @@ function logRequest(request: Request): void {
 /**
  * Handles recipe processing requests with Server-Sent Events for progress.
  */
-async function handleRecipeStream(request: Request, url: string): Promise<Response> {
+function handleRecipeStream(_request: Request, url: string): Promise<Response> {
 	const stream = new ReadableStream({
 		async start(controller) {
 			const encoder = new TextEncoder();
@@ -74,21 +75,25 @@ async function handleRecipeStream(request: Request, url: string): Promise<Respon
 			};
 
 			try {
-				consola.info(`Processing recipe: ${url}`);
-				
-				// Process with progress callbacks
-				const result = await processRecipe(url, (event: ProgressEvent) => {
-					consola.start(event.message);
-					sendEvent({
-						type: "progress",
-						message: event.message,
-						progressType: event.type,
-					});
-				});
+				const logger = createCliLogger();
+
+				// Process with progress callbacks (for SSE) and logger (for server console)
+				const result = await processRecipe(
+					url,
+					(event: ProgressEvent) => {
+						sendEvent({
+							type: "progress",
+							message: event.message,
+							progressType: event.type,
+						});
+					},
+					logger,
+				);
+
+				// Print recipe summary box (same as CLI)
+				printRecipeSummary(result.recipe, result.tags);
 
 				const notionUrl = getNotionPageUrl(result.pageId);
-				consola.success(`Recipe saved: ${result.recipe.name} → ${notionUrl}`);
-				
 				sendEvent({
 					type: "complete",
 					success: true,
@@ -101,15 +106,14 @@ async function handleRecipeStream(request: Request, url: string): Promise<Respon
 
 				let notionUrl: string | undefined;
 				if (isDuplicate) {
-					const urlMatch = errorMessage.match(
-						/View it at: (https:\/\/www\.notion\.so\/[^\s]+)/,
-					);
+					const urlMatch = errorMessage.match(/View it at: (https:\/\/www\.notion\.so\/[^\s]+)/);
 					if (urlMatch) {
 						notionUrl = urlMatch[1];
 					}
-					consola.warn(`Duplicate recipe: ${url}`);
+					// Logger already handled the duplicate warning via onDuplicateFound
 				} else {
-					consola.error(`Failed to process recipe: ${errorMessage}`);
+					// For non-duplicate errors, log them
+					consola.error(`Failed: ${errorMessage}`);
 				}
 
 				sendEvent({
@@ -136,33 +140,90 @@ async function handleRecipeStream(request: Request, url: string): Promise<Respon
 }
 
 /**
+ * Validates the request body and returns an error response if invalid.
+ */
+function validateRecipeRequest(body: unknown): Response | null {
+	if (!body || typeof body !== "object") {
+		return createErrorResponse("Missing request body", 400);
+	}
+
+	const request = body as RecipeRequest;
+	if (!request.url || typeof request.url !== "string") {
+		return createErrorResponse("Missing or invalid 'url' field in request body", 400);
+	}
+
+	// Validate URL format
+	try {
+		new URL(request.url);
+	} catch {
+		return createErrorResponse("Invalid URL format", 400);
+	}
+
+	return null;
+}
+
+/**
+ * Creates an error response with CORS headers.
+ */
+function createErrorResponse(error: string, status: number): Response {
+	const errorResponse: RecipeResponse = {
+		success: false,
+		error,
+	};
+	const response = Response.json(errorResponse, { status });
+	setCorsHeaders(response);
+	return response;
+}
+
+/**
+ * Handles errors from recipe processing and returns appropriate response.
+ */
+function handleRecipeError(error: unknown): Response {
+	const errorMessage = error instanceof Error ? error.message : String(error);
+	const isDuplicate = errorMessage.includes("Duplicate recipe found");
+
+	let statusCode = 500;
+	if (isDuplicate) {
+		statusCode = 409; // Conflict
+		// Logger already handled the duplicate warning via onDuplicateFound
+	} else if (errorMessage.includes("Failed to fetch") || errorMessage.includes("403")) {
+		statusCode = 502; // Bad Gateway (scraping failure)
+		consola.error(`Failed: ${errorMessage}`);
+	} else {
+		consola.error(`Failed: ${errorMessage}`);
+	}
+
+	// Extract Notion URL from duplicate error message if present
+	let notionUrl: string | undefined;
+	if (isDuplicate) {
+		const urlMatch = errorMessage.match(/View it at: (https:\/\/www\.notion\.so\/[^\s]+)/);
+		if (urlMatch) {
+			notionUrl = urlMatch[1];
+		}
+	}
+
+	const errorResponse: RecipeResponse = {
+		success: false,
+		error: errorMessage,
+		...(notionUrl && { notionUrl }),
+	};
+
+	const response = Response.json(errorResponse, { status: statusCode });
+	setCorsHeaders(response);
+	return response;
+}
+
+/**
  * Handles recipe processing requests (non-streaming, for backwards compatibility).
  */
 async function handleRecipe(request: Request): Promise<Response> {
 	try {
 		const body = (await request.json()) as RecipeRequest;
 
-		if (!body.url || typeof body.url !== "string") {
-			const errorResponse: RecipeResponse = {
-				success: false,
-				error: "Missing or invalid 'url' field in request body",
-			};
-			const response = Response.json(errorResponse, { status: 400 });
-			setCorsHeaders(response);
-			return response;
-		}
-
-		// Validate URL format
-		try {
-			new URL(body.url);
-		} catch {
-			const errorResponse: RecipeResponse = {
-				success: false,
-				error: "Invalid URL format",
-			};
-			const response = Response.json(errorResponse, { status: 400 });
-			setCorsHeaders(response);
-			return response;
+		// Validate request
+		const validationError = validateRecipeRequest(body);
+		if (validationError) {
+			return validationError;
 		}
 
 		// Use streaming if requested
@@ -171,54 +232,25 @@ async function handleRecipe(request: Request): Promise<Response> {
 		}
 
 		// Process the recipe (non-streaming)
-		consola.info(`Processing recipe: ${body.url}`);
-		const result = await processRecipe(body.url);
-		const notionUrl = getNotionPageUrl(result.pageId);
-		consola.success(`Recipe saved: ${result.recipe.name} → ${notionUrl}`);
+		const logger = createCliLogger();
+		const result = await processRecipe(body.url, undefined, logger);
+
+		// Print recipe summary box (same as CLI)
+		printRecipeSummary(result.recipe, result.tags);
+
+		const savedNotionUrl = getNotionPageUrl(result.pageId);
 
 		const successResponse: RecipeResponse = {
 			success: true,
 			pageId: result.pageId,
-			notionUrl,
+			notionUrl: savedNotionUrl,
 		};
 
 		const response = Response.json(successResponse, { status: 200 });
 		setCorsHeaders(response);
 		return response;
 	} catch (error) {
-		// Handle duplicate errors specially
-		const errorMessage = error instanceof Error ? error.message : String(error);
-		const isDuplicate = errorMessage.includes("Duplicate recipe found");
-
-		let statusCode = 500;
-		if (isDuplicate) {
-			statusCode = 409; // Conflict
-			consola.warn(`Duplicate recipe detected`);
-		} else if (errorMessage.includes("Failed to fetch") || errorMessage.includes("403")) {
-			statusCode = 502; // Bad Gateway (scraping failure)
-			consola.error(`Scraping failed: ${errorMessage}`);
-		} else {
-			consola.error(`Recipe processing failed: ${errorMessage}`);
-		}
-
-		// Extract Notion URL from duplicate error message if present
-		let notionUrl: string | undefined;
-		if (isDuplicate) {
-			const urlMatch = errorMessage.match(/View it at: (https:\/\/www\.notion\.so\/[^\s]+)/);
-			if (urlMatch) {
-				notionUrl = urlMatch[1];
-			}
-		}
-
-		const errorResponse: RecipeResponse = {
-			success: false,
-			error: errorMessage,
-			...(notionUrl && { notionUrl }),
-		};
-
-		const response = Response.json(errorResponse, { status: statusCode });
-		setCorsHeaders(response);
-		return response;
+		return handleRecipeError(error);
 	}
 }
 
@@ -243,7 +275,7 @@ export async function handleRequest(request: Request): Promise<Response> {
 
 	// Recipe processing endpoint
 	if (url.pathname === "/api/recipes" && request.method === "POST") {
-		return handleRecipe(request);
+		return await handleRecipe(request);
 	}
 
 	// 404 for unknown routes

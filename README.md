@@ -127,6 +127,7 @@ Save recipes with one click directly from your browser! The extension works with
    ```bash
    bun run build:extension
    ```
+   This compiles TypeScript files and Tailwind CSS for the extension UI.
 
 2. **Start the local server:**
    ```bash
@@ -214,10 +215,11 @@ Ingredients are automatically grouped by shopping category in standard grocery s
 
 ```
 src/
-├── cli.ts             Command-line interface and progress logging
+├── cli.ts             Command-line interface
 ├── cli-server.ts      HTTP server entry point
 ├── server.ts          HTTP server for browser extension
 ├── index.ts           Pipeline orchestration for programmatic use
+├── logger.ts          Shared logging interface and CLI logger implementation
 ├── scraper.ts         Recipe extraction from URLs and HTML files
 ├── tagger.ts          Claude API integration for AI tagging
 ├── notion.ts          Notion page creation and duplicate detection
@@ -230,11 +232,12 @@ src/
 
 extension/
 ├── manifest.json      Chrome extension manifest (Manifest V3)
-├── popup.html         Extension popup UI
+├── popup.html         Extension popup UI (with Tailwind classes)
 ├── popup.ts           Popup logic and API communication
 ├── background.ts      Service worker for context menu
 ├── config.ts          Server URL configuration management
-├── styles.css         Extension UI styling
+├── input.css          Tailwind CSS source file
+├── styles.css         Compiled Tailwind CSS (generated)
 └── icons/             Extension icons (SVG source files)
 ```
 
@@ -250,13 +253,15 @@ extension/
 | [Citty](https://github.com/unjs/citty) | CLI argument parsing |
 | [Consola](https://github.com/unjs/consola) | Console logging with spinners and colors |
 | [Zod](https://zod.dev/) | Schema validation for env vars and API responses |
+| [Tailwind CSS](https://tailwindcss.com/) | Utility-first CSS framework for extension UI |
 | [Biome](https://biomejs.dev/) | Linting and formatting |
 
 ## Scripts
 
 - `bun run start` or `bun src/cli.ts` - Run the CLI tool
 - `bun run server` - Start the HTTP server for the browser extension
-- `bun run build:extension` - Compile TypeScript extension files to JavaScript
+- `bun run build:extension` - Compile TypeScript extension files and Tailwind CSS
+- `bun run build:extension:css` - Compile Tailwind CSS only
 - `bun run typecheck` - Type check without emitting files
 - `bun run lint` - Lint code with Biome
 - `bun run format` - Format code with Biome

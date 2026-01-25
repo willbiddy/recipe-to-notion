@@ -38,10 +38,7 @@ export function isObject(value: unknown): value is Record<string, unknown> {
  * @param key - The property key to check for.
  * @returns True if value is an object containing the specified key.
  */
-export function hasProperty<K extends string>(
-	value: unknown,
-	key: K,
-): value is Record<K, unknown> {
+export function hasProperty<K extends string>(value: unknown, key: K): value is Record<K, unknown> {
 	return isObject(value) && key in value;
 }
 
@@ -113,7 +110,9 @@ export function normalizeIngredientParentheses(ingredient: string): string {
 	// Replace double parentheses ((text)) with single parentheses (text)
 	// Also handles cases with spaces like ( (text) ) or (( text ))
 	// Trims spaces inside the parentheses for cleaner output
-	return ingredient.replace(/\(\s*\(([^)]+)\)\s*\)/g, (_, content) => {
-		return `(${content.trim()})`;
-	}).trim();
+	return ingredient
+		.replace(/\(\s*\(([^)]+)\)\s*\)/g, (_, content) => {
+			return `(${content.trim()})`;
+		})
+		.trim();
 }

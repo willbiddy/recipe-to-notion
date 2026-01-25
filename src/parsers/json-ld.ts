@@ -1,4 +1,4 @@
-import * as cheerio from "cheerio";
+import type * as cheerio from "cheerio";
 import type { Recipe } from "../scraper.js";
 import {
 	cleanRecipeName,
@@ -51,29 +51,20 @@ export function parseJsonLd($: cheerio.CheerioAPI, sourceUrl: string): Recipe | 
  * @param visited - Set of visited objects to prevent infinite loops.
  * @returns The Recipe object if found, null otherwise.
  */
-function findRecipeInLd(
-	data: unknown,
-	visited = new WeakSet<object>(),
+/**
+ * Checks if an object is a Recipe type.
+ */
+function isRecipeType(data: Record<string, unknown>): boolean {
+	return data["@type"] === "Recipe" || (isArray(data["@type"]) && data["@type"].includes("Recipe"));
+}
+
+/**
+ * Searches for Recipe in common nested patterns.
+ */
+function searchNestedPatterns(
+	data: Record<string, unknown>,
+	visited: WeakSet<object>,
 ): Record<string, unknown> | null {
-	if (!isObject(data)) return null;
-
-	if (isArray(data)) {
-		for (const item of data) {
-			const found = findRecipeInLd(item, visited);
-			if (found) return found;
-		}
-		return null;
-	}
-
-	// Prevent infinite loops with circular references
-	if (visited.has(data)) return null;
-	visited.add(data);
-
-	// Check if this object is a Recipe
-	if (data["@type"] === "Recipe" || (isArray(data["@type"]) && data["@type"].includes("Recipe"))) {
-		return data;
-	}
-
 	// Handle @graph arrays
 	if (isArray(data["@graph"])) {
 		const found = findRecipeInLd(data["@graph"], visited);
@@ -93,7 +84,16 @@ function findRecipeInLd(
 		if (found) return found;
 	}
 
-	// Recursively search all object properties (for other nested patterns)
+	return null;
+}
+
+/**
+ * Recursively searches object properties for nested Recipe objects.
+ */
+function searchObjectProperties(
+	data: Record<string, unknown>,
+	visited: WeakSet<object>,
+): Record<string, unknown> | null {
 	for (const value of Object.values(data)) {
 		// Skip @context and @id as they're metadata, not content
 		if (isObject(value)) {
@@ -101,8 +101,38 @@ function findRecipeInLd(
 			if (found) return found;
 		}
 	}
-
 	return null;
+}
+
+function findRecipeInLd(
+	data: unknown,
+	visited = new WeakSet<object>(),
+): Record<string, unknown> | null {
+	if (!isObject(data)) return null;
+
+	if (isArray(data)) {
+		for (const item of data) {
+			const found = findRecipeInLd(item, visited);
+			if (found) return found;
+		}
+		return null;
+	}
+
+	// Prevent infinite loops with circular references
+	if (visited.has(data)) return null;
+	visited.add(data);
+
+	// Check if this object is a Recipe
+	if (isRecipeType(data)) {
+		return data;
+	}
+
+	// Search common nested patterns
+	const nestedResult = searchNestedPatterns(data, visited);
+	if (nestedResult) return nestedResult;
+
+	// Recursively search all object properties (for other nested patterns)
+	return searchObjectProperties(data, visited);
 }
 
 /**
@@ -206,6 +236,26 @@ function extractImageUrl(item: unknown): string | null {
  * @param image - The image data in various JSON-LD formats.
  * @returns The image URL string, or null if not found.
  */
+/**
+ * Finds the best image URL from an array of ImageObject items by width.
+ */
+function findBestImageByWidth(imageArray: unknown[]): string | null {
+	let bestUrl = "";
+	let bestWidth = -1;
+	for (const item of imageArray) {
+		if (!hasProperty(item, "url") || !hasProperty(item, "width")) continue;
+		const width = typeof item.width === "number" ? item.width : 0;
+		if (width > bestWidth) {
+			bestUrl = String(item.url);
+			bestWidth = width;
+		}
+	}
+	return bestUrl || null;
+}
+
+/**
+ * Parses image data which may be a string, ImageObject, or array of either.
+ */
 function parseImage(image: unknown): string | null {
 	if (!image) return null;
 	if (isString(image)) return image;
@@ -214,18 +264,7 @@ function parseImage(image: unknown): string | null {
 		// Check if first item has width info (ImageObject array)
 		const firstItem = image[0];
 		if (hasProperty(firstItem, "url") && hasProperty(firstItem, "width")) {
-			// Find the largest image by width
-			let bestUrl = "";
-			let bestWidth = -1;
-			for (const item of image) {
-				if (!hasProperty(item, "url") || !hasProperty(item, "width")) continue;
-				const width = typeof item.width === "number" ? item.width : 0;
-				if (width > bestWidth) {
-					bestUrl = String(item.url);
-					bestWidth = width;
-				}
-			}
-			return bestUrl || null;
+			return findBestImageByWidth(image);
 		}
 		// Array of strings/objects - take the last one (usually full-size)
 		return extractImageUrl(image[image.length - 1]);
@@ -247,9 +286,7 @@ function parseImage(image: unknown): string | null {
 function parseStringArray(data: unknown): string[] {
 	if (!data) return [];
 	if (isArray(data)) {
-		return data.map((item) =>
-			normalizeIngredientParentheses(decodeHtmlEntities(String(item))),
-		);
+		return data.map((item) => normalizeIngredientParentheses(decodeHtmlEntities(String(item))));
 	}
 	if (isString(data)) {
 		return [normalizeIngredientParentheses(decodeHtmlEntities(data))];

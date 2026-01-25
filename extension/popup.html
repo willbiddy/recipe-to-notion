@@ -6,28 +6,41 @@
 		<title>Recipe to Notion</title>
 		<link rel="stylesheet" href="styles.css" />
 	</head>
-	<body>
-		<div class="container">
-			<header>
-				<h1>Recipe to Notion</h1>
+	<body class="w-[360px] min-h-[200px] bg-white text-gray-900 text-sm font-sans">
+		<div class="flex flex-col bg-white">
+			<header class="px-5 py-[18px] border-b border-gray-200 bg-gradient-to-b from-gray-50 to-white">
+				<h1 class="text-[17px] font-semibold text-gray-900 tracking-tight">Recipe to Notion</h1>
 			</header>
 
-			<div class="content">
-				<div class="url-section">
-					<label class="url-label">Current Page</label>
-					<div id="url-display" class="url-display"></div>
+			<div class="p-5 flex flex-col gap-4">
+				<div class="flex flex-col gap-1.5">
+					<div
+						id="url-display"
+						class="text-[15px] text-gray-700 p-3 bg-gray-50 border border-gray-200 rounded-md break-words leading-relaxed transition-all duration-200 font-medium text-left hover:bg-gray-100 hover:border-gray-300"
+					></div>
 				</div>
 
-				<button id="save-button" class="save-button">
-					<span class="button-text">Save Recipe</span>
+				<button
+					id="save-button"
+					class="px-5 py-3 bg-blue-600 text-white border-none rounded-lg text-[15px] font-semibold cursor-pointer transition-all duration-200 shadow-sm relative overflow-hidden hover:bg-blue-700 hover:shadow-md hover:-translate-y-px active:bg-blue-800 active:translate-y-0 active:shadow-sm disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
+				>
+					<span class="button-text relative z-10">Save Recipe</span>
 				</button>
 
-				<div id="progress-container" class="progress-container hidden">
-					<div class="spinner"></div>
-					<div id="progress-message" class="progress-message"></div>
+				<div
+					id="progress-container"
+					class="hidden flex items-center gap-3 py-3.5 px-4 bg-blue-50 border border-blue-200 rounded-lg animate-[fadeIn_0.2s_ease-in]"
+				>
+					<div
+						class="spinner w-[18px] h-[18px] border-[2.5px] border-blue-100 border-t-blue-600 rounded-full animate-spin flex-shrink-0"
+					></div>
+					<div id="progress-message" class="text-[13px] text-blue-800 font-medium"></div>
 				</div>
 
-				<div id="status" class="status"></div>
+				<div
+					id="status"
+					class="hidden py-3 px-4 rounded-lg text-[13px] leading-relaxed animate-[fadeIn_0.2s_ease-in]"
+				></div>
 			</div>
 		</div>
 

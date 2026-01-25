@@ -3,6 +3,7 @@ import type { Recipe } from "../scraper.js";
 import {
 	cleanRecipeName,
 	decodeHtmlEntities,
+	filterEditorNotes,
 	hasProperty,
 	isArray,
 	isObject,
@@ -357,10 +358,10 @@ function parseFirstString(data: unknown): string | null {
  */
 function parseInstructions(data: unknown): string[] {
 	if (!data) return [];
-	if (isString(data)) return [decodeHtmlEntities(data)];
+	if (isString(data)) return filterEditorNotes([decodeHtmlEntities(data)]);
 	if (!isArray(data)) return [];
 
-	return data.flatMap((item) => {
+	const instructions = data.flatMap((item) => {
 		if (isString(item)) return [decodeHtmlEntities(item)];
 		if (isObject(item)) {
 			if (item.text) return [decodeHtmlEntities(String(item.text))];
@@ -373,4 +374,6 @@ function parseInstructions(data: unknown): string[] {
 		}
 		return [];
 	});
+
+	return filterEditorNotes(instructions);
 }

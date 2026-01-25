@@ -4,6 +4,7 @@ import type { Recipe } from "../scraper.js";
 import {
 	cleanRecipeName,
 	decodeHtmlEntities,
+	filterEditorNotes,
 	normalizeIngredientParentheses,
 	parseDuration,
 } from "./shared.js";
@@ -227,7 +228,7 @@ function extractRecipeInstructions(
 			'[class*="direction"]',
 		);
 	}
-	return instructions;
+	return filterEditorNotes(instructions);
 }
 
 /**

@@ -105,6 +105,7 @@ export function updateStatus(
  */
 export function clearStatus(): void {
 	const statusEl = document.getElementById("status");
+
 	if (statusEl) {
 		statusEl.classList.add("hidden");
 		statusEl.textContent = "";
@@ -143,6 +144,8 @@ export function hideProgress(): void {
 /**
  * Sets the loading state of the save button.
  *
+ * Updates button text and adds/removes a spinner icon based on loading state.
+ *
  * @param loading - True to show loading state, false to show normal state.
  */
 export function setLoading(loading: boolean): void {
@@ -156,8 +159,8 @@ export function setLoading(loading: boolean): void {
 	saveButton.disabled = loading;
 	buttonText.textContent = loading ? "Processing..." : "Save Recipe";
 
-	// Add spinner to button when loading
 	const existingSpinner = saveButton.querySelector(".button-spinner");
+
 	if (loading && !existingSpinner) {
 		const spinner = document.createElement("div");
 		spinner.className =

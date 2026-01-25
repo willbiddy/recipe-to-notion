@@ -22,14 +22,7 @@ export type Config = z.infer<typeof envSchema>;
  * Bun automatically loads `.env` files, so no dotenv import is needed.
  *
  * @returns Validated configuration object with API keys and database ID.
- * @throws If any required environment variable is missing or empty.
- */
-/**
- * Loads and validates required environment variables from the process environment.
- * Bun automatically loads `.env` files, so no dotenv import is needed.
- *
- * @returns Validated configuration object with API keys and database ID.
- * @throws {Error} If any required environment variable is missing or empty.
+ * @throws {ValidationError} If any required environment variable is missing or empty.
  * @example
  * ```ts
  * const config = loadConfig();

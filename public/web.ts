@@ -64,19 +64,24 @@ function saveRecipeWithProgress(url: string) {
 	const serverUrl = getServerUrl();
 	const apiUrl = `${serverUrl}/api/recipes`;
 
-	return saveRecipe(url, apiUrl, storage, {
-		onProgress: (message) => {
-			showProgress(message);
-			setLoading(true);
-		},
-		onComplete: (data) => {
-			hideProgress();
-			setLoading(false);
-			displayRecipeInfo(data);
-		},
-		onError: () => {
-			hideProgress();
-			setLoading(false);
+	return saveRecipe({
+		url,
+		apiUrl,
+		storage,
+		callbacks: {
+			onProgress: (message) => {
+				showProgress(message);
+				setLoading(true);
+			},
+			onComplete: (data) => {
+				hideProgress();
+				setLoading(false);
+				displayRecipeInfo(data);
+			},
+			onError: () => {
+				hideProgress();
+				setLoading(false);
+			},
 		},
 	});
 }
@@ -85,6 +90,8 @@ function saveRecipeWithProgress(url: string) {
  * Handles the save button click event.
  *
  * Validates the URL and initiates recipe saving with progress updates.
+ * On successful save, clears the URL input after a delay. Recipe info
+ * is displayed via the displayRecipeInfo callback.
  */
 async function handleSave(): Promise<void> {
 	const urlInput = document.getElementById("url-input") as HTMLInputElement;
@@ -108,8 +115,6 @@ async function handleSave(): Promise<void> {
 		const result = await saveRecipeWithProgress(url);
 
 		if (result.success) {
-			// Recipe info is displayed in displayRecipeInfo callback
-			// Clear the URL input after successful save
 			const urlInput = document.getElementById("url-input") as HTMLInputElement;
 
 			if (urlInput) {
@@ -160,11 +165,9 @@ function toggleSettings(): void {
 		if (chevron) {
 			chevron.style.transform = "rotate(180deg)";
 		}
-		// Trigger animation
 		requestAnimationFrame(() => {
 			settingsPanel.classList.add("animate-slide-down");
 		});
-		// Load API key asynchronously without blocking the UI
 		loadApiKeyIntoInput().catch((error) => {
 			console.error("Error loading API key:", error);
 		});
@@ -174,7 +177,6 @@ function toggleSettings(): void {
 		if (chevron) {
 			chevron.style.transform = "rotate(0deg)";
 		}
-		// Wait for animation to complete before hiding
 		setTimeout(() => {
 			settingsPanel.classList.add("hidden");
 		}, SETTINGS_ANIMATION_DURATION_MS);
@@ -211,6 +213,7 @@ function displayRecipeInfo(data: {
 	}
 
 	const infoLines: string[] = [];
+
 	if (data.recipe.author) {
 		infoLines.push(`<strong>Author:</strong> ${data.recipe.author}`);
 	}
@@ -261,6 +264,7 @@ async function loadApiKeyIntoInput(): Promise<void> {
 	}
 
 	const apiKey = await storage.getApiKey();
+
 	if (apiKey) {
 		input.value = apiKey;
 	} else {
@@ -281,6 +285,7 @@ async function saveApiKeyToStorage(): Promise<void> {
 	}
 
 	const apiKey = input.value.trim();
+
 	if (!apiKey) {
 		updateStatus("API secret cannot be empty", StatusType.ERROR);
 		return;
@@ -333,12 +338,10 @@ function handleQueryParameters(): void {
 /**
  * Handles Web Share Target API (for Android Chrome).
  *
- * The share data is passed via URL parameters, which are already handled
- * by handleQueryParameters().
+ * Web Share Target data is handled via URL parameters in handleQueryParameters().
+ * This function exists for future extensibility.
  */
-function handleWebShareTarget(): void {
-	// Web Share Target data is handled via URL parameters in handleQueryParameters()
-}
+function handleWebShareTarget(): void {}
 
 /**
  * Initializes the web interface.
@@ -376,6 +379,10 @@ function validateUrl(url: string): boolean {
 /**
  * Updates the URL input validation state and clear button visibility.
  *
+ * Shows/hides the clear button based on whether the URL input has a value.
+ * Updates validation state and displays validation messages. Sets aria-invalid
+ * attribute for accessibility.
+ *
  * @param url - The current URL value.
  */
 function updateUrlValidationState(url: string): void {
@@ -391,7 +398,6 @@ function updateUrlValidationState(url: string): void {
 	const isValid = validateUrl(trimmedUrl);
 	const hasValue = trimmedUrl.length > 0;
 
-	// Show/hide clear button
 	if (hasValue) {
 		clearButton.style.display = "flex";
 		clearButton.tabIndex = 0;
@@ -400,7 +406,6 @@ function updateUrlValidationState(url: string): void {
 		clearButton.tabIndex = -1;
 	}
 
-	// Update validation state
 	if (hasValue) {
 		urlInput.setAttribute("aria-invalid", isValid ? "false" : "true");
 		if (validationDiv) {
@@ -419,6 +424,7 @@ function updateUrlValidationState(url: string): void {
  */
 function clearUrlInput(): void {
 	const urlInput = document.getElementById("url-input") as HTMLInputElement;
+
 	if (urlInput) {
 		urlInput.value = "";
 		urlInput.focus();
@@ -427,8 +433,18 @@ function clearUrlInput(): void {
 	}
 }
 
+/**
+ * Initializes the web interface.
+ *
+ * Sets up event listeners for save button, settings button, API key management,
+ * and URL input (including real-time validation, keyboard shortcuts for Enter/Cmd+Enter,
+ * and clear button). Handles query parameters and web share target. If settings button
+ * is not found initially, retries after a short delay in case DOM isn't fully ready.
+ * Auto-focuses the URL input on load and checks for API key configuration.
+ */
 async function init(): Promise<void> {
 	const saveButton = document.getElementById("save-button");
+
 	if (saveButton) {
 		saveButton.addEventListener("click", (e) => {
 			e.preventDefault();
@@ -440,6 +456,7 @@ async function init(): Promise<void> {
 	}
 
 	const settingsButton = document.getElementById("settings-button");
+
 	if (settingsButton) {
 		const handleSettingsClick = (e: Event) => {
 			e.preventDefault();
@@ -454,7 +471,6 @@ async function init(): Promise<void> {
 		settingsButton.addEventListener("click", handleSettingsClick, { passive: false });
 	} else {
 		console.error("Settings button not found during init");
-		// Retry after a short delay in case DOM isn't fully ready
 		setTimeout(() => {
 			const retryButton = document.getElementById("settings-button");
 			if (retryButton) {
@@ -478,6 +494,7 @@ async function init(): Promise<void> {
 	}
 
 	const saveApiKeyButton = document.getElementById("save-api-key-button");
+
 	if (saveApiKeyButton) {
 		saveApiKeyButton.addEventListener("click", saveApiKeyToStorage);
 	}
@@ -485,28 +502,25 @@ async function init(): Promise<void> {
 	setupApiKeyVisibilityToggle();
 
 	const urlInput = document.getElementById("url-input") as HTMLInputElement;
+
 	if (urlInput) {
-		// Real-time URL validation
 		urlInput.addEventListener("input", (e) => {
 			const value = (e.target as HTMLInputElement).value;
 			updateUrlValidationState(value);
 		});
 
-		// Keyboard shortcuts: Enter to submit, Cmd/Ctrl+Enter also submits
 		urlInput.addEventListener("keydown", (e) => {
 			if (e.key === "Enter") {
 				if (e.metaKey || e.ctrlKey) {
 					e.preventDefault();
 					handleSave();
 				} else {
-					// Regular Enter also submits
 					e.preventDefault();
 					handleSave();
 				}
 			}
 		});
 
-		// Clear button functionality
 		const clearButton = document.getElementById("clear-url-button");
 		if (clearButton) {
 			clearButton.addEventListener("click", (e) => {
@@ -516,10 +530,8 @@ async function init(): Promise<void> {
 			});
 		}
 
-		// Initial validation state
 		updateUrlValidationState(urlInput.value);
 
-		// Auto-focus on load
 		urlInput.focus();
 	}
 
@@ -527,6 +539,7 @@ async function init(): Promise<void> {
 	handleWebShareTarget();
 
 	const apiKey = await storage.getApiKey();
+
 	if (!apiKey) {
 		updateStatus("⚠️ API secret not configured. Click Settings to set it up.", StatusType.ERROR);
 	}

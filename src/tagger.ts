@@ -316,6 +316,7 @@ function buildPrompt(recipe: Recipe): string {
 	}
 
 	const hints = buildHints(recipe);
+
 	if (hints.length > 0) {
 		lines.push("", `${PromptLabel.Hints}:`, ...hints.map((h) => `- ${h}`));
 	}
@@ -349,8 +350,11 @@ function buildPrompt(recipe: Recipe): string {
  */
 function buildHints(recipe: Recipe): string[] {
 	const hints: string[] = [];
+
 	if (recipe.author) hints.push(`Author: ${recipe.author}`);
+
 	if (recipe.cuisine) hints.push(`Cuisine: ${recipe.cuisine}`);
+
 	if (recipe.category) hints.push(`Category: ${recipe.category}`);
 	return hints;
 }

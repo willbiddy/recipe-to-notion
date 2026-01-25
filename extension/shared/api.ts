@@ -88,14 +88,27 @@ export type ProgressCallbacks = {
 };
 
 /**
- * Saves a recipe by sending the URL to the server with progress streaming.
+ * Options for saving a recipe.
  */
-export async function saveRecipe(
-	url: string,
-	apiUrl: string,
-	storage: StorageAdapter,
-	callbacks: ProgressCallbacks,
-): Promise<RecipeResponse> {
+export type SaveRecipeOptions = {
+	url: string;
+	apiUrl: string;
+	storage: StorageAdapter;
+	callbacks: ProgressCallbacks;
+};
+
+/**
+ * Saves a recipe by sending the URL to the server with progress streaming.
+ *
+ * Uses Server-Sent Events (SSE) for real-time progress updates. On error,
+ * attempts to parse JSON error details, falling back to text response if
+ * JSON parsing fails.
+ *
+ * @param options - Configuration object containing URL, API URL, storage adapter, and callbacks.
+ * @returns Promise resolving to the recipe response with success status and optional error/notionUrl.
+ */
+export async function saveRecipe(options: SaveRecipeOptions): Promise<RecipeResponse> {
+	const { url, apiUrl, storage, callbacks } = options;
 	const apiKey = await storage.getApiKey();
 
 	if (!apiKey) {
@@ -107,9 +120,6 @@ export async function saveRecipe(
 
 	return new Promise((resolve, reject) => {
 		try {
-			/**
-			 * Use Server-Sent Events for progress updates.
-			 */
 			fetch(apiUrl, {
 				method: "POST",
 				headers: {
@@ -120,9 +130,6 @@ export async function saveRecipe(
 			})
 				.then((response) => {
 					if (!response.ok) {
-						/**
-						 * Try to parse as JSON for error details.
-						 */
 						return response
 							.json()
 							.then((errorData) => {
@@ -134,7 +141,6 @@ export async function saveRecipe(
 								} as RecipeResponse);
 							})
 							.catch(async () => {
-								// If JSON parsing fails, try to get text response
 								const text = await response.text().catch(() => "");
 								resolve({
 									success: false,
@@ -143,9 +149,6 @@ export async function saveRecipe(
 							});
 					}
 
-					/**
-					 * Read SSE stream.
-					 */
 					const reader = response.body?.getReader();
 					const decoder = new TextDecoder();
 

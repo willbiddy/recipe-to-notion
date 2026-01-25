@@ -130,6 +130,7 @@ export function parseDuration(iso: string | undefined): number | null {
 	}
 
 	const match = iso.match(ISO_DURATION_PATTERN);
+
 	if (!match) {
 		return null;
 	}
@@ -140,32 +141,27 @@ export function parseDuration(iso: string | undefined): number | null {
 }
 
 /**
- * Cleans up a recipe name by removing trailing "Recipe" suffix and author names.
- *
- * Many recipe sites append "Recipe" to the title (e.g., "Chicken Parmesan Recipe")
- * or include author names (e.g., "Well-fried Beans - Rick Bayless").
- * This removes those suffixes for cleaner display.
- *
- * @param name - The raw recipe name.
- * @returns The cleaned recipe name.
- */
-/**
  * Maximum length for author name suffixes (characters).
  * Used to distinguish author names from recipe name parts.
  */
 const MAX_AUTHOR_SUFFIX_LENGTH = 50;
 
+/**
+ * Cleans recipe names by removing common suffixes and author patterns.
+ *
+ * Removes "Recipe" suffix if present. Removes " - Author Name" pattern, but only if
+ * the suffix looks like an author name: must be preceded by space-dash-space, must not
+ * contain commas (recipe names often have commas, author names don't), and should be
+ * relatively short (author names are typically < 50 chars). This prevents removing parts
+ * of recipe names like "One-Pot Salmon, Spinach...".
+ *
+ * @param name - The raw recipe name to clean.
+ * @returns Cleaned recipe name without suffixes.
+ */
 export function cleanRecipeName(name: string): string {
-	// Remove "Recipe" suffix if present
 	let cleaned = name.replace(RECIPE_SUFFIX_PATTERN, "");
 
-	// Remove " - Author Name" pattern, but only if the suffix looks like an author name:
-	// - Must be preceded by space-dash-space (not just a dash in the recipe name)
-	// - Suffix must not contain commas (recipe names often have commas, author names don't)
-	// - Suffix should be relatively short (author names are typically < 50 chars)
 	cleaned = cleaned.replace(AUTHOR_SUFFIX_PATTERN, (match, suffix) => {
-		// Only remove if the suffix doesn't contain commas and is short
-		// This prevents removing parts of recipe names like "One-Pot Salmon, Spinach..."
 		if (
 			!suffix.includes(",") &&
 			suffix.trim().length > 0 &&

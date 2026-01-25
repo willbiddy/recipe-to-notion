@@ -45,6 +45,7 @@ export function extractAuthorFromHtml($: cheerio.CheerioAPI): string | null {
 	if (classAuthor) return classAuthor;
 
 	const siteName = $('meta[property="og:site_name"]').attr("content");
+
 	if (siteName && siteName.length < MAX_SITE_NAME_LENGTH) {
 		return siteName;
 	}
@@ -68,12 +69,13 @@ export function parseHtml($: cheerio.CheerioAPI, sourceUrl: string): Recipe | nu
 	const container = findRecipeContainer($);
 
 	const name = extractRecipeName($, container);
+
 	if (!name) return null;
 
 	const author = extractRecipeAuthor($, container);
 
 	const imageUrl =
-		extractMicrodataProperty($, container, "image", true) ||
+		extractMicrodataProperty({ $, container, itemprop: "image", isImage: true }) ||
 		extractAttributeWithFallback(
 			$,
 			"content",
@@ -92,11 +94,11 @@ export function parseHtml($: cheerio.CheerioAPI, sourceUrl: string): Recipe | nu
 
 	const totalTimeMinutes = extractMicrodataTime($, container);
 
-	const servings = extractMicrodataProperty($, container, "recipeYield") || null;
+	const servings = extractMicrodataProperty({ $, container, itemprop: "recipeYield" }) || null;
 
-	const cuisine = extractMicrodataProperty($, container, "recipeCuisine") || null;
+	const cuisine = extractMicrodataProperty({ $, container, itemprop: "recipeCuisine" }) || null;
 
-	const category = extractMicrodataProperty($, container, "recipeCategory") || null;
+	const category = extractMicrodataProperty({ $, container, itemprop: "recipeCategory" }) || null;
 
 	const ingredients = extractMicrodataArray($, container, "recipeIngredient");
 	let finalIngredients =
@@ -142,7 +144,7 @@ function extractRecipeName(
 	container: cheerio.Cheerio<Element> | null,
 ): string | null {
 	const rawName =
-		extractMicrodataProperty($, container, "name") ||
+		extractMicrodataProperty({ $, container, itemprop: "name" }) ||
 		extractAttributeWithFallback($, "content", 'meta[property="og:title"]') ||
 		extractTextWithFallback($, "h1");
 
@@ -161,7 +163,7 @@ function extractRecipeAuthor(
 	container: cheerio.Cheerio<Element> | null,
 ): string | null {
 	const author =
-		extractMicrodataProperty($, container, "author") ||
+		extractMicrodataProperty({ $, container, itemprop: "author" }) ||
 		extractTextWithFallback($, '[itemprop="author"] [itemprop="name"]') ||
 		extractAttributeWithFallback($, "content", 'meta[name="author"]') ||
 		extractTextWithFallback($, '[class*="author"] a', '[class*="author"]') ||
@@ -182,6 +184,7 @@ function extractRecipeInstructions(
 	container: cheerio.Cheerio<Element> | null,
 ): string[] {
 	let instructions: string[] = [];
+
 	if (container) {
 		const instructionsContainer = container.find('[itemprop="recipeInstructions"]');
 		if (instructionsContainer.length > 0) {
@@ -194,6 +197,7 @@ function extractRecipeInstructions(
 			instructions = extractMicrodataArray($, container, "step");
 		}
 	}
+
 	if (instructions.length === 0) {
 		const instructionContainers = $('[class*="instruction"], [class*="direction"]');
 		if (instructionContainers.length > 0) {
@@ -226,6 +230,7 @@ function findRecipeContainer($: cheerio.CheerioAPI): cheerio.Cheerio<Element> | 
 	const containers = $(
 		'[itemtype="http://schema.org/Recipe"], [itemtype="https://schema.org/Recipe"]',
 	);
+
 	if (containers.length > 0) {
 		return $(containers[0]);
 	}
@@ -233,23 +238,26 @@ function findRecipeContainer($: cheerio.CheerioAPI): cheerio.Cheerio<Element> | 
 }
 
 /**
+ * Options for extracting a microdata property.
+ */
+type ExtractMicrodataPropertyOptions = {
+	$: cheerio.CheerioAPI;
+	container: cheerio.Cheerio<Element> | null;
+	itemprop: string;
+	isImage?: boolean;
+};
+
+/**
  * Extracts text content from a microdata itemprop attribute.
  *
  * Handles both direct text content and nested itemprop="name" patterns.
  * For images, extracts the src or content attribute.
  *
- * @param $ - Cheerio instance loaded with the page HTML.
- * @param container - The recipe container element (or root if null).
- * @param itemprop - The itemprop attribute value to search for.
- * @param isImage - If true, extracts src/content attributes instead of text.
+ * @param options - Options for extracting the microdata property.
  * @returns The extracted value, or null if not found.
  */
-function extractMicrodataProperty(
-	$: cheerio.CheerioAPI,
-	container: cheerio.Cheerio<Element> | null,
-	itemprop: string,
-	isImage = false,
-): string | null {
+function extractMicrodataProperty(options: ExtractMicrodataPropertyOptions): string | null {
+	const { $, container, itemprop, isImage = false } = options;
 	const selector = container
 		? container.find(`[itemprop="${itemprop}"]`)
 		: $(`[itemprop="${itemprop}"]`);
@@ -263,9 +271,11 @@ function extractMicrodataProperty(
 	}
 
 	const nestedName = first.find('[itemprop="name"]').first().text().trim();
+
 	if (nestedName) return nestedName;
 
 	const text = first.text().trim();
+
 	if (text) return text;
 
 	return first.attr("content") || null;
@@ -376,13 +386,14 @@ function extractMicrodataTime(
 	$: cheerio.CheerioAPI,
 	container: cheerio.Cheerio<Element> | null,
 ): number | null {
-	const totalTime = extractMicrodataProperty($, container, "totalTime");
+	const totalTime = extractMicrodataProperty({ $, container, itemprop: "totalTime" });
+
 	if (totalTime) {
 		return parseDuration(totalTime);
 	}
 
-	const cookTime = extractMicrodataProperty($, container, "cookTime");
-	const prepTime = extractMicrodataProperty($, container, "prepTime");
+	const cookTime = extractMicrodataProperty({ $, container, itemprop: "cookTime" });
+	const prepTime = extractMicrodataProperty({ $, container, itemprop: "prepTime" });
 
 	if (cookTime || prepTime) {
 		const cookMinutes = cookTime ? parseDuration(cookTime) : 0;

@@ -37,19 +37,19 @@ export type RecipeRequest = {
 
 /**
  * Constant-time string comparison to prevent timing attacks.
- * Uses Bun's native crypto.timingSafeEqual for secure comparison.
+ *
+ * Uses Bun's native crypto.timingSafeEqual for secure comparison. Converts strings to buffers
+ * for timing-safe comparison. If buffer lengths differ, returns false immediately (still in
+ * constant time). Handles errors gracefully if timingSafeEqual fails unexpectedly.
  *
  * @param a - First string to compare.
  * @param b - Second string to compare.
  * @returns True if strings are equal, false otherwise.
  */
 export function constantTimeEquals(a: string, b: string): boolean {
-	// Convert strings to buffers for timing-safe comparison
 	const aBuffer = Buffer.from(a, "utf8");
 	const bBuffer = Buffer.from(b, "utf8");
 
-	// timingSafeEqual requires buffers of the same length
-	// If lengths differ, they're not equal (but we still need to compare in constant time)
 	if (aBuffer.length !== bBuffer.length) {
 		return false;
 	}
@@ -57,7 +57,6 @@ export function constantTimeEquals(a: string, b: string): boolean {
 	try {
 		return timingSafeEqual(aBuffer, bBuffer);
 	} catch {
-		// Should not happen if lengths are equal, but handle gracefully
 		return false;
 	}
 }
@@ -86,7 +85,7 @@ export function validateApiKeyHeader(
 		);
 	}
 
-	const providedKey = authHeader.slice(7).trim(); // Remove "Bearer " prefix and trim whitespace
+	const providedKey = authHeader.slice(7).trim();
 	const expectedKey = process.env.API_SECRET?.trim();
 
 	if (!expectedKey) {
@@ -97,7 +96,6 @@ export function validateApiKeyHeader(
 		);
 	}
 
-	// Use constant-time comparison to prevent timing attacks
 	if (!constantTimeEquals(providedKey, expectedKey)) {
 		return createErrorResponse("Invalid API key", SecurityHttpStatus.BadRequest);
 	}
@@ -107,8 +105,9 @@ export function validateApiKeyHeader(
 
 /**
  * Validates a recipe URL to ensure it's safe to process.
- * Only allows HTTP and HTTPS protocols to prevent SSRF attacks.
- * Also validates URL length to prevent DoS attacks.
+ *
+ * Validates URL length to prevent DoS attacks and only allows HTTP and HTTPS protocols
+ * to prevent SSRF attacks. Blocks file://, javascript:, data:, and other dangerous protocols.
  *
  * @param urlString - The URL string to validate.
  * @param createErrorResponse - Function to create error responses.
@@ -118,7 +117,6 @@ export function validateRecipeUrl(
 	urlString: string,
 	createErrorResponse: (error: string, status: number) => Response,
 ): Response | null {
-	// Validate URL length to prevent DoS attacks
 	if (urlString.length > MAX_URL_LENGTH) {
 		return createErrorResponse(
 			`URL too long (max ${MAX_URL_LENGTH} characters)`,
@@ -128,8 +126,7 @@ export function validateRecipeUrl(
 
 	try {
 		const url = new URL(urlString);
-		// Only allow HTTP and HTTPS protocols to prevent SSRF attacks
-		// This blocks file://, javascript:, data:, and other dangerous protocols
+
 		if (url.protocol !== "http:" && url.protocol !== "https:") {
 			return createErrorResponse(
 				"Invalid URL protocol. Only HTTP and HTTPS are allowed",
@@ -158,6 +155,7 @@ export function validateRecipeRequest(
 	}
 
 	const request = body as RecipeRequest;
+
 	if (!request.url || typeof request.url !== "string") {
 		return createErrorResponse(
 			"Missing or invalid 'url' field in request body",
@@ -165,7 +163,6 @@ export function validateRecipeRequest(
 		);
 	}
 
-	// Validate URL format and protocol
 	return validateRecipeUrl(request.url, createErrorResponse);
 }
 
@@ -183,10 +180,11 @@ export function validateRequestSize(
 	createErrorResponse: (error: string, status: number) => Response,
 ): Response | null {
 	if (!contentLength) {
-		return null; // No size limit if Content-Length is not provided
+		return null;
 	}
 
 	const size = parseInt(contentLength, 10);
+
 	if (Number.isNaN(size) || size > maxSize) {
 		return createErrorResponse(
 			`Request body too large. Maximum size is ${maxSize / 1024}KB`,

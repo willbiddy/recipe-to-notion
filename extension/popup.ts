@@ -71,6 +71,7 @@ function updateUrlDisplay(url: string | null, title: string | null): void {
 	}
 
 	const trimmedTitle = title?.trim();
+
 	if (trimmedTitle) {
 		urlDisplay.textContent = trimmedTitle;
 		urlDisplay.className =
@@ -102,18 +103,23 @@ function saveRecipeWithProgress(url: string) {
 	const serverUrl = getServerUrl();
 	const apiUrl = `${serverUrl}/api/recipes`;
 
-	return saveRecipe(url, apiUrl, storage, {
-		onProgress: (message) => {
-			showProgress(message);
-			setLoading(true);
-		},
-		onComplete: () => {
-			hideProgress();
-			setLoading(false);
-		},
-		onError: () => {
-			hideProgress();
-			setLoading(false);
+	return saveRecipe({
+		url,
+		apiUrl,
+		storage,
+		callbacks: {
+			onProgress: (message) => {
+				showProgress(message);
+				setLoading(true);
+			},
+			onComplete: () => {
+				hideProgress();
+				setLoading(false);
+			},
+			onError: () => {
+				hideProgress();
+				setLoading(false);
+			},
 		},
 	});
 }
@@ -228,6 +234,7 @@ async function loadApiKeyIntoInput(): Promise<void> {
 	}
 
 	const apiKey = await storage.getApiKey();
+
 	if (apiKey) {
 		input.value = apiKey;
 	} else {
@@ -248,6 +255,7 @@ async function saveApiKey(): Promise<void> {
 	}
 
 	const apiKey = input.value.trim();
+
 	if (!apiKey) {
 		updateStatus("API secret cannot be empty", StatusType.ERROR, { textSize: TextSize.XS });
 		return;

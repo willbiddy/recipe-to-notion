@@ -10,7 +10,9 @@
 
 /**
  * Base error class for all application errors.
- * Provides a consistent structure for error handling.
+ *
+ * Provides a consistent structure for error handling. Maintains proper stack
+ * trace for where our error was thrown (only available on V8 via Error.captureStackTrace).
  */
 export class AppError extends Error {
 	constructor(
@@ -19,7 +21,6 @@ export class AppError extends Error {
 	) {
 		super(message);
 		this.name = this.constructor.name;
-		// Maintains proper stack trace for where our error was thrown (only available on V8)
 		if (Error.captureStackTrace) {
 			Error.captureStackTrace(this, this.constructor);
 		}
@@ -42,31 +43,53 @@ export class DuplicateRecipeError extends AppError {
 }
 
 /**
+ * Options for creating a ScrapingError.
+ */
+export type ScrapingErrorOptions = {
+	message: string;
+	originalUrl: string;
+	statusCode?: number;
+	cause?: unknown;
+};
+
+/**
  * Error thrown when recipe scraping fails.
  */
 export class ScrapingError extends AppError {
-	constructor(
-		message: string,
-		public readonly originalUrl: string,
-		public readonly statusCode?: number,
-		cause?: unknown,
-	) {
-		super(message, cause);
+	public readonly originalUrl: string;
+	public readonly statusCode?: number;
+
+	constructor(options: ScrapingErrorOptions) {
+		super(options.message, options.cause);
+		this.originalUrl = options.originalUrl;
+		this.statusCode = options.statusCode;
 	}
 }
+
+/**
+ * Options for creating a NotionApiError.
+ */
+export type NotionApiErrorOptions = {
+	message: string;
+	statusCode: number;
+	propertyName?: string;
+	propertyType?: string;
+	cause?: unknown;
+};
 
 /**
  * Error thrown when the Notion API returns an error response.
  */
 export class NotionApiError extends AppError {
-	constructor(
-		message: string,
-		public readonly statusCode: number,
-		public readonly propertyName?: string,
-		public readonly propertyType?: string,
-		cause?: unknown,
-	) {
-		super(message, cause);
+	public readonly statusCode: number;
+	public readonly propertyName?: string;
+	public readonly propertyType?: string;
+
+	constructor(options: NotionApiErrorOptions) {
+		super(options.message, options.cause);
+		this.statusCode = options.statusCode;
+		this.propertyName = options.propertyName;
+		this.propertyType = options.propertyType;
 	}
 }
 

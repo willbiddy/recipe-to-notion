@@ -76,6 +76,7 @@ export function updateStatus(
  */
 export function clearStatus(): void {
 	const statusEl = document.getElementById("status");
+
 	if (statusEl) {
 		statusEl.classList.add("hidden");
 		statusEl.textContent = "";

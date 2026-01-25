@@ -96,23 +96,27 @@ export type ProgressCallbacks = {
 };
 
 /**
+ * Options for saving a recipe.
+ */
+export type SaveRecipeOptions = {
+	url: string;
+	apiUrl: string;
+	storage: StorageAdapter;
+	callbacks: ProgressCallbacks;
+};
+
+/**
  * Saves a recipe by sending the URL to the server with progress streaming.
  *
  * Uses Server-Sent Events (SSE) to stream progress updates to the client.
  *
- * @param url - The recipe URL to save.
- * @param apiUrl - The API endpoint URL.
- * @param storage - Storage adapter for retrieving the API key.
- * @param callbacks - Callbacks for progress, completion, and error events.
+ * @param options - Options for saving the recipe.
  * @returns Promise that resolves with the recipe response.
  */
-export async function saveRecipe(
-	url: string,
-	apiUrl: string,
-	storage: StorageAdapter,
-	callbacks: ProgressCallbacks,
-): Promise<RecipeResponse> {
+export async function saveRecipe(options: SaveRecipeOptions): Promise<RecipeResponse> {
+	const { url, apiUrl, storage, callbacks } = options;
 	const apiKey = await storage.getApiKey();
+
 	if (!apiKey) {
 		return {
 			success: false,

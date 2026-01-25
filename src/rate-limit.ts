@@ -28,7 +28,7 @@ export type RateLimitConfig = {
  */
 export const DEFAULT_RATE_LIMIT: RateLimitConfig = {
 	maxRequests: 10,
-	windowMs: 60 * 1000, // 1 minute
+	windowMs: 60 * 1000,
 };
 
 /**
@@ -69,7 +69,6 @@ function cleanupExpiredEntries(): void {
 	}
 }
 
-// Start cleanup interval
 if (typeof setInterval !== "undefined") {
 	setInterval(cleanupExpiredEntries, CLEANUP_INTERVAL_MS);
 }
@@ -77,9 +76,13 @@ if (typeof setInterval !== "undefined") {
 /**
  * Checks if a request should be rate limited.
  *
+ * Creates a new window if no entry exists or the current window has expired.
+ * Returns rate limit exceeded if the count has reached the maximum. Otherwise
+ * increments the count and returns the remaining requests.
+ *
  * @param identifier - Unique identifier (IP address or API key hash).
  * @param config - Rate limit configuration (defaults to DEFAULT_RATE_LIMIT).
- * @returns Object with `allowed` boolean and `remaining` requests count.
+ * @returns Object with `allowed` boolean, `remaining` requests count, and `resetAt` timestamp.
  */
 export function checkRateLimit(
 	identifier: string,
@@ -89,7 +92,6 @@ export function checkRateLimit(
 	const entry = rateLimitStore.get(identifier);
 
 	if (!entry || now - entry.windowStart >= config.windowMs) {
-		// New window or expired entry
 		rateLimitStore.set(identifier, {
 			count: 1,
 			windowStart: now,
@@ -102,7 +104,6 @@ export function checkRateLimit(
 	}
 
 	if (entry.count >= config.maxRequests) {
-		// Rate limit exceeded
 		return {
 			allowed: false,
 			remaining: 0,
@@ -110,7 +111,6 @@ export function checkRateLimit(
 		};
 	}
 
-	// Increment count
 	entry.count += 1;
 	return {
 		allowed: true,
@@ -137,21 +137,23 @@ function hashString(str: string): number {
 }
 
 /**
- * Extracts client identifier from request (IP address or API key hash).
+ * Extracts client identifier from request for rate limiting.
+ *
+ * Hashes the API key for per-key rate limiting if present in the Authorization header.
+ * Falls back to IP address-based identification using x-forwarded-for or x-real-ip headers.
  *
  * @param request - The incoming request.
- * @returns Client identifier string.
+ * @returns Client identifier string (api-key-{hash} or ip-{address}).
  */
 export function getClientIdentifier(request: Request): string {
-	// Hash the API key for per-key rate limiting (if present)
 	const authHeader = request.headers.get("Authorization");
+
 	if (authHeader?.startsWith("Bearer ")) {
 		const apiKey = authHeader.slice(7).trim();
 		const hash = hashString(apiKey);
 		return `api-key-${Math.abs(hash)}`;
 	}
 
-	// Fall back to IP address-based identification
 	const forwardedFor = request.headers.get("x-forwarded-for");
 	const realIp = request.headers.get("x-real-ip");
 	const ip = forwardedFor?.split(",")[0]?.trim() || realIp || "unknown";

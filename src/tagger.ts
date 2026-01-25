@@ -189,7 +189,9 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
 		);
 	}
 
-	// Runtime validation as a safety check (belt-and-suspenders approach)
+	/**
+	 * Runtime validation as a safety check (belt-and-suspenders approach).
+	 */
 	const validationResult = claudeResponseSchema.safeParse(toolUse.input);
 	if (!validationResult.success) {
 		const issues = validationResult.error.issues
@@ -208,8 +210,10 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
 	const scrapedTime = recipe.totalTimeMinutes;
 	const aiEstimatedTime = validated.totalTimeMinutes;
 
-	// Use scraped time if available, otherwise use AI estimate
-	// Both should be validated by the schema, but we prefer scraped time
+	/**
+	 * Use scraped time if available, otherwise use AI estimate.
+	 * Both should be validated by the schema, but we prefer scraped time.
+	 */
 	const finalTime = scrapedTime ?? aiEstimatedTime;
 
 	if (finalTime === null || finalTime === undefined) {
@@ -245,7 +249,9 @@ function buildPrompt(recipe: Recipe): string {
 		lines.push("", `${PromptLabel.Description}: ${recipe.description}`);
 	}
 
-	// Add hints section if any hints are available
+	/**
+	 * Add hints section if any hints are available.
+	 */
 	const hints = buildHints(recipe);
 	if (hints.length > 0) {
 		lines.push("", `${PromptLabel.Hints}:`, ...hints.map((h) => `- ${h}`));

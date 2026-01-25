@@ -39,7 +39,8 @@
 			"suspicious": {
 				"noConsole": "off",
 				"noEvolvingTypes": "warn",
-				"useAwait": "error"
+				"useAwait": "error",
+				"noUnknownAtRules": "off"
 			}
 		}
 	},

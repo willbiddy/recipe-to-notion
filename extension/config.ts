@@ -2,11 +2,11 @@
  * Configuration management for the browser extension.
  */
 
-const SERVER_URL = "http://localhost:3000";
+const SERVER_URL = "https://recipe-to-notion-xi.vercel.app";
 
 /**
- * Gets the server URL (always localhost:3000).
- * @returns The server URL
+ * Gets the server URL.
+ * @returns The server URL (Vercel deployment)
  */
 export function getServerUrl(): string {
 	return SERVER_URL;

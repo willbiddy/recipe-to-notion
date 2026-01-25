@@ -41,9 +41,7 @@ After adding:
 
 If you prefer to create it manually, follow the screenshot below exactly:
 
-<img src="ios-shortcut-setup.png" alt="iOS Shortcut setup showing four actions: Get URLs from Input, Text action with base URL, Combine Text action combining Text and URLs variables, and Open URL action using Combined Text variable">
-
-<img src="ios-shortcut-setup.png" alt="iOS Shortcut setup showing four actions: Get URLs from Input, Text action with base URL, Combine Text action combining Text and URLs variables, and Open URL action using Combined Text variable">
+<img src="ios-shortcut-setup.png" alt="iOS Shortcut setup showing four actions: Get URLs from Input, Text action with base URL, Combine Text action combining Text and URLs variables, and Open URL action using Combined Text variable" style="max-height: 400px; width: auto;">
 
 **Exact Action List (match the screenshot above):**
 

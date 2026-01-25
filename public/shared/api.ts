@@ -74,7 +74,7 @@ export type ServerProgressEvent =
 /**
  * Callbacks for progress updates.
  */
-export interface ProgressCallbacks {
+export type ProgressCallbacks = {
 	onProgress: (message: string) => void;
 	onComplete: (data: {
 		pageId: string;
@@ -93,7 +93,7 @@ export interface ProgressCallbacks {
 		};
 	}) => void;
 	onError: (error: string, notionUrl?: string) => void;
-}
+};
 
 /**
  * Saves a recipe by sending the URL to the server with progress streaming.
@@ -157,10 +157,7 @@ export async function saveRecipe(
 					const decoder = new TextDecoder();
 
 					if (!reader) {
-						resolve({
-							success: false,
-							error: "Failed to read response stream",
-						});
+						resolve({ success: false, error: "Failed to read response stream" });
 						return;
 					}
 
@@ -170,10 +167,7 @@ export async function saveRecipe(
 						// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: SSE parsing logic is inherently complex
 						return reader.read().then(({ done, value }) => {
 							if (done) {
-								resolve({
-									success: false,
-									error: "Stream ended unexpectedly",
-								});
+								resolve({ success: false, error: "Stream ended unexpectedly" });
 								return;
 							}
 
@@ -230,10 +224,7 @@ export async function saveRecipe(
 				.catch((error) => {
 					const errorMessage = formatNetworkError(error);
 					callbacks.onError(errorMessage);
-					resolve({
-						success: false,
-						error: errorMessage,
-					});
+					resolve({ success: false, error: errorMessage });
 				});
 		} catch (error) {
 			callbacks.onError(error instanceof Error ? error.message : String(error));

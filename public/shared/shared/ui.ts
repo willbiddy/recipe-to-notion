@@ -3,27 +3,22 @@
  */
 
 /**
- * Element IDs used throughout the UI.
+ * Status types for updateStatus function.
  */
-const UI_ELEMENT_IDS = {
-	STATUS: "status",
-	PROGRESS_CONTAINER: "progress-container",
-	PROGRESS_MESSAGE: "progress-message",
-	SAVE_BUTTON: "save-button",
-	BUTTON_TEXT: "button-text",
-	TOGGLE_VISIBILITY_BUTTON: "toggle-api-key-visibility",
-	API_KEY_INPUT: "api-key-input",
-	EYE_ICON: "eye-icon",
-	EYE_OFF_ICON: "eye-off-icon",
-} as const;
+export enum StatusType {
+	INFO = "info",
+	SUCCESS = "success",
+	ERROR = "error",
+}
 
 /**
- * Button text states.
+ * Text size options for status messages.
  */
-const BUTTON_TEXT = {
-	LOADING: "Processing...",
-	NORMAL: "Save Recipe",
-} as const;
+export enum TextSize {
+	XS = "xs",
+	SM = "sm",
+	BASE = "base",
+}
 
 /**
  * CSS class constants using theme-based semantic names.
@@ -31,9 +26,9 @@ const BUTTON_TEXT = {
 const STATUS_CLASSES = {
 	BASE: "py-4 px-5 rounded-2xl leading-relaxed animate-[fadeIn_0.2s_ease-in] block shadow-sm",
 	TEXT_SIZES: {
-		xs: "text-xs",
-		sm: "text-sm",
-		base: "text-base",
+		[TextSize.XS]: "text-xs",
+		[TextSize.SM]: "text-sm",
+		[TextSize.BASE]: "text-base",
 	},
 	INFO: "status-info",
 	SUCCESS: "status-success",
@@ -49,13 +44,14 @@ const STATUS_CLASSES = {
  */
 export function updateStatus(
 	message: string,
-	type: "info" | "success" | "error" = "info",
+	type: StatusType = StatusType.INFO,
 	options?: {
 		baseClasses?: string;
-		textSize?: "sm" | "base" | "xs";
+		textSize?: TextSize;
 	},
 ): void {
-	const statusEl = document.getElementById(UI_ELEMENT_IDS.STATUS);
+	const statusEl = document.getElementById("status");
+
 	if (!statusEl) {
 		return;
 	}
@@ -63,14 +59,14 @@ export function updateStatus(
 	statusEl.textContent = message;
 	statusEl.classList.remove("hidden");
 
-	const textSize = options?.textSize ?? "sm";
+	const textSize = options?.textSize ?? TextSize.SM;
 	const textSizeClass = STATUS_CLASSES.TEXT_SIZES[textSize];
 
 	const baseClasses = options?.baseClasses || `${STATUS_CLASSES.BASE} ${textSizeClass}`;
 	const typeClasses = {
-		info: STATUS_CLASSES.INFO,
-		success: STATUS_CLASSES.SUCCESS,
-		error: STATUS_CLASSES.ERROR,
+		[StatusType.INFO]: STATUS_CLASSES.INFO,
+		[StatusType.SUCCESS]: STATUS_CLASSES.SUCCESS,
+		[StatusType.ERROR]: STATUS_CLASSES.ERROR,
 	};
 	statusEl.className = `${baseClasses} ${typeClasses[type]}`;
 }
@@ -79,7 +75,7 @@ export function updateStatus(
  * Clears the status message from the UI.
  */
 export function clearStatus(): void {
-	const statusEl = document.getElementById(UI_ELEMENT_IDS.STATUS);
+	const statusEl = document.getElementById("status");
 	if (statusEl) {
 		statusEl.classList.add("hidden");
 		statusEl.textContent = "";
@@ -92,8 +88,9 @@ export function clearStatus(): void {
  * @param message - The progress message to display.
  */
 export function showProgress(message: string): void {
-	const progressContainer = document.getElementById(UI_ELEMENT_IDS.PROGRESS_CONTAINER);
-	const progressMessage = document.getElementById(UI_ELEMENT_IDS.PROGRESS_MESSAGE);
+	const progressContainer = document.getElementById("progress-container");
+	const progressMessage = document.getElementById("progress-message");
+
 	if (!progressContainer || !progressMessage) {
 		return;
 	}
@@ -106,7 +103,8 @@ export function showProgress(message: string): void {
  * Hides the progress indicator from the UI.
  */
 export function hideProgress(): void {
-	const progressContainer = document.getElementById(UI_ELEMENT_IDS.PROGRESS_CONTAINER);
+	const progressContainer = document.getElementById("progress-container");
+
 	if (progressContainer) {
 		progressContainer.classList.add("hidden");
 	}
@@ -118,14 +116,15 @@ export function hideProgress(): void {
  * @param loading - True to show loading state, false to show normal state.
  */
 export function setLoading(loading: boolean): void {
-	const saveButton = document.getElementById(UI_ELEMENT_IDS.SAVE_BUTTON) as HTMLButtonElement;
-	const buttonText = saveButton?.querySelector(`.${UI_ELEMENT_IDS.BUTTON_TEXT}`) as HTMLElement;
+	const saveButton = document.getElementById("save-button") as HTMLButtonElement;
+	const buttonText = saveButton?.querySelector(".button-text") as HTMLElement;
+
 	if (!saveButton || !buttonText) {
 		return;
 	}
 
 	saveButton.disabled = loading;
-	buttonText.textContent = loading ? BUTTON_TEXT.LOADING : BUTTON_TEXT.NORMAL;
+	buttonText.textContent = loading ? "Processing..." : "Save Recipe";
 }
 
 /**
@@ -134,10 +133,10 @@ export function setLoading(loading: boolean): void {
  * Allows users to show/hide the API key input field.
  */
 export function setupApiKeyVisibilityToggle(): void {
-	const toggleVisibilityButton = document.getElementById(UI_ELEMENT_IDS.TOGGLE_VISIBILITY_BUTTON);
-	const apiKeyInput = document.getElementById(UI_ELEMENT_IDS.API_KEY_INPUT) as HTMLInputElement;
-	const eyeIcon = document.getElementById(UI_ELEMENT_IDS.EYE_ICON);
-	const eyeOffIcon = document.getElementById(UI_ELEMENT_IDS.EYE_OFF_ICON);
+	const toggleVisibilityButton = document.getElementById("toggle-api-key-visibility");
+	const apiKeyInput = document.getElementById("api-key-input") as HTMLInputElement;
+	const eyeIcon = document.getElementById("eye-icon");
+	const eyeOffIcon = document.getElementById("eye-off-icon");
 
 	if (!toggleVisibilityButton || !apiKeyInput || !eyeIcon || !eyeOffIcon) {
 		return;

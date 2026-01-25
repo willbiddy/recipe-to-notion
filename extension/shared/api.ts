@@ -18,16 +18,8 @@ const SSE_DATA_PREFIX_LENGTH = 6;
  * Response format from the server API.
  */
 export type RecipeResponse =
-	| {
-			success: true;
-			pageId: string;
-			notionUrl: string;
-	  }
-	| {
-			success: false;
-			error: string;
-			notionUrl?: string; // May be present for duplicate errors
-	  };
+	| { success: true; pageId: string; notionUrl: string }
+	| { success: false; error: string; notionUrl?: string };
 
 /**
  * Server-Sent Event types for recipe processing progress.
@@ -74,7 +66,7 @@ export type ServerProgressEvent =
 /**
  * Callbacks for progress updates.
  */
-export interface ProgressCallbacks {
+export type ProgressCallbacks = {
 	onProgress: (message: string) => void;
 	onComplete: (data: {
 		pageId: string;
@@ -93,7 +85,7 @@ export interface ProgressCallbacks {
 		};
 	}) => void;
 	onError: (error: string, notionUrl?: string) => void;
-}
+};
 
 /**
  * Saves a recipe by sending the URL to the server with progress streaming.
@@ -105,6 +97,7 @@ export async function saveRecipe(
 	callbacks: ProgressCallbacks,
 ): Promise<RecipeResponse> {
 	const apiKey = await storage.getApiKey();
+
 	if (!apiKey) {
 		return {
 			success: false,
@@ -230,10 +223,7 @@ export async function saveRecipe(
 				.catch((error) => {
 					const errorMessage = formatNetworkError(error);
 					callbacks.onError(errorMessage);
-					resolve({
-						success: false,
-						error: errorMessage,
-					});
+					resolve({ success: false, error: errorMessage });
 				});
 		} catch (error) {
 			callbacks.onError(error instanceof Error ? error.message : String(error));

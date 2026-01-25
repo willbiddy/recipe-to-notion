@@ -2,6 +2,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
+import { TaggingError, ValidationError } from "./errors.js";
 import type { Recipe } from "./scraper.js";
 
 /**
@@ -98,8 +99,9 @@ async function loadSystemPrompt(): Promise<string> {
 		systemPromptCache = text.trim();
 		return systemPromptCache;
 	} catch (error) {
-		throw new Error(
+		throw new TaggingError(
 			`Failed to load system prompt from ${promptPath}: ${error instanceof Error ? error.message : String(error)}`,
+			error,
 		);
 	}
 }
@@ -144,7 +146,7 @@ enum ClaudeLimit {
 /**
  * Healthiness score configuration.
  */
-enum HealthinessScore {
+export enum HealthinessScore {
 	Min = 0,
 	Max = 10,
 }
@@ -225,9 +227,10 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
 		});
 	} catch (error) {
 		if (error instanceof Anthropic.APIError) {
-			throw new Error(
+			throw new TaggingError(
 				`Anthropic API error (${error.status}): ${error.message || "Unknown error"}. ` +
 					`Details: ${JSON.stringify(error.error || {})}`,
+				error,
 			);
 		}
 		if (error instanceof Error) {
@@ -235,11 +238,12 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
 				error.cause && typeof error.cause === "object" && "message" in error.cause
 					? String(error.cause.message)
 					: undefined;
-			throw new Error(
+			throw new TaggingError(
 				`Failed to call Anthropic API: ${error.message}${causeMessage ? `. Cause: ${causeMessage}` : ""}`,
+				error,
 			);
 		}
-		throw new Error(`Failed to call Anthropic API: ${String(error)}`);
+		throw new TaggingError(`Failed to call Anthropic API: ${String(error)}`, error);
 	}
 
 	const toolUse = response.content.find(
@@ -251,12 +255,13 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
 			.filter((block) => block.type === "text")
 			.map((block) => block.text)
 			.join("");
-		throw new Error(
+		throw new TaggingError(
 			`Expected tool_use response from Claude, but received text instead. Response: ${textContent.substring(0, ErrorDisplay.JsonParsePreview)}...`,
 		);
 	}
 
 	const validationResult = claudeResponseSchema.safeParse(toolUse.input);
+
 	if (!validationResult.success) {
 		const issues = validationResult.error.issues
 			.map((issue) => {
@@ -264,9 +269,10 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
 				return `  - ${path}: ${issue.message}`;
 			})
 			.join("\n");
-		throw new Error(
+		throw new ValidationError(
 			`Claude tool response validation failed:\n${issues}\n\n` +
 				`Tool input: ${JSON.stringify(toolUse.input).substring(0, ErrorDisplay.ValidationPreview)}...`,
+			validationResult.error,
 		);
 	}
 
@@ -277,7 +283,7 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
 	const finalTime = scrapedTime ?? aiEstimatedTime;
 
 	if (finalTime === null || finalTime === undefined) {
-		throw new Error(
+		throw new ValidationError(
 			`Recipe time is required but was not provided. Scraped time: ${scrapedTime}, AI estimate: ${aiEstimatedTime}`,
 		);
 	}

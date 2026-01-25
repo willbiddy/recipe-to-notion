@@ -8,6 +8,7 @@
  */
 import { consola } from "consola";
 import getPort from "get-port";
+import { ValidationError } from "./errors.js";
 import { handleRequest } from "./server.js";
 
 /**
@@ -66,7 +67,9 @@ function parsePort(envPort: string | undefined): number {
 
 	const port = parseInt(envPort, 10);
 	if (Number.isNaN(port) || port < MIN_PORT || port > MAX_PORT) {
-		throw new Error(`Invalid port: ${envPort}. Must be between ${MIN_PORT} and ${MAX_PORT}.`);
+		throw new ValidationError(
+			`Invalid port: ${envPort}. Must be between ${MIN_PORT} and ${MAX_PORT}.`,
+		);
 	}
 
 	return port;

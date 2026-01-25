@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ValidationError } from "./errors.js";
 
 /**
  * Environment variable schema for validation.
@@ -48,9 +49,10 @@ export function loadConfig(): Config {
 			"API_SECRET",
 		].join(", ");
 
-		throw new Error(
+		throw new ValidationError(
 			`Missing or invalid environment variables: ${missingVars}\n` +
 				`Ensure .env file exists with: ${requiredVars}`,
+			parseResult.error,
 		);
 	}
 

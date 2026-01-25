@@ -5,6 +5,7 @@
  * Supports both streaming (SSE) and non-streaming responses.
  */
 
+import { ProgressType } from "../src/index.js";
 import { checkRateLimit, getClientIdentifier } from "../src/rate-limit.js";
 import {
 	MAX_REQUEST_BODY_SIZE,
@@ -55,7 +56,7 @@ function handleRecipeStream(url: string, requestId?: string): Response {
 				sendEvent({
 					type: ServerProgressEventType.Progress,
 					message: "Starting...",
-					progressType: "starting",
+					progressType: ProgressType.STARTING,
 				});
 
 				const { processRecipe } = await import("../src/index.js");
@@ -208,6 +209,7 @@ export default {
 			console.error(`[${requestId}] Authentication failed: ${error}`);
 			return createErrorResponse(error, status, false);
 		});
+
 		if (authError) {
 			return authError;
 		}
@@ -217,6 +219,7 @@ export default {
 			console.error(`[${requestId}] Request size validation failed: ${error}`);
 			return createErrorResponse(error, status, false);
 		});
+
 		if (sizeError) {
 			return sizeError;
 		}
@@ -228,6 +231,7 @@ export default {
 				console.error(`[${requestId}] Request validation failed: ${error}`);
 				return createErrorResponse(error, status, false);
 			});
+
 			if (validationError) {
 				return validationError;
 			}

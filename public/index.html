@@ -20,51 +20,50 @@
 		<link rel="shortcut icon" href="/api/favicon" />
 	</head>
 	<body class="min-h-screen gradient-bg text-gray-900 text-base">
-						<a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary-600 focus:text-white focus:rounded-lg focus:shadow-lg">Skip to main content</a>
-		<div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 lg:py-12">
-			<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-stretch">
+		<div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 lg:py-16">
+			<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-16 items-start">
 				<!-- Left Column: Intro -->
 				<header class="lg:sticky lg:top-8">
 					<div class="text-center lg:text-left">
-						<div class="inline-flex items-center justify-center w-20 h-20 mb-6 transform hover:scale-105 transition-transform duration-300 lg:mx-0 mx-auto">
-							<img src="/api/fork-and-knife" alt="Recipe Clipper for Notion" class="w-20 h-20 object-contain" />
+						<div class="inline-flex items-center justify-center w-24 h-24 mb-8 transform hover:scale-105 transition-transform duration-300 lg:mx-0 mx-auto">
+							<img src="/api/fork-and-knife" alt="Recipe Clipper for Notion" class="w-24 h-24 object-contain" />
 						</div>
-						<h1 class="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-primary-600 via-accent-600 to-primary-700 bg-clip-text text-transparent mb-6 leading-tight">Recipe Clipper for Notion</h1>
-						<div class="space-y-6">
-							<p class="text-lg sm:text-xl text-gray-900 leading-relaxed">
+						<h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-primary-600 via-accent-600 to-primary-700 bg-clip-text text-transparent mb-8 leading-tight">Recipe Clipper for Notion</h1>
+						<div class="space-y-8">
+							<p class="text-xl sm:text-2xl text-gray-900 leading-relaxed font-medium">
 								Save recipes from any website to your Notion database with one click. No more copying and pasting—just paste a recipe URL and get a beautifully formatted Notion page with cover photos, organized ingredients, and AI-powered tags.
 							</p>
-							<div class="bg-gradient-to-br from-primary-50 to-accent-50 border-2 border-primary-200 rounded-2xl p-6 shadow-sm">
-								<div class="flex items-start gap-4">
-									<div class="flex-shrink-0 mt-0.5">
-										<svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+							<div class="bg-gradient-to-br from-primary-50 to-accent-50 border-2 border-primary-200 rounded-3xl p-8 shadow-sm">
+								<div class="flex items-start gap-5">
+									<div class="flex-shrink-0 mt-1">
+										<svg class="w-7 h-7 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
 										</svg>
 									</div>
 									<div class="flex-1">
-										<h2 class="text-lg font-bold text-primary-900 mb-4">How it works</h2>
-										<div class="space-y-4">
-											<div class="flex items-start gap-3">
-												<span class="flex-shrink-0 w-7 h-7 rounded-full bg-primary-600 text-white text-sm font-bold flex items-center justify-center mt-0.5" aria-hidden="true">1</span>
-												<p class="text-base text-primary-900 leading-relaxed">
+										<h2 class="text-2xl font-bold text-primary-900 mb-6">How it works</h2>
+										<div class="space-y-5">
+											<div class="flex items-start gap-4">
+												<span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-600 text-white text-base font-bold flex items-center justify-center mt-0.5" aria-hidden="true">1</span>
+												<p class="text-lg text-primary-900 leading-relaxed">
 													<strong class="font-semibold">Paste a recipe URL</strong> from any website—we support most recipe sites including NYT Cooking, AllRecipes, and more.
 												</p>
 											</div>
-											<div class="flex items-start gap-3">
-												<span class="flex-shrink-0 w-7 h-7 rounded-full bg-primary-600 text-white text-sm font-bold flex items-center justify-center mt-0.5" aria-hidden="true">2</span>
-												<p class="text-base text-primary-900 leading-relaxed">
+											<div class="flex items-start gap-4">
+												<span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-600 text-white text-base font-bold flex items-center justify-center mt-0.5" aria-hidden="true">2</span>
+												<p class="text-lg text-primary-900 leading-relaxed">
 													<strong class="font-semibold">We extract the recipe data</strong> using structured data (JSON-LD) and intelligent HTML parsing to capture ingredients, instructions, and images.
 												</p>
 											</div>
-											<div class="flex items-start gap-3">
-												<span class="flex-shrink-0 w-7 h-7 rounded-full bg-primary-600 text-white text-sm font-bold flex items-center justify-center mt-0.5" aria-hidden="true">3</span>
-												<p class="text-base text-primary-900 leading-relaxed">
+											<div class="flex items-start gap-4">
+												<span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-600 text-white text-base font-bold flex items-center justify-center mt-0.5" aria-hidden="true">3</span>
+												<p class="text-lg text-primary-900 leading-relaxed">
 													<strong class="font-semibold">Claude AI analyzes</strong> the recipe to automatically add cuisine tags, meal types (breakfast, lunch, dinner), healthiness scores (0-10), and ingredient categories.
 												</p>
 											</div>
-											<div class="flex items-start gap-3">
-												<span class="flex-shrink-0 w-7 h-7 rounded-full bg-primary-600 text-white text-sm font-bold flex items-center justify-center mt-0.5" aria-hidden="true">4</span>
-												<p class="text-base text-primary-900 leading-relaxed">
+											<div class="flex items-start gap-4">
+												<span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-600 text-white text-base font-bold flex items-center justify-center mt-0.5" aria-hidden="true">4</span>
+												<p class="text-lg text-primary-900 leading-relaxed">
 													<strong class="font-semibold">A beautiful Notion page is created</strong> with cover photos, organized ingredients grouped by shopping aisle, numbered instructions, and all the AI-generated metadata for easy searching and filtering.
 												</p>
 											</div>
@@ -72,14 +71,14 @@
 									</div>
 								</div>
 							</div>
-							<div class="bg-accent-50/60 border-2 border-accent-200 rounded-2xl p-5">
-								<div class="flex items-start gap-3">
-									<svg class="w-5 h-5 text-accent-700 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+							<div class="bg-accent-50/60 border-2 border-accent-200 rounded-3xl p-6">
+								<div class="flex items-start gap-4">
+									<svg class="w-6 h-6 text-accent-700 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
 									</svg>
 									<div>
-										<h3 class="text-base font-semibold text-accent-900 mb-2">Setup required</h3>
-										<p class="text-base text-accent-900 leading-relaxed">
+										<h3 class="text-xl font-semibold text-accent-900 mb-3">Setup required</h3>
+										<p class="text-lg text-accent-900 leading-relaxed">
 											Before using this tool, you'll need to deploy it to Vercel and configure your Notion database. <a href="https://github.com/willbiddy/recipe-to-notion" target="_blank" rel="noopener noreferrer" class="font-semibold underline hover:text-accent-900 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 rounded">See setup instructions</a> for detailed steps.
 										</p>
 									</div>
@@ -91,9 +90,9 @@
 
 				<!-- Right Column: Form -->
 				<main id="main-content" class="card">
-				<div class="flex flex-col gap-4">
-					<label for="url-input" class="text-base font-semibold text-primary-900 flex items-center gap-2">
-						<svg class="w-5 h-5 text-primary-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+				<div class="flex flex-col gap-6">
+					<label for="url-input" class="text-xl font-semibold text-primary-900 flex items-center gap-3">
+						<svg class="w-6 h-6 text-primary-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
 						</svg>
 						Recipe URL
@@ -128,25 +127,27 @@
 						</button>
 						<div id="url-validation" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 					</div>
-					<p id="url-help" class="text-sm text-primary-900 flex items-start gap-1.5">
-						<svg class="w-4 h-4 text-primary-700 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+					<p id="url-help" class="text-base text-primary-900 flex items-start gap-2 leading-relaxed">
+						<svg class="w-5 h-5 text-primary-700 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
 						</svg>
 						Paste a recipe URL from any website. The recipe will be scraped, analyzed, and saved to your Notion database.
 					</p>
 				</div>
 
-				<button
-					type="button"
-					id="save-button"
-					aria-label="Save recipe to Notion"
-					class="btn-primary"
-				>
-					<svg class="w-5 h-5 group-hover:translate-x-0.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-					</svg>
-					<span class="button-text">Save Recipe</span>
-				</button>
+				<div class="mt-2">
+					<button
+						type="button"
+						id="save-button"
+						aria-label="Save recipe to Notion"
+						class="btn-primary"
+					>
+						<svg class="w-5 h-5 group-hover:translate-x-0.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+						</svg>
+						<span class="button-text">Save Recipe</span>
+					</button>
+				</div>
 
 					<div
 						id="progress-container"
@@ -172,7 +173,7 @@
 
 				<div class="flex-grow"></div>
 
-					<div class="flex items-center justify-start pt-4 border-t-2 border-primary-200">
+					<div class="flex items-center justify-start pt-6 mt-6 border-t-2 border-primary-200">
 					<button
 						type="button"
 						id="settings-button"
@@ -191,16 +192,16 @@
 						</svg>
 					</button>
 				</div>
-				<div id="settings-panel" class="hidden flex flex-col gap-4 pt-4 border-t-2 border-primary-200 transition-all duration-300 ease-in-out overflow-hidden">
-					<div class="flex items-center gap-2 mb-1">
-						<svg class="w-5 h-5 text-primary-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+				<div id="settings-panel" class="hidden flex flex-col gap-6 pt-6 mt-6 border-t-2 border-primary-200 transition-all duration-300 ease-in-out overflow-hidden">
+					<div class="flex items-center gap-3 mb-2">
+						<svg class="w-6 h-6 text-primary-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
 						</svg>
-						<h3 class="text-lg font-semibold text-primary-900">Settings</h3>
+						<h3 class="text-xl font-semibold text-primary-900">Settings</h3>
 					</div>
-					<div class="flex flex-col gap-2">
-						<label for="api-key-input" class="text-base font-medium text-gray-900 flex items-center gap-2">
+					<div class="flex flex-col gap-4">
+						<label for="api-key-input" class="text-lg font-medium text-gray-900 flex items-center gap-3">
 							<svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
 							</svg>
@@ -234,8 +235,8 @@
 								</svg>
 							</button>
 						</div>
-						<p id="api-key-help" class="text-sm text-primary-900">
-							Get this from your Vercel deployment's <code class="text-sm bg-primary-100 px-1.5 py-0.5 rounded font-mono text-primary-900">API_SECRET</code> environment variable. This is stored locally in your browser and never shared.
+						<p id="api-key-help" class="text-base text-primary-900 leading-relaxed">
+							Get this from your Vercel deployment's <code class="text-base bg-primary-100 px-2 py-1 rounded font-mono text-primary-900">API_SECRET</code> environment variable. This is stored locally in your browser and never shared.
 						</p>
 					</div>
 					<button

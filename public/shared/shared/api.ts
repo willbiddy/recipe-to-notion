@@ -74,7 +74,7 @@ export type ServerProgressEvent =
 /**
  * Callbacks for progress updates.
  */
-export interface ProgressCallbacks {
+export type ProgressCallbacks = {
 	onProgress: (message: string) => void;
 	onComplete: (data: {
 		pageId: string;
@@ -93,7 +93,7 @@ export interface ProgressCallbacks {
 		};
 	}) => void;
 	onError: (error: string, notionUrl?: string) => void;
-}
+};
 
 /**
  * Saves a recipe by sending the URL to the server with progress streaming.

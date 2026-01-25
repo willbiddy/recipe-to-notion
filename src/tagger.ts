@@ -60,11 +60,15 @@ export type RecipeTags = {
  * System prompt for Claude to analyze recipes and generate structured metadata.
  * Loaded from system-prompt.md file for easier editing.
  */
+// Load system prompt - using readFileSync for synchronous module initialization
+// Note: Bun optimizes Node.js fs operations, so readFileSync is fast even though it's Node.js API
+// For async file operations elsewhere, we use Bun.file() which is even faster
 const SYSTEM_PROMPT = (() => {
 	const __filename = fileURLToPath(import.meta.url);
 	const __dirname = join(__filename, "..");
 	const promptPath = join(__dirname, "system-prompt.md");
 	try {
+		// Bun optimizes Node.js fs.readFileSync, so this is still fast
 		return readFileSync(promptPath, "utf-8").trim();
 	} catch (error) {
 		throw new Error(

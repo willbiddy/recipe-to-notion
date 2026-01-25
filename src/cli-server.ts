@@ -34,7 +34,7 @@ try {
 } catch (error) {
 	consola.fatal(
 		error instanceof Error ? error.message : String(error),
-		"\nMake sure your .env file is configured with ANTHROPIC_API_KEY, NOTION_API_KEY, and NOTION_DATABASE_ID",
+		"\nMake sure your .env file is configured with ANTHROPIC_API_KEY, NOTION_API_KEY, NOTION_DATABASE_ID, and API_SECRET",
 	);
 	process.exit(1);
 }

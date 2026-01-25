@@ -123,6 +123,8 @@ The API includes CORS headers to allow cross-origin requests from browser extens
 - **Allowed Headers:** `Content-Type`, `Authorization`
 - **Allowed Origins:** `*` (all origins)
 
+> **Security Note:** CORS is set to allow all origins (`*`) to support browser extensions, which can make requests from any origin. The API is protected by API key authentication, which provides the primary security layer. In production, consider restricting CORS to specific origins if you only need to support specific web applications (browser extensions will still work regardless of CORS settings).
+
 ---
 
 ## Error Handling
@@ -141,7 +143,9 @@ All errors return JSON responses with appropriate HTTP status codes:
 
 ## Rate Limiting
 
-Currently, there is no rate limiting implemented. Be mindful of API usage costs (Claude API) when making requests.
+Currently, there is no rate limiting implemented at the application level. Be mindful of API usage costs (Claude API) when making requests.
+
+> **Note:** Vercel's serverless functions have built-in rate limiting based on your plan. For additional protection, consider implementing application-level rate limiting or using Vercel's Edge Middleware for rate limiting.
 
 ---
 
@@ -168,9 +172,17 @@ The API requires the following environment variables:
 
 These should be configured in your Vercel deployment environment variables.
 
+### Security Features
+
+The API includes several security measures:
+
+- **Constant-time API key comparison** - Prevents timing attacks on API key validation
+- **URL validation** - Only allows HTTP/HTTPS protocols (blocks file://, javascript:, data:, etc. to prevent SSRF and XSS)
+- **Request size limits** - Maximum request body size of 10KB to prevent DoS attacks
+
 ### Error Responses
 
-- **400 Bad Request** - Missing or invalid `Authorization` header, or invalid API key
+- **400 Bad Request** - Missing or invalid `Authorization` header, invalid API key, invalid URL format/protocol, or request body too large
 
 ---
 

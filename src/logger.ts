@@ -2,9 +2,22 @@ import type { Recipe } from "./scraper.js";
 import type { RecipeTags } from "./tagger.js";
 
 /**
+ * Fallback logger interface matching consola's API.
+ */
+interface FallbackLogger {
+	ready(msg: string): void;
+	start(msg: string): void;
+	success(msg: string): void;
+	warn(msg: string): void;
+	error(msg: string): void;
+	info(msg: string): void;
+	box(options: { title: string; message: string }): void;
+}
+
+/**
  * Fallback logger when consola is not available (e.g., in serverless environments).
  */
-const fallbackLogger = {
+const fallbackLogger: FallbackLogger = {
 	ready: (msg: string) => console.log(`✓ ${msg}`),
 	start: (msg: string) => console.log(`→ ${msg}`),
 	success: (msg: string) => console.log(`✓ ${msg}`),
@@ -12,14 +25,16 @@ const fallbackLogger = {
 	error: (msg: string) => console.error(`✗ ${msg}`),
 	info: (msg: string) => console.info(`ℹ ${msg}`),
 	box: ({ title, message }: { title: string; message: string }) => {
-		console.log(`\n╭─${title}─╮`);
-		console.log(
-			message
-				.split("\n")
-				.map((line) => `│ ${line}`)
-				.join("\n"),
-		);
-		console.log("╰─────────╯\n");
+		const lines = message.split("\n");
+		const maxWidth = Math.max(title.length + 4, ...lines.map((line) => line.length + 2));
+		const border = "─".repeat(maxWidth - title.length - 2);
+
+		console.log(`\n╭─${title}${border}╮`);
+		for (const line of lines) {
+			const padding = " ".repeat(maxWidth - line.length - 2);
+			console.log(`│ ${line}${padding}│`);
+		}
+		console.log(`╰${"─".repeat(maxWidth)}╯\n`);
 	},
 };
 
@@ -35,8 +50,16 @@ const fallbackColors = {
  *
  * @returns Logger instance (fallback in serverless, consola in CLI).
  */
-function getConsola() {
+function getConsola(): FallbackLogger {
 	return fallbackLogger;
+}
+
+/**
+ * Color utility functions interface.
+ */
+interface ColorUtils {
+	underline(str: string): string;
+	blue(str: string): string;
 }
 
 /**
@@ -44,7 +67,7 @@ function getConsola() {
  *
  * @returns Color utility functions.
  */
-function getColors() {
+function getColors(): ColorUtils {
 	return fallbackColors;
 }
 

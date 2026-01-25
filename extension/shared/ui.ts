@@ -26,6 +26,21 @@ const BUTTON_TEXT = {
 } as const;
 
 /**
+ * CSS class constants using theme-based semantic names.
+ */
+const STATUS_CLASSES = {
+	BASE: "py-4 px-5 rounded-2xl leading-relaxed animate-[fadeIn_0.2s_ease-in] block shadow-sm",
+	TEXT_SIZES: {
+		xs: "text-xs",
+		sm: "text-sm",
+		base: "text-base",
+	},
+	INFO: "status-info",
+	SUCCESS: "status-success",
+	ERROR: "status-error",
+} as const;
+
+/**
  * Updates the status message in the UI.
  *
  * @param message - The status message to display.
@@ -49,16 +64,13 @@ export function updateStatus(
 	statusEl.classList.remove("hidden");
 
 	const textSize = options?.textSize ?? "sm";
-	const textSizeClass =
-		textSize === "xs" ? "text-xs" : textSize === "base" ? "text-base" : "text-sm";
+	const textSizeClass = STATUS_CLASSES.TEXT_SIZES[textSize];
 
-	const baseClasses =
-		options?.baseClasses ||
-		`py-4 px-5 rounded-2xl ${textSizeClass} leading-relaxed animate-[fadeIn_0.2s_ease-in] block shadow-sm`;
+	const baseClasses = options?.baseClasses || `${STATUS_CLASSES.BASE} ${textSizeClass}`;
 	const typeClasses = {
-		info: "bg-orange-50 text-orange-800 border-2 border-orange-200",
-		success: "bg-amber-50 text-amber-800 border-2 border-amber-300",
-		error: "bg-red-50 text-red-800 border-2 border-red-200 whitespace-pre-line",
+		info: STATUS_CLASSES.INFO,
+		success: STATUS_CLASSES.SUCCESS,
+		error: STATUS_CLASSES.ERROR,
 	};
 	statusEl.className = `${baseClasses} ${typeClasses[type]}`;
 }
@@ -95,6 +107,7 @@ export function showProgress(message: string): void {
  */
 export function hideProgress(): void {
 	const progressContainer = document.getElementById(UI_ELEMENT_IDS.PROGRESS_CONTAINER);
+
 	if (progressContainer) {
 		progressContainer.classList.add("hidden");
 	}
@@ -108,6 +121,7 @@ export function hideProgress(): void {
 export function setLoading(loading: boolean): void {
 	const saveButton = document.getElementById(UI_ELEMENT_IDS.SAVE_BUTTON) as HTMLButtonElement;
 	const buttonText = saveButton?.querySelector(`.${UI_ELEMENT_IDS.BUTTON_TEXT}`) as HTMLElement;
+
 	if (!saveButton || !buttonText) {
 		return;
 	}

@@ -26,6 +26,21 @@ const BUTTON_TEXT = {
 } as const;
 
 /**
+ * CSS class constants using theme-based semantic names.
+ */
+const STATUS_CLASSES = {
+	BASE: "py-4 px-5 rounded-2xl leading-relaxed animate-[fadeIn_0.2s_ease-in] block shadow-sm",
+	TEXT_SIZES: {
+		xs: "text-xs",
+		sm: "text-sm",
+		base: "text-base",
+	},
+	INFO: "status-info",
+	SUCCESS: "status-success",
+	ERROR: "status-error",
+} as const;
+
+/**
  * Gets the icon SVG for a status type.
  *
  * @param type - The type of status (info, success, or error).
@@ -67,16 +82,13 @@ export function updateStatus(
 	}
 
 	const textSize = options?.textSize ?? "sm";
-	const textSizeClass =
-		textSize === "xs" ? "text-xs" : textSize === "base" ? "text-base" : "text-sm";
+	const textSizeClass = STATUS_CLASSES.TEXT_SIZES[textSize];
 
-	const baseClasses =
-		options?.baseClasses ||
-		`py-4 px-5 rounded-2xl ${textSizeClass} leading-relaxed animate-[fadeIn_0.2s_ease-in] block shadow-sm`;
+	const baseClasses = options?.baseClasses || `${STATUS_CLASSES.BASE} ${textSizeClass}`;
 	const typeClasses = {
-		info: "bg-orange-50 text-orange-800 border-2 border-orange-200",
-		success: "bg-green-50 text-green-800 border-2 border-green-300",
-		error: "bg-red-50 text-red-800 border-2 border-red-300 whitespace-pre-line",
+		info: STATUS_CLASSES.INFO,
+		success: STATUS_CLASSES.SUCCESS,
+		error: STATUS_CLASSES.ERROR,
 	};
 
 	const icon = getStatusIcon(type);

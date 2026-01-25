@@ -90,7 +90,8 @@ function parseUrls(args: string[] | undefined): string[] {
 	}
 
 	return args.filter(
-		(arg): arg is string => typeof arg === "string" && (arg.startsWith("http://") || arg.startsWith("https://")),
+		(arg): arg is string =>
+			typeof arg === "string" && (arg.startsWith("http://") || arg.startsWith("https://")),
 	);
 }
 

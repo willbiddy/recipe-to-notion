@@ -158,6 +158,3 @@ export function getClientIdentifier(request: Request): string {
 
 	return `ip-${ip}`;
 }
-
-	return `ip-${ip}`;
-}

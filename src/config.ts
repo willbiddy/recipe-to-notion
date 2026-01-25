@@ -39,9 +39,7 @@ export function loadConfig(): Config {
 	const parseResult = envSchema.safeParse(process.env);
 
 	if (!parseResult.success) {
-		const missingVars = parseResult.error.issues
-			.map((issue) => issue.path.join("."))
-			.join(", ");
+		const missingVars = parseResult.error.issues.map((issue) => issue.path.join(".")).join(", ");
 
 		const requiredVars = [
 			"ANTHROPIC_API_KEY",

@@ -12,3 +12,25 @@
 		transform: translateY(0);
 	}
 }
+
+@keyframes shimmer {
+	0% {
+		background-position: -1000px 0;
+	}
+	100% {
+		background-position: 1000px 0;
+	}
+}
+
+@layer utilities {
+	.animate-shimmer {
+		animation: shimmer 2s infinite linear;
+		background: linear-gradient(
+			to right,
+			transparent 0%,
+			rgba(255, 255, 255, 0.3) 50%,
+			transparent 100%
+		);
+		background-size: 1000px 100%;
+	}
+}

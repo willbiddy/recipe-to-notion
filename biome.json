@@ -10,12 +10,37 @@
 	},
 	"formatter": {
 		"enabled": true,
-		"indentStyle": "tab"
+		"indentStyle": "tab",
+		"lineWidth": 100
 	},
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true
+			"recommended": true,
+			"correctness": {
+				"noUnusedImports": "error",
+				"noUnusedVariables": "error"
+			},
+			"style": {
+				"noNegationElse": "warn",
+				"useCollapsedElseIf": "warn",
+				"useThrowOnlyError": "warn"
+			},
+			"complexity": {
+				"noExcessiveCognitiveComplexity": "warn",
+				"noUselessStringConcat": "error",
+				"noUselessUndefinedInitialization": "warn",
+				"useDateNow": "error"
+			},
+			"performance": {
+				"noAccumulatingSpread": "warn",
+				"noBarrelFile": "warn"
+			},
+			"suspicious": {
+				"noConsole": "off",
+				"noEvolvingTypes": "warn",
+				"useAwait": "error"
+			}
 		}
 	},
 	"javascript": {

@@ -39,10 +39,7 @@ function isObject(value: unknown): value is Record<string, unknown> {
  * @param key - The property key to check for.
  * @returns True if value is an object containing the specified key.
  */
-function hasProperty<K extends string>(
-	value: unknown,
-	key: K,
-): value is Record<K, unknown> {
+function hasProperty<K extends string>(value: unknown, key: K): value is Record<K, unknown> {
 	return isObject(value) && key in value;
 }
 
@@ -160,8 +157,7 @@ export async function scrapeRecipe(url: string): Promise<Recipe> {
 			Connection: "keep-alive",
 			DNT: "1",
 			Pragma: "no-cache",
-			"Sec-Ch-Ua":
-				'"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+			"Sec-Ch-Ua": '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
 			"Sec-Ch-Ua-Mobile": "?0",
 			"Sec-Ch-Ua-Platform": '"macOS"',
 			"Sec-Fetch-Dest": "document",
@@ -181,9 +177,7 @@ export async function scrapeRecipe(url: string): Promise<Recipe> {
 					`  bun src/cli.ts --html ~/Downloads/recipe.html "${url}"`,
 			);
 		}
-		throw new Error(
-			`Failed to fetch ${url}: ${response.status} ${response.statusText}`,
-		);
+		throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
 	}
 
 	const html = await response.text();
@@ -216,10 +210,7 @@ export async function scrapeRecipe(url: string): Promise<Recipe> {
  * @returns Parsed recipe data.
  * @throws If the file cannot be read or no recipe data is found.
  */
-export async function scrapeRecipeFromHtml(
-	htmlPath: string,
-	sourceUrl: string,
-): Promise<Recipe> {
+export async function scrapeRecipeFromHtml(htmlPath: string, sourceUrl: string): Promise<Recipe> {
 	const html = await readFile(htmlPath, "utf-8");
 	const $ = cheerio.load(html);
 
@@ -288,10 +279,7 @@ function findRecipeInLd(data: unknown): Record<string, unknown> | null {
 		return null;
 	}
 
-	if (
-		data["@type"] === "Recipe" ||
-		(isArray(data["@type"]) && data["@type"].includes("Recipe"))
-	) {
+	if (data["@type"] === "Recipe" || (isArray(data["@type"]) && data["@type"].includes("Recipe"))) {
 		return data;
 	}
 
@@ -313,10 +301,7 @@ function findRecipeInLd(data: unknown): Record<string, unknown> | null {
  * @param sourceUrl - Original URL of the recipe page.
  * @returns A normalized Recipe object.
  */
-function extractFromJsonLd(
-	data: Record<string, unknown>,
-	sourceUrl: string,
-): Recipe {
+function extractFromJsonLd(data: Record<string, unknown>, sourceUrl: string): Recipe {
 	if (!data.name || typeof data.name !== "string") {
 		throw new Error(
 			`Recipe name is required but was missing or invalid in JSON-LD data from ${sourceUrl}`,
@@ -338,9 +323,7 @@ function extractFromJsonLd(
 		imageUrl: parseImage(data.image),
 		ingredients: parseStringArray(data.recipeIngredient),
 		instructions: parseInstructions(data.recipeInstructions),
-		description: isString(data.description)
-			? decodeHtmlEntities(data.description)
-			: null,
+		description: isString(data.description) ? decodeHtmlEntities(data.description) : null,
 		cuisine: parseFirstString(data.recipeCuisine),
 		category: parseFirstString(data.recipeCategory),
 	};
@@ -404,6 +387,51 @@ function parseAuthor(author: unknown): string | null {
 }
 
 /**
+ * Extracts a URL from a single image item (string or ImageObject).
+ *
+ * @param item - A string URL or an object with a `url` property.
+ * @returns The URL string, or null if not extractable.
+ */
+function extractImageUrl(item: unknown): string | null {
+	if (isString(item)) return item;
+	if (hasProperty(item, "url")) return String(item.url);
+	return null;
+}
+
+/**
+ * Finds the image with the largest width from an array of ImageObjects.
+ *
+ * @param images - Array of ImageObject items with `url` and `width` properties.
+ * @returns The URL of the largest image.
+ */
+function findLargestImageByWidth(images: unknown[]): string {
+	let bestUrl = "";
+	let bestWidth = -1;
+
+	for (const item of images) {
+		if (!hasProperty(item, "url") || !hasProperty(item, "width")) continue;
+		const width = typeof item.width === "number" ? item.width : 0;
+		if (width > bestWidth) {
+			bestUrl = String(item.url);
+			bestWidth = width;
+		}
+	}
+
+	return bestUrl;
+}
+
+/**
+ * Checks if an array contains ImageObjects with width information.
+ *
+ * @param images - Array to check.
+ * @returns True if the first item has both `url` and `width` properties.
+ */
+function hasWidthInfo(images: unknown[]): boolean {
+	const firstItem = images[0];
+	return hasProperty(firstItem, "url") && hasProperty(firstItem, "width");
+}
+
+/**
  * Extracts the best (largest) image URL from JSON-LD `image` formats.
  *
  * Handles multiple image formats: direct string URLs, arrays of
@@ -417,34 +445,17 @@ function parseAuthor(author: unknown): string | null {
 function parseImage(image: unknown): string | null {
 	if (!image) return null;
 	if (isString(image)) return image;
+
 	if (isArray(image) && image.length > 0) {
-		// Check if it's an array of ImageObjects with width info
-		const firstItem = image[0];
-		if (hasProperty(firstItem, "url") && hasProperty(firstItem, "width")) {
-			// Find the image with the largest width
-			let bestUrl = String(firstItem.url);
-			let bestWidth = typeof firstItem.width === "number" ? firstItem.width : 0;
-			for (const item of image) {
-				if (
-					hasProperty(item, "url") &&
-					hasProperty(item, "width") &&
-					typeof item.width === "number" &&
-					item.width > bestWidth
-				) {
-					bestUrl = String(item.url);
-					bestWidth = item.width;
-				}
-			}
-			return bestUrl;
+		// Array of ImageObjects with width info - find the largest
+		if (hasWidthInfo(image)) {
+			return findLargestImageByWidth(image);
 		}
-		// Array of strings - take the last one (usually full-size)
-		// Many sites order from smallest to largest
-		const last = image[image.length - 1];
-		if (isString(last)) return last;
-		if (hasProperty(last, "url")) return String(last.url);
+		// Array of strings/objects - take the last one (usually full-size)
+		return extractImageUrl(image[image.length - 1]);
 	}
-	if (hasProperty(image, "url")) return String(image.url);
-	return null;
+
+	return extractImageUrl(image);
 }
 
 /**
@@ -459,8 +470,7 @@ function parseImage(image: unknown): string | null {
  */
 function parseStringArray(data: unknown): string[] {
 	if (!data) return [];
-	if (isArray(data))
-		return data.map((item) => decodeHtmlEntities(String(item)));
+	if (isArray(data)) return data.map((item) => decodeHtmlEntities(String(item)));
 	if (isString(data)) return [decodeHtmlEntities(data)];
 	return [];
 }
@@ -572,13 +582,8 @@ function extractAuthorFromHtml($: cheerio.CheerioAPI): string | null {
  * @param sourceUrl - Original URL of the recipe page.
  * @returns Parsed recipe data if found, null otherwise.
  */
-function parseFallback(
-	$: cheerio.CheerioAPI,
-	sourceUrl: string,
-): Recipe | null {
-	const rawName =
-		$('meta[property="og:title"]').attr("content") ||
-		$("h1").first().text().trim();
+function parseFallback($: cheerio.CheerioAPI, sourceUrl: string): Recipe | null {
+	const rawName = $('meta[property="og:title"]').attr("content") || $("h1").first().text().trim();
 
 	if (!rawName) return null;
 

@@ -283,9 +283,14 @@ export default {
 		/**
 		 * Validate API key authentication.
 		 */
+		const authHeader = req.headers.get("Authorization");
 		const authError = validateApiKeyHeader(
-			req.headers.get("Authorization"),
-			(error, status) => createErrorResponse(error, status),
+			authHeader,
+			(error, status) => {
+				// Log authentication failures for debugging (without exposing the key)
+				console.error(`Authentication failed: ${error}`);
+				return createErrorResponse(error, status);
+			},
 		);
 		if (authError) {
 			return authError;
@@ -294,10 +299,14 @@ export default {
 		/**
 		 * Check Content-Length header to prevent large request body attacks.
 		 */
+		const contentLength = req.headers.get("Content-Length");
 		const sizeError = validateRequestSize(
-			req.headers.get("Content-Length"),
+			contentLength,
 			MAX_REQUEST_BODY_SIZE,
-			(error, status) => createErrorResponse(error, status),
+			(error, status) => {
+				console.error(`Request size validation failed: ${error}`);
+				return createErrorResponse(error, status);
+			},
 		);
 		if (sizeError) {
 			return sizeError;
@@ -311,7 +320,10 @@ export default {
 			 */
 			const validationError = validateRecipeRequest(
 				body,
-				(error, status) => createErrorResponse(error, status),
+				(error, status) => {
+					console.error(`Request validation failed: ${error}`);
+					return createErrorResponse(error, status);
+				},
 			);
 			if (validationError) {
 				return validationError;

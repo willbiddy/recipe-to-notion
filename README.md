@@ -27,7 +27,7 @@ URL → Check duplicates → Scrape recipe (JSON-LD) → Claude scores/tags → 
 
 ## Cost
 
-Each recipe costs about **$0.03** in Claude API usage (roughly 4,000-7,000 input tokens and 200-1,000 output tokens per recipe, including ingredient categorization). The default model is Sonnet 4.5, but you can change it in `src/tagger.ts` — Haiku is faster and cheaper, Opus is more capable but costs more.
+Each recipe costs about **$0.03** in Claude API usage (roughly 4,000-7,000 input tokens and 200-1,000 output tokens per recipe). The default model is Sonnet 4.5, but you can change it in `src/tagger.ts` — Haiku is faster and cheaper, Opus is more capable but costs more.
 
 ## Preparation
 
@@ -133,14 +133,6 @@ Save recipes with one click directly from your browser!
 Use the REST API to integrate recipe-to-notion into your own applications or scripts.
 
 > 📖 **Full API Docs:** See [API Reference](docs/API.md) for complete endpoint documentation, request/response formats, and examples.
-
-**Quick Example:**
-
-```bash
-curl -X POST https://your-server.com/api/recipes \
-  -H "Content-Type: application/json" \
-  -d '{"url": "https://cooking.nytimes.com/recipes/1234-example"}'
-```
 
 **Endpoints:** `POST /api/recipes` and `GET /api/health`
 

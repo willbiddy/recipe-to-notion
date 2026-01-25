@@ -1,6 +1,6 @@
 # recipe-to-notion
 
-Save recipes to Notion without copying and pasting. Paste a URL from almost any recipe site and get a Notion page with the cover photo, ingredients, instructions, and AI-generated tags. Claude automatically analyzes each recipe to add cuisine tags, meal types, healthiness scores, and a short description, so you can filter and search your collection later.
+Save recipes to Notion without copying and pasting. Paste a URL from almost any recipe site and get a Notion page with the cover photo, ingredients grouped by shopping aisle, instructions, and AI-generated tags. Claude automatically analyzes each recipe to add cuisine tags, meal types, healthiness scores, ingredient categories, and a short description, so you can filter and search your collection later.
 
 ![Gallery view in Notion showing recipe cards with cover photos, tags, and meal types](docs/notion-gallery.png)
 
@@ -22,12 +22,13 @@ URL → Check duplicates → Scrape recipe (JSON-LD) → Claude scores/tags → 
    - **Healthiness** — 0-10 scale (0 = junk food, 10 = balanced whole-food meal)
    - **Minutes** — Total time estimate (uses scraped value if available, otherwise AI estimates)
    - **Description** — Brief 2-3 sentence summary of the dish
+   - **Ingredient categories** — Each ingredient categorized by shopping aisle (Produce, Meat & Seafood, Pantry, Dairy & Eggs)
 
 4. **Save** — Creates a Notion page in your database with:
    - All properties filled in (name, URL, author, time, scores, tags)
    - The recipe's hero image as the page cover
    - AI-generated description at the top of the page body
-   - Ingredients as a bulleted list
+   - Ingredients grouped by shopping category (Produce → Meat & Seafood → Pantry → Dairy & Eggs)
    - Instructions as a numbered list
 
 ## Prerequisites
@@ -38,7 +39,7 @@ URL → Check duplicates → Scrape recipe (JSON-LD) → Claude scores/tags → 
 
 ## Cost
 
-Each recipe costs about **$0.01** in Claude API usage (roughly 3,200-3,500 input tokens and 120-140 output tokens per recipe). The default model is Sonnet, but you can change it in `src/tagger.ts` — Haiku is faster and cheaper, Opus is more capable but costs more.
+Each recipe costs about **$0.01** in Claude API usage (roughly 3,000-3,500 input tokens and 200-400 output tokens per recipe, including ingredient categorization). The default model is Sonnet, but you can change it in `src/tagger.ts` — Haiku is faster and cheaper, Opus is more capable but costs more.
 
 ## Setup
 
@@ -150,6 +151,19 @@ Once you have a few recipes, create custom Notion views to browse your collectio
 - Gallery view with cover photos
 - "Quick meals" filter for recipes under 30 minutes
 - "Healthy meals" filter using the healthiness score
+
+## Ingredient Organization
+
+Ingredients are automatically grouped by shopping category in standard grocery store order:
+
+- **Produce** — Fresh fruits, vegetables, herbs
+- **Deli & Bakery** — Sliced meats, rotisserie chicken, bread
+- **Meat & Seafood** — Raw meats, poultry, fish, seafood
+- **Pantry Aisles** — Pasta, canned goods, cereal, peanut butter, rice, beans, flour, sugar, spices, oils, condiments
+- **Snacks & Soda** — Chips, cookies, crackers, sparkling water, soda
+- **Dairy & Eggs** — Milk, butter, cheese, yogurt, eggs
+- **Frozen Foods** — Frozen pizza, frozen vegetables, ice cream
+
 
 ## Project Structure
 

@@ -179,20 +179,20 @@
 							<svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
 							</svg>
-							API Key
+							API Secret
 						</label>
 						<div class="relative">
 							<input
 								type="password"
 								id="api-key-input"
-								placeholder="Enter your API key"
+								placeholder="Enter your API secret"
 								class="px-4 py-3 pr-10 text-sm border-2 border-orange-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all duration-200 bg-amber-50/50 w-full placeholder:text-orange-300"
 							/>
 							<button
 								type="button"
 								id="toggle-api-key-visibility"
 								class="absolute right-2 top-1/2 -translate-y-1/2 text-orange-500 hover:text-orange-700 p-1"
-								title="Show/Hide API key"
+								title="Show/Hide API secret"
 							>
 								<svg id="eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 									<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -205,7 +205,7 @@
 							</button>
 						</div>
 						<p class="text-xs text-orange-700/80">
-							Get this from your Vercel deployment's API_SECRET environment variable. This is stored locally in your browser and never shared.
+							Get this from your Vercel deployment's <code class="text-xs bg-orange-100 px-1 py-0.5 rounded font-mono">API_SECRET</code> environment variable. This is stored locally in your browser and never shared.
 						</p>
 					</div>
 					<button
@@ -215,7 +215,7 @@
 						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
 						</svg>
-						Save API Key
+						Save API Secret
 					</button>
 					<p class="text-[10px] text-orange-600/70 pt-2 border-t border-orange-200/50">
 						<a href="https://www.flaticon.com/free-icons/cutlery" title="cutlery icons" target="_blank" class="hover:underline">Cutlery icons created by Freepik - Flaticon</a>

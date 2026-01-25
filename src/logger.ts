@@ -4,10 +4,10 @@ import type { Recipe } from "./scraper.js";
 import type { RecipeTags } from "./tagger.js";
 
 /**
- * Logger interface for recipe processing steps.
+ * Logger type for recipe processing steps.
  * Allows different implementations (CLI, server, etc.) to handle logging consistently.
  */
-export interface RecipeLogger {
+export type RecipeLogger = {
 	/**
 	 * Called when processing starts.
 	 */
@@ -52,7 +52,7 @@ export interface RecipeLogger {
 	 * Called when an error occurs.
 	 */
 	onError?(message: string): void;
-}
+};
 
 /**
  * Displays a formatted summary of the scraped and tagged recipe.

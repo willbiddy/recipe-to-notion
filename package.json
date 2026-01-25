@@ -10,8 +10,7 @@
 		"start": "bun src/cli.ts",
 		"server": "bun src/cli-server.ts",
 		"build": "bun build src/cli.ts --compile --outfile recipe-to-notion",
-		"build:extension": "tsc -p extension/tsconfig.json && bun run build:extension:css",
-		"build:extension:css": "bunx tailwindcss -i extension/input.css -o extension/styles.css --minify",
+		"build:extension": "tsc -p extension/tsconfig.json && bunx tailwindcss -i extension/input.css -o extension/styles.css --minify",
 		"typecheck": "tsc --noEmit",
 		"lint": "biome check src/",
 		"lint:fix": "biome check --write src/",
@@ -38,7 +37,6 @@
 		"cheerio": "^1.2.0",
 		"citty": "^0.2.0",
 		"consola": "^3.4.2",
-		"sharp": "^0.34.5",
 		"zod": "^4.3.6"
 	}
 }

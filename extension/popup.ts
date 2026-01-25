@@ -3,12 +3,12 @@ import { getServerUrl } from "./config.js";
 /**
  * Response format from the server API.
  */
-interface RecipeResponse {
+type RecipeResponse = {
 	success: boolean;
 	pageId?: string;
 	notionUrl?: string;
 	error?: string;
-}
+};
 
 /**
  * Gets the current active tab URL and title.
@@ -24,14 +24,14 @@ async function getCurrentTab(): Promise<{ url: string | null; title: string | nu
 /**
  * Progress event from server.
  */
-interface ProgressEvent {
+type ProgressEvent = {
 	type: "progress" | "complete" | "error";
 	message?: string;
 	success?: boolean;
 	pageId?: string;
 	notionUrl?: string;
 	error?: string;
-}
+};
 
 /**
  * Shows progress with spinner and message.

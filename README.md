@@ -102,7 +102,69 @@ NOTION_API_KEY=ntn_...
 NOTION_DATABASE_ID=abc123...
 ```
 
+## Deployment
+
+The recipe-to-notion server can be deployed to the cloud so you don't need to run it locally. This is especially useful for the browser extension.
+
+### Vercel (Recommended)
+
+Vercel provides a free tier with excellent Bun runtime support. The code is already configured for Vercel deployment.
+
+#### Quick Deploy
+
+1. **Login to Vercel:**
+   ```bash
+   bunx vercel login
+   ```
+
+2. **Deploy:**
+   ```bash
+   bunx vercel --prod
+   ```
+
+3. **Add environment variables:**
+   - Go to your project settings on [vercel.com](https://vercel.com)
+   - Navigate to Settings → Environment Variables
+   - Add: `ANTHROPIC_API_KEY`, `NOTION_API_KEY`, `NOTION_DATABASE_ID`
+   - Select all environments (Production, Preview, Development)
+   - Redeploy after adding variables (or wait for auto-deploy)
+
+4. **Get your deployment URL:**
+   - Vercel will provide a URL like `https://recipe-to-notion-xi.vercel.app`
+   - Update your browser extension config to use this URL
+
+**Note:** Vercel's free tier has a 60-second execution limit per function call, which is sufficient for most recipes (processing typically takes 30-45 seconds).
+
+#### Testing Your Deployment
+
+```bash
+# Health check
+curl https://your-app.vercel.app/api/health
+
+# Test recipe processing
+curl -X POST https://your-app.vercel.app/api/recipes \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://cooking.nytimes.com/recipes/1234-example"}'
+```
+
+### Other Deployment Options
+
+The server can also be deployed to:
+- **Railway** - Easy setup, excellent Bun support
+- **Fly.io** - Global edge deployment
+- **Render** - Simple web UI
+- **DigitalOcean App Platform** - Professional setup
+- **VPS** (DigitalOcean, Linode, AWS EC2) - Full control
+
+For these platforms, use the existing `cli-server.ts` entry point. The server runs on port 3000 by default (configurable via `SERVER_PORT` env var).
+
 ## Usage
+
+There are three ways to use recipe-to-notion:
+
+### 1. Command Line Interface (CLI)
+
+The simplest way to save recipes from the terminal:
 
 ```bash
 # Single recipe
@@ -117,11 +179,46 @@ bun src/cli.ts --html ~/Downloads/recipe.html "https://example.com/recipe-url"
 
 When processing multiple URLs, each is processed sequentially. Failures (duplicates, scraping errors) don't stop execution - all URLs are attempted.
 
+### 2. Browser Extension
+
+Save recipes with one click directly from your browser! The extension can work with either:
+- **Local server** (runs on your machine)
+- **Vercel deployment** (cloud-hosted, no local server needed)
+
+See the [Browser Extension](#browser-extension) section below for setup instructions.
+
+### 3. HTTP API
+
+Use the REST API to integrate recipe-to-notion into your own applications or scripts:
+
+```bash
+# Health check
+curl https://your-server.com/api/health
+
+# Process a recipe (non-streaming)
+curl -X POST https://your-server.com/api/recipes \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://cooking.nytimes.com/recipes/1234-example"}'
+
+# Process with Server-Sent Events for progress updates
+curl -X POST https://your-server.com/api/recipes \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://example.com/recipe", "stream": true}'
+```
+
+**API Endpoints:**
+- `POST /api/recipes` - Process and save a recipe
+  - Request body: `{ "url": string, "stream"?: boolean }`
+  - Response: `{ "success": boolean, "pageId"?: string, "notionUrl"?: string, "error"?: string }`
+  - With `stream: true`, returns Server-Sent Events (SSE) with progress updates
+- `GET /api/health` - Health check endpoint
+  - Response: `{ "status": "ok", "service": "recipe-to-notion" }`
+
 ## Browser Extension
 
-Save recipes with one click directly from your browser! The extension works with the local HTTP server to provide a seamless recipe-saving experience.
+Save recipes with one click directly from your browser! The extension works with either a local server or a cloud-deployed server (Vercel).
 
-### Setup
+### Option A: Local Server Setup
 
 1. **Build the extension:**
    ```bash
@@ -141,6 +238,31 @@ Save recipes with one click directly from your browser! The extension works with
    - Click "Load unpacked"
    - Select the `extension/` directory
 
+4. **Configure the extension:**
+   - Edit `extension/config.ts` and set `SERVER_URL` to `"http://localhost:3000"`
+   - Rebuild: `bun run build:extension`
+   - Reload the extension in Chrome
+
+### Option B: Vercel Deployment (Recommended)
+
+Deploy the server to Vercel so you don't need to run a local server. See the [Deployment](#deployment) section below for instructions.
+
+1. **Build the extension:**
+   ```bash
+   bun run build:extension
+   ```
+
+2. **Configure the extension:**
+   - Edit `extension/config.ts` and set `SERVER_URL` to your Vercel deployment URL (e.g., `"https://recipe-to-notion-xi.vercel.app"`)
+   - Rebuild: `bun run build:extension`
+   - Reload the extension in Chrome
+
+3. **Load the extension in Chrome:**
+   - Open Chrome and go to `chrome://extensions/`
+   - Enable "Developer mode" (toggle in top-right)
+   - Click "Load unpacked"
+   - Select the `extension/` directory
+
 ### Usage
 
 1. Navigate to any recipe page in your browser
@@ -149,18 +271,7 @@ Save recipes with one click directly from your browser! The extension works with
 4. The recipe will be processed and saved to your Notion database
 5. A new tab will open with the saved recipe page
 
-### Configuration
-
-Click "Settings" in the extension popup to configure the server URL (defaults to `http://localhost:3000`).
-
-### Server Endpoints
-
-The HTTP server provides the following endpoints:
-
-- `POST /api/recipes` - Process and save a recipe
-  - Request: `{ "url": "https://example.com/recipe" }`
-  - Response: `{ "success": true, "pageId": "...", "notionUrl": "..." }`
-- `GET /health` - Health check endpoint
+The extension uses Server-Sent Events (SSE) to show real-time progress updates while processing recipes.
 
 
 ### Example output
@@ -216,8 +327,8 @@ Ingredients are automatically grouped by shopping category in standard grocery s
 ```
 src/
 ├── cli.ts             Command-line interface
-├── cli-server.ts      HTTP server entry point
-├── server.ts          HTTP server for browser extension
+├── cli-server.ts      HTTP server entry point (local development)
+├── server.ts          HTTP server request handlers (shared logic)
 ├── index.ts           Pipeline orchestration for programmatic use
 ├── logger.ts          Shared logging interface and CLI logger implementation
 ├── scraper.ts         Recipe extraction from URLs and HTML files
@@ -229,6 +340,10 @@ src/
     ├── json-ld.ts     JSON-LD (schema.org) recipe parsing
     ├── html.ts        HTML/microdata fallback parsing
     └── shared.ts      Shared utilities (type guards, helpers)
+
+api/                   Vercel serverless functions
+├── health.ts         Health check endpoint
+└── recipes.ts        Recipe processing endpoint
 
 extension/
 ├── manifest.json      Chrome extension manifest (Manifest V3)
@@ -247,6 +362,7 @@ extension/
 |------------|---------|
 | [Bun](https://bun.sh/) | Runtime and package manager |
 | [TypeScript](https://www.typescriptlang.org/) | Type-safe JavaScript |
+| [Vercel](https://vercel.com/) | Serverless deployment platform (optional, for cloud hosting) |
 | [Cheerio](https://cheerio.js.org/) | HTML parsing and scraping |
 | [Anthropic SDK](https://docs.anthropic.com/en/api/client-sdks) | Claude API for AI tagging |
 | [Notion SDK](https://github.com/makenotion/notion-sdk-js) | Notion API client |
@@ -254,14 +370,15 @@ extension/
 | [Consola](https://github.com/unjs/consola) | Console logging with spinners and colors |
 | [Zod](https://zod.dev/) | Schema validation for env vars and API responses |
 | [Tailwind CSS](https://tailwindcss.com/) | Utility-first CSS framework for extension UI |
+| [Server-Sent Events (SSE)](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) | Real-time progress updates in browser extension |
 | [Biome](https://biomejs.dev/) | Linting and formatting |
 
 ## Scripts
 
 - `bun run start` or `bun src/cli.ts` - Run the CLI tool
-- `bun run server` - Start the HTTP server for the browser extension
+- `bun run server` - Start the local HTTP server for the browser extension
 - `bun run build:extension` - Compile TypeScript extension files and Tailwind CSS
-- `bun run build:extension:css` - Compile Tailwind CSS only
 - `bun run typecheck` - Type check without emitting files
 - `bun run lint` - Lint code with Biome
 - `bun run format` - Format code with Biome
+

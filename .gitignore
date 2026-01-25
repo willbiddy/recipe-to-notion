@@ -6,6 +6,7 @@ out
 dist
 *.tgz
 recipe-clipper-for-notion
+recipe-to-notion
 
 # extension build output
 extension/*.js

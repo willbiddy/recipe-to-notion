@@ -101,7 +101,7 @@ async function saveRecipe(url: string): Promise<RecipeResponse> {
 	if (!apiKey) {
 		return {
 			success: false,
-			error: "API key not configured. Please set it in the extension settings.",
+			error: "API secret not configured. Please set it in the extension settings.",
 		};
 	}
 
@@ -447,19 +447,19 @@ async function saveApiKey(): Promise<void> {
 
 	const apiKey = input.value.trim();
 	if (!apiKey) {
-		updateStatus("API key cannot be empty", "error");
+		updateStatus("API secret cannot be empty", "error");
 		return;
 	}
 
 	try {
-		// Use chrome.storage.local instead of sync to avoid syncing sensitive API key to Google servers
+		// Use chrome.storage.local instead of sync to avoid syncing sensitive API secret to Google servers
 		await chrome.storage.local.set({ apiKey });
-		updateStatus("API key saved successfully", "success");
+		updateStatus("API secret saved successfully", "success");
 		setTimeout(() => {
 			clearStatus();
 		}, 2000);
 	} catch (error) {
-		updateStatus(error instanceof Error ? error.message : "Failed to save API key", "error");
+		updateStatus(error instanceof Error ? error.message : "Failed to save API secret", "error");
 	}
 }
 
@@ -513,7 +513,7 @@ async function init(): Promise<void> {
 	 */
 	const apiKey = await getApiKey();
 	if (!apiKey) {
-		updateStatus("⚠️ API key not configured. Click the settings icon to set it up.", "error");
+		updateStatus("⚠️ API secret not configured. Click the settings icon to set it up.", "error");
 	}
 }
 

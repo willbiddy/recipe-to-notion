@@ -80,7 +80,7 @@ async function saveRecipe(url: string): Promise<RecipeResponse> {
 	if (!apiKey) {
 		return {
 			success: false,
-			error: "API key not configured. Please set it in the settings.",
+			error: "API secret not configured. Please set it in the settings.",
 		};
 	}
 
@@ -372,18 +372,18 @@ function saveApiKeyToStorage(): void {
 
 	const apiKey = input.value.trim();
 	if (!apiKey) {
-		updateStatus("API key cannot be empty", "error");
+		updateStatus("API secret cannot be empty", "error");
 		return;
 	}
 
 	try {
 		saveApiKey(apiKey);
-		updateStatus("API key saved successfully", "success");
+		updateStatus("API secret saved successfully", "success");
 		setTimeout(() => {
 			clearStatus();
 		}, 2000);
 	} catch (error) {
-		updateStatus(error instanceof Error ? error.message : "Failed to save API key", "error");
+		updateStatus(error instanceof Error ? error.message : "Failed to save API secret", "error");
 	}
 }
 
@@ -489,7 +489,7 @@ function init(): void {
 	 */
 	const apiKey = getApiKey();
 	if (!apiKey) {
-		updateStatus("⚠️ API key not configured. Click Settings to set it up.", "error");
+		updateStatus("⚠️ API secret not configured. Click Settings to set it up.", "error");
 	}
 }
 

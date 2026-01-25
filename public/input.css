@@ -62,7 +62,7 @@
 @layer components {
 	/* Button Components */
 	.btn-primary {
-		@apply w-full min-h-[44px] px-5 py-4 bg-gradient-to-r from-primary-500 via-accent-500 to-primary-600 text-white border-none rounded-2xl text-base font-semibold cursor-pointer transition-all duration-200 shadow-button hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:bg-gray-400 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-sm disabled:hover:scale-100 flex items-center justify-center gap-2 group focus:outline-none focus:ring-4 focus:ring-primary-500/50 focus:ring-offset-2;
+		@apply w-full min-h-[44px] px-5 py-4 bg-gradient-to-r from-primary-500 via-accent-500 to-primary-600 text-white border-none rounded-2xl text-base font-semibold cursor-pointer transition-all duration-200 shadow-button hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:bg-gray-400 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-sm disabled:hover:scale-100 flex items-center justify-center gap-2 focus:outline-none focus:ring-4 focus:ring-primary-500/50 focus:ring-offset-2;
 	}
 
 	.btn-primary-sm {

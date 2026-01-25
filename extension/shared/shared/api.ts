@@ -26,7 +26,7 @@ export type RecipeResponse =
 	| {
 			success: false;
 			error: string;
-			notionUrl?: string; // May be present for duplicate errors
+			notionUrl?: string;
 	  };
 
 /**

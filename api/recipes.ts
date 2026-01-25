@@ -203,6 +203,20 @@ function handleRecipeStream(url: string, requestId?: string): Response {
 const NOTION_URL_EXTRACTION_PATTERN = /View it at: (https:\/\/www\.notion\.so\/[^\s]+)/;
 
 /**
+ * Rate limit header names for responses.
+ */
+const RATE_LIMIT_HEADERS = {
+	LIMIT: "X-RateLimit-Limit",
+	REMAINING: "X-RateLimit-Remaining",
+	RESET: "X-RateLimit-Reset",
+} as const;
+
+/**
+ * Default rate limit value (requests per minute).
+ */
+const DEFAULT_RATE_LIMIT_VALUE = 10;
+
+/**
  * Generates a unique request correlation ID.
  *
  * @returns A unique request ID string.
@@ -343,9 +357,9 @@ export default {
 				{
 					status: 429,
 					headers: {
-						"X-RateLimit-Limit": "10",
-						"X-RateLimit-Remaining": "0",
-						"X-RateLimit-Reset": new Date(rateLimit.resetAt).toISOString(),
+						[RATE_LIMIT_HEADERS.LIMIT]: String(DEFAULT_RATE_LIMIT_VALUE),
+						[RATE_LIMIT_HEADERS.REMAINING]: "0",
+						[RATE_LIMIT_HEADERS.RESET]: new Date(rateLimit.resetAt).toISOString(),
 					},
 				},
 			);
@@ -407,9 +421,9 @@ export default {
 			const response = Response.json(successResponse, {
 				status: HttpStatus.OK,
 				headers: {
-					"X-RateLimit-Limit": "10",
-					"X-RateLimit-Remaining": rateLimit.remaining.toString(),
-					"X-RateLimit-Reset": new Date(rateLimit.resetAt).toISOString(),
+					[RATE_LIMIT_HEADERS.LIMIT]: String(DEFAULT_RATE_LIMIT_VALUE),
+					[RATE_LIMIT_HEADERS.REMAINING]: rateLimit.remaining.toString(),
+					[RATE_LIMIT_HEADERS.RESET]: new Date(rateLimit.resetAt).toISOString(),
 				},
 			});
 			setSecurityHeaders(response);

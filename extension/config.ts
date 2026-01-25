@@ -2,7 +2,11 @@
  * Configuration management for the browser extension.
  */
 
-const SERVER_URL = "https://recipe-to-notion-xi.vercel.app";
+/**
+ * Default server URL for the extension.
+ * This should be updated to your Vercel deployment URL.
+ */
+const DEFAULT_SERVER_URL = "https://recipe-to-notion-xi.vercel.app";
 
 /**
  * Gets the server URL for the extension.
@@ -10,5 +14,5 @@ const SERVER_URL = "https://recipe-to-notion-xi.vercel.app";
  * @returns The server URL (Vercel deployment).
  */
 export function getServerUrl(): string {
-	return SERVER_URL;
+	return DEFAULT_SERVER_URL;
 }

@@ -22,11 +22,6 @@ const PropertyNames = {
 const NOTION_API_VERSION = "2022-06-28";
 
 /**
- * Maximum number of blocks per Notion page.
- */
-const MAX_BLOCKS_PER_PAGE = 100;
-
-/**
  * Maximum text length for Notion text blocks (characters).
  */
 const MAX_TEXT_LENGTH = 2000;
@@ -427,6 +422,7 @@ function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
 		}
 	}
 
+	// Notion has a limit of 100 blocks per page
 	return blocks.slice(0, 100);
 }
 
@@ -511,6 +507,20 @@ function numberedItem(text: string): unknown {
 }
 
 /**
+ * Normalizes description text by handling escaped newlines.
+ * Converts both literal \n\n strings (escaped) and actual newlines to proper paragraph breaks.
+ *
+ * @param text - The description text to normalize.
+ * @returns Normalized text with proper newline handling.
+ */
+function normalizeDescriptionText(text: string): string {
+	// Handle escaped newlines first, then actual newlines
+	return text
+		.replace(ESCAPED_DOUBLE_NEWLINE_PATTERN, "\n\n")
+		.replace(ESCAPED_SINGLE_NEWLINE_PATTERN, "\n");
+}
+
+/**
  * Truncates text to a maximum length, appending "..." if truncated.
  *
  * @param text - The text to truncate.
@@ -518,7 +528,9 @@ function numberedItem(text: string): unknown {
  * @returns The truncated text with "..." appended if needed.
  */
 function truncate(text: string, maxLength: number): string {
-	if (text.length <= maxLength) return text;
+	if (text.length <= maxLength) {
+		return text;
+	}
 	return `${text.slice(0, maxLength - 3)}...`;
 }
 

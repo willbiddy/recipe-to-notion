@@ -1,9 +1,10 @@
 #!/usr/bin/env bun
 /**
- * CLI entry point for Recipe Clipper for Notion.
+ * CLI entry point for recipe-to-notion.
  *
  * Usage:
  *   bun src/cli.ts <url> [urls...]
+ *   bun src/cli.ts --html <path> <url>
  */
 import { defineCommand, runMain } from "citty";
 import { consola } from "consola";
@@ -26,7 +27,7 @@ import { type RecipeTags, tagRecipe } from "./tagger.js";
 
 const main = defineCommand({
 	meta: {
-		name: "recipe-clipper-for-notion",
+		name: "recipe-to-notion",
 		description: "Scrape recipe URL(s), generate AI scores/tags, and save to Notion",
 		version: "1.0.0",
 	},
@@ -78,14 +79,18 @@ runMain(main);
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Extracts valid HTTP URLs from CLI arguments.
+ * Extracts valid HTTP/HTTPS URLs from CLI arguments.
  *
  * @param args - Positional arguments from the CLI.
  * @returns Array of valid HTTP/HTTPS URLs.
  */
 function parseUrls(args: string[] | undefined): string[] {
-	return (args || []).filter(
-		(arg): arg is string => typeof arg === "string" && arg.startsWith("http"),
+	if (!args) {
+		return [];
+	}
+
+	return args.filter(
+		(arg): arg is string => typeof arg === "string" && (arg.startsWith("http://") || arg.startsWith("https://")),
 	);
 }
 
@@ -145,27 +150,12 @@ async function processUrlsSequentially(
  */
 async function handleRecipe(url: string, config: Config, htmlPath?: string): Promise<boolean> {
 	try {
+		// For HTML file mode, use the legacy pipeline with manual steps
 		if (htmlPath) {
-			if (await isDuplicate(url, config)) {
-				return false;
-			}
-
-			const recipe = await fetchRecipe(url, htmlPath);
-
-			if (await isTitleDuplicate(recipe.name, config)) {
-				return false;
-			}
-
-			const tags = await generateTags(recipe, config);
-			printRecipeSummary(recipe, tags);
-
-			await saveToNotion(recipe, tags, config);
-			return true;
+			return await handleRecipeFromHtml(url, htmlPath, config);
 		}
 
-		/**
-		 * For normal URLs, use the shared processRecipe with logger.
-		 */
+		// For normal URLs, use the shared processRecipe pipeline
 		const logger = createCliLogger();
 		const result = await processRecipe(url, undefined, logger);
 		printRecipeSummary(result.recipe, result.tags);
@@ -175,6 +165,42 @@ async function handleRecipe(url: string, config: Config, htmlPath?: string): Pro
 		consola.error(`Failed: ${message}`);
 		return false;
 	}
+}
+
+/**
+ * Handles recipe processing from a saved HTML file (legacy mode).
+ * This bypasses the shared pipeline to support the --html flag.
+ *
+ * @param url - The recipe URL (for reference).
+ * @param htmlPath - Path to saved HTML file.
+ * @param config - Application configuration with API keys.
+ * @returns True if the recipe was saved successfully, false otherwise.
+ */
+async function handleRecipeFromHtml(
+	url: string,
+	htmlPath: string,
+	config: Config,
+): Promise<boolean> {
+	// Check for duplicate URL
+	if (await isDuplicate(url, config)) {
+		return false;
+	}
+
+	// Fetch and parse recipe from HTML file
+	const recipe = await fetchRecipe(url, htmlPath);
+
+	// Check for duplicate title
+	if (await isTitleDuplicate(recipe.name, config)) {
+		return false;
+	}
+
+	// Generate AI tags
+	const tags = await generateTags(recipe, config);
+	printRecipeSummary(recipe, tags);
+
+	// Save to Notion
+	await saveToNotion(recipe, tags, config);
+	return true;
 }
 
 /**

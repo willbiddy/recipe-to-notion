@@ -36,7 +36,7 @@ function updateUrlDisplay(url: string | null, title: string | null): void {
 	if (!url) {
 		urlDisplay.textContent = "No URL found";
 		urlDisplay.className =
-			"text-[14px] text-red-600 p-3.5 bg-red-50 border-2 border-red-200 rounded-2xl break-words leading-relaxed transition-all duration-200 font-medium text-left shadow-sm";
+			"text-sm text-red-600 p-3.5 bg-red-50 border-2 border-red-200 rounded-2xl break-words leading-relaxed transition-all duration-200 text-left min-h-[3rem] flex items-center";
 		return;
 	}
 
@@ -46,7 +46,7 @@ function updateUrlDisplay(url: string | null, title: string | null): void {
 	if (!url.startsWith("http://") && !url.startsWith("https://")) {
 		urlDisplay.textContent = "Not a valid web page";
 		urlDisplay.className =
-			"text-[14px] text-red-600 p-3.5 bg-red-50 border-2 border-red-200 rounded-2xl break-words leading-relaxed transition-all duration-200 font-medium text-left shadow-sm";
+			"text-sm text-red-600 p-3.5 bg-red-50 border-2 border-red-200 rounded-2xl break-words leading-relaxed transition-all duration-200 text-left min-h-[3rem] flex items-center";
 		return;
 	}
 
@@ -57,7 +57,7 @@ function updateUrlDisplay(url: string | null, title: string | null): void {
 	if (trimmedTitle) {
 		urlDisplay.textContent = trimmedTitle;
 		urlDisplay.className =
-			"text-[14px] text-gray-700 p-3.5 bg-amber-50/60 border-2 border-orange-200 rounded-2xl break-words leading-relaxed transition-all duration-200 font-medium text-left hover:bg-amber-50 hover:border-orange-300 shadow-sm";
+			"text-sm text-gray-700 p-3.5 bg-white border-2 border-orange-200 rounded-2xl break-words leading-relaxed transition-all duration-200 text-left hover:border-orange-300 min-h-[3rem] flex items-center";
 		/**
 		 * Show full URL in tooltip.
 		 */
@@ -71,7 +71,7 @@ function updateUrlDisplay(url: string | null, title: string | null): void {
 			const displayText = `${urlObj.hostname}${urlObj.pathname}`;
 			urlDisplay.textContent = displayText;
 			urlDisplay.className =
-				"text-[14px] text-gray-700 p-3.5 bg-amber-50/60 border-2 border-orange-200 rounded-2xl break-words leading-relaxed transition-all duration-200 font-medium text-left hover:bg-amber-50 hover:border-orange-300 shadow-sm";
+				"text-sm text-gray-700 p-3.5 bg-white border-2 border-orange-200 rounded-2xl break-words leading-relaxed transition-all duration-200 text-left hover:border-orange-300 min-h-[3rem] flex items-center";
 			urlDisplay.title = url;
 		} catch {
 			urlDisplay.textContent = url;
@@ -166,14 +166,28 @@ async function handleSave(): Promise<void> {
  */
 function toggleSettings(): void {
 	const settingsPanel = document.getElementById("settings-panel");
-	if (!settingsPanel) return;
+	const settingsButton = document.getElementById("settings-button");
+	if (!settingsPanel || !settingsButton) {
+		console.error("Settings panel or button not found");
+		return;
+	}
 
 	const isHidden = settingsPanel.classList.contains("hidden");
+	const chevron = settingsButton.querySelector(".settings-chevron") as HTMLElement | null;
+
 	if (isHidden) {
 		settingsPanel.classList.remove("hidden");
+		settingsButton.setAttribute("aria-expanded", "true");
+		if (chevron) {
+			chevron.style.transform = "rotate(180deg)";
+		}
 		loadApiKeyIntoInput();
 	} else {
 		settingsPanel.classList.add("hidden");
+		settingsButton.setAttribute("aria-expanded", "false");
+		if (chevron) {
+			chevron.style.transform = "rotate(0deg)";
+		}
 	}
 }
 

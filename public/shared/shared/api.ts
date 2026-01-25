@@ -2,6 +2,7 @@
  * Shared API and SSE handling logic for both web and extension.
  */
 
+import type { ProgressType } from "../index.js";
 import type { StorageAdapter } from "./storage.js";
 
 /**
@@ -26,7 +27,7 @@ export type RecipeResponse =
 	| {
 			success: false;
 			error: string;
-			notionUrl?: string; // May be present for duplicate errors
+			notionUrl?: string;
 	  };
 
 /**
@@ -45,6 +46,7 @@ export type ServerProgressEvent =
 	| {
 			type: ServerProgressEventType.Progress;
 			message: string;
+			progressType: ProgressType;
 	  }
 	| {
 			type: ServerProgressEventType.Complete;

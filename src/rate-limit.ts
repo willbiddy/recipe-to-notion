@@ -90,24 +90,28 @@ export function checkRateLimit(
 ): { allowed: boolean; remaining: number; resetAt: number } {
 	const now = Date.now();
 	const entry = rateLimitStore.get(identifier);
+	const isWindowExpired = !entry || now - entry.windowStart >= config.windowMs;
 
-	if (!entry || now - entry.windowStart >= config.windowMs) {
+	if (isWindowExpired) {
+		const windowStart = now;
 		rateLimitStore.set(identifier, {
 			count: 1,
-			windowStart: now,
+			windowStart,
 		});
 		return {
 			allowed: true,
 			remaining: config.maxRequests - 1,
-			resetAt: now + config.windowMs,
+			resetAt: windowStart + config.windowMs,
 		};
 	}
+
+	const resetAt = entry.windowStart + config.windowMs;
 
 	if (entry.count >= config.maxRequests) {
 		return {
 			allowed: false,
 			remaining: 0,
-			resetAt: entry.windowStart + config.windowMs,
+			resetAt,
 		};
 	}
 
@@ -115,7 +119,7 @@ export function checkRateLimit(
 	return {
 		allowed: true,
 		remaining: config.maxRequests - entry.count,
-		resetAt: entry.windowStart + config.windowMs,
+		resetAt,
 	};
 }
 
@@ -131,7 +135,6 @@ function hashString(str: string): number {
 	for (let i = 0; i < str.length; i++) {
 		const char = str.charCodeAt(i);
 		hash = (hash << 5) - hash + char;
-		hash = hash & hash; // Convert to 32-bit integer
 	}
 	return hash;
 }

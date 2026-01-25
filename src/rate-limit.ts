@@ -120,30 +120,44 @@ export function checkRateLimit(
 }
 
 /**
+ * Simple string hash function for rate limiting identifiers.
+ * Not cryptographically secure - only used for rate limiting purposes.
+ *
+ * @param str - String to hash.
+ * @returns 32-bit integer hash value.
+ */
+function hashString(str: string): number {
+	let hash = 0;
+	for (let i = 0; i < str.length; i++) {
+		const char = str.charCodeAt(i);
+		hash = (hash << 5) - hash + char;
+		hash = hash & hash; // Convert to 32-bit integer
+	}
+	return hash;
+}
+
+/**
  * Extracts client identifier from request (IP address or API key hash).
  *
  * @param request - The incoming request.
  * @returns Client identifier string.
  */
 export function getClientIdentifier(request: Request): string {
-	// Try to get IP from headers (Vercel provides this)
+	// Hash the API key for per-key rate limiting (if present)
+	const authHeader = request.headers.get("Authorization");
+	if (authHeader?.startsWith("Bearer ")) {
+		const apiKey = authHeader.slice(7).trim();
+		const hash = hashString(apiKey);
+		return `api-key-${Math.abs(hash)}`;
+	}
+
+	// Fall back to IP address-based identification
 	const forwardedFor = request.headers.get("x-forwarded-for");
 	const realIp = request.headers.get("x-real-ip");
 	const ip = forwardedFor?.split(",")[0]?.trim() || realIp || "unknown";
 
-	// Also try to hash the API key for per-key rate limiting
-	const authHeader = request.headers.get("Authorization");
-	if (authHeader?.startsWith("Bearer ")) {
-		const apiKey = authHeader.slice(7).trim();
-		// Simple hash for identifier (not cryptographically secure, just for rate limiting)
-		let hash = 0;
-		for (let i = 0; i < apiKey.length; i++) {
-			const char = apiKey.charCodeAt(i);
-			hash = (hash << 5) - hash + char;
-			hash = hash & hash; // Convert to 32-bit integer
-		}
-		return `api-key-${Math.abs(hash)}`;
-	}
+	return `ip-${ip}`;
+}
 
 	return `ip-${ip}`;
 }

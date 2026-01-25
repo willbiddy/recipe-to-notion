@@ -33,10 +33,20 @@ export type ProcessResult = {
  * Progress event types during recipe processing.
  */
 export type ProgressEvent =
-	| { type: "checking_duplicates"; message: "Checking for duplicates..." }
-	| { type: "scraping"; message: "Scraping recipe..." }
-	| { type: "tagging"; message: "Generating AI tags and scores..." }
-	| { type: "saving"; message: "Saving to Notion..." };
+	| { type: "checking_duplicates"; message: string }
+	| { type: "scraping"; message: string }
+	| { type: "tagging"; message: string }
+	| { type: "saving"; message: string };
+
+/**
+ * Progress messages for each stage of recipe processing.
+ */
+const PROGRESS_MESSAGES = {
+	checking_duplicates: "Checking for duplicates...",
+	scraping: "Scraping recipe...",
+	tagging: "Generating AI tags and scores...",
+	saving: "Saving to Notion...",
+} as const;
 
 /**
  * Progress callback function type.
@@ -61,7 +71,8 @@ export async function processRecipe(
 
 	logger?.onStart?.();
 
-	onProgress?.({ type: "checking_duplicates", message: "Checking for duplicates..." });
+	// Step 1: Check for duplicate URL
+	onProgress?.({ type: "checking_duplicates", message: PROGRESS_MESSAGES.checking_duplicates });
 	logger?.onCheckingDuplicates?.();
 	const urlDuplicate = await checkForDuplicateByUrl(
 		url,
@@ -70,22 +81,23 @@ export async function processRecipe(
 	);
 	if (urlDuplicate) {
 		logger?.onDuplicateFound?.(urlDuplicate.title, urlDuplicate.notionUrl);
-		throw new Error(
-			`Duplicate recipe found: "${urlDuplicate.title}" (${urlDuplicate.url}) already exists in the database. View it at: ${urlDuplicate.notionUrl}`,
-		);
+		throw createDuplicateError(urlDuplicate);
 	}
 	logger?.onNoDuplicateFound?.();
 
-	onProgress?.({ type: "scraping", message: "Scraping recipe..." });
+	// Step 2: Scrape recipe from URL
+	onProgress?.({ type: "scraping", message: PROGRESS_MESSAGES.scraping });
 	logger?.onScraping?.();
 	const recipe = await scrapeRecipe(url);
 	logger?.onScraped?.(recipe);
 
-	onProgress?.({ type: "tagging", message: "Generating AI tags and scores..." });
+	// Step 3: Generate AI tags and scores
+	onProgress?.({ type: "tagging", message: PROGRESS_MESSAGES.tagging });
 	logger?.onTagging?.();
 	const tags = await tagRecipe(recipe, config.ANTHROPIC_API_KEY);
 	logger?.onTagged?.();
 
+	// Step 4: Check for duplicate title (after scraping to get accurate title)
 	const titleDuplicate = await checkForDuplicateByTitle(
 		recipe.name,
 		config.NOTION_API_KEY,
@@ -93,12 +105,11 @@ export async function processRecipe(
 	);
 	if (titleDuplicate) {
 		logger?.onDuplicateFound?.(titleDuplicate.title, titleDuplicate.notionUrl);
-		throw new Error(
-			`Duplicate recipe found: "${titleDuplicate.title}" (${titleDuplicate.url}) already exists in the database. View it at: ${titleDuplicate.notionUrl}`,
-		);
+		throw createDuplicateError(titleDuplicate);
 	}
 
-	onProgress?.({ type: "saving", message: "Saving to Notion..." });
+	// Step 5: Save to Notion
+	onProgress?.({ type: "saving", message: PROGRESS_MESSAGES.saving });
 	logger?.onSaving?.();
 	const pageId = await createRecipePage(
 		recipe,
@@ -112,4 +123,16 @@ export async function processRecipe(
 	logger?.onSaved?.(notionUrl);
 
 	return { recipe, tags, pageId };
+}
+
+/**
+ * Creates a standardized duplicate error message.
+ *
+ * @param duplicate - Duplicate recipe information.
+ * @returns Error with formatted duplicate message.
+ */
+function createDuplicateError(duplicate: { title: string; url: string; notionUrl: string }): Error {
+	return new Error(
+		`Duplicate recipe found: "${duplicate.title}" (${duplicate.url}) already exists in the database. View it at: ${duplicate.notionUrl}`,
+	);
 }

@@ -255,7 +255,7 @@ function handleRecipeError(error: unknown): Response {
 	const errorMessage = error instanceof Error ? error.message : String(error);
 	const isDuplicate = errorMessage.includes("Duplicate recipe found");
 
-	let statusCode = HttpStatus.InternalServerError;
+	let statusCode: number = HttpStatus.InternalServerError;
 	if (isDuplicate) {
 		/**
 		 * Conflict status code.

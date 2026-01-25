@@ -106,12 +106,20 @@ async function saveRecipe(url: string): Promise<RecipeResponse> {
 						return response
 							.json()
 							.then((errorData) => {
-								resolve(errorData as RecipeResponse);
-							})
-							.catch(() => {
+								// Include the status code in the error message for debugging
+								const errorMessage = errorData.error || errorData.message || "Unknown error";
 								resolve({
 									success: false,
-									error: `Server error: ${response.status} ${response.statusText}`,
+									error: `Server error (${response.status}): ${errorMessage}`,
+									...errorData,
+								} as RecipeResponse);
+							})
+							.catch(async () => {
+								// If JSON parsing fails, try to get text response
+								const text = await response.text().catch(() => "");
+								resolve({
+									success: false,
+									error: `Server error (${response.status}): ${response.statusText}${text ? ` - ${text}` : ""}`,
 								});
 							});
 					}

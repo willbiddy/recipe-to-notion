@@ -43,7 +43,7 @@ export type ScrapeMethod = "json-ld" | "html-fallback";
 /**
  * Structured recipe data extracted from a web page.
  */
-export interface Recipe {
+export type Recipe = {
 	/**
 	 * Display name of the recipe.
 	 */
@@ -95,7 +95,7 @@ export interface Recipe {
 	 * Used as a hint for AI tagging, not authoritative.
 	 */
 	category: string | null;
-}
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Main functions

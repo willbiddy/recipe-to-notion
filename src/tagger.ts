@@ -8,7 +8,7 @@ import type { Recipe } from "./scraper.js";
 /**
  * Categorized ingredient for shopping organization.
  */
-export interface CategorizedIngredient {
+export type CategorizedIngredient = {
 	/**
 	 * Original ingredient text from the recipe (preserved exactly as provided).
 	 */
@@ -22,12 +22,12 @@ export interface CategorizedIngredient {
 	 * Only include if the ingredient is used in a specific section or step that would help distinguish duplicates.
 	 */
 	usage: string | null;
-}
+};
 
 /**
  * AI-generated metadata for a recipe, produced by Claude.
  */
-export interface RecipeTags {
+export type RecipeTags = {
 	/**
 	 * Descriptive tags (2-4 items) for cuisine, dish type, and primary protein
 	 * (e.g. "Italian", "Pasta", "Chicken", "Stir-Fry").
@@ -54,7 +54,7 @@ export interface RecipeTags {
 	 * Ordered for standard grocery store flow: Produce → Meat & Seafood → Pantry → Dairy & Eggs.
 	 */
 	ingredients: CategorizedIngredient[];
-}
+};
 
 /**
  * System prompt for Claude to analyze recipes and generate structured metadata.

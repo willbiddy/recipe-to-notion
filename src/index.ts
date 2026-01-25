@@ -14,7 +14,7 @@ import { tagRecipe } from "./tagger.js";
 /**
  * Result of processing a recipe URL through the full pipeline.
  */
-export interface ProcessResult {
+export type ProcessResult = {
 	/**
 	 * The scraped recipe data.
 	 */
@@ -27,7 +27,7 @@ export interface ProcessResult {
 	 * Notion page ID.
 	 */
 	pageId: string;
-}
+};
 
 /**
  * Progress event types during recipe processing.

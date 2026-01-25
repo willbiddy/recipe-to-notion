@@ -18,7 +18,7 @@ enum PropertyNames {
 /**
  * Information about an existing recipe that matches a duplicate check.
  */
-export interface DuplicateInfo {
+export type DuplicateInfo = {
 	/**
 	 * Recipe title in Notion.
 	 */
@@ -35,7 +35,7 @@ export interface DuplicateInfo {
 	 * Clickable Notion page URL.
 	 */
 	notionUrl: string;
-}
+};
 
 /**
  * Converts a Notion page ID to a clickable URL.
@@ -379,7 +379,18 @@ function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
 	if (tags.ingredients && tags.ingredients.length > 0) {
 		blocks.push(heading1("Ingredients"));
 		const grouped = groupIngredientsByCategory(tags.ingredients);
-		blocks.push(...buildIngredientBlocks(grouped));
+		// Convert CategorizedIngredient[] to the format expected by buildIngredientBlocks
+		const converted = new Map<string, Array<{ original: string; usage?: string }>>();
+		for (const [category, ingredients] of grouped.entries()) {
+			converted.set(
+				category,
+				ingredients.map((ing) => ({
+					original: ing.original,
+					usage: ing.usage ?? undefined,
+				})),
+			);
+		}
+		blocks.push(...buildIngredientBlocks(converted));
 	} else if (recipe.ingredients.length > 0) {
 		// Fallback to original flat list if categorization failed
 		blocks.push(heading1("Ingredients"));

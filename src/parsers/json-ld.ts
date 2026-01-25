@@ -136,7 +136,7 @@ function findRecipeInLd(
 }
 
 /**
- * Maps a JSON-LD Recipe object to our internal {@link Recipe} interface.
+ * Maps a JSON-LD Recipe object to our internal {@link Recipe} type.
  *
  * Extracts and normalizes recipe data from a JSON-LD Recipe object,
  * handling various formats for time, servings, images, ingredients,

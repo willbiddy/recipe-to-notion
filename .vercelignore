@@ -1,0 +1,45 @@
+# Development files
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+extension/*.js
+extension/*.js.map
+src/*.js
+src/*.js.map
+
+# Documentation
+docs/
+DEPLOYMENT.md
+README.md
+LICENSE
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Dependencies (Vercel installs these)
+node_modules/
+bun.lock
+
+# Extension source (not needed for server)
+extension/
+!extension/tsconfig.json
+
+# Test files
+*.test.ts
+*.spec.ts
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

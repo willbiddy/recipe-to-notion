@@ -99,7 +99,18 @@ export function parseDuration(iso: string | undefined): number | null {
 export function cleanRecipeName(name: string): string {
 	return name
 		.replace(/\s+Recipe$/i, "")
-		.replace(/\s*-\s*[^-]+$/, "") // Remove " - Author Name" pattern
+		// Remove " - Author Name" pattern, but only if the suffix looks like an author name:
+		// - Must be preceded by space-dash-space (not just a dash in the recipe name)
+		// - Suffix must not contain commas (recipe names often have commas, author names don't)
+		// - Suffix should be relatively short (author names are typically < 50 chars)
+		.replace(/\s+-\s+(.+)$/m, (match, suffix) => {
+			// Only remove if the suffix doesn't contain commas and is short
+			// This prevents removing parts of recipe names like "One-Pot Salmon, Spinach..."
+			if (!suffix.includes(",") && suffix.trim().length > 0 && suffix.length < 50) {
+				return "";
+			}
+			return match;
+		})
 		.trim();
 }
 

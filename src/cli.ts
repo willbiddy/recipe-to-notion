@@ -43,7 +43,13 @@ const main = defineCommand({
 			process.exit(1);
 		}
 
-		const config = loadConfig();
+		let config: Config;
+		try {
+			config = loadConfig();
+		} catch (err) {
+			consola.fatal(err instanceof Error ? err.message : String(err));
+			process.exit(1);
+		}
 
 		// Handle --html flag (single URL only)
 		if (args.html) {
@@ -92,7 +98,9 @@ async function processUrlsSequentially(
 	config: Config,
 ): Promise<{ succeeded: number; failed: number }> {
 	if (urls.length > 1) {
-		consola.info(`Processing ${urls.length} recipes sequentially\n`);
+		consola.ready(`Processing ${urls.length} recipes sequentially`);
+	} else {
+		consola.ready("Processing recipe");
 	}
 
 	let succeeded = 0;
@@ -267,9 +275,7 @@ async function saveToNotion(recipe: Recipe, tags: RecipeTags, config: Config): P
  * @param tags - AI-generated tags and scores.
  */
 function printRecipeSummary(recipe: Recipe, tags: RecipeTags): void {
-	const lines = [
-		"",
-		colors.bold(recipe.name),
+	const message = [
 		recipe.author ? `Author:      ${recipe.author}` : null,
 		`Tags:        ${tags.tags.join(", ")}`,
 		`Meal type:   ${tags.mealType.join(", ")}`,
@@ -277,10 +283,14 @@ function printRecipeSummary(recipe: Recipe, tags: RecipeTags): void {
 		`Minutes:     ${tags.totalTimeMinutes}`,
 		`Ingredients: ${recipe.ingredients.length} items`,
 		`Steps:       ${recipe.instructions.length} steps`,
-		"",
-	];
+	]
+		.filter((line) => line !== null)
+		.join("\n");
 
-	console.log(lines.filter((line) => line !== null).join("\n"));
+	consola.box({
+		title: recipe.name,
+		message,
+	});
 }
 
 /**

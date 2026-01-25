@@ -26,16 +26,9 @@ const fallbackLogger: FallbackLogger = {
 	error: (msg: string) => console.error(`✗ ${msg}`),
 	info: (msg: string) => console.info(`ℹ ${msg}`),
 	box: ({ title, message }: { title: string; message: string }) => {
-		const lines = message.split("\n");
-		const maxWidth = Math.max(title.length + 4, ...lines.map((line) => line.length + 2));
-		const border = "─".repeat(maxWidth - title.length - 2);
-
-		console.log(`\n╭─${title}${border}╮`);
-		for (const line of lines) {
-			const padding = " ".repeat(maxWidth - line.length - 2);
-			console.log(`│ ${line}${padding}│`);
-		}
-		console.log(`╰${"─".repeat(maxWidth)}╯\n`);
+		console.log(`\n${title}`);
+		console.log(message);
+		console.log();
 	},
 };
 

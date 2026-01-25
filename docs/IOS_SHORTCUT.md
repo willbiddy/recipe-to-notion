@@ -45,18 +45,40 @@ iOS browsers (Safari, Chrome, Firefox, etc.) don't support Web Share Target API 
 
 ### Step 2: Configure the Shortcut
 
-1. Tap the **"..."** button in the top-right of the shortcut editor
-2. Set the shortcut name to: **"Save Recipe to Notion"**
-3. (Optional) Choose an icon and color
-4. Tap **"Add to Home Screen"** if you want a home screen shortcut
-5. Tap **"Done"**
+1. Tap the **"..."** button (three dots) in the top-right of the shortcut editor
+2. In the **"Details"** screen:
+   - Set the shortcut name to: **"Save Recipe to Notion"**
+   - (Optional) Choose an icon and color
+   - (Optional) Tap **"Add to Home Screen"** if you want a home screen shortcut
+3. **IMPORTANT:** Before tapping "Done", make sure you complete Step 3 (Share Sheet) below
+4. Tap **"Done"** to save the shortcut
 
-### Step 3: Enable Share Sheet
+### Step 3: Enable Share Sheet (CRITICAL - This makes it appear!)
 
-1. In the shortcut editor, tap **"Share Sheet"** at the bottom
-2. Enable **"Show in Share Sheet"**
-3. Under **"Accepted Types"**, select **"URLs"**
-4. Tap **"Done"**
+**This is the most important step! Without this, the shortcut won't appear in your Share Sheet.**
+
+**Method 1: From the shortcut editor**
+1. While editing your shortcut, look at the **bottom of the screen**
+2. You should see tabs like: **"Details"**, **"Share Sheet"**, **"Automation"**, etc.
+3. Tap the **"Share Sheet"** tab
+4. Toggle the switch **"Show in Share Sheet"** to ON (it should turn green)
+5. Under **"Accepted Types"**, tap to select **"URLs"** (should show a checkmark)
+6. Tap **"Done"** in the top-right to save
+
+**Method 2: From shortcut details (if you don't see the tab)**
+1. Tap the **"..."** button (three dots) in the top-right of the shortcut editor
+2. Scroll down or look for **"Share Sheet"** option
+3. Tap **"Share Sheet"**
+4. Toggle **"Show in Share Sheet"** to ON (green)
+5. Select **"URLs"** under "Accepted Types"
+6. Tap **"Done"** to save
+
+**After enabling:**
+- The shortcut should now appear in Share Sheets when you share a URL
+- If it doesn't appear immediately, try:
+  - Force closing the app you're sharing from (Safari, Chrome, etc.)
+  - Restarting your iPhone/iPad
+  - Sharing from a different app to test
 
 ### Step 4: Allow Untrusted Shortcuts (if needed)
 
@@ -105,10 +127,28 @@ After setup:
 
 ### Shortcut Not Appearing in Share Sheet
 
-- Make sure "Show in Share Sheet" is enabled in the shortcut settings
-- Verify "Accepted Types" includes "URLs"
-- Try restarting your device
-- Check that the shortcut is not disabled in Settings → Shortcuts
+**Most Common Issues:**
+
+1. **Share Sheet not enabled:**
+   - Open the shortcut in the Shortcuts app
+   - Tap the **"..."** button (three dots) in the top-right
+   - Tap **"Share Sheet"** tab at the bottom
+   - Make sure **"Show in Share Sheet"** is ON (green toggle)
+   - Verify **"URLs"** is checked under "Accepted Types"
+
+2. **Shortcut not saved:**
+   - Make sure you tapped "Done" after configuring the Share Sheet settings
+   - The shortcut should appear in your Shortcuts library
+
+3. **Try these steps:**
+   - Force close and reopen the app you're sharing from (Safari, Chrome, etc.)
+   - Restart your iPhone/iPad
+   - Check Settings → Shortcuts → make sure the shortcut isn't disabled
+   - Try sharing from a different app to see if it appears
+
+4. **Still not working?**
+   - Delete the shortcut and recreate it, making sure to enable Share Sheet before saving
+   - Check that you're on iOS 12 or later (required for Share Sheet shortcuts)
 
 ### Shortcut Opens but Recipe Doesn't Process
 

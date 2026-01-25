@@ -134,7 +134,7 @@ Categorize each ingredient for grocery shopping. Return the same number of ingre
 1. **Produce** — Fresh fruits, vegetables, herbs, garlic, onions, potatoes, etc.
 2. **Deli & Bakery** — Sliced meats, rotisserie chicken, bread, baked goods
 3. **Meat & Seafood** — Raw meats, poultry, fish, seafood (not from deli)
-4. **Pantry Aisles** — Pasta, canned goods, cereal, peanut butter, rice, beans, flour, sugar, spices, oils, condiments, etc.
+4. **Pantry** — Pasta, canned goods, cereal, peanut butter, rice, beans, flour, sugar, spices, oils, condiments, etc.
 5. **Dairy & Eggs** — Milk, butter, cheese, yogurt, eggs, cream
 6. **Frozen Foods** — Frozen pizza, frozen vegetables, ice cream, frozen meals
 
@@ -166,15 +166,15 @@ Saucy, Spiced Shrimp and White Beans →
     },
     {
       "name": "2 tsp. Diamond Crystal or 1 tsp. Morton kosher salt, divided, plus more",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "Freshly ground pepper",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "¼ cup extra-virgin olive oil",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "1 large shallot, quartered, thinly sliced",
@@ -186,31 +186,31 @@ Saucy, Spiced Shrimp and White Beans →
     },
     {
       "name": "1 Tbsp. ground coriander",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "1 Tbsp. ground cumin",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "1 Tbsp. smoked paprika",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "1 tsp. sugar",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "½ tsp. crushed red pepper flakes",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "¼ cup double-concentrated tomato paste",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "1 15.5-oz. can white beans (such as cannellini), rinsed",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "Coarsely chopped mint and dill and warm flatbread (for serving)",
@@ -229,19 +229,19 @@ Panang Curry →
   "ingredients": [
     {
       "name": "½ teaspoon coriander seeds",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "½ teaspoon cumin seeds",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "¼ cup/1 ounce dry-roasted, unsalted peanuts",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "2 to 4 tablespoons red curry paste, to taste",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "1 pound boneless, skinless chicken breasts or thighs",
@@ -249,11 +249,11 @@ Panang Curry →
     },
     {
       "name": "2 teaspoons fish sauce, plus more as needed",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "1 (13.5-ounce) can full-fat coconut milk (do not shake)",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "8 makrut lime leaves, deveined, 6 torn and 2 thinly sliced, or 1 teaspoon grated lime zest, for serving",
@@ -261,7 +261,7 @@ Panang Curry →
     },
     {
       "name": "1½ teaspoons palm, granulated or brown sugar, plus more as needed",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "1 small, mild, thin-skinned pepper, such as a Fresno, Anaheim or banana pepper, or ½ small red bell pepper, thinly sliced",
@@ -273,7 +273,7 @@ Panang Curry →
     },
     {
       "name": "Rice, for serving",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     }
   ]
 }
@@ -292,35 +292,35 @@ Chocolate Chip Skillet Cookie →
     },
     {
       "name": "4 1/2 ounces granulated sugar (2/3 cup; 125 g)",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "8 ounces light brown sugar (1 cup, gently packed; 225 g)",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "1 ounce malted milk powder (about 1/4 cup; 25 g)",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "1/2 ounce vanilla extract (1 tablespoon; 15 g)",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "2 1/2 teaspoons (8 g) Diamond Crystal kosher salt; for table salt, use about half as much by volume or the same weight",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "1 teaspoon (5 g) baking soda",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "1/2 teaspoon baking powder",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "1/8 teaspoon grated nutmeg",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "1 large egg (about 1 3/4 ounces; 50 g), straight from the fridge",
@@ -328,11 +328,11 @@ Chocolate Chip Skillet Cookie →
     },
     {
       "name": "12 1/2 ounces all-purpose flour (2 3/4 cups, spooned; 355 g), such as Gold Medal",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "12 ounces assorted dark, milk, or white chocolate (not commercial chips), roughly chopped (about 2 cups; 340 g)",
-      "category": "Pantry Aisles"
+      "category": "Pantry"
     },
     {
       "name": "Vanilla ice cream, to serve (optional)",

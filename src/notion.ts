@@ -556,9 +556,9 @@ function groupIngredientsByCategory(
 
 /**
  * Returns the standard grocery store category order.
- * Produce → Deli & Bakery → Meat & Seafood → Pantry Aisles → Snacks & Soda → Dairy & Eggs → Frozen Foods → Household & Health → Checkout
+ * Produce → Deli & Bakery → Meat & Seafood → Pantry → Dairy & Eggs → Frozen Foods
  *
- * Categories not in this list will appear after Checkout in alphabetical order.
+ * Categories not in this list will appear after Frozen Foods in alphabetical order.
  *
  * @returns Array of category names in shopping order.
  */
@@ -567,11 +567,8 @@ function getCategoryOrder(): string[] {
 		"Produce",
 		"Deli & Bakery",
 		"Meat & Seafood",
-		"Pantry Aisles",
-		"Snacks & Soda",
+		"Pantry",
 		"Dairy & Eggs",
 		"Frozen Foods",
-		"Household & Health",
-		"Checkout",
 	];
 }

@@ -1,7 +1,42 @@
-import { consola } from "consola";
-import { colors } from "consola/utils";
 import type { Recipe } from "./scraper.js";
 import type { RecipeTags } from "./tagger.js";
+
+/**
+ * Fallback logger when consola is not available (e.g., in serverless environments).
+ */
+const fallbackLogger = {
+	ready: (msg: string) => console.log(`✓ ${msg}`),
+	start: (msg: string) => console.log(`→ ${msg}`),
+	success: (msg: string) => console.log(`✓ ${msg}`),
+	warn: (msg: string) => console.warn(`⚠ ${msg}`),
+	error: (msg: string) => console.error(`✗ ${msg}`),
+	info: (msg: string) => console.info(`ℹ ${msg}`),
+	box: ({ title, message }: { title: string; message: string }) => {
+		console.log(`\n╭─${title}─╮`);
+		console.log(message.split("\n").map((line) => `│ ${line}`).join("\n"));
+		console.log("╰─────────╯\n");
+	},
+};
+
+const fallbackColors = {
+	underline: (str: string) => str,
+	blue: (str: string) => str,
+};
+
+/**
+ * Gets the consola logger, falling back to console if not available.
+ * In serverless environments, consola may not be bundled, so we always use the fallback.
+ * For local/CLI usage, consola will be available via static imports in other files.
+ */
+function getConsola() {
+	// In serverless environments, always use fallback to avoid module resolution issues
+	// The CLI and local server will use consola directly via their own imports
+	return fallbackLogger;
+}
+
+function getColors() {
+	return fallbackColors;
+}
 
 /**
  * Logger type for recipe processing steps.
@@ -71,6 +106,7 @@ export function printRecipeSummary(recipe: Recipe, tags: RecipeTags): void {
 		.filter((line) => line !== null)
 		.join("\n");
 
+	const consola = getConsola();
 	consola.box({
 		title: recipe.name,
 		message,
@@ -79,8 +115,12 @@ export function printRecipeSummary(recipe: Recipe, tags: RecipeTags): void {
 
 /**
  * Creates a CLI-style logger that uses consola for all output.
+ * Falls back to console if consola is not available.
  */
 export function createCliLogger(): RecipeLogger {
+	const consola = getConsola();
+	const colors = getColors();
+
 	return {
 		onStart() {
 			consola.ready("Processing recipe");

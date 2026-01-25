@@ -118,7 +118,7 @@ Total prep + cook time. Never return 0 or null.
 
 Two paragraphs:
 
-**Paragraph 1:** 2-3 sentences describing what the dish is and what's notable (techniques, time, equipment).
+**Paragraph 1:** 2-3 sentences describing what the dish is and what's notable (techniques, time, equipment). If the recipe requires unusual equipment that a well-stocked kitchen wouldn't already have (e.g., cast iron skillet, food processor, stand mixer, mortar and pestle), mention it. Don't mention standard equipment like pots, pans, or ovens.
 
 **Paragraph 2:** 1-2 sentences about healthiness, based on the scoring criteria above. Start with explicit context about whether the recipe is healthy or not (e.g., "This is a nutritional standout..." or "This isn't particularly healthy..."). For less healthy dishes (0-7), then mention what affects the score (good or bad), then offer optional ways to improve it — focus on changes that would actually move the needle per the healthiness guidelines. Use soft language like "you could," or "consider." For mains, you can suggest a healthy side that pairs well with the dish and adds nutrition. For already healthy dishes (8+), just mention what makes it nutritious — skip the improvement suggestions since they're already excellent.
 

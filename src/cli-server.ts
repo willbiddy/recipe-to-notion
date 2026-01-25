@@ -1,12 +1,13 @@
 #!/usr/bin/env bun
 /**
- * CLI entry point for starting the Recipe Clipper for Notion HTTP server.
+ * CLI entry point for starting the recipe-to-notion HTTP server.
  *
  * Usage:
  *   bun src/cli-server.ts
  *   SERVER_PORT=8080 bun src/cli-server.ts
  */
 import { consola } from "consola";
+import getPort from "get-port";
 import { handleRequest } from "./server.js";
 
 /**
@@ -16,13 +17,25 @@ enum HttpStatus {
 	InternalServerError = 500,
 }
 
+/**
+ * Default server port.
+ */
 const DEFAULT_PORT = 3000;
-const port = parseInt(process.env.SERVER_PORT || String(DEFAULT_PORT), 10);
 
-if (Number.isNaN(port) || port < 1 || port > 65535) {
-	consola.fatal(`Invalid port: ${process.env.SERVER_PORT}. Must be between 1 and 65535.`);
-	process.exit(1);
-}
+/**
+ * Minimum valid port number.
+ */
+const MIN_PORT = 1;
+
+/**
+ * Maximum valid port number.
+ */
+const MAX_PORT = 65535;
+
+/**
+ * Server idle timeout in seconds.
+ */
+const IDLE_TIMEOUT_SECONDS = 60;
 
 /**
  * Validate environment variables are loaded.
@@ -40,108 +53,103 @@ try {
 }
 
 /**
- * Kills any process using the specified port.
+ * Validates and parses the port from environment variable or returns default.
  *
- * Attempts to gracefully kill the process first, then force kills if needed.
- * Returns true if the port is available (either was free or process was killed).
- *
- * @param port - The port number to check and free.
- * @returns True if the port is available, false if kill failed.
+ * @param envPort - Port value from environment variable.
+ * @returns Valid port number.
+ * @throws If port is invalid.
  */
-async function killProcessOnPort(port: number): Promise<boolean> {
-	try {
-		const { execSync } = await import("node:child_process");
-		const pid = execSync(`lsof -ti:${port}`, { encoding: "utf-8" }).trim();
-		if (pid) {
-			consola.warn(`Port ${port} is in use by process ${pid}. Killing it...`);
-			try {
-				execSync(`kill ${pid}`, { encoding: "utf-8", stdio: "ignore" });
-				await new Promise((resolve) => setTimeout(resolve, 500));
-
-				try {
-					execSync(`lsof -ti:${port}`, { encoding: "utf-8", stdio: "ignore" });
-					execSync(`kill -9 ${pid}`, { encoding: "utf-8", stdio: "ignore" });
-					await new Promise((resolve) => setTimeout(resolve, 500));
-				} catch {
-					// Process is gone
-				}
-
-				consola.success(`Process ${pid} killed`);
-				return true;
-			} catch (_killError) {
-				consola.warn(`Failed to kill process ${pid}`);
-				return false;
-			}
-		}
-		return true;
-	} catch (_error) {
-		return true;
+function parsePort(envPort: string | undefined): number {
+	if (!envPort) {
+		return DEFAULT_PORT;
 	}
+
+	const port = parseInt(envPort, 10);
+	if (Number.isNaN(port) || port < MIN_PORT || port > MAX_PORT) {
+		throw new Error(`Invalid port: ${envPort}. Must be between ${MIN_PORT} and ${MAX_PORT}.`);
+	}
+
+	return port;
 }
 
 /**
- * Try to kill any process on the port before starting.
+ * Gets an available port, either the requested one or an alternative if it's in use.
+ *
+ * @param requestedPort - The port number to try first.
+ * @returns An available port number.
  */
-await killProcessOnPort(port);
+async function getAvailablePort(requestedPort: number): Promise<number> {
+	const port = await getPort({ port: requestedPort });
+
+	if (port !== requestedPort) {
+		consola.warn(
+			`Port ${requestedPort} is in use. Using next available port: ${port}\n` +
+				`  To use a specific port, stop the process using it first.`,
+		);
+	}
+
+	return port;
+}
 
 /**
- * Try to start the server, with retry logic if port is still in use.
+ * Handles graceful server shutdown.
+ *
+ * @param server - The Bun server instance to stop.
+ * @param signal - The signal that triggered the shutdown.
  */
+function handleShutdown(server: ReturnType<typeof Bun.serve>, signal: string): void {
+	consola.info(`\nReceived ${signal}, shutting down server...`);
+	server.stop();
+	process.exit(0);
+}
+
+// Parse and validate port
+let requestedPort: number;
+try {
+	requestedPort = parsePort(process.env.SERVER_PORT);
+} catch (error) {
+	consola.fatal(error instanceof Error ? error.message : String(error));
+	process.exit(1);
+}
+
+const port = await getAvailablePort(requestedPort);
+
+/**
+ * Starts the HTTP server.
+ *
+ * @param port - The port number to listen on.
+ * @returns The Bun server instance.
+ * @throws If server fails to start.
+ */
+function startServer(port: number): ReturnType<typeof Bun.serve> {
+	const server = Bun.serve({
+		port,
+		fetch: handleRequest,
+		idleTimeout: IDLE_TIMEOUT_SECONDS,
+		error(error) {
+			consola.error(`Server error: ${error.message}`);
+			return new Response("Internal Server Error", { status: HttpStatus.InternalServerError });
+		},
+	});
+
+	consola.ready(`recipe-to-notion server running on http://localhost:${port}`);
+	consola.info("Endpoints:");
+	consola.info(`  POST http://localhost:${port}/api/recipes`);
+	consola.info(`  GET  http://localhost:${port}/health`);
+
+	return server;
+}
+
+// Start the server
 let server: ReturnType<typeof Bun.serve>;
-let retries = 3;
-let started = false;
-
-while (retries > 0 && !started) {
-	try {
-		server = Bun.serve({
-			port,
-			fetch: handleRequest,
-			idleTimeout: 60,
-			error(error) {
-				consola.error(`Server error: ${error.message}`);
-				return new Response("Internal Server Error", { status: HttpStatus.InternalServerError });
-			},
-		});
-
-		consola.ready(`Recipe Clipper for Notion server running on http://localhost:${port}`);
-		consola.info("Endpoints:");
-		consola.info(`  POST http://localhost:${port}/api/recipes`);
-		consola.info(`  GET  http://localhost:${port}/health`);
-		started = true;
-	} catch (error) {
-		const errorMessage = error instanceof Error ? error.message : String(error);
-		if (
-			(errorMessage.includes("EADDRINUSE") || errorMessage.includes("address already in use")) &&
-			retries > 1
-		) {
-			retries--;
-			consola.warn(`Port ${port} still in use, retrying... (${retries} attempts left)`);
-			await killProcessOnPort(port);
-			await new Promise((resolve) => setTimeout(resolve, 1_000));
-		} else {
-			if (errorMessage.includes("EADDRINUSE") || errorMessage.includes("address already in use")) {
-				consola.fatal(
-					`Port ${port} is still in use after cleanup attempts.\n\n` +
-						`  Options:\n` +
-						`  1. Manually stop the process: lsof -i :${port} then kill -9 <PID>\n` +
-						`  2. Use a different port: SERVER_PORT=8080 bun run server`,
-				);
-			} else {
-				consola.fatal(`Failed to start server: ${errorMessage}`);
-			}
-			process.exit(1);
-		}
-	}
+try {
+	server = startServer(port);
+} catch (error) {
+	const errorMessage = error instanceof Error ? error.message : String(error);
+	consola.fatal(`Failed to start server: ${errorMessage}`);
+	process.exit(1);
 }
 
-process.on("SIGINT", () => {
-	consola.info("\nShutting down server...");
-	server.stop();
-	process.exit(0);
-});
-
-process.on("SIGTERM", () => {
-	consola.info("\nShutting down server...");
-	server.stop();
-	process.exit(0);
-});
+// Set up graceful shutdown handlers
+process.on("SIGINT", () => handleShutdown(server, "SIGINT"));
+process.on("SIGTERM", () => handleShutdown(server, "SIGTERM"));

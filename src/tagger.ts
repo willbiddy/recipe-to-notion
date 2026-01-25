@@ -1,4 +1,3 @@
-import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import Anthropic from "@anthropic-ai/sdk";
@@ -56,23 +55,40 @@ export type RecipeTags = {
 /**
  * System prompt for Claude to analyze recipes and generate structured metadata.
  * Loaded from system-prompt.md file for easier editing.
+ *
+ * Uses Bun's native file API for optimal performance.
  */
-// Load system prompt - using readFileSync for synchronous module initialization
-// Note: Bun optimizes Node.js fs operations, so readFileSync is fast even though it's Node.js API
-// For async file operations elsewhere, we use Bun.file() which is even faster
-const SYSTEM_PROMPT = (() => {
+let systemPromptCache: string | null = null;
+
+/**
+ * Loads the system prompt from the file system.
+ *
+ * Uses Bun's native file API for optimal performance.
+ * Caches the result after first load.
+ *
+ * @returns The system prompt text.
+ * @throws If the file cannot be read.
+ */
+async function loadSystemPrompt(): Promise<string> {
+	if (systemPromptCache !== null) {
+		return systemPromptCache;
+	}
+
 	const __filename = fileURLToPath(import.meta.url);
 	const __dirname = join(__filename, "..");
 	const promptPath = join(__dirname, "system-prompt.md");
+
 	try {
-		// Bun optimizes Node.js fs.readFileSync, so this is still fast
-		return readFileSync(promptPath, "utf-8").trim();
+		const file = Bun.file(promptPath);
+		const text = await file.text();
+		systemPromptCache = text.trim();
+		return systemPromptCache;
 	} catch (error) {
 		throw new Error(
 			`Failed to load system prompt from ${promptPath}: ${error instanceof Error ? error.message : String(error)}`,
 		);
 	}
-})();
+}
 
 /**
  * Labels used when formatting recipe data into a user prompt for Claude.
@@ -173,13 +189,14 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
 	const client = new Anthropic({ apiKey });
 
 	const userMessage = buildPrompt(recipe);
+	const systemPrompt = await loadSystemPrompt();
 
 	let response: Anthropic.Messages.Message;
 	try {
 		response = await client.messages.create({
 			model: ACTIVE_MODEL,
 			max_tokens: ClaudeLimit.MaxTokens,
-			system: SYSTEM_PROMPT,
+			system: systemPrompt,
 			tools: [
 				{
 					name: "tag_recipe",

@@ -15,7 +15,8 @@
 		"typecheck": "tsc --noEmit",
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
-		"format": "biome format --write ."
+		"format": "biome format --write .",
+		"prepare": "husky"
 	},
 	"keywords": [
 		"recipe",
@@ -34,6 +35,8 @@
 		"@resvg/resvg-js": "^2.6.2",
 		"@types/bun": "latest",
 		"@types/chrome": "^0.1.36",
+		"husky": "^9.1.7",
+		"lint-staged": "^16.2.7",
 		"tailwindcss": "3",
 		"typescript": "^5.9.3"
 	},
@@ -48,5 +51,14 @@
 		"get-port": "^7.1.0",
 		"nanoid": "^5.1.6",
 		"zod": "^4.3.6"
+	},
+	"lint-staged": {
+		"*.{ts,tsx,js,jsx}": [
+			"biome check --write",
+			"biome format --write"
+		],
+		"*.{json,md,css}": [
+			"biome format --write"
+		]
 	}
 }

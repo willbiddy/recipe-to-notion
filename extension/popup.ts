@@ -326,19 +326,22 @@ async function handleSave(): Promise<void> {
 		if (result.success && result.notionUrl) {
 			updateStatus("Recipe saved successfully!", "success");
 			/**
-			 * Open the Notion page after a short delay.
+			 * Show "Opening..." message, then open the Notion page.
 			 */
 			setTimeout(() => {
-				chrome.tabs.create({ url: result.notionUrl });
-			}, 1_000);
+				updateStatus("Opening...", "info");
+				setTimeout(() => {
+					chrome.tabs.create({ url: result.notionUrl });
+				}, 500);
+			}, 500);
 		} else if (result.error?.includes("Duplicate recipe found") && result.notionUrl) {
 			/**
 			 * Handle duplicate errors specially.
 			 */
-			updateStatus(`This recipe already exists. Opening existing recipe...`, "info");
+			updateStatus(`This recipe already exists. Opening...`, "info");
 			setTimeout(() => {
 				chrome.tabs.create({ url: result.notionUrl });
-			}, 1_000);
+			}, 500);
 		} else {
 			updateStatus(result.error || "Failed to save recipe", "error");
 		}

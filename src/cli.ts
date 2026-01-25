@@ -36,8 +36,9 @@ const main = defineCommand({
 	},
 	async run({ args }) {
 		const urls = parseUrls(args._);
+		const firstUrl = urls[0];
 
-		if (urls.length === 0) {
+		if (!firstUrl) {
 			consola.error("Please provide at least one recipe URL");
 			process.exit(1);
 		}
@@ -49,7 +50,7 @@ const main = defineCommand({
 			if (urls.length > 1) {
 				consola.warn("--html option only supports one URL at a time");
 			}
-			const success = await handleRecipe(urls[0], config, args.html);
+			const success = await handleRecipe(firstUrl, config, args.html);
 			process.exit(success ? 0 : 1);
 		}
 
@@ -97,12 +98,12 @@ async function processUrlsSequentially(
 	let succeeded = 0;
 	let failed = 0;
 
-	for (let i = 0; i < urls.length; i++) {
+	for (const [i, url] of urls.entries()) {
 		if (urls.length > 1) {
-			consola.info(`${pc.cyan(`[${i + 1}/${urls.length}]`)} ${pc.dim(urls[i])}`);
+			consola.info(`${pc.cyan(`[${i + 1}/${urls.length}]`)} ${pc.dim(url)}`);
 		}
 
-		const success = await handleRecipe(urls[i], config);
+		const success = await handleRecipe(url, config);
 		if (success) {
 			succeeded++;
 		} else {

@@ -115,3 +115,18 @@ export function normalizeIngredientParentheses(ingredient: string): string {
 		})
 		.trim();
 }
+
+/**
+ * Filters out editor's notes and similar editorial content from instruction arrays.
+ *
+ * Removes instruction steps that contain patterns like "Editor's note:",
+ * "Editor note:", or similar editorial markers that are not part of the
+ * actual recipe instructions.
+ *
+ * @param instructions - Array of instruction step strings.
+ * @returns Filtered array with editor's notes removed.
+ */
+export function filterEditorNotes(instructions: string[]): string[] {
+	const editorNotePattern = /^Editor'?s?\s+note:?/i;
+	return instructions.filter((instruction) => !editorNotePattern.test(instruction.trim()));
+}

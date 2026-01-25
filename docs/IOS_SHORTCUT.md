@@ -1,14 +1,14 @@
 # iOS Shortcut Setup
 
-Set up an iOS Shortcut to save recipes directly from Safari's Share Sheet. After setup, "Save Recipe to Notion" will appear in your Share Sheet whenever you're viewing a recipe page.
+Set up an iOS Shortcut to save recipes directly from any browser's Share Sheet (Safari, Chrome, Firefox, etc.). After setup, "Save Recipe to Notion" will appear in your Share Sheet whenever you're viewing a recipe page.
 
 ---
 
 ## Overview
 
-iOS Safari doesn't support Web Share Target API natively, but we can achieve the same functionality using iOS Shortcuts. The shortcut:
+iOS browsers (Safari, Chrome, Firefox, etc.) don't support Web Share Target API natively, but we can achieve the same functionality using iOS Shortcuts. The shortcut:
 
-1. Receives the recipe URL from Safari's Share Sheet
+1. Receives the recipe URL from any browser's Share Sheet
 2. Opens the web interface with the URL as a query parameter
 3. The web interface auto-submits if your API key is configured
 
@@ -90,12 +90,14 @@ If you prefer, you can create a shortcut using this recipe structure:
 
 After setup:
 
-1. Navigate to a recipe page in Safari
+1. Navigate to a recipe page in any browser (Safari, Chrome, Firefox, etc.)
 2. Tap the **Share** button (square with arrow)
 3. Scroll down and tap **"Save Recipe to Notion"**
 4. The web interface opens with the recipe URL
 5. If your API key is configured, the recipe is automatically processed
 6. The Notion page opens when complete
+
+> **Note:** This works with any iOS browser that supports the Share Sheet, including Safari, Chrome, Firefox, Edge, and others.
 
 ---
 
@@ -113,7 +115,8 @@ After setup:
 - Verify your API key is configured in the web interface
 - Check that the URL query parameter is correct: `?url=https://example.com/recipe`
 - Open the web interface manually and test saving a recipe
-- Check browser console for errors (if using Safari on Mac)
+- Check browser console for errors (if using Safari/Chrome on Mac)
+- Try from a different browser to rule out browser-specific issues
 
 ### URL Not Being Passed Correctly
 

@@ -5,9 +5,16 @@ import {
 	cleanRecipeName,
 	decodeHtmlEntities,
 	filterEditorNotes,
+	INGREDIENT_HEADER_PATTERN,
+	INSTRUCTION_HEADER_PATTERN,
 	normalizeIngredientParentheses,
 	parseDuration,
 } from "./shared.js";
+
+/**
+ * Maximum length for site name to be considered as author (characters).
+ */
+const MAX_SITE_NAME_LENGTH = 50;
 
 /**
  * Extracts author from HTML using various patterns.
@@ -38,7 +45,9 @@ export function extractAuthorFromHtml($: cheerio.CheerioAPI): string | null {
 	if (classAuthor) return classAuthor;
 
 	const siteName = $('meta[property="og:site_name"]').attr("content");
-	if (siteName && siteName.length < 50) return siteName;
+	if (siteName && siteName.length < MAX_SITE_NAME_LENGTH) {
+		return siteName;
+	}
 
 	return null;
 }
@@ -97,7 +106,7 @@ export function parseHtml($: cheerio.CheerioAPI, sourceUrl: string): Recipe | nu
 
 	if (finalIngredients.length > 0) {
 		finalIngredients = finalIngredients.filter(
-			(ing) => !/^(INGREDIENTS|INGREDIENT LIST)$/i.test(ing.trim()),
+			(ing) => !INGREDIENT_HEADER_PATTERN.test(ing.trim()),
 		);
 	}
 
@@ -194,7 +203,7 @@ function extractRecipeInstructions(
 					.not("h1, h2, h3, h4, h5, h6")
 					.each((_, el) => {
 						const text = $(el).text().trim();
-						if (text && !/^(INSTRUCTIONS|DIRECTIONS|STEPS)$/i.test(text)) {
+						if (text && !INSTRUCTION_HEADER_PATTERN.test(text)) {
 							instructions.push(decodeHtmlEntities(text));
 						}
 					});
@@ -223,18 +232,6 @@ function findRecipeContainer($: cheerio.CheerioAPI): cheerio.Cheerio<Element> | 
 	return null;
 }
 
-/**
- * Extracts text content from a microdata itemprop attribute.
- *
- * Handles both direct text content and nested itemprop="name" patterns.
- * For images, extracts the src or content attribute.
- *
- * @param $ - Cheerio instance loaded with the page HTML.
- * @param container - The recipe container element (or root if null).
- * @param itemprop - The itemprop attribute value to search for.
- * @param isImage - If true, extracts src/content attributes instead of text.
- * @returns The extracted value, or null if not found.
- */
 /**
  * Extracts text content from a microdata itemprop attribute.
  *
@@ -347,13 +344,6 @@ function extractAttributeWithFallback(
  * @param selectors - Array of CSS selectors to try in order.
  * @returns Array of non-empty text values.
  */
-/**
- * Extracts array of text values from elements matching CSS selectors.
- *
- * @param $ - Cheerio instance loaded with the page HTML.
- * @param selectors - Array of CSS selectors to try in order.
- * @returns Array of non-empty text values.
- */
 function extractTextArray($: cheerio.CheerioAPI, ...selectors: string[]): string[] {
 	const isIngredientExtraction = selectors.some(
 		(sel) => sel.includes("ingredient") || sel.includes("recipeIngredient"),
@@ -375,13 +365,6 @@ function extractTextArray($: cheerio.CheerioAPI, ...selectors: string[]): string
 	return [];
 }
 
-/**
- * Extracts time duration from microdata and parses it to minutes.
- *
- * @param $ - Cheerio instance loaded with the page HTML.
- * @param container - The recipe container element (or root if null).
- * @returns Total time in minutes, or null if not found.
- */
 /**
  * Extracts time duration from microdata and parses it to minutes.
  *

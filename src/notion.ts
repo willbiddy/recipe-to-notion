@@ -4,16 +4,47 @@ import type { CategorizedIngredient, RecipeTags } from "./tagger.js";
 
 /**
  * Notion database property names.
+ * These must match the property names in your Notion database.
  */
-enum PropertyNames {
-	NAME = "Name",
-	SOURCE = "Source",
-	AUTHOR = "Author",
-	MINUTES = "Minutes",
-	TAGS = "Tags",
-	MEAL_TYPE = "Meal type",
-	HEALTHINESS = "Healthiness",
-}
+const PropertyNames = {
+	NAME: "Name",
+	SOURCE: "Source",
+	AUTHOR: "Author",
+	MINUTES: "Minutes",
+	TAGS: "Tags",
+	MEAL_TYPE: "Meal type",
+	HEALTHINESS: "Healthiness",
+} as const;
+
+/**
+ * Notion API version to use.
+ */
+const NOTION_API_VERSION = "2022-06-28";
+
+/**
+ * Maximum number of blocks per Notion page.
+ */
+const MAX_BLOCKS_PER_PAGE = 100;
+
+/**
+ * Maximum text length for Notion text blocks (characters).
+ */
+const MAX_TEXT_LENGTH = 2000;
+
+/**
+ * Pattern to match escaped double newlines in description text.
+ */
+const ESCAPED_DOUBLE_NEWLINE_PATTERN = /\\n\\n/g;
+
+/**
+ * Pattern to match escaped single newlines in description text.
+ */
+const ESCAPED_SINGLE_NEWLINE_PATTERN = /\\n/g;
+
+/**
+ * Pattern to match dashes in Notion page IDs (for URL conversion).
+ */
+const PAGE_ID_DASH_PATTERN = /-/g;
 
 /**
  * Information about an existing recipe that matches a duplicate check.
@@ -46,7 +77,7 @@ export type DuplicateInfo = {
  * @returns The Notion page URL.
  */
 export function getNotionPageUrl(pageId: string): string {
-	const cleanId = pageId.replace(/-/g, "");
+	const cleanId = pageId.replace(PAGE_ID_DASH_PATTERN, "");
 	return `https://www.notion.so/${cleanId}`;
 }
 
@@ -362,15 +393,10 @@ function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
 	const blocks: unknown[] = [];
 
 	if (tags.description) {
-		let descriptionText = tags.description;
-		// Handle both literal \n\n strings (escaped) and actual newlines
-		// First replace escaped newlines, then split on actual newlines
-		descriptionText = descriptionText.replace(/\\n\\n/g, "\n\n");
-		// Also handle single escaped newlines that might be used for line breaks
-		descriptionText = descriptionText.replace(/\\n/g, "\n");
-		const paragraphs = descriptionText.split("\n\n").filter((p) => p.trim());
-		for (const p of paragraphs) {
-			blocks.push(paragraph(p));
+		const descriptionText = normalizeDescriptionText(tags.description);
+		const paragraphs = descriptionText.split("\n\n").filter((paragraph) => paragraph.trim());
+		for (const paragraphText of paragraphs) {
+			blocks.push(paragraph(paragraphText));
 		}
 	}
 

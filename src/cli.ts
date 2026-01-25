@@ -7,7 +7,7 @@
  */
 import { defineCommand, runMain } from "citty";
 import { consola } from "consola";
-import pc from "picocolors";
+import { colors } from "consola/utils";
 import { type Config, loadConfig } from "./config.js";
 import {
 	checkForDuplicateByTitle,
@@ -100,7 +100,7 @@ async function processUrlsSequentially(
 
 	for (const [i, url] of urls.entries()) {
 		if (urls.length > 1) {
-			consola.info(`${pc.cyan(`[${i + 1}/${urls.length}]`)} ${pc.dim(url)}`);
+			consola.info(`${colors.cyan(`[${i + 1}/${urls.length}]`)} ${colors.dim(url)}`);
 		}
 
 		const success = await handleRecipe(url, config);
@@ -253,7 +253,7 @@ async function saveToNotion(recipe: Recipe, tags: RecipeTags, config: Config): P
 	);
 
 	const notionUrl = getNotionPageUrl(pageId);
-	consola.success(`Saved to Notion: ${pc.underline(pc.blue(notionUrl))}`);
+	consola.success(`Saved to Notion: ${colors.underline(colors.blue(notionUrl))}`);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -269,7 +269,7 @@ async function saveToNotion(recipe: Recipe, tags: RecipeTags, config: Config): P
 function printRecipeSummary(recipe: Recipe, tags: RecipeTags): void {
 	const lines = [
 		"",
-		pc.bold(recipe.name),
+		colors.bold(recipe.name),
 		recipe.author ? `Author:      ${recipe.author}` : null,
 		`Tags:        ${tags.tags.join(", ")}`,
 		`Meal type:   ${tags.mealType.join(", ")}`,
@@ -294,7 +294,7 @@ function printSummary(results: { succeeded: number; failed: number }): void {
 	if (total > 1) {
 		console.log();
 		consola.info(
-			`Processed ${total} recipes: ${pc.green(`${results.succeeded} succeeded`)}, ${pc.red(`${results.failed} failed`)}`,
+			`Processed ${total} recipes: ${colors.green(`${results.succeeded} succeeded`)}, ${colors.red(`${results.failed} failed`)}`,
 		);
 	}
 }

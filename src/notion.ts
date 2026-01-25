@@ -1,6 +1,7 @@
 import { Client } from "@notionhq/client";
 import type { Recipe } from "./scraper.js";
 import type { CategorizedIngredient, RecipeTags } from "./tagger.js";
+import { IngredientCategory } from "./tagger.js";
 
 /**
  * Notion database property names.
@@ -382,7 +383,9 @@ export async function createRecipePage(
  * @param grouped - Map of category names to arrays of ingredients.
  * @returns Array of Notion block objects for ingredients.
  */
-function buildIngredientBlocks(grouped: Map<string, Array<{ name: string }>>): unknown[] {
+function buildIngredientBlocks(
+	grouped: Map<IngredientCategory, Array<{ name: string }>>,
+): unknown[] {
 	const blocks: unknown[] = [];
 	const orderedCategories = getCategoryOrder();
 
@@ -428,7 +431,7 @@ function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
 	if (tags.ingredients && tags.ingredients.length > 0) {
 		blocks.push(heading1("Ingredients"));
 		const grouped = groupIngredientsByCategory(tags.ingredients);
-		const simplified = new Map<string, Array<{ name: string }>>();
+		const simplified = new Map<IngredientCategory, Array<{ name: string }>>();
 		for (const [category, ingredients] of grouped.entries()) {
 			simplified.set(
 				category,
@@ -570,8 +573,8 @@ function truncate(text: string, maxLength: number): string {
  */
 function groupIngredientsByCategory(
 	ingredients: CategorizedIngredient[],
-): Map<string, CategorizedIngredient[]> {
-	const grouped = new Map<string, CategorizedIngredient[]>();
+): Map<IngredientCategory, CategorizedIngredient[]> {
+	const grouped = new Map<IngredientCategory, CategorizedIngredient[]>();
 	for (const ingredient of ingredients) {
 		const category = ingredient.category;
 		if (!grouped.has(category)) {
@@ -590,6 +593,14 @@ function groupIngredientsByCategory(
  *
  * @returns Array of category names in shopping order.
  */
-function getCategoryOrder(): string[] {
-	return ["Produce", "Bakery", "Meat & seafood", "Pantry", "Dairy & eggs", "Frozen", "Other"];
+function getCategoryOrder(): IngredientCategory[] {
+	return [
+		IngredientCategory.Produce,
+		IngredientCategory.Bakery,
+		IngredientCategory.MeatSeafood,
+		IngredientCategory.Pantry,
+		IngredientCategory.DairyEggs,
+		IngredientCategory.Frozen,
+		IngredientCategory.Other,
+	];
 }

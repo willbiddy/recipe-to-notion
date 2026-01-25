@@ -5,6 +5,20 @@ import { z } from "zod";
 import type { Recipe } from "./scraper.js";
 
 /**
+ * Shopping categories for ingredient organization.
+ * These categories must match exactly what Claude returns.
+ */
+export enum IngredientCategory {
+	Produce = "Produce",
+	Bakery = "Bakery",
+	MeatSeafood = "Meat & seafood",
+	Pantry = "Pantry",
+	DairyEggs = "Dairy & eggs",
+	Frozen = "Frozen",
+	Other = "Other",
+}
+
+/**
  * Categorized ingredient for shopping organization.
  */
 export type CategorizedIngredient = {
@@ -15,9 +29,9 @@ export type CategorizedIngredient = {
 	 */
 	name: string;
 	/**
-	 * Shopping category (e.g. "Produce", "Dairy & eggs", "Meat & seafood").
+	 * Shopping category. Must be one of the predefined IngredientCategory values.
 	 */
-	category: string;
+	category: IngredientCategory;
 };
 
 /**
@@ -161,7 +175,9 @@ enum ErrorDisplay {
  */
 const categorizedIngredientSchema = z.object({
 	name: z.string().min(1, "Ingredient name is required"),
-	category: z.string().min(1, "Category is required"),
+	category: z.nativeEnum(IngredientCategory, {
+		message: `Category must be one of: ${Object.values(IngredientCategory).join(", ")}`,
+	}),
 });
 
 const claudeResponseSchema = z.object({

@@ -131,13 +131,16 @@ Categorize each ingredient for grocery shopping. Return the same number of ingre
 
 **Category guidelines (standard grocery store flow):**
 
-1. **Produce** — Fresh fruits, vegetables, herbs, garlic, onions, potatoes, etc.
-2. **Bakery** — Bread, baked goods, pastries
-3. **Meat & seafood** — Raw meats, poultry, fish, seafood
-4. **Pantry** — Pasta, canned goods, cereal, peanut butter, rice, beans, flour, sugar, spices, oils, condiments, etc.
-5. **Dairy & eggs** — Milk, butter, cheese, yogurt, eggs, cream
-6. **Frozen** — Frozen pizza, frozen vegetables, ice cream, frozen meals
-7. **Other** — Use this category if no other category fits well. Always use "Other" as the fallback when uncertain.
+You MUST use exactly one of these category names (case-sensitive, exact spelling):
+- "Produce" — Fresh fruits, vegetables, herbs, garlic, onions, potatoes, etc.
+- "Bakery" — Bread, baked goods, pastries
+- "Meat & seafood" — Raw meats, poultry, fish, seafood
+- "Pantry" — Pasta, canned goods, cereal, peanut butter, rice, beans, flour, sugar, spices, oils, condiments, etc.
+- "Dairy & eggs" — Milk, butter, cheese, yogurt, eggs, cream
+- "Frozen" — Frozen pizza, frozen vegetables, ice cream, frozen meals
+- "Other" — Use this category if no other category fits well. Always use "Other" as the fallback when uncertain.
+
+**CRITICAL: You must use the exact category names listed above. Do not create new categories or use variations. If an ingredient doesn't fit well into any category, always use "Other".**
 
 **Handling duplicate ingredients:**
 

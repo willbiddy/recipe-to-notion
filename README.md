@@ -220,3 +220,9 @@ public/                 Web interface (mobile-friendly)
 - **`bun run lint`** - Run linter to find code issues
 - **`bun run format`** - Auto-format code with Biome
 
+---
+
+## Credits
+
+Icon attribution: <a href="https://www.flaticon.com/free-icons/cutlery" title="cutlery icons">Cutlery icons created by Freepik - Flaticon</a>
+

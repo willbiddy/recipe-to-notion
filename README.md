@@ -161,7 +161,11 @@ src/
 ├── tagger.ts          Claude API integration for AI tagging
 ├── notion.ts          Notion page creation and duplicate detection
 ├── config.ts          Environment variable validation
-└── system-prompt.md   Claude instructions for recipe analysis
+├── system-prompt.md   Claude instructions for recipe analysis
+└── parsers/
+    ├── json-ld.ts     JSON-LD (schema.org) recipe parsing
+    ├── html.ts        HTML/microdata fallback parsing
+    └── shared.ts      Shared utilities (type guards, helpers)
 ```
 
 ## Tech Stack

@@ -433,6 +433,23 @@ function init(): void {
 	}
 
 	/**
+	 * Set up API key visibility toggle.
+	 */
+	const toggleVisibilityButton = document.getElementById("toggle-api-key-visibility");
+	const apiKeyInput = document.getElementById("api-key-input") as HTMLInputElement;
+	const eyeIcon = document.getElementById("eye-icon");
+	const eyeOffIcon = document.getElementById("eye-off-icon");
+
+	if (toggleVisibilityButton && apiKeyInput && eyeIcon && eyeOffIcon) {
+		toggleVisibilityButton.addEventListener("click", () => {
+			const isPassword = apiKeyInput.type === "password";
+			apiKeyInput.type = isPassword ? "text" : "password";
+			eyeIcon.classList.toggle("hidden", !isPassword);
+			eyeOffIcon.classList.toggle("hidden", isPassword);
+		});
+	}
+
+	/**
 	 * Allow Enter key to submit URL.
 	 */
 	const urlInput = document.getElementById("url-input") as HTMLInputElement;

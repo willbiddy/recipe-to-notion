@@ -465,6 +465,23 @@ async function init(): Promise<void> {
 	}
 
 	/**
+	 * Set up API key visibility toggle.
+	 */
+	const toggleVisibilityButton = document.getElementById("toggle-api-key-visibility");
+	const apiKeyInput = document.getElementById("api-key-input") as HTMLInputElement;
+	const eyeIcon = document.getElementById("eye-icon");
+	const eyeOffIcon = document.getElementById("eye-off-icon");
+
+	if (toggleVisibilityButton && apiKeyInput && eyeIcon && eyeOffIcon) {
+		toggleVisibilityButton.addEventListener("click", () => {
+			const isPassword = apiKeyInput.type === "password";
+			apiKeyInput.type = isPassword ? "text" : "password";
+			eyeIcon.classList.toggle("hidden", !isPassword);
+			eyeOffIcon.classList.toggle("hidden", isPassword);
+		});
+	}
+
+	/**
 	 * Check if API key is configured and show warning if not.
 	 */
 	const apiKey = await getApiKey();

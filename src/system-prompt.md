@@ -93,7 +93,7 @@ Protein anchor from fish, poultry, legumes, nuts, or eggs. Vegetables ≥50% of 
 
 Raises score: Quality protein (fish, poultry, legumes, nuts, eggs), vegetables with color/variety, whole grains, healthy fats (olive oil, nuts, avocado, fatty fish), legumes, high fiber, fresh ingredients, herbs/spices for flavor
 
-Lowers score: Refined carbs as base, red meat as primary protein, processed meats, deep frying, heavy butter/cream, added sugar (heavily penalize when sugar is a primary ingredient), high sodium, canned soups/jarred sauces/packaged cheese, ultra-processed components
+Lowers score: Refined carbs as base, red meat as primary protein, processed meats, deep frying, heavy butter/cream, high added sugar, high sodium, canned soups/jarred sauces/packaged cheese, ultra-processed components
 
 **By dish type:**
 - **Main dishes:** Protein quality and vegetable content are primary signals.
@@ -119,7 +119,7 @@ Total prep + cook time. Never return 0 or null.
 
 Two paragraphs:
 
-**Paragraph 1:** 2-3 sentences describing what the dish is and what's notable (techniques, time, equipment). If the recipe requires unusual equipment that a well-stocked kitchen wouldn't already have (e.g., immersion circulator, dehydrator, smoker, tagine, pasta maker, ice cream maker, spiralizer), mention it. Don't mention standard equipment like pots, pans, skillets, food processors, stand mixers, or ovens.
+**Paragraph 1:** 2-3 sentences describing what the dish is and what's notable (techniques, time, equipment).
 
 **Paragraph 2:** 1-2 sentences about healthiness. Always mention what makes the recipe healthy or not healthy. For less healthy dishes (0-7), mention what could be done to make it healthier. For main dishes, recommend healthy side(s).
 
@@ -135,11 +135,8 @@ Categorize each ingredient for grocery shopping. Return the same number of ingre
 2. **Deli & Bakery** — Sliced meats, rotisserie chicken, bread, baked goods
 3. **Meat & Seafood** — Raw meats, poultry, fish, seafood (not from deli)
 4. **Pantry Aisles** — Pasta, canned goods, cereal, peanut butter, rice, beans, flour, sugar, spices, oils, condiments, etc.
-5. **Snacks & Soda** — Chips, cookies, crackers, sparkling water, soda, packaged snacks
-6. **Dairy & Eggs** — Milk, butter, cheese, yogurt, eggs, cream
-7. **Frozen Foods** — Frozen pizza, frozen vegetables, ice cream, frozen meals
-8. **Household & Health** — Paper towels, cleaning supplies, personal care items (rarely needed for recipes)
-9. **Checkout** — Magazines, gum, candy (rarely needed for recipes)
+5. **Dairy & Eggs** — Milk, butter, cheese, yogurt, eggs, cream
+6. **Frozen Foods** — Frozen pizza, frozen vegetables, ice cream, frozen meals
 
 **Handling duplicate ingredients:**
 
@@ -152,8 +149,6 @@ If an ingredient appears multiple times in the recipe with different contexts (e
 - Preserve the ingredient text exactly as provided
 - Don't modify quantities or descriptions
 - Only append usage context when an ingredient appears multiple times with different purposes
-- Order categories: Produce → Deli & Bakery → Meat & Seafood → Pantry Aisles → Snacks & Soda → Dairy & Eggs → Frozen Foods → Household & Health → Checkout
-- Most recipe ingredients will fall into Produce, Meat & Seafood, Pantry Aisles, Dairy & Eggs, or Frozen Foods
 
 ## Examples
 

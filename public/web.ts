@@ -232,11 +232,11 @@ function updateStatus(message: string, type: "info" | "success" | "error" = "inf
 	statusEl.textContent = message;
 	statusEl.classList.remove("hidden");
 	const baseClasses =
-		"py-3 px-4 rounded-lg text-sm leading-relaxed animate-[fadeIn_0.2s_ease-in] block";
+		"py-4 px-5 rounded-2xl text-sm leading-relaxed animate-[fadeIn_0.2s_ease-in] block shadow-sm";
 	const typeClasses = {
-		info: "bg-blue-50 text-blue-800 border border-blue-200",
-		success: "bg-green-50 text-green-800 border border-green-200",
-		error: "bg-red-50 text-red-800 border border-red-200 whitespace-pre-line",
+		info: "bg-orange-50 text-orange-800 border-2 border-orange-200",
+		success: "bg-amber-50 text-amber-800 border-2 border-amber-300",
+		error: "bg-red-50 text-red-800 border-2 border-red-200 whitespace-pre-line",
 	};
 	statusEl.className = `${baseClasses} ${typeClasses[type]}`;
 }

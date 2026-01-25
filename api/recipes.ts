@@ -8,16 +8,16 @@
 /**
  * HTTP status codes used throughout the API.
  */
-enum HttpStatus {
-	OK = 200,
-	NoContent = 204,
-	BadRequest = 400,
-	NotFound = 404,
-	MethodNotAllowed = 405,
-	Conflict = 409,
-	InternalServerError = 500,
-	BadGateway = 502,
-}
+const HttpStatus = {
+	OK: 200,
+	NoContent: 204,
+	BadRequest: 400,
+	NotFound: 404,
+	MethodNotAllowed: 405,
+	Conflict: 409,
+	InternalServerError: 500,
+	BadGateway: 502,
+} as const;
 
 /**
  * Request body format for the /api/recipes endpoint.
@@ -55,11 +55,15 @@ function setCorsHeaders(response: Response): void {
 
 /**
  * Handles OPTIONS preflight requests.
+ * This must work without any module imports to avoid initialization issues.
  */
 function handleOptions(): Response {
-	const response = new Response(null, { status: HttpStatus.NoContent });
-	setCorsHeaders(response);
-	return response;
+	const headers = new Headers();
+	headers.set("Access-Control-Allow-Origin", "*");
+	headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+	headers.set("Access-Control-Allow-Headers", "Content-Type");
+	headers.set("Access-Control-Expose-Headers", "*");
+	return new Response(null, { status: HttpStatus.NoContent, headers });
 }
 
 /**
@@ -298,10 +302,16 @@ export default {
 	 */
 	async fetch(req: Request): Promise<Response> {
 		/**
-		 * Handle CORS preflight.
+		 * Handle CORS preflight immediately without any module dependencies.
+		 * This must work even if the module hasn't fully loaded.
 		 */
 		if (req.method === "OPTIONS") {
-			return handleOptions();
+			const headers = new Headers();
+			headers.set("Access-Control-Allow-Origin", "*");
+			headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+			headers.set("Access-Control-Allow-Headers", "Content-Type");
+			headers.set("Access-Control-Expose-Headers", "*");
+			return new Response(null, { status: 204, headers });
 		}
 
 		/**

@@ -109,7 +109,7 @@ There are four ways to use Recipe Clipper for Notion:
 
 ### 1. Command Line Interface (CLI)
 
-The simplest way to save recipes from the terminal:
+The simplest way to get started. Save recipes from the terminal:
 
 ```bash
 # Single recipe
@@ -122,11 +122,9 @@ bun src/cli.ts url1 url2 url3
 bun src/cli.ts --html ~/Downloads/recipe.html "https://example.com/recipe-url"
 ```
 
-When processing multiple URLs, each is processed sequentially. Failures (duplicates, scraping errors) don't stop execution - all URLs are attempted.
-
 ### 2. Browser Extension
 
-Save recipes with one click directly from your browser!
+Save recipes with one click directly from your browser.
 
 > 📖 See [Extension Setup Guide](docs/EXTENSION.md) for complete setup instructions.
 >
@@ -134,7 +132,7 @@ Save recipes with one click directly from your browser!
 
 ### 3. Web Interface
 
-Save recipes from your phone or any device using the mobile-friendly web interface. Works with iOS Share Sheet (via Shortcuts) and Android Share Sheet (native).
+Save recipes from your phone or any device using the web interface. Works with iOS Share Sheet (via Shortcuts) and Android Share Sheet (native).
 
 > 📖 See [Web Interface Guide](docs/WEB_INTERFACE.md) for complete setup instructions, including iOS and Android sharing.
 >
@@ -151,8 +149,7 @@ Use the REST API to integrate Recipe Clipper for Notion into your own applicatio
 **Technologies:**
 
 - [Bun](https://bun.sh/) - JavaScript runtime
-- [TypeScript](https://www.typescriptlang.org/) - Static typing
-- [Solid.js](https://www.solidjs.com/) - Reactive UI framework (web & extension)
+- [Solid.js](https://www.solidjs.com/) - Reactive UI framework
 - [Vercel](https://vercel.com/) - Serverless hosting
 - [Cheerio](https://cheerio.js.org/) - HTML parsing
 - [Anthropic SDK](https://docs.anthropic.com/en/api/client-sdks) - Claude AI API client
@@ -161,7 +158,6 @@ Use the REST API to integrate Recipe Clipper for Notion into your own applicatio
 - [Consola](https://github.com/unjs/consola) - Logging
 - [Zod](https://zod.dev/) - Schema validation
 - [Tailwind CSS](https://tailwindcss.com/) - CSS framework
-- [SSE](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) - Real-time updates
 - [Biome](https://biomejs.dev/) - Linting & formatting
 
 ---

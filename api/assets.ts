@@ -109,9 +109,17 @@ export default {
 
 		if (originalPath) {
 			pathname = originalPath;
-		} else if (pathname.startsWith("/api/assets")) {
-			// Handle direct /api/assets/* routes
-			pathname = pathname.replace("/api/assets", "") || "/";
+		} else if (pathname.startsWith("/api/")) {
+			// Handle /api/web.js, /api/web.css, /api/favicon-*, etc.
+			// Remove /api prefix to get the asset path
+			const assetPath = pathname.replace("/api/", "/");
+			// Check if it's a known asset route
+			if (ASSET_ROUTES[assetPath]) {
+				pathname = assetPath;
+			} else if (pathname.startsWith("/api/assets")) {
+				// Handle direct /api/assets/* routes
+				pathname = pathname.replace("/api/assets", "") || "/";
+			}
 		}
 
 		const asset = ASSET_ROUTES[pathname];
@@ -131,7 +139,7 @@ export default {
 				},
 			});
 		} catch (error) {
-			console.error(`Error serving asset ${assetPath}:`, error);
+			console.error(`Error serving asset ${pathname}:`, error);
 			return new Response("Not Found", { status: 404 });
 		}
 	},

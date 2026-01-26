@@ -63,7 +63,19 @@ When `stream: true`, returns Server-Sent Events (SSE) with the following event t
   "type": "complete",
   "success": true,
   "pageId": "abc123...",
-  "notionUrl": "https://www.notion.so/abc123..."
+  "notionUrl": "https://www.notion.so/abc123...",
+  "recipe": {
+    "name": "Recipe Name",
+    "author": "Author Name",
+    "ingredients": ["ingredient 1", "ingredient 2"],
+    "instructions": ["step 1", "step 2"]
+  },
+  "tags": {
+    "tags": ["tag1", "tag2"],
+    "mealType": ["breakfast", "lunch"],
+    "healthiness": 7,
+    "totalTimeMinutes": 30
+  }
 }
 ```
 

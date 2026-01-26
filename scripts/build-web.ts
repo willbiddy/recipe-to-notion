@@ -3,6 +3,7 @@
  */
 
 import { SolidPlugin } from "@dschz/bun-plugin-solid";
+import { handleBuildResult, validateBuildFiles, writeBuildOutput } from "./build-utils.js";
 
 // Build the web interface with Solid.js plugin
 const result = await Bun.build({
@@ -19,26 +20,15 @@ const result = await Bun.build({
 	],
 });
 
-if (!result.success) {
-	console.error("Build failed:", result.logs);
-	process.exit(1);
-}
+handleBuildResult(result, "Web");
 
 // Write the output to the correct file
 const output = result.outputs[0];
-if (output) {
-	await Bun.write("web/web.js", output);
-	if (output.sourcemap) {
-		await Bun.write("web/web.js.map", output.sourcemap);
-	}
-} else {
-	console.error("Build succeeded but no output file was generated");
-	process.exit(1);
-}
+await writeBuildOutput({
+	output,
+	targetPath: "web/web.js",
+	name: "web",
+});
 
 // Validate that output files exist
-const { existsSync } = await import("node:fs");
-if (!existsSync("web/web.js")) {
-	console.error("Build failed: web/web.js was not created");
-	process.exit(1);
-}
+validateBuildFiles({ files: ["web/web.js"] });

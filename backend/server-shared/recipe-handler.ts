@@ -166,6 +166,7 @@ export function handleRecipeStream(options: RecipeStreamOptions): Response {
 			Connection: "keep-alive",
 		},
 	});
+	// Note: request not available in stream handler, using default CORS
 	setCorsHeaders(response);
 	return response;
 }
@@ -261,7 +262,7 @@ export async function handleRecipeRequest(options: RecipeHandlerOptions): Promis
 			},
 		});
 		setSecurityHeaders(response);
-		setCorsHeaders(response);
+		setCorsHeaders(response, request);
 		return response;
 	} catch (error) {
 		return handleRecipeError(error, { error: consola.error }, requestId);

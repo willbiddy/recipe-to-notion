@@ -3,16 +3,26 @@
  */
 
 /**
- * Default server URL for the extension.
- * This should be updated to your Vercel deployment URL.
+ * Build-time constant for server URL, injected by build script.
+ * @internal
  */
-const DEFAULT_SERVER_URL = "https://recipe-to-notion-xi.vercel.app";
+declare const EXTENSION_SERVER_URL: string | undefined;
+
+/**
+ * Server URL for the extension.
+ * Injected at build time via environment variable EXTENSION_SERVER_URL.
+ * Falls back to localhost for development if not set.
+ */
+const SERVER_URL =
+	typeof EXTENSION_SERVER_URL !== "undefined" && EXTENSION_SERVER_URL
+		? EXTENSION_SERVER_URL
+		: "http://localhost:3000";
 
 /**
  * Gets the server URL for the extension.
  *
- * @returns The server URL (Vercel deployment).
+ * @returns The server URL (from environment variable or localhost fallback).
  */
 export function getServerUrl(): string {
-	return DEFAULT_SERVER_URL;
+	return SERVER_URL;
 }

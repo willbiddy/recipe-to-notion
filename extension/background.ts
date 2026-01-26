@@ -40,6 +40,7 @@ async function updateIcon(theme: "light" | "dark") {
 
 /**
  * Gets the current theme preference from storage, defaulting to light.
+ * The popup detects the system theme and stores it, so we just read from storage.
  */
 async function getThemePreference(): Promise<"light" | "dark"> {
 	const result = await chrome.storage.local.get("theme");
@@ -47,42 +48,12 @@ async function getThemePreference(): Promise<"light" | "dark"> {
 }
 
 /**
- * Detects Chrome's system theme by injecting a script into a tab.
- */
-async function detectSystemTheme(): Promise<"light" | "dark"> {
-	try {
-		// Try to get any tab to detect theme (not just active)
-		const tabs = await chrome.tabs.query({});
-		for (const tab of tabs) {
-			if (tab.id) {
-				try {
-					const results = await chrome.scripting.executeScript({
-						target: { tabId: tab.id },
-						func: () => {
-							return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-						},
-					});
-					if (results[0]?.result) {
-						return results[0].result as "light" | "dark";
-					}
-				} catch {}
-			}
-		}
-	} catch {
-		// If we can't detect, fall back to stored preference
-	}
-	// Fall back to stored preference or default to light
-	return await getThemePreference();
-}
-
-/**
- * Initializes the extension icon based on system theme or stored preference.
+ * Initializes the extension icon based on stored theme preference.
+ * The popup handles system theme detection and stores it in chrome.storage.
  */
 async function initializeIcon() {
-	const theme = await detectSystemTheme();
+	const theme = await getThemePreference();
 	await updateIcon(theme);
-	// Store the detected theme for consistency
-	await chrome.storage.local.set({ theme });
 }
 
 /**

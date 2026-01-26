@@ -2,6 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import { consola } from "consola";
 import { z } from "zod";
 import { MAX_REQUEST_BODY_SIZE, MAX_URL_LENGTH } from "../shared/constants.js";
+import { isValidHttpUrl } from "../shared/url-utils.js";
 
 /**
  * HTTP status codes used for security-related responses.
@@ -123,15 +124,17 @@ export function validateRecipeUrl(
 		);
 	}
 
-	try {
-		const url = new URL(urlString);
+	// Use shared URL validation for protocol check
+	if (!isValidHttpUrl(urlString)) {
+		return createErrorResponse(
+			"Invalid URL protocol. Only HTTP and HTTPS are allowed",
+			SecurityHttpStatus.BadRequest,
+		);
+	}
 
-		if (url.protocol !== "http:" && url.protocol !== "https:") {
-			return createErrorResponse(
-				"Invalid URL protocol. Only HTTP and HTTPS are allowed",
-				SecurityHttpStatus.BadRequest,
-			);
-		}
+	// Additional validation: ensure URL is properly formatted
+	try {
+		new URL(urlString);
 		return null;
 	} catch {
 		return createErrorResponse("Invalid URL format", SecurityHttpStatus.BadRequest);

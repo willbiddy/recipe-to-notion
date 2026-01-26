@@ -58,11 +58,18 @@ export const REQUEST_TIMEOUT_MS = 30_000;
 
 /**
  * Maximum request body size in bytes (10 KB).
+ *
+ * Chosen value (10 KB): Recipe API requests only contain a URL string, so 10 KB is
+ * more than sufficient. Prevents DoS attacks via large request bodies while allowing
+ * legitimate requests with extra metadata if needed in the future.
  */
 export const MAX_REQUEST_BODY_SIZE = 10 * 1024;
 
 /**
  * Maximum URL length in characters.
+ *
+ * Chosen value (2048): Standard maximum URL length supported by most browsers and servers.
+ * Prevents DoS attacks via extremely long URLs while allowing legitimate long URLs.
  */
 export const MAX_URL_LENGTH = 2048;
 
@@ -118,11 +125,18 @@ export const ELLIPSIS_LENGTH = 3;
 /**
  * Maximum length for author name suffixes (characters).
  * Used to distinguish author names from recipe name parts.
+ *
+ * Chosen value (50): Most author names are under 50 characters. Recipe names often
+ * contain commas and can be longer. This threshold helps distinguish " - Author Name"
+ * patterns from recipe names like "One-Pot Salmon, Spinach, and Tomatoes".
  */
 export const MAX_AUTHOR_SUFFIX_LENGTH = 50;
 
 /**
  * Maximum length for site name to be considered as author (characters).
+ *
+ * Chosen value (50): Site names used as fallback authors should be reasonable length.
+ * Prevents very long domain names or site titles from being used as author attribution.
  */
 export const MAX_SITE_NAME_LENGTH = 50;
 

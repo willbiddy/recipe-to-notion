@@ -68,6 +68,16 @@ export type DuplicateInfo = {
 };
 
 /**
+ * Creates a Notion API client instance.
+ *
+ * @param apiKey - Notion integration API key.
+ * @returns Configured Notion client.
+ */
+function createNotionClient(apiKey: string): Client {
+	return new Client({ auth: apiKey });
+}
+
+/**
  * Converts a Notion page ID to a clickable URL.
  *
  * @param pageId - The Notion page ID (with or without dashes).
@@ -189,7 +199,7 @@ export async function checkForDuplicateByUrl(
 	options: CheckDuplicateByUrlOptions,
 ): Promise<DuplicateInfo | null> {
 	const { url, notionApiKey, databaseId } = options;
-	const notion = new Client({ auth: notionApiKey });
+	const notion = createNotionClient(notionApiKey);
 
 	try {
 		return await searchPagesInDatabase({
@@ -247,7 +257,7 @@ export async function checkForDuplicateByTitle(
 	options: CheckDuplicateByTitleOptions,
 ): Promise<DuplicateInfo | null> {
 	const { recipeName, notionApiKey, databaseId } = options;
-	const notion = new Client({ auth: notionApiKey });
+	const notion = createNotionClient(notionApiKey);
 
 	try {
 		return await searchPagesInDatabase({
@@ -390,7 +400,7 @@ export async function createRecipePage({
 	databaseId,
 	skipDuplicateCheck = false,
 }: CreateRecipePageOptions): Promise<string> {
-	const notion = new Client({ auth: notionApiKey });
+	const notion = createNotionClient(notionApiKey);
 
 	if (!skipDuplicateCheck) {
 		const duplicate = await checkForDuplicate({

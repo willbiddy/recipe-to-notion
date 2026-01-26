@@ -9,7 +9,7 @@
 import { defineCommand, runMain } from "citty";
 import { consola } from "consola";
 import { colors } from "consola/utils";
-import { type Config, loadConfig } from "./config.js";
+import { type Config, getNotionConfig, loadConfig } from "./config.js";
 import { processRecipe } from "./index.js";
 import { createConsoleLogger } from "./logger.js";
 import {
@@ -173,11 +173,12 @@ async function handleRecipeFromHtml(
 	htmlPath: string,
 	config: Config,
 ): Promise<boolean> {
+	const notionConfig = getNotionConfig(config);
+
 	consola.start("Checking for duplicates...");
 	const urlDuplicate = await checkForDuplicateByUrl({
 		url,
-		notionApiKey: config.NOTION_API_KEY,
-		databaseId: config.NOTION_DATABASE_ID,
+		...notionConfig,
 	});
 
 	if (urlDuplicate) {
@@ -190,8 +191,7 @@ async function handleRecipeFromHtml(
 
 	const titleDuplicate = await checkForDuplicateByTitle({
 		recipeName: recipe.name,
-		notionApiKey: config.NOTION_API_KEY,
-		databaseId: config.NOTION_DATABASE_ID,
+		...notionConfig,
 	});
 
 	if (titleDuplicate) {
@@ -248,11 +248,11 @@ async function generateTags(recipe: Recipe, config: Config): Promise<RecipeTags>
 async function saveToNotion(recipe: Recipe, tags: RecipeTags, config: Config): Promise<void> {
 	consola.start("Saving to Notion...");
 
+	const notionConfig = getNotionConfig(config);
 	const pageId = await createRecipePage({
 		recipe,
 		tags,
-		notionApiKey: config.NOTION_API_KEY,
-		databaseId: config.NOTION_DATABASE_ID,
+		...notionConfig,
 		skipDuplicateCheck: true,
 	});
 

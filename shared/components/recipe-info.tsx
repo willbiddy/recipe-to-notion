@@ -2,6 +2,8 @@
  * RecipeInfo component for displaying recipe information after successful save.
  */
 
+import { For } from "solid-js";
+
 export type RecipeInfoData = {
 	pageId: string;
 	notionUrl: string;
@@ -29,7 +31,7 @@ export type RecipeInfoProps = {
 export function RecipeInfo(props: RecipeInfoProps) {
 	const { recipe, tags } = props.data;
 
-	const infoItems = [
+	const infoItems: { label: string; value: string | null }[] = [
 		{ label: "Author", value: recipe.author },
 		{ label: "Tags", value: tags.tags.join(", ") },
 		{ label: "Meal type", value: tags.mealType.join(", ") },
@@ -59,11 +61,13 @@ export function RecipeInfo(props: RecipeInfoProps) {
 				<h3 class="text-sm font-semibold text-gray-900">{recipe.name}</h3>
 			</div>
 			<div class="space-y-1 text-xs text-gray-600">
-				{infoItems.map((item) => (
-					<div>
-						<strong>{item.label}:</strong> {item.value}
-					</div>
-				))}
+				<For each={infoItems}>
+					{(item) => (
+						<div>
+							<strong>{item.label}:</strong> {item.value}
+						</div>
+					)}
+				</For>
 			</div>
 			<div class="pt-2">
 				<p class="text-xs text-gray-700">

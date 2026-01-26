@@ -37,9 +37,7 @@ export enum ProgressType {
 	Saving = "saving",
 }
 
-/**
- * Progress event types during recipe processing.
- */
+/** Progress event payload; see {@link ProgressType}. */
 export type ProgressEvent =
 	| { type: ProgressType.CheckingDuplicates; message: string }
 	| { type: ProgressType.Scraping; message: string }

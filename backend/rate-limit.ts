@@ -58,9 +58,8 @@ import { CLEANUP_INTERVAL_MS } from "../shared/constants.js";
  */
 function cleanupExpiredEntries(): void {
 	const now = Date.now();
-	const CLEANUP_THRESHOLD_MS = CLEANUP_INTERVAL_MS;
 	for (const [key, entry] of rateLimitStore.entries()) {
-		if (now - entry.windowStart > CLEANUP_THRESHOLD_MS) {
+		if (now - entry.windowStart > CLEANUP_INTERVAL_MS) {
 			rateLimitStore.delete(key);
 		}
 	}

@@ -31,6 +31,62 @@ function formatNetworkError(error: unknown): string {
 }
 
 /**
+ * Handles a parsed SSE event and calls appropriate callbacks.
+ *
+ * @param data - The validated server progress event.
+ * @param callbacks - Progress callbacks for UI updates.
+ * @param resolve - Promise resolve function.
+ * @returns True if the event was a terminal event (complete or error), false otherwise.
+ */
+function handleSseEvent(
+	data: import("./types.js").ServerProgressEvent,
+	callbacks: import("./types.js").ProgressCallbacks,
+	resolve: (value: RecipeResponse) => void,
+): boolean {
+	if (data.type === ServerProgressEventType.Progress) {
+		callbacks.onProgress(data.message);
+		return false;
+	}
+
+	if (data.type === ServerProgressEventType.Complete) {
+		callbacks.onComplete({
+			pageId: data.pageId,
+			notionUrl: data.notionUrl,
+			recipe: {
+				name: data.recipe.name,
+				author: data.recipe.author,
+				ingredients: data.recipe.ingredients,
+				instructions: data.recipe.instructions,
+			},
+			tags: {
+				tags: data.tags.tags,
+				mealType: data.tags.mealType,
+				healthiness: data.tags.healthiness,
+				totalTimeMinutes: data.tags.totalTimeMinutes,
+			},
+		});
+		resolve({
+			success: true,
+			pageId: data.pageId,
+			notionUrl: data.notionUrl,
+		});
+		return true;
+	}
+
+	if (data.type === ServerProgressEventType.Error) {
+		callbacks.onError(data.error || "Unknown error", data.notionUrl);
+		resolve({
+			success: false,
+			error: data.error || "Unknown error",
+			notionUrl: data.notionUrl,
+		});
+		return true;
+	}
+
+	return false;
+}
+
+/**
  * Saves a recipe by sending the URL to the server with progress streaming.
  *
  * Uses Server-Sent Events (SSE) to stream progress updates to the client.
@@ -122,41 +178,13 @@ export async function saveRecipe({
 											continue;
 										}
 
-										if (data.type === ServerProgressEventType.Progress) {
-											callbacks.onProgress(data.message);
-										} else if (data.type === ServerProgressEventType.Complete) {
-											callbacks.onComplete({
-												pageId: data.pageId,
-												notionUrl: data.notionUrl,
-												recipe: {
-													name: data.recipe.name,
-													author: data.recipe.author,
-													ingredients: data.recipe.ingredients,
-													instructions: data.recipe.instructions,
-												},
-												tags: {
-													tags: data.tags.tags,
-													mealType: data.tags.mealType,
-													healthiness: data.tags.healthiness,
-													totalTimeMinutes: data.tags.totalTimeMinutes,
-												},
-											});
-											resolve({
-												success: true,
-												pageId: data.pageId,
-												notionUrl: data.notionUrl,
-											});
-											return;
-										} else if (data.type === ServerProgressEventType.Error) {
-											callbacks.onError(data.error || "Unknown error", data.notionUrl);
-											resolve({
-												success: false,
-												error: data.error || "Unknown error",
-												notionUrl: data.notionUrl,
-											});
+										const isTerminal = handleSseEvent(data, callbacks, resolve);
+										if (isTerminal) {
 											return;
 										}
-									} catch {}
+									} catch {
+										// Ignore malformed SSE events
+									}
 								}
 							}
 

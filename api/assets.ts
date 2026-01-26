@@ -112,11 +112,6 @@ const ASSET_ROUTES: Record<
 		contentType: "application/javascript; charset=utf-8",
 		isText: true,
 	},
-	"/shared/ui.js": {
-		path: "shared/ui.js",
-		contentType: "application/javascript; charset=utf-8",
-		isText: true,
-	},
 };
 
 export default {
@@ -149,7 +144,10 @@ export default {
 		const asset = ASSET_ROUTES[pathname];
 
 		if (!asset) {
-			return new Response("Not Found", { status: 404 });
+			return new Response("Not Found", {
+				status: 404,
+				headers: { "Content-Type": "text/plain; charset=utf-8" },
+			});
 		}
 
 		try {
@@ -164,7 +162,10 @@ export default {
 			});
 		} catch (error) {
 			consola.error(`Error serving asset ${pathname}:`, error);
-			return new Response("Not Found", { status: 404 });
+			return new Response("Not Found", {
+				status: 404,
+				headers: { "Content-Type": "text/plain; charset=utf-8" },
+			});
 		}
 	},
 };

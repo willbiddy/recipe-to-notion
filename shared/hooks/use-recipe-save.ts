@@ -195,7 +195,10 @@ export function useRecipeSave(options: UseRecipeSaveOptions): UseRecipeSaveResul
 	 * Handles updating the API key when it's invalid.
 	 */
 	function handleUpdateApiKey(handlers: ApiSecretHandlers) {
-		handlers.setPendingSave(() => handlers.performSave);
+		const runSave = () => {
+			void handlers.performSave();
+		};
+		handlers.setPendingSave(() => runSave);
 		handlers.setShowApiPrompt(true);
 	}
 

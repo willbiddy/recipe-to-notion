@@ -3,8 +3,8 @@
  * CLI entry point for starting the recipe-to-notion HTTP server.
  *
  * Usage:
- *   bun src/cli-server.ts
- *   SERVER_PORT=8080 bun src/cli-server.ts
+ *   bun backend/cli-server.ts
+ *   SERVER_PORT=8080 bun backend/cli-server.ts
  */
 import { consola } from "consola";
 import getPort from "get-port";

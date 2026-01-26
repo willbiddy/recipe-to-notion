@@ -1,4 +1,4 @@
-import { loadConfig } from "./config.js";
+import { getNotionConfig, loadConfig } from "./config.js";
 import { DuplicateRecipeError } from "./errors.js";
 import type { RecipeLogger } from "./logger.js";
 import {
@@ -87,6 +87,7 @@ export async function processRecipe(
 	logger?: RecipeLogger,
 ): Promise<ProcessResult> {
 	const config = loadConfig();
+	const notionConfig = getNotionConfig(config);
 
 	logger?.onStart?.();
 
@@ -97,14 +98,10 @@ export async function processRecipe(
 	logger?.onCheckingDuplicates?.();
 	const urlDuplicate = await checkForDuplicateByUrl({
 		url,
-		notionApiKey: config.NOTION_API_KEY,
-		databaseId: config.NOTION_DATABASE_ID,
+		...notionConfig,
 	});
 
-	if (urlDuplicate) {
-		logger?.onDuplicateFound?.(urlDuplicate.title, urlDuplicate.notionUrl);
-		throw createDuplicateError(urlDuplicate);
-	}
+	checkAndThrowIfDuplicate(urlDuplicate, logger);
 	logger?.onNoDuplicateFound?.();
 
 	onProgress?.({ type: ProgressType.Scraping, message: PROGRESS_MESSAGES[ProgressType.Scraping] });
@@ -119,22 +116,17 @@ export async function processRecipe(
 
 	const titleDuplicate = await checkForDuplicateByTitle({
 		recipeName: recipe.name,
-		notionApiKey: config.NOTION_API_KEY,
-		databaseId: config.NOTION_DATABASE_ID,
+		...notionConfig,
 	});
 
-	if (titleDuplicate) {
-		logger?.onDuplicateFound?.(titleDuplicate.title, titleDuplicate.notionUrl);
-		throw createDuplicateError(titleDuplicate);
-	}
+	checkAndThrowIfDuplicate(titleDuplicate, logger);
 
 	onProgress?.({ type: ProgressType.Saving, message: PROGRESS_MESSAGES[ProgressType.Saving] });
 	logger?.onSaving?.();
 	const pageId = await createRecipePage({
 		recipe,
 		tags,
-		notionApiKey: config.NOTION_API_KEY,
-		databaseId: config.NOTION_DATABASE_ID,
+		...notionConfig,
 		skipDuplicateCheck: true,
 	});
 
@@ -147,15 +139,18 @@ export async function processRecipe(
 }
 
 /**
- * Creates a standardized duplicate error.
+ * Checks for a duplicate recipe and throws an error if found.
  *
- * @param duplicate - Duplicate recipe information.
- * @returns DuplicateRecipeError with structured metadata.
+ * @param duplicate - Duplicate recipe information, or null if no duplicate.
+ * @param logger - Optional logger for duplicate detection events.
+ * @throws DuplicateRecipeError if a duplicate is found.
  */
-function createDuplicateError(duplicate: {
-	title: string;
-	url: string;
-	notionUrl: string;
-}): DuplicateRecipeError {
-	return new DuplicateRecipeError(duplicate.title, duplicate.url, duplicate.notionUrl);
+function checkAndThrowIfDuplicate(
+	duplicate: { title: string; url: string; notionUrl: string } | null,
+	logger?: RecipeLogger,
+): asserts duplicate is null {
+	if (duplicate) {
+		logger?.onDuplicateFound?.(duplicate.title, duplicate.notionUrl);
+		throw new DuplicateRecipeError(duplicate.title, duplicate.url, duplicate.notionUrl);
+	}
 }

@@ -267,12 +267,12 @@ public/
 └── tsconfig.json       # TypeScript configuration
 
 src/shared/components/  # Shared Solid.js components
-├── StatusMessage.tsx   # Status message display
-├── ProgressIndicator.tsx # Progress spinner
-├── RecipeInfo.tsx      # Recipe details display
-├── SettingsPanel.tsx   # API key settings (shared)
-├── WebRecipeForm.tsx   # Main web form component
-└── ExtensionRecipeForm.tsx # Extension popup form
+├── status-message.tsx   # Status message display
+├── progress-indicator.tsx # Progress spinner
+├── recipe-info.tsx      # Recipe details display
+├── settings-panel.tsx   # API key settings (shared)
+├── web-recipe-form.tsx   # Main web form component
+└── extension-recipe-form.tsx # Extension popup form
 ```
 
 ---

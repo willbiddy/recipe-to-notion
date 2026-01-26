@@ -4,13 +4,13 @@
  */
 
 import { createSignal, onMount, Show } from "solid-js";
-import { useRecipeSave } from "../hooks/useRecipeSave.js";
+import { useRecipeSave } from "../hooks/use-recipe-save.js";
 import { createStorageAdapter } from "../storage.js";
 import { getWebsiteName, isValidHttpUrl } from "../url-utils.js";
-import { ApiSecretPrompt } from "./ApiSecretPrompt.js";
-import { ProgressIndicator } from "./ProgressIndicator.js";
-import { StatusMessage, StatusType, TextSize } from "./StatusMessage.js";
-import { UrlDisplay } from "./UrlDisplay.js";
+import { ApiSecretPrompt } from "./api-secret-prompt.js";
+import { ProgressIndicator } from "./progress-indicator.js";
+import { StatusMessage, StatusType, TextSize } from "./status-message.js";
+import { UrlDisplay } from "./url-display.js";
 
 export type ExtensionRecipeFormProps = {
 	/** Function to get the server URL. */

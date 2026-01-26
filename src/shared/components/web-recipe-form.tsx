@@ -5,13 +5,13 @@
 
 import { createMemo, createSignal, onMount, Show } from "solid-js";
 import { ErrorMessageKey } from "../constants.js";
-import { useRecipeSave } from "../hooks/useRecipeSave.js";
+import { useRecipeSave } from "../hooks/use-recipe-save.js";
 import { createStorageAdapter } from "../storage.js";
 import { isValidHttpUrl } from "../url-utils.js";
-import { ApiSecretPrompt } from "./ApiSecretPrompt.js";
-import { ProgressIndicator } from "./ProgressIndicator.js";
-import { RecipeInfo, type RecipeInfoData } from "./RecipeInfo.js";
-import { StatusMessage, type StatusType } from "./StatusMessage.js";
+import { ApiSecretPrompt } from "./api-secret-prompt.js";
+import { ProgressIndicator } from "./progress-indicator.js";
+import { RecipeInfo, type RecipeInfoData } from "./recipe-info.js";
+import { StatusMessage, type StatusType } from "./status-message.js";
 
 /**
  * Delay before auto-submitting URL from query parameters (milliseconds).

@@ -4,7 +4,7 @@
  */
 
 import { render } from "solid-js/web";
-import { WebRecipeForm } from "../src/shared/components/WebRecipeForm.tsx";
+import { WebRecipeForm } from "../src/shared/components/web-recipe-form.tsx";
 
 // Mount the component to the main-content element
 const mainContent = document.getElementById("main-content");

@@ -5,7 +5,7 @@
 
 import { createSignal, onMount, Show } from "solid-js";
 import { createStorageAdapter } from "../storage.js";
-import { StatusMessage, StatusType, TextSize } from "./StatusMessage.js";
+import { StatusMessage, StatusType, TextSize } from "./status-message.js";
 
 export type SettingsPanelProps = {
 	/** Text size for status messages. */

@@ -2,6 +2,7 @@ import type * as cheerio from "cheerio";
 import type { Element } from "domhandler";
 import { MAX_SITE_NAME_LENGTH, SchemaOrgRecipeUrl } from "../../shared/constants.js";
 import type { Recipe } from "../scraper.js";
+import { ScrapeMethod } from "../scraper.js";
 import {
 	cleanRecipeName,
 	decodeHtmlEntities,
@@ -96,7 +97,7 @@ export function parseHtml($: cheerio.CheerioAPI, sourceUrl: string): Recipe | nu
 
 	const category = extractMicrodataProperty({ $, container, itemprop: "recipeCategory" }) || null;
 
-	const ingredients = extractMicrodataArray($, container, "recipeIngredient");
+	const ingredients = extractMicrodataTextArray($, container, "recipeIngredient");
 	let finalIngredients =
 		ingredients.length > 0
 			? ingredients
@@ -104,7 +105,7 @@ export function parseHtml($: cheerio.CheerioAPI, sourceUrl: string): Recipe | nu
 
 	if (finalIngredients.length > 0) {
 		finalIngredients = finalIngredients.filter(
-			(ing) => !INGREDIENT_HEADER_PATTERN.test(ing.trim()),
+			(ing: string) => !INGREDIENT_HEADER_PATTERN.test(ing.trim()),
 		);
 	}
 
@@ -115,7 +116,7 @@ export function parseHtml($: cheerio.CheerioAPI, sourceUrl: string): Recipe | nu
 	return {
 		name,
 		sourceUrl,
-		scrapeMethod: "html-fallback",
+		scrapeMethod: ScrapeMethod.HtmlFallback,
 		author,
 		totalTimeMinutes,
 		servings: servings ? decodeHtmlEntities(servings) : null,
@@ -190,7 +191,7 @@ function extractRecipeInstructions(
 			});
 		}
 		if (instructions.length === 0) {
-			instructions = extractMicrodataArray($, container, "step");
+			instructions = extractMicrodataTextArray($, container, "step");
 		}
 	}
 
@@ -282,14 +283,14 @@ function extractMicrodataProperty({
 }
 
 /**
- * Extracts all items with a specific itemprop attribute (for arrays like ingredients).
+ * Extracts all text items with a specific itemprop attribute (for arrays like ingredients).
  *
  * @param $ - Cheerio instance loaded with the page HTML.
  * @param container - The recipe container element (or root if null).
  * @param itemprop - The itemprop attribute value to search for.
  * @returns Array of extracted text values.
  */
-function extractMicrodataArray(
+function extractMicrodataTextArray(
 	$: cheerio.CheerioAPI,
 	container: cheerio.Cheerio<Element> | null,
 	itemprop: string,

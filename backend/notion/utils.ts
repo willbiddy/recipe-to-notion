@@ -3,7 +3,18 @@ import { hasProperty, isObject } from "../../shared/type-guards.js";
 import { NotionApiError } from "../errors.js";
 import type { NotionApiErrorResponse } from "./types.js";
 
+/**
+ * Pattern to match escaped double newlines in description text.
+ *
+ * Used to normalize escaped newline sequences (\\n\\n) to actual paragraph breaks.
+ */
 const ESCAPED_DOUBLE_NEWLINE_PATTERN = /\\n\\n/g;
+
+/**
+ * Pattern to match escaped single newlines in description text.
+ *
+ * Used to normalize escaped newline sequences (\\n) to actual newlines.
+ */
 const ESCAPED_SINGLE_NEWLINE_PATTERN = /\\n/g;
 
 /**

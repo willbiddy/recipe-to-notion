@@ -6,6 +6,8 @@ import { SolidPlugin } from "@dschz/bun-plugin-solid";
 import { handleBuildResult, validateBuildFiles, writeBuildOutput } from "./build-utils.js";
 
 /**
+ * Server URL for the extension.
+ *
  * Gets the server URL from environment variable or uses default.
  * Defaults to production Vercel URL if not set.
  */

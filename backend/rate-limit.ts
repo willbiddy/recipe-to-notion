@@ -120,36 +120,24 @@ export function checkRateLimit(
 }
 
 /**
- * Simple string hash function for rate limiting identifiers.
- * Not cryptographically secure - only used for rate limiting purposes.
- *
- * @param str - String to hash.
- * @returns 32-bit integer hash value.
- */
-function hashString(str: string): number {
-	let hash = 0;
-	for (let i = 0; i < str.length; i++) {
-		const char = str.charCodeAt(i);
-		hash = (hash << 5) - hash + char;
-	}
-	return hash;
-}
-
-/**
- * Extracts client identifier from request for rate limiting.
+ * Extracts rate limit identifier from request.
  *
  * Hashes the API key for per-key rate limiting if present in the Authorization header.
  * Falls back to IP address-based identification using x-forwarded-for or x-real-ip headers.
  *
  * @param request - The incoming request.
- * @returns Client identifier string (api-key-{hash} or ip-{address}).
+ * @returns Rate limit identifier string (api-key-{hash} or ip-{address}).
  */
-export function getClientIdentifier(request: Request): string {
+export function getRateLimitIdentifier(request: Request): string {
 	const authHeader = request.headers.get("Authorization");
 
 	if (authHeader?.startsWith("Bearer ")) {
 		const apiKey = authHeader.slice(7).trim();
-		const hash = hashString(apiKey);
+		let hash = 0;
+		for (let i = 0; i < apiKey.length; i++) {
+			const char = apiKey.charCodeAt(i);
+			hash = (hash << 5) - hash + char;
+		}
 		return `api-key-${Math.abs(hash)}`;
 	}
 

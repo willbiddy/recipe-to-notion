@@ -13,7 +13,7 @@ import { isValidHttpUrl } from "../shared/url-utils.js";
 import { type Config, loadConfig } from "./config.js";
 import { createConsoleLogger } from "./logger.js";
 import { processRecipe } from "./process-recipe.js";
-import { scrapeRecipeFromHtml } from "./scraper.js";
+import { ScrapeMethod, scrapeRecipeFromHtml } from "./scraper.js";
 
 const main = defineCommand({
 	meta: {
@@ -133,7 +133,8 @@ async function handleRecipe(url: string, _config: Config, htmlPath?: string): Pr
 		if (htmlPath) {
 			consola.start(`Parsing recipe from ${htmlPath}...`);
 			const recipe = await scrapeRecipeFromHtml(htmlPath, url);
-			const methodLabel = recipe.scrapeMethod === "json-ld" ? "(JSON-LD)" : "(HTML fallback)";
+			const methodLabel =
+				recipe.scrapeMethod === ScrapeMethod.JsonLd ? "(JSON-LD)" : "(HTML fallback)";
 			consola.success(`Scraped: ${recipe.name} ${methodLabel}`);
 
 			await processRecipe({ recipe, logger });

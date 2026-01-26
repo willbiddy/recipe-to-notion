@@ -1,6 +1,7 @@
 import { consola } from "consola";
 import { colors } from "consola/utils";
 import type { Recipe } from "./scraper.js";
+import { ScrapeMethod } from "./scraper.js";
 import type { RecipeTags } from "./tagger.js";
 import { HealthinessScore } from "./tagger.js";
 
@@ -64,6 +65,15 @@ export type RecipeLogger = {
  * Suitable for both CLI and server contexts where console output is desired.
  */
 export function createConsoleLogger(): RecipeLogger {
+	/**
+	 * Formats and displays a recipe summary with tags and metadata.
+	 *
+	 * Creates a formatted box display showing recipe name, author (if available),
+	 * tags, meal type, healthiness score, time, ingredient count, and step count.
+	 *
+	 * @param recipe - The recipe data to display.
+	 * @param tags - The AI-generated tags and metadata.
+	 */
 	const formatSummary = (recipe: Recipe, tags: RecipeTags): void => {
 		const formatLabel = (label: string) => colors.bold(colors.cyan(label));
 
@@ -100,7 +110,8 @@ export function createConsoleLogger(): RecipeLogger {
 			consola.start("Scraping recipe...");
 		},
 		onScraped(recipe: Recipe) {
-			const methodLabel = recipe.scrapeMethod === "json-ld" ? "(JSON-LD)" : "(HTML fallback)";
+			const methodLabel =
+				recipe.scrapeMethod === ScrapeMethod.JsonLd ? "(JSON-LD)" : "(HTML fallback)";
 			consola.success(`Scraped: ${recipe.name} ${methodLabel}`);
 		},
 		onTagging() {

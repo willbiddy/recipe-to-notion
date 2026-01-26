@@ -101,6 +101,28 @@ type SanitizedError = { message: string; notionUrl?: string; statusCode: number 
 
 const FALLBACK_MESSAGE = "An error occurred while processing the recipe. Please try again.";
 
+/**
+ * Logs error details for debugging purposes.
+ *
+ * @param error - The error to log.
+ * @param logger - Logger instance for error logging.
+ * @param prefix - Optional prefix string to include in log messages.
+ */
+function logErrorForDebugging(error: unknown, logger: ErrorLogger, prefix: string = ""): void {
+	const fullError = error instanceof Error ? error : new Error(String(error));
+	const errorDetails: Record<string, unknown> = {
+		message: fullError.message,
+		stack: fullError.stack,
+		name: fullError.name,
+	};
+
+	if (error instanceof Error && error.cause && typeof error.cause === "object") {
+		errorDetails.cause = error.cause;
+	}
+
+	logger.error(`${prefix}Recipe processing error:`, errorDetails);
+}
+
 const ERROR_HANDLERS: Array<(e: unknown) => SanitizedError | null> = [
 	(e): SanitizedError | null =>
 		e instanceof DuplicateRecipeError ? handleDuplicateError(e) : null,
@@ -131,19 +153,8 @@ export function sanitizeError(
 	logger: ErrorLogger,
 	requestId?: string,
 ): SanitizedError {
-	const fullError = error instanceof Error ? error : new Error(String(error));
-
-	const logPrefix = requestId ? `[${requestId}]` : "";
-	const errorDetails: Record<string, unknown> = {
-		message: fullError.message,
-		stack: fullError.stack,
-		name: fullError.name,
-	};
-
-	if (error instanceof Error && error.cause && typeof error.cause === "object") {
-		errorDetails.cause = error.cause;
-	}
-	logger.error(`${logPrefix} Recipe processing error:`, errorDetails);
+	const logPrefix = requestId ? `[${requestId}] ` : "";
+	logErrorForDebugging(error, logger, logPrefix);
 
 	for (const handle of ERROR_HANDLERS) {
 		const result = handle(error);
@@ -168,19 +179,7 @@ export function sanitizeError(
  */
 export function logErrorDetails(error: unknown, logger: ErrorLogger, context?: string): void {
 	const contextPrefix = context ? `[${context}] ` : "";
-
-	if (error instanceof Error) {
-		logger.error(`${contextPrefix}Error name:`, error.name);
-		logger.error(`${contextPrefix}Error message:`, error.message);
-		logger.error(`${contextPrefix}Error stack:`, error.stack);
-
-		if ("cause" in error && error.cause) {
-			logger.error(`${contextPrefix}Error cause:`, error.cause);
-		}
-	} else {
-		logger.error(`${contextPrefix}Error type:`, typeof error);
-		logger.error(`${contextPrefix}Error value:`, JSON.stringify(error, null, 2));
-	}
+	logErrorForDebugging(error, logger, contextPrefix);
 }
 
 /**

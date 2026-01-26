@@ -8,7 +8,10 @@ import { parseJsonLd } from "./parsers/json-ld.js";
 /**
  * Method used to extract recipe data from the page.
  */
-export type ScrapeMethod = "json-ld" | "html-fallback";
+export enum ScrapeMethod {
+	JsonLd = "json-ld",
+	HtmlFallback = "html-fallback",
+}
 
 /**
  * Structured recipe data extracted from a web page.
@@ -102,8 +105,6 @@ function parseRecipeFromHtml(html: string, sourceUrl: string): Recipe {
 /**
  * Fetches a recipe URL and extracts structured data.
  *
- * Sets up a timeout to prevent DoS attacks via slow responses or resource exhaustion.
- *
  * @param url - The recipe page URL to scrape.
  * @returns Parsed recipe data.
  * @throws If the page cannot be fetched or no recipe data is found.
@@ -144,15 +145,16 @@ export async function scrapeRecipe(url: string): Promise<Recipe> {
 		const html = await response.text();
 		return parseRecipeFromHtml(html, url);
 	} catch (error) {
+		if (error instanceof ScrapingError || error instanceof ParseError) {
+			throw error;
+		}
+
 		if (error instanceof Error && error.name === "AbortError") {
 			throw new ScrapingError({
 				message: `Request timeout: Failed to fetch ${url} within ${REQUEST_TIMEOUT_MS / 1000} seconds. The server may be slow or unresponsive.`,
 				originalUrl: url,
 				cause: error,
 			});
-		}
-		if (error instanceof ScrapingError || error instanceof ParseError) {
-			throw error;
 		}
 
 		throw new ScrapingError({

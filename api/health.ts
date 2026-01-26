@@ -4,10 +4,16 @@
  */
 
 import { HttpStatus } from "../backend/server-shared/constants.js";
-import { setCorsHeaders, setSecurityHeaders } from "../backend/server-shared/headers.js";
+import {
+	handleOptionsRequest,
+	setCorsHeaders,
+	setSecurityHeaders,
+} from "../backend/server-shared/headers.js";
 
 /**
  * Service name for health check responses.
+ *
+ * Used in health check endpoint responses to identify the service.
  */
 const SERVICE_NAME = "recipe-to-notion";
 
@@ -20,10 +26,7 @@ export default {
 	 */
 	fetch(req: Request): Response {
 		if (req.method === "OPTIONS") {
-			const response = new Response(null, { status: HttpStatus.NoContent });
-			setSecurityHeaders(response);
-			setCorsHeaders(response, req);
-			return response;
+			return handleOptionsRequest(req);
 		}
 
 		const response = Response.json(

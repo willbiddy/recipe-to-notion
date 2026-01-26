@@ -1,11 +1,46 @@
 import * as cheerio from "cheerio";
 import { MAX_AUTHOR_SUFFIX_LENGTH } from "../../shared/constants.js";
 
+/**
+ * Pattern to match ISO 8601 duration strings (e.g., "PT1H30M", "PT45M").
+ *
+ * Matches hours (H), minutes (M), and seconds (S) components of ISO 8601 duration format.
+ */
 const ISO_DURATION_PATTERN = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/i;
+
+/**
+ * Pattern to match "Recipe" suffix at the end of recipe names.
+ *
+ * Used to remove redundant "Recipe" suffixes from recipe titles.
+ */
 const RECIPE_SUFFIX_PATTERN = /\s+Recipe$/i;
+
+/**
+ * Pattern to match author name suffix pattern (e.g., " - Author Name").
+ *
+ * Captures the author name portion after " - " for removal from recipe titles.
+ */
 const AUTHOR_SUFFIX_PATTERN = /\s+-\s+(.+)$/m;
+
+/**
+ * Pattern to match double parentheses in ingredient strings.
+ *
+ * Used to normalize double parentheses like "((julienned))" to single parentheses.
+ */
 const DOUBLE_PARENTHESES_PATTERN = /\(\s*\(([^)]+)\)\s*\)/g;
+
+/**
+ * Pattern to match editor's note markers at the start of instruction steps.
+ *
+ * Used to identify and filter out instruction steps that are entirely editor's notes.
+ */
 const EDITOR_NOTE_START_PATTERN = /^Editor'?s?\s+note:?/i;
+
+/**
+ * Pattern to match editor's note markers at the end of instruction steps.
+ *
+ * Used to remove editor's note text that appears within instruction steps.
+ */
 const EDITOR_NOTE_END_PATTERN = /\s*Editor'?s?\s+note:?.*$/i;
 
 /**

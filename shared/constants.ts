@@ -154,6 +154,39 @@ export enum ApiErrorPattern {
 }
 
 // ============================================================================
+// Extension Enums
+// ============================================================================
+
+/**
+ * Theme options for the browser extension.
+ */
+export enum Theme {
+	Light = "light",
+	Dark = "dark",
+}
+
+/**
+ * Message types for extension communication.
+ */
+export enum ExtensionMessageType {
+	ThemeChanged = "theme-changed",
+}
+
+// ============================================================================
+// Progress Types
+// ============================================================================
+
+/**
+ * Progress event types during recipe processing.
+ */
+export enum ProgressType {
+	CheckingDuplicates = "checking_duplicates",
+	Scraping = "scraping",
+	Tagging = "tagging",
+	Saving = "saving",
+}
+
+// ============================================================================
 // Error Messages
 // ============================================================================
 

@@ -27,19 +27,17 @@ export type RecipeInfoProps = {
  * RecipeInfo component displays recipe details after successful save.
  */
 export function RecipeInfo(props: RecipeInfoProps) {
-	const infoLines = () => {
-		const lines: string[] = [];
-		if (props.data.recipe.author) {
-			lines.push(`<strong>Author:</strong> ${props.data.recipe.author}`);
-		}
-		lines.push(`<strong>Tags:</strong> ${props.data.tags.tags.join(", ")}`);
-		lines.push(`<strong>Meal type:</strong> ${props.data.tags.mealType.join(", ")}`);
-		lines.push(`<strong>Healthiness:</strong> ${props.data.tags.healthiness}/10`);
-		lines.push(`<strong>Minutes:</strong> ${props.data.tags.totalTimeMinutes}`);
-		lines.push(`<strong>Ingredients:</strong> ${props.data.recipe.ingredients.length} items`);
-		lines.push(`<strong>Steps:</strong> ${props.data.recipe.instructions.length} steps`);
-		return lines;
-	};
+	const { recipe, tags } = props.data;
+
+	const infoItems = [
+		{ label: "Author", value: recipe.author },
+		{ label: "Tags", value: tags.tags.join(", ") },
+		{ label: "Meal type", value: tags.mealType.join(", ") },
+		{ label: "Healthiness", value: `${tags.healthiness}/10` },
+		{ label: "Minutes", value: String(tags.totalTimeMinutes) },
+		{ label: "Ingredients", value: `${recipe.ingredients.length} items` },
+		{ label: "Steps", value: `${recipe.instructions.length} steps` },
+	];
 
 	return (
 		<div class="py-3 space-y-2 border-t border-gray-200">
@@ -58,11 +56,13 @@ export function RecipeInfo(props: RecipeInfoProps) {
 						d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
 					/>
 				</svg>
-				<h3 class="text-sm font-semibold text-gray-900">{props.data.recipe.name}</h3>
+				<h3 class="text-sm font-semibold text-gray-900">{recipe.name}</h3>
 			</div>
 			<div class="space-y-1 text-xs text-gray-600">
-				{infoLines().map((line) => (
-					<div innerHTML={line} />
+				{infoItems.map((item) => (
+					<div>
+						<strong>{item.label}:</strong> {item.value}
+					</div>
 				))}
 			</div>
 			<div class="pt-2">

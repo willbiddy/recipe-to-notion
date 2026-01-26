@@ -1,8 +1,11 @@
 /**
  * UrlDisplay component for showing the current page URL/title.
- * Used in the browser extension popup.
+ *
  * Displays recipe title prominently with source (author or website) as secondary text.
+ * Used in the browser extension popup.
  */
+
+import { isValidHttpUrl } from "../url-utils.js";
 
 export type UrlDisplayProps = {
 	/** The URL to display. */
@@ -14,15 +17,15 @@ export type UrlDisplayProps = {
 };
 
 /**
- * UrlDisplay component shows the recipe title with source, or falls back to URL/title.
+ * Displays the recipe title with source, or falls back to URL/title.
+ *
+ * @param props - Component props containing URL, title, and source.
  */
 export function UrlDisplay(props: UrlDisplayProps) {
-	const hasValidUrl =
-		props.url && (props.url.startsWith("http://") || props.url.startsWith("https://"));
+	const hasValidUrl = props.url && isValidHttpUrl(props.url);
 	const hasTitle = props.title?.trim();
 	const hasSource = props.source?.trim();
 
-	// Error state
 	if (!props.url || !hasValidUrl) {
 		return (
 			<div
@@ -34,7 +37,6 @@ export function UrlDisplay(props: UrlDisplayProps) {
 		);
 	}
 
-	// Recipe title with source (preferred display)
 	if (hasTitle && hasSource) {
 		return (
 			<div
@@ -59,7 +61,6 @@ export function UrlDisplay(props: UrlDisplayProps) {
 		);
 	}
 
-	// Fallback to URL
 	try {
 		const urlObj = new URL(props.url);
 		const displayUrl = `${urlObj.hostname}${urlObj.pathname}`;

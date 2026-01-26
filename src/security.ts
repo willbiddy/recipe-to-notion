@@ -3,10 +3,10 @@ import { timingSafeEqual } from "node:crypto";
 /**
  * HTTP status codes used for security-related responses.
  */
-export const SecurityHttpStatus = {
-	BadRequest: 400,
-	InternalServerError: 500,
-} as const;
+export enum SecurityHttpStatus {
+	BadRequest = 400,
+	InternalServerError = 500,
+}
 
 /**
  * Maximum request body size in bytes (10KB).

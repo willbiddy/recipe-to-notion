@@ -1,6 +1,7 @@
 import type * as cheerio from "cheerio";
 import type { Element } from "domhandler";
 import type { Recipe } from "../scraper.js";
+import { SchemaOrgRecipeUrl } from "../shared/constants.js";
 import {
 	cleanRecipeName,
 	decodeHtmlEntities,
@@ -221,14 +222,14 @@ function extractRecipeInstructions(
 }
 
 /**
- * Finds the recipe container element with itemtype="http://schema.org/Recipe" or "https://schema.org/Recipe".
+ * Finds the recipe container element with itemtype matching Schema.org Recipe URLs.
  *
  * @param $ - Cheerio instance loaded with the page HTML.
  * @returns The recipe container element, or null if not found.
  */
 function findRecipeContainer($: cheerio.CheerioAPI): cheerio.Cheerio<Element> | null {
 	const containers = $(
-		'[itemtype="http://schema.org/Recipe"], [itemtype="https://schema.org/Recipe"]',
+		`[itemtype="${SchemaOrgRecipeUrl.HTTP}"], [itemtype="${SchemaOrgRecipeUrl.HTTPS}"]`,
 	);
 
 	if (containers.length > 0) {

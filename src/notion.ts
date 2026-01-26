@@ -74,14 +74,65 @@ export type DuplicateInfo = {
 /**
  * Converts a Notion page ID to a clickable URL.
  *
- * Removes dashes if present and formats as URL.
- *
  * @param pageId - The Notion page ID (with or without dashes).
  * @returns The Notion page URL.
  */
 export function getNotionPageUrl(pageId: string): string {
 	const cleanId = pageId.replace(PAGE_ID_DASH_PATTERN, "");
 	return `https://www.notion.so/${cleanId}`;
+}
+
+type SearchPagesOptions = {
+	notion: Client;
+	databaseId: string;
+	query: string;
+	propertyMatcher: (properties: Record<string, unknown>) => boolean;
+	resultBuilder: (properties: Record<string, unknown>, pageId: string) => DuplicateInfo;
+};
+
+/**
+ * Searches for pages in a Notion database matching a query and property condition.
+ *
+ * Uses the search API to find pages, then filters by database and property matcher.
+ * This works around the API v2025-09-03 deprecation of databases.query.
+ *
+ * @param options - Search options including Notion client, database ID, query, matcher, and builder.
+ * @returns Information about the matching page if found, null otherwise.
+ */
+async function searchPagesInDatabase(options: SearchPagesOptions): Promise<DuplicateInfo | null> {
+	const { notion, databaseId, query, propertyMatcher, resultBuilder } = options;
+	const searchResults = await notion.search({
+		filter: {
+			value: "page",
+			property: "object",
+		},
+		query,
+	});
+
+	for (const result of searchResults.results) {
+		if (result.object !== "page") continue;
+
+		const page = result as { id: string; parent?: { type?: string; database_id?: string } };
+		if (page.parent?.type !== "database_id" || page.parent?.database_id !== databaseId) {
+			continue;
+		}
+
+		const fullPage = await notion.pages.retrieve({ page_id: page.id });
+		if (
+			!("properties" in fullPage) ||
+			typeof fullPage.properties !== "object" ||
+			fullPage.properties === null
+		) {
+			continue;
+		}
+
+		const properties = fullPage.properties as Record<string, unknown>;
+		if (propertyMatcher(properties)) {
+			return resultBuilder(properties, page.id);
+		}
+	}
+
+	return null;
 }
 
 /**
@@ -103,47 +154,31 @@ export async function checkForDuplicateByUrl(
 	const notion = new Client({ auth: notionApiKey });
 
 	try {
-		// Use request method to call databases.query endpoint directly
-		// The databases.query method doesn't exist in the SDK, so we call it via request
-		// Replace {database_id} in the path with the actual database ID
-		const urlQuery = (await notion.request({
-			method: "post",
-			path: `databases/${databaseId}/query`,
-			body: {
-				filter: {
-					property: PropertyNames.SOURCE,
-					url: {
-						equals: url,
-					},
-				},
+		return await searchPagesInDatabase({
+			notion,
+			databaseId,
+			query: url,
+			propertyMatcher: (properties) => {
+				if (PropertyNames.SOURCE in properties) {
+					const sourceUrl = extractUrl(properties[PropertyNames.SOURCE]);
+					return sourceUrl === url;
+				}
+				return false;
 			},
-		})) as { results: Array<{ id: string; properties?: Record<string, unknown> }> };
-
-		if (urlQuery.results.length === 0) {
-			return null;
-		}
-
-		const page = urlQuery.results[0];
-		if (!page) {
-			return null;
-		}
-		const pageId = page.id;
-		const properties = page.properties || {};
-
-		const title =
-			PropertyNames.NAME in properties
-				? extractTitle(properties[PropertyNames.NAME])
-				: "Unknown Recipe";
-
-		const foundUrl =
-			PropertyNames.SOURCE in properties ? extractUrl(properties[PropertyNames.SOURCE]) : url;
-
-		return {
-			title,
-			url: foundUrl,
-			pageId,
-			notionUrl: getNotionPageUrl(pageId),
-		};
+			resultBuilder: (properties, pageId) => {
+				const title =
+					PropertyNames.NAME in properties
+						? extractTitle(properties[PropertyNames.NAME])
+						: "Unknown Recipe";
+				const sourceUrl = extractUrl(properties[PropertyNames.SOURCE]);
+				return {
+					title,
+					url: sourceUrl,
+					pageId,
+					notionUrl: getNotionPageUrl(pageId),
+				};
+			},
+		});
 	} catch (error) {
 		if (isObject(error) && hasProperty(error, "code")) {
 			const notionError = error as { code?: string; message?: string; status?: number };
@@ -177,47 +212,29 @@ export async function checkForDuplicateByTitle(
 	const notion = new Client({ auth: notionApiKey });
 
 	try {
-		// Use request method to call databases.query endpoint directly
-		// The databases.query method doesn't exist in the SDK, so we call it via request
-		// Replace {database_id} in the path with the actual database ID
-		const titleQuery = (await notion.request({
-			method: "post",
-			path: `databases/${databaseId}/query`,
-			body: {
-				filter: {
-					property: PropertyNames.NAME,
-					title: {
-						equals: recipeName,
-					},
-				},
+		return await searchPagesInDatabase({
+			notion,
+			databaseId,
+			query: recipeName,
+			propertyMatcher: (properties) => {
+				if (PropertyNames.NAME in properties) {
+					const pageTitle = extractTitle(properties[PropertyNames.NAME]);
+					return pageTitle === recipeName;
+				}
+				return false;
 			},
-		})) as { results: Array<{ id: string; properties?: Record<string, unknown> }> };
-
-		if (titleQuery.results.length === 0) {
-			return null;
-		}
-
-		const page = titleQuery.results[0];
-
-		if (!page) {
-			return null;
-		}
-
-		const pageId = page.id;
-		const properties = page.properties || {};
-
-		const title =
-			PropertyNames.NAME in properties ? extractTitle(properties[PropertyNames.NAME]) : recipeName;
-
-		const url =
-			PropertyNames.SOURCE in properties ? extractUrl(properties[PropertyNames.SOURCE]) : "";
-
-		return {
-			title,
-			url,
-			pageId,
-			notionUrl: getNotionPageUrl(pageId),
-		};
+			resultBuilder: (properties, pageId) => {
+				const pageTitle = extractTitle(properties[PropertyNames.NAME]);
+				const url =
+					PropertyNames.SOURCE in properties ? extractUrl(properties[PropertyNames.SOURCE]) : "";
+				return {
+					title: pageTitle,
+					url,
+					pageId,
+					notionUrl: getNotionPageUrl(pageId),
+				};
+			},
+		});
 	} catch (error) {
 		if (isObject(error) && hasProperty(error, "code")) {
 			const notionError = error as { code?: string; message?: string; status?: number };
@@ -254,20 +271,13 @@ async function checkForDuplicate({
 	databaseId,
 	skipUrlCheck = false,
 }: CheckForDuplicateOptions): Promise<DuplicateInfo | null> {
-	/**
-	 * First check for URL duplicates (unless already checked).
-	 */
 	if (!skipUrlCheck) {
 		const urlDuplicate = await checkForDuplicateByUrl(recipe.sourceUrl, notionApiKey, databaseId);
-
 		if (urlDuplicate) {
 			return urlDuplicate;
 		}
 	}
 
-	/**
-	 * Query for recipes with the same title.
-	 */
 	return await checkForDuplicateByTitle(recipe.name, notionApiKey, databaseId);
 }
 
@@ -357,6 +367,27 @@ export async function createRecipePage({
 		}
 	}
 
+	const properties = buildPageProperties(recipe, tags);
+	const children = buildPageBody(recipe, tags);
+	const pageParams = buildPageParams({
+		databaseId,
+		properties,
+		children,
+		imageUrl: recipe.imageUrl,
+	});
+
+	const page = await notion.pages.create(pageParams as Parameters<typeof notion.pages.create>[0]);
+	return page.id;
+}
+
+/**
+ * Builds the page properties for a Notion recipe page.
+ *
+ * @param recipe - The recipe data.
+ * @param tags - AI-generated tags.
+ * @returns Record of Notion page properties.
+ */
+function buildPageProperties(recipe: Recipe, tags: RecipeTags): Record<string, unknown> {
 	const properties: Record<string, unknown> = {
 		[PropertyNames.NAME]: {
 			title: [{ text: { content: recipe.name } }],
@@ -373,6 +404,9 @@ export async function createRecipePage({
 		[PropertyNames.HEALTHINESS]: {
 			number: tags.healthiness,
 		},
+		[PropertyNames.MINUTES]: {
+			number: tags.totalTimeMinutes,
+		},
 	};
 
 	if (recipe.author) {
@@ -381,25 +415,41 @@ export async function createRecipePage({
 		};
 	}
 
-	properties[PropertyNames.MINUTES] = { number: tags.totalTimeMinutes };
+	return properties;
+}
 
-	const children = buildPageBody(recipe, tags);
+/**
+ * Options for building page parameters.
+ */
+type BuildPageParamsOptions = {
+	databaseId: string;
+	properties: Record<string, unknown>;
+	children: unknown[];
+	imageUrl?: string | null;
+};
 
+/**
+ * Builds the page parameters for creating a Notion page.
+ *
+ * @param options - Options for building page parameters.
+ * @returns Record of Notion page creation parameters.
+ */
+function buildPageParams(options: BuildPageParamsOptions): Record<string, unknown> {
+	const { databaseId, properties, children, imageUrl } = options;
 	const pageParams: Record<string, unknown> = {
 		parent: { database_id: databaseId },
 		properties,
 		children,
 	};
 
-	if (recipe.imageUrl) {
+	if (imageUrl) {
 		pageParams.cover = {
 			type: "external",
-			external: { url: recipe.imageUrl },
+			external: { url: imageUrl },
 		};
 	}
 
-	const page = await notion.pages.create(pageParams as Parameters<typeof notion.pages.create>[0]);
-	return page.id;
+	return pageParams;
 }
 
 /**

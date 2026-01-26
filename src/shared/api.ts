@@ -173,9 +173,10 @@ export async function saveRecipe({
 					}
 
 					let buffer = "";
+					const streamReader = reader;
 
-					const readChunk = (): Promise<void> => {
-						return reader.read().then(({ done, value }) => {
+					function readChunk(): Promise<void> {
+						return streamReader.read().then(({ done, value }) => {
 							if (done) {
 								resolve({
 									success: false,
@@ -191,9 +192,12 @@ export async function saveRecipe({
 							for (const line of lines) {
 								if (line.startsWith(SSE_DATA_PREFIX)) {
 									try {
-										const data = JSON.parse(
-											line.slice(SSE_DATA_PREFIX_LENGTH),
-										) as ServerProgressEvent;
+										const parsed = JSON.parse(line.slice(SSE_DATA_PREFIX_LENGTH));
+										const data = validateServerProgressEvent(parsed);
+
+										if (!data) {
+											continue;
+										}
 
 										if (data.type === ServerProgressEventType.Progress) {
 											callbacks.onProgress(data.message);
@@ -201,8 +205,18 @@ export async function saveRecipe({
 											callbacks.onComplete({
 												pageId: data.pageId,
 												notionUrl: data.notionUrl,
-												recipe: data.recipe,
-												tags: data.tags,
+												recipe: {
+													name: data.recipe.name,
+													author: data.recipe.author,
+													ingredients: data.recipe.ingredients,
+													instructions: data.recipe.instructions,
+												},
+												tags: {
+													tags: data.tags.tags,
+													mealType: data.tags.mealType,
+													healthiness: data.tags.healthiness,
+													totalTimeMinutes: data.tags.totalTimeMinutes,
+												},
 											});
 											resolve({
 												success: true,
@@ -227,7 +241,7 @@ export async function saveRecipe({
 
 							return readChunk();
 						});
-					};
+					}
 
 					readChunk().catch((error) => {
 						callbacks.onError(error instanceof Error ? error.message : String(error));
@@ -247,6 +261,92 @@ export async function saveRecipe({
 			reject(error);
 		}
 	});
+}
+
+/**
+ * Validates that a parsed JSON object is a valid ServerProgressEvent.
+ *
+ * @param data - The parsed JSON data to validate.
+ * @returns The validated ServerProgressEvent, or null if invalid.
+ */
+function validateServerProgressEvent(data: unknown): ServerProgressEvent | null {
+	if (!data || typeof data !== "object" || data === null) {
+		return null;
+	}
+
+	const obj = data as Record<string, unknown>;
+
+	if (!("type" in obj) || typeof obj.type !== "string") {
+		return null;
+	}
+
+	if (obj.type === ServerProgressEventType.Progress) {
+		if (typeof obj.message === "string" && "progressType" in obj) {
+			return {
+				type: ServerProgressEventType.Progress,
+				message: obj.message,
+				progressType: obj.progressType as ProgressType,
+			};
+		}
+		return null;
+	}
+
+	if (obj.type === ServerProgressEventType.Complete) {
+		if (
+			typeof obj.pageId === "string" &&
+			typeof obj.notionUrl === "string" &&
+			obj.recipe &&
+			typeof obj.recipe === "object" &&
+			obj.tags &&
+			typeof obj.tags === "object" &&
+			"name" in obj.recipe &&
+			"ingredients" in obj.recipe &&
+			"instructions" in obj.recipe &&
+			"tags" in obj.tags &&
+			"mealType" in obj.tags &&
+			"healthiness" in obj.tags &&
+			"totalTimeMinutes" in obj.tags
+		) {
+			return {
+				type: ServerProgressEventType.Complete,
+				success: true,
+				pageId: obj.pageId,
+				notionUrl: obj.notionUrl,
+				recipe: {
+					name: String(obj.recipe.name),
+					author: "author" in obj.recipe && obj.recipe.author ? String(obj.recipe.author) : null,
+					ingredients: Array.isArray(obj.recipe.ingredients)
+						? obj.recipe.ingredients.map(String)
+						: [],
+					instructions: Array.isArray(obj.recipe.instructions)
+						? obj.recipe.instructions.map(String)
+						: [],
+				},
+				tags: {
+					tags: Array.isArray(obj.tags.tags) ? obj.tags.tags.map(String) : [],
+					mealType: Array.isArray(obj.tags.mealType) ? obj.tags.mealType.map(String) : [],
+					healthiness: typeof obj.tags.healthiness === "number" ? obj.tags.healthiness : 0,
+					totalTimeMinutes:
+						typeof obj.tags.totalTimeMinutes === "number" ? obj.tags.totalTimeMinutes : 0,
+				},
+			};
+		}
+		return null;
+	}
+
+	if (obj.type === ServerProgressEventType.Error) {
+		if (typeof obj.error === "string") {
+			return {
+				type: ServerProgressEventType.Error,
+				success: false,
+				error: obj.error,
+				notionUrl: typeof obj.notionUrl === "string" ? obj.notionUrl : undefined,
+			};
+		}
+		return null;
+	}
+
+	return null;
 }
 
 /**

@@ -49,10 +49,9 @@ Chicken, Beef, Pork, Fish, Shrimp, Seafood, Salmon, Turkey, Tofu, Eggs, Chickpea
 - 1-4 tags total; strongly prefer tags from the lists above
 - Only invent a new tag if the dish is truly unique and no existing tag fits
 - Skip cuisine if the dish is generic (e.g., plain grilled chicken)
-- Use broad categories (e.g., "Nuts" not "Walnuts", "Fruit" not "Blueberries")
+- Use broad categories (e.g., "Nuts" not "Walnuts", "Fruit" not "Blueberries", "Cheese" not "Parmesean")
 - NEVER use meal types as tags (no "Breakfast", "Lunch", "Dinner", "Dessert")
-- For desserts, use ingredient-based tags (e.g., "Chocolate", "Fruit") or leave tags minimal
-
+<!--  -->
 ### mealType (array of 1-2 strings)
 
 Choose from: Breakfast, Lunch, Dinner, Snack, Dessert, Appetizer, Side Dish, Component

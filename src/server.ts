@@ -77,10 +77,10 @@ function handleRecipeStream(_request: Request, url: string, requestId?: string):
 		async start(controller) {
 			const encoder = new TextEncoder();
 
-			const sendEvent = (data: object) => {
+			function sendEvent(data: object) {
 				const message = `data: ${JSON.stringify(data)}\n\n`;
 				controller.enqueue(encoder.encode(message));
-			};
+			}
 
 			try {
 				const logger = createCliLogger();

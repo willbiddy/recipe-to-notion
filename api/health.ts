@@ -6,10 +6,10 @@
 /**
  * HTTP status codes used in the health endpoint.
  */
-const HttpStatus = {
-	OK: 200,
-	NoContent: 204,
-} as const;
+enum HttpStatus {
+	OK = 200,
+	NoContent = 204,
+}
 
 /**
  * Service name for health check responses.

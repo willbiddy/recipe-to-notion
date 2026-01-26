@@ -5,7 +5,8 @@
 
 import { consola } from "consola";
 import { type RecipeResponse, ServerProgressEventType } from "../../shared/api/types.js";
-import { loadConfig } from "../config.js";
+import { type Config, loadConfig } from "../config.js";
+import { ValidationError } from "../errors.js";
 import { createConsoleLogger } from "../logger.js";
 import { getNotionPageUrl } from "../notion/client.js";
 import { type ProgressEvent, processRecipe } from "../process-recipe.js";
@@ -180,7 +181,21 @@ export function handleRecipeStream(options: HandleRecipeStreamOptions): Response
 export async function handleRecipeRequest(options: RecipeHandlerOptions): Promise<Response> {
 	const { request, requestId, createErrorResponse, includeFullDataInStream = false } = options;
 
-	const config = loadConfig();
+	let config: Config;
+	try {
+		config = loadConfig();
+	} catch (error) {
+		consola.error(`[${requestId}] Configuration error:`, error);
+		if (error instanceof ValidationError) {
+			const response = createErrorResponse(
+				"Server configuration error: Missing or invalid environment variables. Please check your Vercel environment variables.",
+				HttpStatus.InternalServerError,
+			);
+			setCorsHeaders(response, request);
+			return response;
+		}
+		throw error; // Re-throw if it's not a ValidationError
+	}
 
 	const clientId = getRateLimitIdentifier(request);
 	const rateLimit = checkRateLimit(clientId);

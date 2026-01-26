@@ -1,0 +1,6 @@
+# Bun configuration file
+# Configures Bun to use Solid.js JSX transform
+
+jsx = "solid"
+jsxFactory = "solid-js"
+preload = ["./bunPreload.ts"]

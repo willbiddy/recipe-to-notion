@@ -2,10 +2,10 @@
 module.exports = {
 	content: [
 		"./extension/popup.html",
-		"./extension/popup.ts",
+		"./extension/popup.tsx",
 		"./extension/popup.js",
 		"./public/index.html",
-		"./public/web.ts",
+		"./public/web.tsx",
 		"./public/web.js",
 	],
 	theme: {

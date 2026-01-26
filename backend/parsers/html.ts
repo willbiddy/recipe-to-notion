@@ -66,7 +66,6 @@ export function parseHtml($: cheerio.CheerioAPI, sourceUrl: string): Recipe | nu
 	const container = findRecipeContainer($);
 
 	const name = extractRecipeName($, container);
-
 	if (!name) return null;
 
 	const author = extractRecipeAuthor($, container);
@@ -90,14 +89,12 @@ export function parseHtml($: cheerio.CheerioAPI, sourceUrl: string): Recipe | nu
 		) || null;
 
 	const totalTimeMinutes = extractMicrodataTime($, container);
-
 	const servings = extractMicrodataProperty({ $, container, itemprop: "recipeYield" }) || null;
-
 	const cuisine = extractMicrodataProperty({ $, container, itemprop: "recipeCuisine" }) || null;
-
 	const category = extractMicrodataProperty({ $, container, itemprop: "recipeCategory" }) || null;
 
 	const ingredients = extractMicrodataTextArray($, container, "recipeIngredient");
+
 	let finalIngredients =
 		ingredients.length > 0
 			? ingredients

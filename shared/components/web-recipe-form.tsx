@@ -104,23 +104,23 @@ export function WebRecipeForm() {
 		}
 	}
 
-	const handleApiSecretSaved = () => {
+	function handleApiSecretSaved() {
 		createHandleApiSecretSaved({
 			setShowApiPrompt,
 			setPendingSave,
 			pendingSave,
 			performSave,
 		});
-	};
+	}
 
-	const handleUpdateApiKey = () => {
+	function handleUpdateApiKey() {
 		createHandleUpdateApiKey({
 			setShowApiPrompt,
 			setPendingSave,
 			pendingSave,
 			performSave,
 		});
-	};
+	}
 
 	useQueryParams({
 		storage,

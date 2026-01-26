@@ -80,14 +80,14 @@ export function handleRecipeStream(options: HandleRecipeStreamOptions): Response
 		async start(controller) {
 			const encoder = new TextEncoder();
 
-			const sendEvent = (data: object) => {
+			function sendEvent(data: object) {
 				try {
 					const message = `data: ${JSON.stringify(data)}\n\n`;
 					controller.enqueue(encoder.encode(message));
 				} catch (e) {
 					consola.error("Error sending SSE event:", e);
 				}
-			};
+			}
 
 			try {
 				const logger = createConsoleLogger();
@@ -105,6 +105,7 @@ export function handleRecipeStream(options: HandleRecipeStreamOptions): Response
 				});
 
 				const notionUrl = getNotionPageUrl(result.pageId);
+
 				const completeEvent: Record<string, unknown> = {
 					type: ServerProgressEventType.Complete,
 					success: true,
@@ -130,6 +131,7 @@ export function handleRecipeStream(options: HandleRecipeStreamOptions): Response
 				sendEvent(completeEvent);
 			} catch (error) {
 				consola.error("Recipe processing error in stream:", error);
+
 				const { logErrorDetails } = await import("./errors.js");
 				logErrorDetails(error, { error: consola.error }, requestId);
 

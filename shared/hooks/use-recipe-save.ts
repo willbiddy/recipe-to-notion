@@ -189,9 +189,9 @@ export function useRecipeSave(options: UseRecipeSaveOptions): UseRecipeSaveResul
 	}
 
 	function handleUpdateApiKey(handlers: ApiSecretHandlers) {
-		const runSave = () => {
+		function runSave() {
 			void handlers.performSave();
-		};
+		}
 		handlers.setPendingSave(() => runSave);
 		handlers.setShowApiPrompt(true);
 	}

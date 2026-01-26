@@ -178,9 +178,6 @@ export function useRecipeSave(options: UseRecipeSaveOptions): UseRecipeSaveResul
 		}
 	}
 
-	/**
-	 * Handles when API secret is saved in the prompt.
-	 */
 	function handleApiSecretSaved(handlers: ApiSecretHandlers) {
 		handlers.setShowApiPrompt(false);
 		setIsInvalidApiKey(false);
@@ -191,9 +188,6 @@ export function useRecipeSave(options: UseRecipeSaveOptions): UseRecipeSaveResul
 		}
 	}
 
-	/**
-	 * Handles updating the API key when it's invalid.
-	 */
 	function handleUpdateApiKey(handlers: ApiSecretHandlers) {
 		const runSave = () => {
 			void handlers.performSave();

@@ -40,7 +40,6 @@ async function updateIcon(theme: "light" | "dark") {
 
 /**
  * Gets the current theme preference from storage, defaulting to light.
- * The popup detects the system theme and stores it, so we just read from storage.
  */
 async function getThemePreference(): Promise<"light" | "dark"> {
 	const result = await chrome.storage.local.get("theme");
@@ -49,7 +48,6 @@ async function getThemePreference(): Promise<"light" | "dark"> {
 
 /**
  * Initializes the extension icon based on stored theme preference.
- * The popup handles system theme detection and stores it in chrome.storage.
  */
 async function initializeIcon() {
 	const theme = await getThemePreference();
@@ -110,7 +108,7 @@ if (chrome.contextMenus) {
 			try {
 				await chrome.action.openPopup();
 			} catch {
-				// Popup cannot be opened programmatically
+				// Popup unavailable
 			}
 		}
 	});

@@ -10,6 +10,9 @@ const STORAGE_KEY = "apiKey";
 
 /**
  * Storage interface for API key operations.
+ *
+ * Methods are async to support both synchronous (localStorage) and asynchronous
+ * (chrome.storage.local) storage backends through a unified interface.
  */
 export type StorageAdapter = {
 	getApiKey(): Promise<string | null>;
@@ -18,6 +21,10 @@ export type StorageAdapter = {
 
 /**
  * localStorage adapter for web interface.
+ *
+ * Methods are async to match the StorageAdapter interface, even though
+ * localStorage operations are synchronous. This allows a unified interface
+ * for both web (localStorage) and extension (chrome.storage.local) contexts.
  */
 export class LocalStorageAdapter implements StorageAdapter {
 	// biome-ignore lint/suspicious/useAwait: Methods are async to match StorageAdapter interface, even though localStorage is synchronous

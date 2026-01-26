@@ -64,11 +64,11 @@ function extractRecipeDataFromJsonLd(): { title: string | null; author: string |
 					};
 				}
 			} catch {
-				/* Skip malformed JSON-LD block */
+				// Skip malformed JSON-LD block
 			}
 		}
 	} catch {
-		/* Failed to extract recipe data */
+		// Failed to extract recipe data
 	}
 	return { title: null, author: null };
 }

@@ -50,7 +50,7 @@ async function getCurrentTab(): Promise<{
 			recipeTitle = response?.title || null;
 			author = response?.author || null;
 		} catch {
-			// Content script not available
+			// Content script unavailable
 		}
 	}
 
@@ -113,9 +113,6 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 		},
 	});
 
-	/**
-	 * Handles the save button click.
-	 */
 	async function handleSave() {
 		const apiKey = await storage.getApiKey();
 		if (!apiKey) {

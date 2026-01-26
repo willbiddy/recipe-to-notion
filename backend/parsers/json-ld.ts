@@ -34,7 +34,7 @@ export function parseJsonLd($: cheerio.CheerioAPI, sourceUrl: string): Recipe | 
 				return extractFromJsonLd(recipeData, sourceUrl);
 			}
 		} catch {
-			/* Skip malformed JSON-LD block */
+			// Skip malformed JSON-LD block
 		}
 	}
 	return null;

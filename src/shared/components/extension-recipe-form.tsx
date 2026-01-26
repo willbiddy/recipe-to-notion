@@ -98,11 +98,11 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 		setProgress,
 		onSuccess: (result) => {
 			setStatus({ message: "Recipe saved successfully!", type: StatusType.Success });
-			const id1 = setTimeout(() => {
+			const id1 = window.setTimeout(() => {
 				setStatus({ message: "Opening...", type: StatusType.Info });
 			}, NOTION_OPEN_DELAY_MS);
 			timeoutIds.push(id1);
-			const id2 = setTimeout(() => {
+			const id2 = window.setTimeout(() => {
 				if (result.notionUrl) {
 					chrome.tabs.create({ url: result.notionUrl });
 				}
@@ -111,7 +111,7 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 		},
 		onDuplicate: (notionUrl) => {
 			setStatus({ message: "This recipe already exists. Opening...", type: StatusType.Info });
-			const id = setTimeout(() => {
+			const id = window.setTimeout(() => {
 				chrome.tabs.create({ url: notionUrl });
 			}, NOTION_OPEN_DELAY_MS);
 			timeoutIds.push(id);
@@ -133,19 +133,23 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 		await performSave();
 	}
 
-	const handleApiSecretSaved = createHandleApiSecretSaved({
-		setShowApiPrompt,
-		setPendingSave,
-		pendingSave,
-		performSave,
-	});
+	const handleApiSecretSaved = () => {
+		createHandleApiSecretSaved({
+			setShowApiPrompt,
+			setPendingSave,
+			pendingSave,
+			performSave,
+		});
+	};
 
-	const handleUpdateApiKey = createHandleUpdateApiKey({
-		setShowApiPrompt,
-		setPendingSave,
-		pendingSave,
-		performSave,
-	});
+	const handleUpdateApiKey = () => {
+		createHandleUpdateApiKey({
+			setShowApiPrompt,
+			setPendingSave,
+			pendingSave,
+			performSave,
+		});
+	};
 
 	onMount(async () => {
 		const { url, title, recipeTitle, author, websiteName } = await getCurrentTab();

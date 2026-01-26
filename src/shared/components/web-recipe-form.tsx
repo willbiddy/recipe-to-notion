@@ -68,7 +68,7 @@ export function WebRecipeForm() {
 		setLoading,
 		setProgress,
 		onSuccess: () => {
-			const id = setTimeout(() => {
+			const id = window.setTimeout(() => {
 				setUrl("");
 			}, CLEAR_URL_INPUT_DELAY_MS);
 			timeoutIds.push(id);
@@ -124,19 +124,23 @@ export function WebRecipeForm() {
 		}
 	}
 
-	const handleApiSecretSaved = createHandleApiSecretSaved({
-		setShowApiPrompt,
-		setPendingSave,
-		pendingSave,
-		performSave,
-	});
+	const handleApiSecretSaved = () => {
+		createHandleApiSecretSaved({
+			setShowApiPrompt,
+			setPendingSave,
+			pendingSave,
+			performSave,
+		});
+	};
 
-	const handleUpdateApiKey = createHandleUpdateApiKey({
-		setShowApiPrompt,
-		setPendingSave,
-		pendingSave,
-		performSave,
-	});
+	const handleUpdateApiKey = () => {
+		createHandleUpdateApiKey({
+			setShowApiPrompt,
+			setPendingSave,
+			pendingSave,
+			performSave,
+		});
+	};
 
 	/**
 	 * Handles query parameters for auto-submit functionality.
@@ -151,7 +155,7 @@ export function WebRecipeForm() {
 				setUrl(urlParam);
 				const key = await storage.getApiKey();
 				if (key) {
-					const id = setTimeout(() => {
+					const id = window.setTimeout(() => {
 						handleSave();
 					}, AUTO_SUBMIT_DELAY_MS);
 					timeoutIds.push(id);

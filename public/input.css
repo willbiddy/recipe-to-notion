@@ -62,7 +62,7 @@
 @layer components {
 	/* Button Components */
 	.btn-primary {
-		@apply w-full min-h-[44px] px-5 py-4 bg-gradient-to-r from-primary-500 via-accent-500 to-primary-600 text-white border-none rounded-2xl text-base font-semibold cursor-pointer transition-all duration-200 shadow-button hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:bg-gray-400 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-sm disabled:hover:scale-100 flex items-center justify-center gap-2 focus:outline-none focus:ring-4 focus:ring-primary-500/50 focus:ring-offset-2;
+		@apply w-full min-h-[56px] px-6 py-5 bg-gradient-to-r from-primary-500 via-accent-500 to-primary-600 text-white border-none rounded-2xl text-base sm:text-lg font-semibold cursor-pointer transition-all duration-200 shadow-button-lg hover:shadow-button-xl hover:scale-[1.02] active:scale-[0.98] disabled:bg-gray-400 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-sm disabled:hover:scale-100 flex items-center justify-center gap-2 focus:outline-none focus:ring-4 focus:ring-primary-500/50 focus:ring-offset-2;
 	}
 
 	.btn-primary-sm {
@@ -75,7 +75,7 @@
 
 	/* Card Components */
 	.card {
-		@apply bg-white/90 backdrop-blur-sm rounded-3xl shadow-card border-2 border-primary-100/50 p-6 sm:p-8 space-y-6 flex flex-col;
+		@apply bg-white/95 backdrop-blur-sm rounded-3xl shadow-card-lg border-2 border-primary-100/50 p-6 sm:p-8 space-y-6 flex flex-col;
 	}
 
 	.card-compact {
@@ -97,7 +97,7 @@
 
 	/* Input Components */
 	.input-field {
-		@apply w-full px-4 py-3.5 sm:py-4 pl-11 pr-11 text-base text-gray-900 border-2 border-primary-300 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary-500/50 focus:border-primary-500 transition-all duration-200 bg-white placeholder:text-primary-600/70 invalid:border-error-300 invalid:focus:ring-error-500/50 invalid:focus:border-error-500;
+		@apply w-full px-5 py-5 sm:py-6 pl-12 pr-12 text-base sm:text-lg text-gray-900 border-2 border-primary-300 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary-500/50 focus:border-primary-500 transition-all duration-200 bg-white placeholder:text-primary-600/70 invalid:border-error-300 invalid:focus:ring-error-500/50 invalid:focus:border-error-500 shadow-sm focus:shadow-md focus:shadow-primary-500/20;
 	}
 
 	.input-field-settings {
@@ -106,10 +106,10 @@
 
 	/* Background Gradient */
 	.gradient-bg {
-		@apply bg-gradient-to-br from-primary-50 via-accent-50 to-yellow-50;
+		@apply bg-gradient-to-br from-slate-50 via-primary-50/80 to-accent-50/60;
 		background-image:
-			radial-gradient(circle at 20% 50%, rgba(251, 146, 60, 0.1) 0%, transparent 50%),
-			radial-gradient(circle at 80% 80%, rgba(245, 158, 11, 0.1) 0%, transparent 50%);
+			radial-gradient(circle at 20% 50%, rgba(251, 146, 60, 0.08) 0%, transparent 50%),
+			radial-gradient(circle at 80% 80%, rgba(245, 158, 11, 0.08) 0%, transparent 50%);
 	}
 }
 

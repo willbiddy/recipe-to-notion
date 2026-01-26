@@ -1,14 +1,4 @@
 /**
- * Custom error classes for type-safe error handling throughout the application.
- *
- * Using custom error classes provides:
- * - Type-safe instanceof checks instead of fragile string matching
- * - Structured metadata (status codes, URLs, etc.) attached to errors
- * - Better error organization and maintainability
- * - Easier extension with new error types
- */
-
-/**
  * Base error class for all application errors.
  *
  * Provides a consistent structure for error handling. Maintains proper stack

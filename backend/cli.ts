@@ -10,7 +10,7 @@ import { defineCommand, runMain } from "citty";
 import { consola } from "consola";
 import { colors } from "consola/utils";
 import { isValidHttpUrl } from "../shared/url-utils.js";
-import { type Config, loadConfig } from "./config.js";
+import { loadConfig } from "./config.js";
 import { createConsoleLogger } from "./logger.js";
 import { processRecipe } from "./process-recipe.js";
 import { ScrapeMethod, scrapeRecipeFromHtml } from "./scraper.js";
@@ -36,23 +36,22 @@ const main = defineCommand({
 			process.exit(1);
 		}
 
-		let config: Config;
+		if (args.html) {
+			if (urls.length > 1) {
+				consola.warn("--html option only supports one URL at a time");
+			}
+			const success = await handleRecipe(firstUrl, args.html);
+			process.exit(success ? 0 : 1);
+		}
+
 		try {
-			config = loadConfig();
+			loadConfig();
 		} catch (err) {
 			consola.fatal(err instanceof Error ? err.message : String(err));
 			process.exit(1);
 		}
 
-		if (args.html) {
-			if (urls.length > 1) {
-				consola.warn("--html option only supports one URL at a time");
-			}
-			const success = await handleRecipe(firstUrl, config, args.html);
-			process.exit(success ? 0 : 1);
-		}
-
-		const results = await processUrlsSequentially(urls, config);
+		const results = await processUrlsSequentially(urls);
 		printSummary(results);
 
 		process.exit(results.failed > 0 ? 1 : 0);
@@ -80,12 +79,10 @@ function parseUrls(args: string[] | undefined): string[] {
  * This ensures clean, non-interspersed output.
  *
  * @param urls - Array of recipe URLs to process.
- * @param config - Application configuration with API keys.
  * @returns Object with counts of succeeded and failed recipes.
  */
 async function processUrlsSequentially(
 	urls: string[],
-	config: Config,
 ): Promise<{ succeeded: number; failed: number }> {
 	if (urls.length > 1) {
 		consola.ready(`Processing ${urls.length} recipes sequentially`);
@@ -101,7 +98,7 @@ async function processUrlsSequentially(
 			consola.info(`${colors.cyan(`[${i + 1}/${urls.length}]`)} ${colors.dim(url)}`);
 		}
 
-		const success = await handleRecipe(url, config);
+		const success = await handleRecipe(url);
 		if (success) {
 			succeeded++;
 		} else {
@@ -122,11 +119,10 @@ async function processUrlsSequentially(
  * Uses the shared processRecipe pipeline for both normal URLs and HTML file mode.
  *
  * @param url - The recipe URL to process.
- * @param config - Application configuration with API keys.
  * @param htmlPath - Optional path to saved HTML file (bypasses fetching).
  * @returns True if the recipe was saved successfully, false otherwise.
  */
-async function handleRecipe(url: string, _config: Config, htmlPath?: string): Promise<boolean> {
+async function handleRecipe(url: string, htmlPath?: string): Promise<boolean> {
 	try {
 		const logger = createConsoleLogger();
 

@@ -102,13 +102,17 @@ type SanitizedError = { message: string; notionUrl?: string; statusCode: number 
 const FALLBACK_MESSAGE = "An error occurred while processing the recipe. Please try again.";
 
 /**
- * Logs error details for debugging purposes.
+ * Logs detailed error information for debugging.
  *
- * @param error - The error to log.
+ * Provides comprehensive error logging with stack traces, error causes, and type information.
+ * Useful for server-side debugging while keeping client messages sanitized.
+ *
+ * @param error - The error that occurred.
  * @param logger - Logger instance for error logging.
- * @param prefix - Optional prefix string to include in log messages.
+ * @param context - Optional context string to include in log messages (e.g., request ID).
  */
-function logErrorForDebugging(error: unknown, logger: ErrorLogger, prefix: string = ""): void {
+export function logErrorDetails(error: unknown, logger: ErrorLogger, context?: string): void {
+	const contextPrefix = context ? `[${context}] ` : "";
 	const fullError = error instanceof Error ? error : new Error(String(error));
 	const errorDetails: Record<string, unknown> = {
 		message: fullError.message,
@@ -120,7 +124,7 @@ function logErrorForDebugging(error: unknown, logger: ErrorLogger, prefix: strin
 		errorDetails.cause = error.cause;
 	}
 
-	logger.error(`${prefix}Recipe processing error:`, errorDetails);
+	logger.error(`${contextPrefix}Recipe processing error:`, errorDetails);
 }
 
 const ERROR_HANDLERS: Array<(e: unknown) => SanitizedError | null> = [
@@ -153,8 +157,7 @@ export function sanitizeError(
 	logger: ErrorLogger,
 	requestId?: string,
 ): SanitizedError {
-	const logPrefix = requestId ? `[${requestId}] ` : "";
-	logErrorForDebugging(error, logger, logPrefix);
+	logErrorDetails(error, logger, requestId);
 
 	for (const handle of ERROR_HANDLERS) {
 		const result = handle(error);
@@ -165,21 +168,6 @@ export function sanitizeError(
 		statusCode: HttpStatus.InternalServerError,
 		message: FALLBACK_MESSAGE,
 	};
-}
-
-/**
- * Logs detailed error information for debugging.
- *
- * Provides comprehensive error logging with stack traces, error causes, and type information.
- * Useful for server-side debugging while keeping client messages sanitized.
- *
- * @param error - The error that occurred.
- * @param logger - Logger instance for error logging.
- * @param context - Optional context string to include in log messages.
- */
-export function logErrorDetails(error: unknown, logger: ErrorLogger, context?: string): void {
-	const contextPrefix = context ? `[${context}] ` : "";
-	logErrorForDebugging(error, logger, contextPrefix);
 }
 
 /**

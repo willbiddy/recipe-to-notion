@@ -213,19 +213,15 @@ export function validateActualBodySize(
 	maxSize: number = MAX_REQUEST_BODY_SIZE,
 	createErrorResponse: (error: string, status: number) => Response,
 ): Response | null {
-	try {
-		const bodyString = JSON.stringify(body);
-		const bodySize = new TextEncoder().encode(bodyString).length;
+	const bodyString = JSON.stringify(body);
+	const bodySize = new TextEncoder().encode(bodyString).length;
 
-		if (bodySize > maxSize) {
-			return createErrorResponse(
-				`Request body too large. Maximum size is ${maxSize / 1024}KB`,
-				SecurityHttpStatus.BadRequest,
-			);
-		}
-
-		return null;
-	} catch {
-		return null;
+	if (bodySize > maxSize) {
+		return createErrorResponse(
+			`Request body too large. Maximum size is ${maxSize / 1024}KB`,
+			SecurityHttpStatus.BadRequest,
+		);
 	}
+
+	return null;
 }

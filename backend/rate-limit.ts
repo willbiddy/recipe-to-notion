@@ -8,6 +8,8 @@
  * distributed solution.
  */
 
+import { CLEANUP_INTERVAL_MS } from "../shared/constants.js";
+
 /**
  * Rate limit configuration.
  */
@@ -51,8 +53,6 @@ type RateLimitEntry = {
  */
 const rateLimitStore = new Map<string, RateLimitEntry>();
 
-import { CLEANUP_INTERVAL_MS } from "../shared/constants.js";
-
 /**
  * Cleans up expired rate limit entries to prevent memory leaks.
  */
@@ -65,9 +65,7 @@ function cleanupExpiredEntries(): void {
 	}
 }
 
-if (typeof setInterval !== "undefined") {
-	setInterval(cleanupExpiredEntries, CLEANUP_INTERVAL_MS);
-}
+setInterval(cleanupExpiredEntries, CLEANUP_INTERVAL_MS);
 
 /**
  * Checks if a request should be rate limited.

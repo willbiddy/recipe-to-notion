@@ -10,13 +10,6 @@ import {
 	setSecurityHeaders,
 } from "../backend/server-shared/headers.js";
 
-/**
- * Service name for health check responses.
- *
- * Used in health check endpoint responses to identify the service.
- */
-const SERVICE_NAME = "recipe-to-notion";
-
 export default {
 	/**
 	 * Vercel serverless function handler.
@@ -30,7 +23,7 @@ export default {
 		}
 
 		const response = Response.json(
-			{ status: "ok", service: SERVICE_NAME },
+			{ status: "ok", service: "recipe-to-notion" },
 			{
 				status: HttpStatus.OK,
 			},

@@ -75,10 +75,6 @@ export type RecipeTags = {
 	ingredients: CategorizedIngredient[];
 };
 
-// ============================================================================
-// Configuration Constants
-// ============================================================================
-
 /**
  * Labels used when formatting recipe data into a user prompt for Claude.
  */
@@ -128,7 +124,7 @@ function getClaudeModel(): string {
 	}
 }
 
-const ACTIVE_MODEL = getClaudeModel();
+const CLAUDE_MODEL = getClaudeModel();
 
 /**
  * Claude API configuration limits.
@@ -207,10 +203,6 @@ async function loadSystemPrompt(): Promise<string> {
 	}
 }
 
-// ============================================================================
-// Main API Function
-// ============================================================================
-
 /**
  * Sends recipe data to Claude and receives tags, meal-type classifications,
  * healthiness scores, and time estimates.
@@ -252,7 +244,7 @@ async function callClaudeAPI(
 ): Promise<Anthropic.Messages.Message> {
 	try {
 		return await client.messages.create({
-			model: ACTIVE_MODEL,
+			model: CLAUDE_MODEL,
 			max_tokens: ClaudeLimit.MaxTokens,
 			system: systemPrompt,
 			tools: [
@@ -345,10 +337,6 @@ function calculateFinalTime(
 ): number {
 	return scrapedTime ?? aiEstimatedTime;
 }
-
-// ============================================================================
-// Prompt Building Helpers
-// ============================================================================
 
 /**
  * Formats recipe data into a structured prompt for Claude.

@@ -8,6 +8,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { consola } from "consola";
 import { ASSET_ROUTES } from "./asset-routes.js";
+import { normalizeAssetPath } from "./asset-utils.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -21,25 +22,7 @@ export default {
 	 * @returns Response with asset content or 404 error.
 	 */
 	fetch(req: Request): Response {
-		const url = new URL(req.url);
-		let pathname = url.pathname;
-
-		const originalPath =
-			req.headers.get("x-vercel-original-path") ||
-			req.headers.get("x-invoke-path") ||
-			url.searchParams.get("path");
-
-		if (originalPath) {
-			pathname = originalPath;
-		} else if (pathname.startsWith("/api/")) {
-			const assetPath = pathname.replace("/api/", "/");
-			if (ASSET_ROUTES[assetPath]) {
-				pathname = assetPath;
-			} else if (pathname.startsWith("/api/assets")) {
-				pathname = pathname.replace("/api/assets", "") || "/";
-			}
-		}
-
+		const pathname = normalizeAssetPath(req);
 		const asset = ASSET_ROUTES[pathname];
 
 		if (!asset) {

@@ -412,13 +412,12 @@ function buildIngredientBlocks(
 	grouped: Map<IngredientCategory, Array<{ name: string }>>,
 ): unknown[] {
 	const blocks: unknown[] = [];
-	const orderedCategories = getCategoryOrder();
 
 	const otherCategories = Array.from(grouped.keys())
-		.filter((category) => !orderedCategories.includes(category))
+		.filter((category) => !CATEGORY_ORDER.includes(category))
 		.sort();
 
-	const allCategories = [...orderedCategories, ...otherCategories];
+	const allCategories = [...CATEGORY_ORDER, ...otherCategories];
 
 	for (const category of allCategories) {
 		const ingredients = grouped.get(category);
@@ -615,17 +614,13 @@ function groupIngredientsByCategory(
  * Produce → Bakery → Meat & seafood → Pantry → Dairy & eggs → Frozen → Other
  *
  * Categories not in this list will appear after Frozen in alphabetical order.
- *
- * @returns Array of category names in shopping order.
  */
-function getCategoryOrder(): IngredientCategory[] {
-	return [
-		IngredientCategory.Produce,
-		IngredientCategory.Bakery,
-		IngredientCategory.MeatSeafood,
-		IngredientCategory.Pantry,
-		IngredientCategory.DairyEggs,
-		IngredientCategory.Frozen,
-		IngredientCategory.Other,
-	];
-}
+const CATEGORY_ORDER: IngredientCategory[] = [
+	IngredientCategory.Produce,
+	IngredientCategory.Bakery,
+	IngredientCategory.MeatSeafood,
+	IngredientCategory.Pantry,
+	IngredientCategory.DairyEggs,
+	IngredientCategory.Frozen,
+	IngredientCategory.Other,
+];

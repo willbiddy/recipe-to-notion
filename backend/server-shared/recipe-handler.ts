@@ -13,6 +13,7 @@ import { checkRateLimit, getClientIdentifier } from "../rate-limit.js";
 import {
 	MAX_REQUEST_BODY_SIZE,
 	type RecipeRequest,
+	validateActualBodySize,
 	validateApiKeyHeader,
 	validateRecipeRequest,
 	validateRequestSize,
@@ -214,6 +215,16 @@ export async function handleRecipeRequest(options: RecipeHandlerOptions): Promis
 	try {
 		// Use pre-parsed body if provided, otherwise parse from request
 		const body = options.parsedBody ?? ((await request.json()) as unknown);
+
+		// Validate actual body size after parsing (defense-in-depth)
+		const actualSizeError = validateActualBodySize(
+			body,
+			MAX_REQUEST_BODY_SIZE,
+			createErrorResponse,
+		);
+		if (actualSizeError) {
+			return actualSizeError;
+		}
 
 		const validationResult = validateRecipeRequest(body, createErrorResponse);
 		if (!validationResult.success) {

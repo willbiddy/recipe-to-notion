@@ -28,16 +28,10 @@ export default {
 		const requestId = generateRequestId();
 
 		if (req.method === "OPTIONS") {
-			const headers = new Headers();
-			headers.set("X-Content-Type-Options", "nosniff");
-			headers.set("X-Frame-Options", "DENY");
-			headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-			headers.set("Access-Control-Allow-Origin", "*");
-			headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-			headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
-			headers.set("Access-Control-Expose-Headers", "*");
-			headers.set("Access-Control-Allow-Credentials", "false");
-			return new Response(null, { status: 204, headers });
+			const response = new Response(null, { status: HttpStatus.NoContent });
+			setSecurityHeaders(response);
+			setCorsHeaders(response);
+			return response;
 		}
 
 		if (req.method !== "POST") {
@@ -53,13 +47,26 @@ export default {
 		// Create error response function that logs errors with request ID
 		const createErrorResponseWithLogging = (error: string, status: number): Response => {
 			consola.error(`[${requestId}] Request error: ${error}`);
-			return createErrorResponse(error, status, false);
+			return createErrorResponse(error, status, true);
 		};
 
 		// Parse and validate request body
 		try {
 			const body = (await req.json()) as unknown;
-			const { validateRecipeRequest } = await import("../backend/security.js");
+			const { validateActualBodySize, validateRecipeRequest, MAX_REQUEST_BODY_SIZE } = await import(
+				"../backend/security.js"
+			);
+
+			// Validate actual body size after parsing (defense-in-depth)
+			const actualSizeError = validateActualBodySize(
+				body,
+				MAX_REQUEST_BODY_SIZE,
+				createErrorResponseWithLogging,
+			);
+			if (actualSizeError) {
+				return actualSizeError;
+			}
+
 			const validationResult = validateRecipeRequest(body, createErrorResponseWithLogging);
 
 			if (!validationResult.success) {
@@ -76,14 +83,8 @@ export default {
 			}
 
 			// For non-streaming, use the shared handler with pre-parsed body
-			// Create a new request object since the body was already consumed
-			const reconstructedRequest = new Request(req.url, {
-				method: req.method,
-				headers: req.headers,
-			});
-
 			return await handleRecipeRequest({
-				request: reconstructedRequest,
+				request: req,
 				parsedBody: validationResult.data,
 				requestId,
 				createErrorResponse: createErrorResponseWithLogging,

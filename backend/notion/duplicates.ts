@@ -1,4 +1,5 @@
 import type { Client } from "@notionhq/client";
+import { consola } from "consola";
 import { hasProperty, isArray, isObject } from "../../shared/type-guards.js";
 import { createNotionClient, getNotionPageUrl } from "./client.js";
 import type {
@@ -7,7 +8,6 @@ import type {
 	DuplicateInfo,
 } from "./types.js";
 import { PropertyNames } from "./types.js";
-import { handleNotionApiError } from "./utils.js";
 
 /**
  * Options for searching pages in a database.
@@ -117,8 +117,12 @@ function extractUrl(property: unknown): string {
  * Useful for early duplicate detection before scraping.
  * Queries for recipes with the same URL using the Notion SDK.
  *
+ * If the duplicate check fails (e.g., API error), returns null to allow
+ * the recipe processing to continue. Duplicate checks are best-effort and
+ * should not block recipe processing.
+ *
  * @param options - Options for checking duplicates.
- * @returns Information about the duplicate if found, null otherwise.
+ * @returns Information about the duplicate if found, null otherwise or on error.
  */
 export async function checkForDuplicateByUrl(
 	options: CheckDuplicateByUrlOptions,
@@ -153,7 +157,10 @@ export async function checkForDuplicateByUrl(
 			},
 		});
 	} catch (error) {
-		handleNotionApiError(error, PropertyNames.SOURCE, "URL");
+		consola.warn(
+			`Failed to check for duplicate by URL: ${error instanceof Error ? error.message : String(error)}. Continuing without duplicate check.`,
+		);
+		return null;
 	}
 }
 
@@ -163,8 +170,12 @@ export async function checkForDuplicateByUrl(
  * Use this after already checking for URL duplicates to avoid redundant API calls.
  * Queries for recipes with the same title using the Notion SDK.
  *
+ * If the duplicate check fails (e.g., API error), returns null to allow
+ * the recipe processing to continue. Duplicate checks are best-effort and
+ * should not block recipe processing.
+ *
  * @param options - Options for checking duplicates.
- * @returns Information about the duplicate if found, null otherwise.
+ * @returns Information about the duplicate if found, null otherwise or on error.
  */
 export async function checkForDuplicateByTitle(
 	options: CheckDuplicateByTitleOptions,
@@ -197,6 +208,9 @@ export async function checkForDuplicateByTitle(
 			},
 		});
 	} catch (error) {
-		handleNotionApiError(error, PropertyNames.NAME, "Title");
+		consola.warn(
+			`Failed to check for duplicate by title: ${error instanceof Error ? error.message : String(error)}. Continuing without duplicate check.`,
+		);
+		return null;
 	}
 }

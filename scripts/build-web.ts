@@ -31,4 +31,14 @@ if (output) {
 	if (output.sourcemap) {
 		await Bun.write("web/web.js.map", output.sourcemap);
 	}
+} else {
+	console.error("Build succeeded but no output file was generated");
+	process.exit(1);
+}
+
+// Validate that output files exist
+const { existsSync } = await import("node:fs");
+if (!existsSync("web/web.js")) {
+	console.error("Build failed: web/web.js was not created");
+	process.exit(1);
 }

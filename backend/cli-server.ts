@@ -11,13 +11,7 @@ import getPort from "get-port";
 import { DEFAULT_PORT, IDLE_TIMEOUT_SECONDS, MAX_PORT, MIN_PORT } from "../shared/constants.js";
 import { ValidationError } from "./errors.js";
 import { handleRequest } from "./server.js";
-
-/**
- * HTTP status codes used in the server.
- */
-enum HttpStatus {
-	InternalServerError = 500,
-}
+import { HttpStatus } from "./server-shared/constants.js";
 
 /**
  * Validate environment variables are loaded.

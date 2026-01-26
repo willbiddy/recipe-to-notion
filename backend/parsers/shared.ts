@@ -65,7 +65,7 @@ export function decodeHtmlEntities(str: string): string {
  * "PT45M" (45 minutes) into a total number of minutes.
  *
  * @param iso - ISO 8601 duration string to parse.
- * @returns Total minutes as a number, or null if parsing fails.
+ * @returns Total minutes as a number (including 0 for valid zero durations), or null if parsing fails.
  */
 export function parseDuration(iso: string | undefined): number | null {
 	if (!iso || typeof iso !== "string") {
@@ -80,7 +80,9 @@ export function parseDuration(iso: string | undefined): number | null {
 
 	const hours = parseInt(match[1] || "0", 10);
 	const minutes = parseInt(match[2] || "0", 10);
-	return hours * 60 + minutes || null;
+	const totalMinutes = hours * 60 + minutes;
+	// Return 0 for valid zero durations, only null if parsing failed (handled above)
+	return totalMinutes;
 }
 
 /**

@@ -101,13 +101,34 @@ enum ClaudeModel {
 }
 
 /**
- * Active Claude model to use for recipe analysis.
- * Change this to switch between models:
+ * Gets the active Claude model from environment variable or defaults to Sonnet.
+ *
+ * Set CLAUDE_MODEL environment variable to one of: "haiku", "sonnet", or "opus".
+ * Defaults to "sonnet" if not set or invalid.
+ *
+ * Model costs (approximate):
  * - Haiku: Fastest and cheapest (~$0.01 per recipe)
  * - Sonnet: Balanced performance and cost (~$0.03 per recipe) - Default
  * - Opus: Most capable but expensive (~$0.10+ per recipe)
+ *
+ * @returns The Claude model identifier to use.
  */
-const ACTIVE_MODEL = ClaudeModel.Sonnet;
+function getActiveModel(): string {
+	const envModel = process.env.CLAUDE_MODEL?.toLowerCase();
+
+	switch (envModel) {
+		case "haiku":
+			return ClaudeModel.Haiku;
+		case "sonnet":
+			return ClaudeModel.Sonnet;
+		case "opus":
+			return ClaudeModel.Opus;
+		default:
+			return ClaudeModel.Sonnet;
+	}
+}
+
+const ACTIVE_MODEL = getActiveModel();
 
 /**
  * Claude API configuration limits.

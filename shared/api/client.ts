@@ -31,6 +31,83 @@ function formatNetworkError(error: unknown): string {
 }
 
 /**
+ * Options for parsing SSE stream.
+ */
+type ParseSseStreamOptions = {
+	/**
+	 * The ReadableStreamDefaultReader to read from.
+	 */
+	reader: ReadableStreamDefaultReader<Uint8Array>;
+	/**
+	 * TextDecoder instance for decoding stream chunks.
+	 */
+	decoder: TextDecoder;
+	/**
+	 * Accumulated buffer for incomplete lines.
+	 */
+	buffer: string;
+	/**
+	 * Progress callbacks for UI updates.
+	 */
+	callbacks: import("./types.js").ProgressCallbacks;
+	/**
+	 * Promise resolve function.
+	 */
+	resolve: (value: RecipeResponse) => void;
+};
+
+/**
+ * Parses SSE events from a stream reader and processes them.
+ *
+ * @param options - Options for parsing the SSE stream.
+ * @returns Promise that resolves when a terminal event is received or stream ends.
+ */
+async function parseSseStream(options: ParseSseStreamOptions): Promise<void> {
+	const { reader, decoder, buffer, callbacks, resolve } = options;
+	const { done, value } = await reader.read();
+
+	if (done) {
+		resolve({
+			success: false,
+			error: "Stream ended unexpectedly",
+		});
+		return;
+	}
+
+	const newBuffer = buffer + decoder.decode(value, { stream: true });
+	const lines = newBuffer.split("\n");
+	const remainingBuffer = lines.pop() || "";
+
+	for (const line of lines) {
+		if (line.startsWith(SSE_DATA_PREFIX)) {
+			try {
+				const parsed = JSON.parse(line.slice(SSE_DATA_PREFIX_LENGTH));
+				const data = validateServerProgressEvent(parsed);
+
+				if (!data) {
+					continue;
+				}
+
+				const isTerminal = handleSseEvent(data, callbacks, resolve);
+				if (isTerminal) {
+					return;
+				}
+			} catch {
+				// Ignore malformed SSE events
+			}
+		}
+	}
+
+	return parseSseStream({
+		reader,
+		decoder,
+		buffer: remainingBuffer,
+		callbacks,
+		resolve,
+	});
+}
+
+/**
  * Handles a parsed SSE event and calls appropriate callbacks.
  *
  * @param data - The validated server progress event.
@@ -151,48 +228,13 @@ export async function saveRecipe({
 						return;
 					}
 
-					let buffer = "";
-					const streamReader = reader;
-
-					function readChunk(): Promise<void> {
-						return streamReader.read().then(({ done, value }) => {
-							if (done) {
-								resolve({
-									success: false,
-									error: "Stream ended unexpectedly",
-								});
-								return;
-							}
-
-							buffer += decoder.decode(value, { stream: true });
-							const lines = buffer.split("\n");
-							buffer = lines.pop() || "";
-
-							for (const line of lines) {
-								if (line.startsWith(SSE_DATA_PREFIX)) {
-									try {
-										const parsed = JSON.parse(line.slice(SSE_DATA_PREFIX_LENGTH));
-										const data = validateServerProgressEvent(parsed);
-
-										if (!data) {
-											continue;
-										}
-
-										const isTerminal = handleSseEvent(data, callbacks, resolve);
-										if (isTerminal) {
-											return;
-										}
-									} catch {
-										// Ignore malformed SSE events
-									}
-								}
-							}
-
-							return readChunk();
-						});
-					}
-
-					readChunk().catch((error) => {
+					parseSseStream({
+						reader,
+						decoder,
+						buffer: "",
+						callbacks,
+						resolve,
+					}).catch((error) => {
 						callbacks.onError(error instanceof Error ? error.message : String(error));
 						reject(error);
 					});

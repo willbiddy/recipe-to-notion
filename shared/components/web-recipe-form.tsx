@@ -3,8 +3,9 @@
  * Handles recipe URL submission, progress updates, and settings management.
  */
 
-import { createMemo, createSignal, onMount, Show } from "solid-js";
-import { AUTO_SUBMIT_DELAY_MS, CLEAR_URL_INPUT_DELAY_MS, ErrorMessageKey } from "../constants.js";
+import { createMemo, createSignal, Show } from "solid-js";
+import { CLEAR_URL_INPUT_DELAY_MS, ErrorMessageKey } from "../constants.js";
+import { useQueryParams } from "../hooks/use-query-params.js";
 import { useRecipeSave } from "../hooks/use-recipe-save.js";
 import { useTimeout } from "../hooks/use-timeout.js";
 import { createStorageAdapter } from "../storage.js";
@@ -69,9 +70,6 @@ export function WebRecipeForm() {
 		noUrlErrorKey: ErrorMessageKey.PleaseEnterRecipeUrl,
 	});
 
-	/**
-	 * Handles the save button click.
-	 */
 	async function handleSave() {
 		const apiKey = await storage.getApiKey();
 		if (!apiKey) {
@@ -83,20 +81,12 @@ export function WebRecipeForm() {
 		await performSave();
 	}
 
-	/**
-	 * Clears the URL input and resets status.
-	 */
 	function clearUrl() {
 		setUrl("");
 		setStatus(null);
 		setRecipeInfo(null);
 	}
 
-	/**
-	 * Handles URL input changes.
-	 *
-	 * @param e - The input event.
-	 */
 	function handleUrlInput(e: Event) {
 		const value = (e.target as HTMLInputElement).value;
 		setUrl(value);
@@ -132,34 +122,13 @@ export function WebRecipeForm() {
 		});
 	};
 
-	/**
-	 * Handles query parameters for auto-submit functionality.
-	 */
-	async function handleQueryParameters() {
-		const urlParams = new URLSearchParams(window.location.search);
-		const urlParam = urlParams.get("url");
-
-		if (urlParam) {
-			try {
-				new URL(urlParam);
-				setUrl(urlParam);
-				const key = await storage.getApiKey();
-				if (key) {
-					scheduleTimeout(() => {
-						handleSave();
-					}, AUTO_SUBMIT_DELAY_MS);
-				} else {
-					setPendingSave(() => performSave);
-					setShowApiPrompt(true);
-				}
-			} catch {
-				// Invalid URL in query parameters
-			}
-		}
-	}
-
-	onMount(() => {
-		handleQueryParameters();
+	useQueryParams({
+		storage,
+		setUrl,
+		performSave,
+		setPendingSave,
+		setShowApiPrompt,
+		scheduleTimeout,
 	});
 
 	return (

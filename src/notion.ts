@@ -1,7 +1,7 @@
 import { Client } from "@notionhq/client";
 import { DuplicateRecipeError, NotionApiError } from "./errors.js";
-import { hasProperty, isArray, isObject } from "./shared/type-guards.js";
 import type { Recipe } from "./scraper.js";
+import { hasProperty, isArray, isObject } from "./shared/type-guards.js";
 import type { CategorizedIngredient, RecipeTags } from "./tagger.js";
 import { IngredientCategory } from "./tagger.js";
 
@@ -18,7 +18,6 @@ const PropertyNames = {
 	MEAL_TYPE: "Meal type",
 	HEALTHINESS: "Healthiness",
 } as const;
-
 
 /**
  * Maximum text length for Notion text blocks (characters).
@@ -104,21 +103,30 @@ export async function checkForDuplicateByUrl(
 	const notion = new Client({ auth: notionApiKey });
 
 	try {
-		const urlQuery = await notion.databases.query({
-			database_id: databaseId,
-			filter: {
-				property: PropertyNames.SOURCE,
-				url: {
-					equals: url,
+		// Use request method to call databases.query endpoint directly
+		// The databases.query method doesn't exist in the SDK, so we call it via request
+		// Replace {database_id} in the path with the actual database ID
+		const urlQuery = (await notion.request({
+			method: "post",
+			path: `databases/${databaseId}/query`,
+			body: {
+				filter: {
+					property: PropertyNames.SOURCE,
+					url: {
+						equals: url,
+					},
 				},
 			},
-		});
+		})) as { results: Array<{ id: string; properties?: Record<string, unknown> }> };
 
 		if (urlQuery.results.length === 0) {
 			return null;
 		}
 
 		const page = urlQuery.results[0];
+		if (!page) {
+			return null;
+		}
 		const pageId = page.id;
 		const properties = page.properties || {};
 
@@ -169,21 +177,32 @@ export async function checkForDuplicateByTitle(
 	const notion = new Client({ auth: notionApiKey });
 
 	try {
-		const titleQuery = await notion.databases.query({
-			database_id: databaseId,
-			filter: {
-				property: PropertyNames.NAME,
-				title: {
-					equals: recipeName,
+		// Use request method to call databases.query endpoint directly
+		// The databases.query method doesn't exist in the SDK, so we call it via request
+		// Replace {database_id} in the path with the actual database ID
+		const titleQuery = (await notion.request({
+			method: "post",
+			path: `databases/${databaseId}/query`,
+			body: {
+				filter: {
+					property: PropertyNames.NAME,
+					title: {
+						equals: recipeName,
+					},
 				},
 			},
-		});
+		})) as { results: Array<{ id: string; properties?: Record<string, unknown> }> };
 
 		if (titleQuery.results.length === 0) {
 			return null;
 		}
 
 		const page = titleQuery.results[0];
+
+		if (!page) {
+			return null;
+		}
+
 		const pageId = page.id;
 		const properties = page.properties || {};
 
@@ -252,7 +271,6 @@ async function checkForDuplicate({
 	return await checkForDuplicateByTitle(recipe.name, notionApiKey, databaseId);
 }
 
-
 /**
  * Extracts the title text from a Notion title property.
  *
@@ -264,7 +282,7 @@ function extractTitle(property: unknown): string {
 		return "";
 	}
 
-	if (!("title" in property) || !Array.isArray(property.title)) {
+	if (!hasProperty(property, "title") || !isArray(property.title)) {
 		return "";
 	}
 

@@ -2,12 +2,6 @@
 
 Save recipes to Notion without copying and pasting. Paste a URL from almost any recipe site and get a Notion page with the cover photo, ingredients grouped by shopping aisle, instructions, and AI-generated tags. Claude automatically analyzes each recipe to add cuisine tags, meal types, healthiness scores, ingredient categories, and a short description, so you can filter and search your collection later.
 
-**Browser Extension Popup** - One-click recipe saving from any recipe page
-
-**Notion Gallery View** - Browse your recipe collection with cover photos, tags, and meal types
-
-**Notion Recipe Page** - Individual recipe with properties, AI-generated description, and organized ingredients
-
 ## How It Works
 
 ```
@@ -110,13 +104,16 @@ The simplest way to get started. Save recipes from the terminal:
 
 ```bash
 # Single recipe
-bun src/cli.ts https://cooking.nytimes.com/recipes/1234-example
+bun src/cli.ts https://cooking.nytimes.com/recipes/1023430-pasta-with-pumpkin-seed-pesto
 
 # Multiple recipes
-bun src/cli.ts url1 url2 url3
+bun src/cli.ts \
+  https://www.bonappetit.com/recipe/ditalini-and-peas-in-parmesan-broth \
+  https://cooking.nytimes.com/recipes/768413295-chickpeas-al-limone-with-burrata \
+  https://www.seriouseats.com/tacos-gobernador-sinaloan-shrimp-tacos-recipe-8676611
 
 # If a site blocks requests (403 error), save the page source and use --html
-bun src/cli.ts --html ~/Downloads/recipe.html "https://example.com/recipe-url"
+bun src/cli.ts --html ~/Downloads/baked-oatmeal-recipe.html "https://cookieandkate.com/baked-oatmeal-recipe/"
 ```
 
 ### 2. Browser Extension
@@ -145,23 +142,23 @@ Use the REST API to integrate Recipe Clipper for Notion into your own applicatio
 
 **Technologies:**
 
-- [Bun](https://bun.sh/) - JavaScript runtime
-- [Solid.js](https://www.solidjs.com/) - Reactive UI framework
-- [Vercel](https://vercel.com/) - Serverless hosting
-- [Cheerio](https://cheerio.js.org/) - HTML parsing
 - [Anthropic SDK](https://docs.anthropic.com/en/api/client-sdks) - Claude AI API client
 - [Notion SDK](https://github.com/makenotion/notion-sdk-js) - Notion API client
+- [Cheerio](https://cheerio.js.org/) - HTML parsing
+- [Bun](https://bun.sh/) - JavaScript runtime
+- [Solid.js](https://www.solidjs.com/) - Reactive UI framework
+- [Zod](https://zod.dev/) - Schema validation
+- [Vercel](https://vercel.com/) - Serverless hosting
+- [Tailwind CSS](https://tailwindcss.com/) - CSS framework
 - [Citty](https://github.com/unjs/citty) - CLI argument parsing
 - [Consola](https://github.com/unjs/consola) - Logging
-- [Zod](https://zod.dev/) - Schema validation
-- [Tailwind CSS](https://tailwindcss.com/) - CSS framework
 - [Biome](https://biomejs.dev/) - Linting & formatting
 
 ---
 
 ## Scripts
 
-- **`bun run start`** / **`bun src/cli.ts`** - Run the CLI tool to save recipes from the command line
+- **`bun src/cli.ts`** - Run the CLI tool to save recipes from the command line
 - **`bun run server`** - Start local HTTP server for development (runs on `localhost:3000`)
 - **`bun run build:extension`** - Compile TypeScript and Tailwind CSS for the browser extension
 - **`bun run build:web`** - Compile TypeScript and Tailwind CSS for the web interface

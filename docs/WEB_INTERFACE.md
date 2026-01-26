@@ -117,10 +117,10 @@ The shortcut opens the web interface with the recipe URL, and if your API key is
 The web interface uses Server-Sent Events (SSE) to show real-time progress while processing recipes:
 
 - "Starting..." - Initial connection
+- "Checking for duplicates..." - Verifying recipe doesn't already exist
 - "Scraping recipe..." - Fetching recipe data
-- "Analyzing with AI..." - Claude processing
+- "Generating AI tags and scores..." - Claude processing
 - "Saving to Notion..." - Creating Notion page
-- "Complete!" - Recipe saved successfully
 
 ### Auto-submit with Query Parameters
 

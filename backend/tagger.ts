@@ -335,15 +335,9 @@ function calculateFinalTime(
 	scrapedTime: number | null | undefined,
 	aiEstimatedTime: number,
 ): number {
-	const finalTime = scrapedTime ?? aiEstimatedTime;
-
-	if (finalTime === null || finalTime === undefined) {
-		throw new ValidationError(
-			`Recipe time is required but was not provided. Scraped time: ${scrapedTime}, AI estimate: ${aiEstimatedTime}`,
-		);
-	}
-
-	return finalTime;
+	// Use scraped time if available, otherwise fall back to AI estimate
+	// The nullish coalescing operator ensures we always have a number
+	return scrapedTime ?? aiEstimatedTime;
 }
 
 // ============================================================================

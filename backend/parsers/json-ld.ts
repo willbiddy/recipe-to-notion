@@ -347,8 +347,13 @@ function parseInstructions(data: unknown): string[] {
 			if (item.text) return [decodeHtmlEntities(String(item.text))];
 			if (isArray(item.itemListElement)) {
 				return item.itemListElement.map((sub) => {
-					const step = sub as { text?: string };
-					return decodeHtmlEntities(String(step.text || sub));
+					if (isString(sub)) {
+						return decodeHtmlEntities(sub);
+					}
+					if (isObject(sub) && hasProperty(sub, "text")) {
+						return decodeHtmlEntities(String(sub.text));
+					}
+					return decodeHtmlEntities(String(sub));
 				});
 			}
 		}

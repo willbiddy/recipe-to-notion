@@ -80,10 +80,11 @@ export async function createRecipePage({
 		imageUrl: recipe.imageUrl,
 	});
 
-	// Type assertion is safe here because buildPageParams constructs a valid
-	// Notion page creation parameters object that matches the SDK's expected type.
-	// The Record<string, unknown> return type is necessary because properties
-	// are dynamically constructed based on recipe data.
-	const page = await notion.pages.create(pageParams as Parameters<Client["pages"]["create"]>[0]);
+	// buildPageParams returns a valid Notion page creation parameters object.
+	// The type is Record<string, unknown> because properties are dynamically constructed,
+	// but the structure matches the SDK's expected type at runtime.
+	const page = await notion.pages.create(
+		pageParams as unknown as Parameters<Client["pages"]["create"]>[0],
+	);
 	return page.id;
 }

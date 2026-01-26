@@ -34,30 +34,30 @@ export type ProcessResult = {
  * Progress event types during recipe processing.
  */
 export enum ProgressType {
-	CHECKING_DUPLICATES = "checking_duplicates",
-	SCRAPING = "scraping",
-	TAGGING = "tagging",
-	SAVING = "saving",
-	STARTING = "starting",
+	CheckingDuplicates = "checking_duplicates",
+	Scraping = "scraping",
+	Tagging = "tagging",
+	Saving = "saving",
+	Starting = "starting",
 }
 
 /**
  * Progress event types during recipe processing.
  */
 export type ProgressEvent =
-	| { type: ProgressType.CHECKING_DUPLICATES; message: string }
-	| { type: ProgressType.SCRAPING; message: string }
-	| { type: ProgressType.TAGGING; message: string }
-	| { type: ProgressType.SAVING; message: string };
+	| { type: ProgressType.CheckingDuplicates; message: string }
+	| { type: ProgressType.Scraping; message: string }
+	| { type: ProgressType.Tagging; message: string }
+	| { type: ProgressType.Saving; message: string };
 
 /**
  * Progress messages for each stage of recipe processing.
  */
 const PROGRESS_MESSAGES = {
-	[ProgressType.CHECKING_DUPLICATES]: "Checking for duplicates...",
-	[ProgressType.SCRAPING]: "Scraping recipe...",
-	[ProgressType.TAGGING]: "Generating AI tags and scores...",
-	[ProgressType.SAVING]: "Saving to Notion...",
+	[ProgressType.CheckingDuplicates]: "Checking for duplicates...",
+	[ProgressType.Scraping]: "Scraping recipe...",
+	[ProgressType.Tagging]: "Generating AI tags and scores...",
+	[ProgressType.Saving]: "Saving to Notion...",
 } as const;
 
 /**
@@ -91,8 +91,8 @@ export async function processRecipe(
 	logger?.onStart?.();
 
 	onProgress?.({
-		type: ProgressType.CHECKING_DUPLICATES,
-		message: PROGRESS_MESSAGES[ProgressType.CHECKING_DUPLICATES],
+		type: ProgressType.CheckingDuplicates,
+		message: PROGRESS_MESSAGES[ProgressType.CheckingDuplicates],
 	});
 	logger?.onCheckingDuplicates?.();
 	const urlDuplicate = await checkForDuplicateByUrl(
@@ -107,12 +107,12 @@ export async function processRecipe(
 	}
 	logger?.onNoDuplicateFound?.();
 
-	onProgress?.({ type: ProgressType.SCRAPING, message: PROGRESS_MESSAGES[ProgressType.SCRAPING] });
+	onProgress?.({ type: ProgressType.Scraping, message: PROGRESS_MESSAGES[ProgressType.Scraping] });
 	logger?.onScraping?.();
 	const recipe = await scrapeRecipe(url);
 	logger?.onScraped?.(recipe);
 
-	onProgress?.({ type: ProgressType.TAGGING, message: PROGRESS_MESSAGES[ProgressType.TAGGING] });
+	onProgress?.({ type: ProgressType.Tagging, message: PROGRESS_MESSAGES[ProgressType.Tagging] });
 	logger?.onTagging?.();
 	const tags = await tagRecipe(recipe, config.ANTHROPIC_API_KEY);
 	logger?.onTagged?.();
@@ -128,7 +128,7 @@ export async function processRecipe(
 		throw createDuplicateError(titleDuplicate);
 	}
 
-	onProgress?.({ type: ProgressType.SAVING, message: PROGRESS_MESSAGES[ProgressType.SAVING] });
+	onProgress?.({ type: ProgressType.Saving, message: PROGRESS_MESSAGES[ProgressType.Saving] });
 	logger?.onSaving?.();
 	const pageId = await createRecipePage({
 		recipe,

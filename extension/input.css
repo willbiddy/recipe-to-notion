@@ -62,7 +62,7 @@
 @layer components {
 	/* Button Components */
 	.btn-primary {
-		@apply w-full px-5 py-3.5 bg-gradient-to-r from-primary-500 via-accent-500 to-primary-600 text-white border-none rounded-2xl text-base font-semibold cursor-pointer transition-all duration-200 shadow-button hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:bg-gray-400 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-sm flex items-center justify-center gap-2;
+		@apply w-full px-5 py-3.5 bg-primary-600 text-white border-none rounded-xl text-base font-medium cursor-pointer transition-all duration-200 hover:bg-primary-700 active:bg-primary-800 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2;
 	}
 
 	.btn-primary-sm {
@@ -75,7 +75,7 @@
 
 	/* Card Components */
 	.card {
-		@apply bg-white/90 backdrop-blur-sm rounded-3xl shadow-card border-2 border-primary-100/50 p-6 space-y-6;
+		@apply bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-6;
 	}
 
 	/* Status Message Components */
@@ -97,15 +97,12 @@
 	}
 
 	.input-field-settings {
-		@apply px-4 py-3 pr-10 text-base border-2 border-primary-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 bg-accent-50/70 w-full placeholder:text-primary-600;
+		@apply px-4 py-3 pr-10 text-base border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all duration-200 bg-white w-full placeholder:text-gray-400;
 	}
 
 	/* Background Gradient */
 	.gradient-bg {
-		@apply bg-gradient-to-br from-primary-50 via-accent-50 to-yellow-50;
-		background-image:
-			radial-gradient(circle at 20% 50%, rgba(251, 146, 60, 0.1) 0%, transparent 50%),
-			radial-gradient(circle at 80% 80%, rgba(245, 158, 11, 0.1) 0%, transparent 50%);
+		@apply bg-gray-50;
 	}
 }
 

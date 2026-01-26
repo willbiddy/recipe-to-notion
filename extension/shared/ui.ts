@@ -6,18 +6,18 @@
  * Status types for updateStatus function.
  */
 export enum StatusType {
-	INFO = "info",
-	SUCCESS = "success",
-	ERROR = "error",
+	Info = "info",
+	Success = "success",
+	Error = "error",
 }
 
 /**
  * Text size options for status messages.
  */
 export enum TextSize {
-	XS = "xs",
-	SM = "sm",
-	BASE = "base",
+	Xs = "xs",
+	Sm = "sm",
+	Base = "base",
 }
 
 /**
@@ -26,9 +26,9 @@ export enum TextSize {
 const STATUS_CLASSES = {
 	BASE: "py-4 px-5 rounded-2xl leading-relaxed animate-[fadeIn_0.2s_ease-in] block shadow-sm",
 	TEXT_SIZES: {
-		[TextSize.XS]: "text-xs",
-		[TextSize.SM]: "text-sm",
-		[TextSize.BASE]: "text-base",
+		[TextSize.Xs]: "text-xs",
+		[TextSize.Sm]: "text-sm",
+		[TextSize.Base]: "text-base",
 	},
 	INFO: "status-info",
 	SUCCESS: "status-success",
@@ -44,7 +44,7 @@ const STATUS_CLASSES = {
  */
 export function updateStatus(
 	message: string,
-	type: StatusType = StatusType.INFO,
+	type: StatusType = StatusType.Info,
 	options?: {
 		baseClasses?: string;
 		textSize?: TextSize;
@@ -59,14 +59,14 @@ export function updateStatus(
 	statusEl.textContent = message;
 	statusEl.classList.remove("hidden");
 
-	const textSize = options?.textSize ?? TextSize.SM;
+	const textSize = options?.textSize ?? TextSize.Sm;
 	const textSizeClass = STATUS_CLASSES.TEXT_SIZES[textSize];
 
 	const baseClasses = options?.baseClasses || `${STATUS_CLASSES.BASE} ${textSizeClass}`;
 	const typeClasses = {
-		[StatusType.INFO]: STATUS_CLASSES.INFO,
-		[StatusType.SUCCESS]: STATUS_CLASSES.SUCCESS,
-		[StatusType.ERROR]: STATUS_CLASSES.ERROR,
+		[StatusType.Info]: STATUS_CLASSES.INFO,
+		[StatusType.Success]: STATUS_CLASSES.SUCCESS,
+		[StatusType.Error]: STATUS_CLASSES.ERROR,
 	};
 	statusEl.className = `${baseClasses} ${typeClasses[type]}`;
 }

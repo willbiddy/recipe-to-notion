@@ -56,7 +56,7 @@ function handleRecipeStream(url: string, requestId?: string): Response {
 				sendEvent({
 					type: ServerProgressEventType.Progress,
 					message: "Starting...",
-					progressType: ProgressType.STARTING,
+					progressType: ProgressType.Starting,
 				});
 
 				const { processRecipe } = await import("../src/index.js");

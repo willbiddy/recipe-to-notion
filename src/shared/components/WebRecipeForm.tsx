@@ -99,14 +99,14 @@ export function WebRecipeForm() {
 		const currentUrl = url().trim();
 
 		if (!currentUrl) {
-			setStatus({ message: "Please enter a recipe URL", type: StatusType.ERROR });
+			setStatus({ message: "Please enter a recipe URL", type: StatusType.Error });
 			return;
 		}
 
 		if (!currentUrl.startsWith("http://") && !currentUrl.startsWith("https://")) {
 			setStatus({
 				message: "Not a valid web page URL. Must start with http:// or https://",
-				type: StatusType.ERROR,
+				type: StatusType.Error,
 			});
 			return;
 		}
@@ -127,15 +127,15 @@ export function WebRecipeForm() {
 			} else if (result.error?.includes("Duplicate recipe found") && result.notionUrl) {
 				setStatus({
 					message: `This recipe already exists. <a href="${result.notionUrl}" target="_blank" class="underline font-semibold">Open in Notion</a>`,
-					type: StatusType.INFO,
+					type: StatusType.Info,
 				});
 			} else {
-				setStatus({ message: result.error || "Failed to save recipe", type: StatusType.ERROR });
+				setStatus({ message: result.error || "Failed to save recipe", type: StatusType.Error });
 			}
 		} catch (error) {
 			setStatus({
 				message: error instanceof Error ? error.message : "An unexpected error occurred",
-				type: StatusType.ERROR,
+				type: StatusType.Error,
 			});
 		} finally {
 			setLoading(false);
@@ -208,35 +208,15 @@ export function WebRecipeForm() {
 		if (!key) {
 			setStatus({
 				message: "⚠️ API secret not configured. Click Settings to set it up.",
-				type: StatusType.ERROR,
+				type: StatusType.Error,
 			});
 		}
 	});
 
 	return (
-		<div class="flex flex-col gap-6">
+		<div class="flex flex-col gap-4">
 			{/* URL Input */}
-			<div class="flex flex-col gap-6">
-				<label
-					for="url-input"
-					class="text-xl font-semibold text-primary-900 flex items-center gap-3"
-				>
-					<svg
-						class="w-6 h-6 text-primary-700"
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-						aria-hidden="true"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-						/>
-					</svg>
-					Recipe URL
-				</label>
+			<div class="flex flex-col gap-3">
 				<div class="relative">
 					<input
 						type="url"
@@ -245,31 +225,17 @@ export function WebRecipeForm() {
 						value={url()}
 						onInput={handleUrlInput}
 						onKeyDown={handleKeyDown}
-						placeholder="https://cooking.nytimes.com/recipes/..."
+						placeholder="Paste recipe URL..."
 						autocomplete="url"
 						aria-label="Recipe URL"
 						aria-invalid={urlValid() === false ? "true" : "false"}
 						class="input-field"
 					/>
-					<svg
-						class="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-primary-600 pointer-events-none"
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-						aria-hidden="true"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
-						/>
-					</svg>
 					<Show when={showClearButton()}>
 						<button
 							type="button"
 							onClick={clearUrl}
-							class="absolute right-3 top-1/2 -translate-y-1/2 text-primary-600 hover:text-primary-800 p-1.5 rounded-lg hover:bg-primary-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+							class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
 							aria-label="Clear URL"
 							title="Clear URL"
 						>
@@ -295,62 +261,42 @@ export function WebRecipeForm() {
 						</Show>
 					</div>
 				</div>
-				<p class="text-base text-primary-800 flex items-start gap-2 leading-relaxed font-normal">
-					<svg
-						class="w-5 h-5 text-primary-600 mt-0.5 flex-shrink-0"
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-						aria-hidden="true"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-						/>
-					</svg>
-					Paste a recipe URL from any website. The recipe will be scraped, analyzed, and saved to
-					your Notion database.
-				</p>
 			</div>
 
 			{/* Save Button */}
-			<div class="mt-2">
-				<button
-					type="button"
-					onClick={handleSave}
-					disabled={loading()}
-					aria-label="Save recipe to Notion"
-					class="btn-primary group"
-				>
-					<Show
-						when={loading()}
-						fallback={
-							<svg
-								class="w-5 h-5 group-hover:translate-x-0.5 transition-transform duration-200"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-								aria-hidden="true"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M5 13l4 4L19 7"
-								/>
-							</svg>
-						}
-					>
-						<div
-							class="button-spinner w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin flex-shrink-0"
+			<button
+				type="button"
+				onClick={handleSave}
+				disabled={loading()}
+				aria-label="Save recipe to Notion"
+				class="btn-primary group"
+			>
+				<Show
+					when={loading()}
+					fallback={
+						<svg
+							class="w-5 h-5 group-hover:translate-x-0.5 transition-transform duration-200"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
 							aria-hidden="true"
-						/>
-					</Show>
-					<span class="button-text">{loading() ? "Processing..." : "Save Recipe"}</span>
-				</button>
-			</div>
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M5 13l4 4L19 7"
+							/>
+						</svg>
+					}
+				>
+					<div
+						class="button-spinner w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin flex-shrink-0"
+						aria-hidden="true"
+					/>
+				</Show>
+				<span class="button-text">{loading() ? "Processing..." : "Save Recipe"}</span>
+			</button>
 
 			{/* Progress Indicator */}
 			<Show when={progress()}>{(msg) => <ProgressIndicator message={msg()} />}</Show>
@@ -370,25 +316,24 @@ export function WebRecipeForm() {
 			<div class="flex-grow" />
 
 			{/* Settings Button */}
-			<div class="flex items-center justify-start pt-6 mt-6 border-t-2 border-primary-200">
+			<div class="flex items-center justify-start pt-4 mt-4 border-t border-gray-200">
 				<button
 					type="button"
 					onClick={toggleSettings}
 					aria-label="Toggle settings panel"
 					aria-expanded={settingsOpen()}
 					aria-controls="settings-panel"
-					class="btn-secondary"
+					class="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200 flex items-center gap-2"
 				>
 					<svg
-						width="18"
-						height="18"
+						width="16"
+						height="16"
 						viewBox="0 0 24 24"
 						fill="none"
 						stroke="currentColor"
 						stroke-width="2"
 						stroke-linecap="round"
 						stroke-linejoin="round"
-						class="settings-icon"
 						aria-hidden="true"
 					>
 						<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
@@ -396,7 +341,7 @@ export function WebRecipeForm() {
 					</svg>
 					<span>Settings</span>
 					<svg
-						class={`w-4 h-4 transition-transform duration-200 settings-chevron ${settingsOpen() ? "rotate-180" : ""}`}
+						class={`w-3 h-3 transition-transform duration-200 ${settingsOpen() ? "rotate-180" : ""}`}
 						fill="none"
 						stroke="currentColor"
 						viewBox="0 0 24 24"
@@ -414,7 +359,10 @@ export function WebRecipeForm() {
 
 			{/* Settings Panel */}
 			<Show when={settingsOpen()}>
-				<SettingsPanel panelClass="flex flex-col gap-6 pt-6 mt-6 border-t-2 border-primary-200 transition-all duration-300 ease-in-out overflow-hidden animate-slide-down" />
+				<SettingsPanel
+					panelClass="flex flex-col gap-4 pt-4 mt-4 border-t border-gray-200 transition-all duration-300 ease-in-out overflow-hidden animate-slide-down"
+					onClose={toggleSettings}
+				/>
 			</Show>
 		</div>
 	);

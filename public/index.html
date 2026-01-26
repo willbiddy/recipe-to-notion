@@ -17,24 +17,22 @@
 		<meta name="apple-mobile-web-app-title" content="Recipe Clipper for Notion" />
 		<link rel="icon" type="image/png" sizes="32x32" href="/api/favicon-32x32" />
 		<link rel="icon" type="image/png" sizes="16x16" href="/api/favicon-16x16" />
+		<link rel="icon" type="image/png" sizes="32x32" href="/api/favicon-32x32-white" media="(prefers-color-scheme: dark)" />
+		<link rel="icon" type="image/png" sizes="16x16" href="/api/favicon-16x16-white" media="(prefers-color-scheme: dark)" />
 		<link rel="apple-touch-icon" sizes="180x180" href="/api/apple-touch-icon" />
 		<link rel="shortcut icon" href="/api/favicon" />
+		<link rel="shortcut icon" href="/api/favicon-white" media="(prefers-color-scheme: dark)" />
 	</head>
 	<body class="min-h-screen gradient-bg text-gray-900 text-base">
 		<div class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 lg:py-16">
-			<!-- Hero Section: Centered -->
-			<header class="text-center mb-12 sm:mb-16">
-				<div class="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 mb-6 sm:mb-8 transform hover:scale-105 transition-transform duration-300">
-					<img src="/api/fork-and-knife" alt="Recipe Clipper for Notion" class="w-20 h-20 sm:w-24 sm:h-24 object-contain" />
-				</div>
-				<h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-primary-600 via-accent-600 to-primary-700 bg-clip-text text-transparent mb-6 sm:mb-8 leading-tight">Recipe Clipper for Notion</h1>
-				<p class="text-lg sm:text-xl text-gray-700 leading-relaxed max-w-2xl mx-auto font-normal">
-					Save recipes from any website to your Notion database with one click. No more copying and pasting—just paste a recipe URL and get a beautifully formatted Notion page with cover photos, organized ingredients, and AI-powered tags.
-				</p>
+			<!-- Hero Section: Minimal -->
+			<header class="mb-8 sm:mb-12">
+				<h1 class="text-3xl sm:text-4xl font-bold text-primary-900 mb-2 leading-tight">Recipe Clipper</h1>
+				<p class="text-sm text-gray-600">Save recipes to Notion</p>
 			</header>
 
 			<!-- Form Card: Centered -->
-			<main id="main-content" class="card max-w-2xl mx-auto mb-16 sm:mb-20">
+			<main id="main-content" class="card max-w-xl mx-auto">
 				<div class="flex flex-col gap-6">
 					<label for="url-input" class="text-xl font-semibold text-primary-900 flex items-center gap-3">
 						<svg class="w-6 h-6 text-primary-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -201,55 +199,6 @@
 				</div>
 			</main>
 
-			<!-- How it works: 3-column grid -->
-			<section class="mb-12 sm:mb-16">
-				<h2 class="text-3xl sm:text-4xl font-bold text-primary-900 text-center mb-8 sm:mb-12">How it works</h2>
-				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-					<div class="bg-gradient-to-br from-primary-50 to-accent-50 border-2 border-primary-200 rounded-3xl p-6 sm:p-8 shadow-sm text-center">
-						<div class="w-12 h-12 rounded-full bg-primary-600 text-white text-xl font-bold flex items-center justify-center mx-auto mb-4" aria-hidden="true">1</div>
-						<h3 class="text-lg font-semibold text-primary-900 mb-3">Paste a recipe URL</h3>
-						<p class="text-base text-primary-800 leading-relaxed">
-							From any website—we support most recipe sites including NYT Cooking, AllRecipes, and more.
-						</p>
-					</div>
-					<div class="bg-gradient-to-br from-primary-50 to-accent-50 border-2 border-primary-200 rounded-3xl p-6 sm:p-8 shadow-sm text-center">
-						<div class="w-12 h-12 rounded-full bg-primary-600 text-white text-xl font-bold flex items-center justify-center mx-auto mb-4" aria-hidden="true">2</div>
-						<h3 class="text-lg font-semibold text-primary-900 mb-3">We extract the data</h3>
-						<p class="text-base text-primary-800 leading-relaxed">
-							Using structured data (JSON-LD) and intelligent HTML parsing to capture ingredients, instructions, and images.
-						</p>
-					</div>
-					<div class="bg-gradient-to-br from-primary-50 to-accent-50 border-2 border-primary-200 rounded-3xl p-6 sm:p-8 shadow-sm text-center">
-						<div class="w-12 h-12 rounded-full bg-primary-600 text-white text-xl font-bold flex items-center justify-center mx-auto mb-4" aria-hidden="true">3</div>
-						<h3 class="text-lg font-semibold text-primary-900 mb-3">Claude AI analyzes</h3>
-						<p class="text-base text-primary-800 leading-relaxed">
-							Automatically adds cuisine tags, meal types, healthiness scores, and ingredient categories.
-						</p>
-					</div>
-					<div class="bg-gradient-to-br from-primary-50 to-accent-50 border-2 border-primary-200 rounded-3xl p-6 sm:p-8 shadow-sm text-center">
-						<div class="w-12 h-12 rounded-full bg-primary-600 text-white text-xl font-bold flex items-center justify-center mx-auto mb-4" aria-hidden="true">4</div>
-						<h3 class="text-lg font-semibold text-primary-900 mb-3">Notion page created</h3>
-						<p class="text-base text-primary-800 leading-relaxed">
-							With cover photos, organized ingredients, numbered instructions, and AI-generated metadata.
-						</p>
-					</div>
-				</div>
-			</section>
-
-			<!-- Setup Notice -->
-			<div class="bg-accent-50/60 border-2 border-accent-200 rounded-3xl p-6 max-w-2xl mx-auto">
-				<div class="flex items-start gap-4">
-					<svg class="w-6 h-6 text-accent-700 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-					</svg>
-					<div>
-						<h3 class="text-xl font-semibold text-accent-900 mb-3">Setup required</h3>
-						<p class="text-lg text-accent-900 leading-relaxed">
-							Before using this tool, you'll need to deploy it to Vercel and configure your Notion database. <a href="https://github.com/willbiddy/recipe-to-notion" target="_blank" rel="noopener noreferrer" class="font-semibold underline hover:text-accent-900 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 rounded">See setup instructions</a> for detailed steps.
-						</p>
-					</div>
-				</div>
-			</div>
 		</div>
 
 		<script type="module" src="/api/web.js"></script>

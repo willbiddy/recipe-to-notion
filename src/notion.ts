@@ -604,15 +604,18 @@ function truncate(text: string, maxLength: number): string {
 function groupIngredientsByCategory(
 	ingredients: CategorizedIngredient[],
 ): Map<IngredientCategory, CategorizedIngredient[]> {
-	const grouped = new Map<IngredientCategory, CategorizedIngredient[]>();
-	for (const ingredient of ingredients) {
+	return ingredients.reduce((map, ingredient) => {
 		const category = ingredient.category;
-		if (!grouped.has(category)) {
-			grouped.set(category, []);
+		const group = map.get(category);
+
+		if (group) {
+			group.push(ingredient);
+		} else {
+			map.set(category, [ingredient]);
 		}
-		grouped.get(category)?.push(ingredient);
-	}
-	return grouped;
+
+		return map;
+	}, new Map<IngredientCategory, CategorizedIngredient[]>());
 }
 
 /**

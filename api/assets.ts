@@ -83,6 +83,8 @@ export default {
 			});
 		} catch (error) {
 			consola.error(`Error serving asset ${pathname}:`, error);
+			// Also log to console for Vercel
+			console.error(`Error serving asset ${pathname}:`, error);
 			return new Response("Not Found", {
 				status: 404,
 				headers: { "Content-Type": "text/plain; charset=utf-8" },

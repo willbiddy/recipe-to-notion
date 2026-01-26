@@ -3,11 +3,21 @@ import { ValidationError } from "./errors.js";
 
 /**
  * Environment variable schema for validation.
- * All fields are required and must be non-empty strings.
+ * All fields are required and must be non-empty strings with proper format.
  */
 const envSchema = z.object({
-	ANTHROPIC_API_KEY: z.string().min(1, "ANTHROPIC_API_KEY is required"),
-	NOTION_API_KEY: z.string().min(1, "NOTION_API_KEY is required"),
+	ANTHROPIC_API_KEY: z
+		.string()
+		.min(1, "ANTHROPIC_API_KEY is required")
+		.refine((val: string) => val.startsWith("sk-ant-"), {
+			message: "ANTHROPIC_API_KEY must start with 'sk-ant-'",
+		}),
+	NOTION_API_KEY: z
+		.string()
+		.min(1, "NOTION_API_KEY is required")
+		.refine((val: string) => val.startsWith("secret_") || val.startsWith("ntn_"), {
+			message: "NOTION_API_KEY must start with 'secret_' or 'ntn_'",
+		}),
 	NOTION_DATABASE_ID: z.string().min(1, "NOTION_DATABASE_ID is required"),
 	API_SECRET: z.string().min(1, "API_SECRET is required"),
 });

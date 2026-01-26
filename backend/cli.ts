@@ -10,14 +10,10 @@ import { defineCommand, runMain } from "citty";
 import { consola } from "consola";
 import { colors } from "consola/utils";
 import { isValidHttpUrl } from "../shared/url-utils.js";
-import { type Config, getNotionConfig, loadConfig } from "./config.js";
+import { type Config, loadConfig } from "./config.js";
 import { createConsoleLogger } from "./logger.js";
-import { getNotionPageUrl } from "./notion/client.js";
-import { checkForDuplicateByTitle, checkForDuplicateByUrl } from "./notion/duplicates.js";
-import { createRecipePage } from "./notion/page.js";
 import { processRecipe } from "./process-recipe.js";
-import { type Recipe, scrapeRecipe, scrapeRecipeFromHtml } from "./scraper.js";
-import { type RecipeTags, tagRecipe } from "./tagger.js";
+import { scrapeRecipeFromHtml } from "./scraper.js";
 
 const main = defineCommand({
 	meta: {
@@ -126,8 +122,7 @@ async function processUrlsSequentially(
 /**
  * Handles a single recipe URL through the full pipeline with CLI logging.
  *
- * For HTML file mode, uses the legacy pipeline with manual steps. For normal URLs,
- * uses the shared processRecipe pipeline.
+ * Uses the shared processRecipe pipeline for both normal URLs and HTML file mode.
  *
  * @param url - The recipe URL to process.
  * @param config - Application configuration with API keys.
@@ -136,125 +131,28 @@ async function processUrlsSequentially(
  */
 async function handleRecipe(url: string, config: Config, htmlPath?: string): Promise<boolean> {
 	try {
+		const logger = createConsoleLogger();
+
 		if (htmlPath) {
-			return await handleRecipeFromHtml(url, htmlPath, config);
+			// For HTML file mode, scrape first then use the shared pipeline
+			consola.start(`Parsing recipe from ${htmlPath}...`);
+			const recipe = await scrapeRecipeFromHtml(htmlPath, url);
+			const methodLabel = recipe.scrapeMethod === "json-ld" ? "(JSON-LD)" : "(HTML fallback)";
+			consola.success(`Scraped: ${recipe.name} ${methodLabel}`);
+
+			// Use shared pipeline with pre-scraped recipe
+			await processRecipe({ recipe, logger });
+		} else {
+			// Normal URL mode - use shared pipeline
+			await processRecipe({ url, logger });
 		}
 
-		const logger = createConsoleLogger();
-		await processRecipe(url, undefined, logger);
 		return true;
 	} catch (err) {
 		const message = err instanceof Error ? err.message : String(err);
 		consola.error(`Failed: ${message}`);
 		return false;
 	}
-}
-
-/**
- * Handles recipe processing from a saved HTML file (legacy mode).
- *
- * This bypasses the shared pipeline to support the --html flag. Processing steps:
- * 1. Check for duplicate URL
- * 2. Fetch and parse recipe from HTML file
- * 3. Check for duplicate title
- * 4. Generate AI tags
- * 5. Save to Notion
- *
- * @param url - The recipe URL (for reference).
- * @param htmlPath - Path to saved HTML file.
- * @param config - Application configuration with API keys.
- * @returns True if the recipe was saved successfully, false otherwise.
- */
-async function handleRecipeFromHtml(
-	url: string,
-	htmlPath: string,
-	config: Config,
-): Promise<boolean> {
-	const notionConfig = getNotionConfig(config);
-
-	consola.start("Checking for duplicates...");
-	const urlDuplicate = await checkForDuplicateByUrl({
-		url,
-		...notionConfig,
-	});
-
-	if (urlDuplicate) {
-		consola.warn(`Duplicate: "${urlDuplicate.title}" already exists at ${urlDuplicate.notionUrl}`);
-		return false;
-	}
-	consola.success("No duplicates");
-
-	const recipe = await fetchRecipe(url, htmlPath);
-
-	const titleDuplicate = await checkForDuplicateByTitle({
-		recipeName: recipe.name,
-		...notionConfig,
-	});
-
-	if (titleDuplicate) {
-		consola.warn(
-			`Duplicate: "${titleDuplicate.title}" already exists at ${titleDuplicate.notionUrl}`,
-		);
-		return false;
-	}
-
-	const tags = await generateTags(recipe, config);
-
-	await saveToNotion(recipe, tags, config);
-	return true;
-}
-
-/**
- * Fetches and parses recipe data from URL or local HTML file.
- *
- * @param url - The recipe URL to scrape.
- * @param htmlPath - Optional path to saved HTML file (bypasses fetching).
- * @returns Parsed recipe data.
- */
-async function fetchRecipe(url: string, htmlPath?: string): Promise<Recipe> {
-	consola.start(htmlPath ? `Parsing recipe from ${htmlPath}...` : "Scraping recipe...");
-
-	const recipe = htmlPath ? await scrapeRecipeFromHtml(htmlPath, url) : await scrapeRecipe(url);
-
-	const methodLabel = recipe.scrapeMethod === "json-ld" ? "(JSON-LD)" : "(HTML fallback)";
-	consola.success(`Scraped: ${recipe.name} ${methodLabel}`);
-	return recipe;
-}
-
-/**
- * Generates AI tags and scores for a recipe.
- *
- * @param recipe - The scraped recipe to analyze.
- * @param config - Application configuration with API keys.
- * @returns AI-generated tags and scores for the recipe.
- */
-async function generateTags(recipe: Recipe, config: Config): Promise<RecipeTags> {
-	consola.start("Generating tags...");
-	const tags = await tagRecipe(recipe, config.ANTHROPIC_API_KEY);
-	consola.success("Tags generated");
-	return tags;
-}
-
-/**
- * Saves a recipe to Notion and logs the resulting URL.
- *
- * @param recipe - The scraped recipe data.
- * @param tags - AI-generated tags and scores.
- * @param config - Application configuration with API keys.
- */
-async function saveToNotion(recipe: Recipe, tags: RecipeTags, config: Config): Promise<void> {
-	consola.start("Saving to Notion...");
-
-	const notionConfig = getNotionConfig(config);
-	const pageId = await createRecipePage({
-		recipe,
-		tags,
-		...notionConfig,
-		skipDuplicateCheck: true,
-	});
-
-	const notionUrl = getNotionPageUrl(pageId);
-	consola.success(`Saved to Notion: ${colors.underline(colors.blue(notionUrl))}`);
 }
 
 /**

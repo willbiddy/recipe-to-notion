@@ -35,7 +35,6 @@ export enum ProgressType {
 	Scraping = "scraping",
 	Tagging = "tagging",
 	Saving = "saving",
-	Starting = "starting",
 }
 
 /**
@@ -63,63 +62,122 @@ const PROGRESS_MESSAGES = {
 export type ProgressCallback = (event: ProgressEvent) => void;
 
 /**
+ * Options for processing a recipe.
+ */
+export type ProcessRecipeOptions = {
+	/**
+	 * Recipe page URL to process (required if recipe is not provided).
+	 */
+	url?: string;
+	/**
+	 * Pre-scraped recipe data (if provided, skips scraping step).
+	 */
+	recipe?: Recipe;
+	/**
+	 * Optional callback for progress updates (for SSE/streaming).
+	 */
+	onProgress?: ProgressCallback;
+	/**
+	 * Optional logger for detailed step-by-step logging.
+	 */
+	logger?: RecipeLogger;
+};
+
+/**
  * Orchestrates the full recipe pipeline: scrape -> tag -> save.
  *
  * Processing steps:
  * 1. Check for duplicate URL (early detection before scraping)
- * 2. Scrape recipe from URL
+ * 2. Scrape recipe from URL (or use provided recipe)
  * 3. Generate AI tags and scores using Claude
  * 4. Check for duplicate title (after scraping to get accurate title)
  * 5. Save to Notion with recipe metadata, ingredients, and instructions
  *
- * @param url - Recipe page URL to process.
- * @param onProgress - Optional callback for progress updates (for SSE/streaming).
- * @param logger - Optional logger for detailed step-by-step logging.
+ * @param urlOrOptions - Recipe page URL to process, or options object.
+ * @param onProgress - Optional callback for progress updates (for SSE/streaming). Deprecated: use options object instead.
+ * @param logger - Optional logger for detailed step-by-step logging. Deprecated: use options object instead.
  * @returns The scraped recipe, generated tags, and the Notion page ID.
  * @throws If a duplicate recipe (same title or URL) already exists.
  */
 export async function processRecipe(
-	url: string,
+	urlOrOptions: string | ProcessRecipeOptions,
 	onProgress?: ProgressCallback,
 	logger?: RecipeLogger,
 ): Promise<ProcessResult> {
+	// Support both old API (url, onProgress?, logger?) and new API (options object)
+	const options: ProcessRecipeOptions =
+		typeof urlOrOptions === "string" ? { url: urlOrOptions, onProgress, logger } : urlOrOptions;
+
+	const {
+		url,
+		recipe: providedRecipe,
+		onProgress: progressCallback,
+		logger: recipeLogger,
+	} = options;
+
+	if (!url && !providedRecipe) {
+		throw new Error("Either url or recipe must be provided");
+	}
+
 	const config = loadConfig();
 	const notionConfig = getNotionConfig(config);
 
-	logger?.onStart?.();
+	recipeLogger?.onStart?.();
 
-	onProgress?.({
+	const recipeUrl = url || providedRecipe?.sourceUrl;
+	if (!recipeUrl) {
+		throw new Error("Recipe URL is required for duplicate checking");
+	}
+
+	progressCallback?.({
 		type: ProgressType.CheckingDuplicates,
 		message: PROGRESS_MESSAGES[ProgressType.CheckingDuplicates],
 	});
-	logger?.onCheckingDuplicates?.();
+	recipeLogger?.onCheckingDuplicates?.();
 	const urlDuplicate = await checkForDuplicateByUrl({
-		url,
+		url: recipeUrl,
 		...notionConfig,
 	});
 
-	checkAndThrowIfDuplicate(urlDuplicate, logger);
-	logger?.onNoDuplicateFound?.();
+	checkAndThrowIfDuplicate(urlDuplicate, recipeLogger);
+	recipeLogger?.onNoDuplicateFound?.();
 
-	onProgress?.({ type: ProgressType.Scraping, message: PROGRESS_MESSAGES[ProgressType.Scraping] });
-	logger?.onScraping?.();
-	const recipe = await scrapeRecipe(url);
-	logger?.onScraped?.(recipe);
+	let recipe: Recipe;
+	if (providedRecipe) {
+		// Use provided recipe, skip scraping
+		recipe = providedRecipe;
+		recipeLogger?.onScraped?.(recipe);
+	} else {
+		// Scrape recipe from URL
+		progressCallback?.({
+			type: ProgressType.Scraping,
+			message: PROGRESS_MESSAGES[ProgressType.Scraping],
+		});
+		recipeLogger?.onScraping?.();
+		recipe = await scrapeRecipe(url!);
+		recipeLogger?.onScraped?.(recipe);
+	}
 
-	onProgress?.({ type: ProgressType.Tagging, message: PROGRESS_MESSAGES[ProgressType.Tagging] });
-	logger?.onTagging?.();
+	progressCallback?.({
+		type: ProgressType.Tagging,
+		message: PROGRESS_MESSAGES[ProgressType.Tagging],
+	});
+	recipeLogger?.onTagging?.();
 	const tags = await tagRecipe(recipe, config.ANTHROPIC_API_KEY);
-	logger?.onTagged?.();
+	recipeLogger?.onTagged?.();
 
 	const titleDuplicate = await checkForDuplicateByTitle({
 		recipeName: recipe.name,
 		...notionConfig,
 	});
 
-	checkAndThrowIfDuplicate(titleDuplicate, logger);
+	checkAndThrowIfDuplicate(titleDuplicate, recipeLogger);
 
-	onProgress?.({ type: ProgressType.Saving, message: PROGRESS_MESSAGES[ProgressType.Saving] });
-	logger?.onSaving?.();
+	progressCallback?.({
+		type: ProgressType.Saving,
+		message: PROGRESS_MESSAGES[ProgressType.Saving],
+	});
+	recipeLogger?.onSaving?.();
 	const pageId = await createRecipePage({
 		recipe,
 		tags,
@@ -128,9 +186,9 @@ export async function processRecipe(
 	});
 
 	const notionUrl = getNotionPageUrl(pageId);
-	logger?.onSaved?.(notionUrl);
+	recipeLogger?.onSaved?.(notionUrl);
 
-	logger?.onSummary?.(recipe, tags);
+	recipeLogger?.onSummary?.(recipe, tags);
 
 	return { recipe, tags, pageId };
 }

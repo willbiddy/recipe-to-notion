@@ -121,6 +121,27 @@ export function cleanRecipeName(name: string): string {
 }
 
 /**
+ * Map of Unicode fraction characters to their ASCII equivalents.
+ */
+const FRACTION_MAP = new Map([
+	["½", "1/2"],
+	["¼", "1/4"],
+	["¾", "3/4"],
+	["⅓", "1/3"],
+	["⅔", "2/3"],
+	["⅛", "1/8"],
+	["⅜", "3/8"],
+	["⅝", "5/8"],
+	["⅞", "7/8"],
+	["⅕", "1/5"],
+	["⅖", "2/5"],
+	["⅗", "3/5"],
+	["⅘", "4/5"],
+	["⅙", "1/6"],
+	["⅚", "5/6"],
+]);
+
+/**
  * Normalizes Unicode fraction characters to ASCII equivalents.
  *
  * Converts Unicode fraction characters (e.g., ½, ¼, ¾) to their
@@ -130,22 +151,11 @@ export function cleanRecipeName(name: string): string {
  * @returns The text with fractions normalized to ASCII.
  */
 export function normalizeFractions(text: string): string {
-	return text
-		.replace(/½/g, "1/2")
-		.replace(/¼/g, "1/4")
-		.replace(/¾/g, "3/4")
-		.replace(/⅓/g, "1/3")
-		.replace(/⅔/g, "2/3")
-		.replace(/⅛/g, "1/8")
-		.replace(/⅜/g, "3/8")
-		.replace(/⅝/g, "5/8")
-		.replace(/⅞/g, "7/8")
-		.replace(/⅕/g, "1/5")
-		.replace(/⅖/g, "2/5")
-		.replace(/⅗/g, "3/5")
-		.replace(/⅘/g, "4/5")
-		.replace(/⅙/g, "1/6")
-		.replace(/⅚/g, "5/6");
+	let result = text;
+	for (const [unicode, ascii] of FRACTION_MAP) {
+		result = result.replaceAll(unicode, ascii);
+	}
+	return result;
 }
 
 /**

@@ -96,9 +96,9 @@ export function handleRecipeStream(options: RecipeStreamOptions): Response {
 
 				const logger = createConsoleLogger();
 
-				const result = await processRecipe(
+				const result = await processRecipe({
 					url,
-					(event: ProgressEvent) => {
+					onProgress: (event: ProgressEvent) => {
 						sendEvent({
 							type: ServerProgressEventType.Progress,
 							message: event.message,
@@ -106,7 +106,7 @@ export function handleRecipeStream(options: RecipeStreamOptions): Response {
 						});
 					},
 					logger,
-				);
+				});
 
 				const notionUrl = getNotionPageUrl(result.pageId);
 				const completeEvent: Record<string, unknown> = {
@@ -243,7 +243,7 @@ export async function handleRecipeRequest(options: RecipeHandlerOptions): Promis
 		}
 
 		const logger = createConsoleLogger();
-		const result = await processRecipe(validatedBody.url, undefined, logger);
+		const result = await processRecipe({ url: validatedBody.url, logger });
 
 		const savedNotionUrl = getNotionPageUrl(result.pageId);
 

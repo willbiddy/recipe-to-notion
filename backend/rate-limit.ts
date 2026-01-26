@@ -57,15 +57,15 @@ import { CLEANUP_INTERVAL_MS } from "../shared/constants.js";
 /**
  * Cleans up expired rate limit entries to prevent memory leaks.
  *
- * Uses a conservative cleanup threshold (10 minutes) to ensure entries
- * from any reasonable rate limit configuration are cleaned up, even if
- * a custom config with a longer window was used.
+ * Uses a cleanup threshold that matches the cleanup interval to ensure entries
+ * are removed promptly. For custom configs with longer windows, entries will
+ * be cleaned up on the next cleanup cycle after expiration.
  */
 function cleanupExpiredEntries(): void {
 	const now = Date.now();
-	// Use a conservative threshold (10 minutes) to handle any reasonable rate limit window
-	// This ensures cleanup works even if custom configs with longer windows are used
-	const CLEANUP_THRESHOLD_MS = 10 * 60 * 1000; // 10 minutes
+	// Use cleanup interval as threshold to ensure entries are removed promptly
+	// This means entries will be cleaned up within one cleanup cycle after expiration
+	const CLEANUP_THRESHOLD_MS = CLEANUP_INTERVAL_MS;
 	for (const [key, entry] of rateLimitStore.entries()) {
 		if (now - entry.windowStart > CLEANUP_THRESHOLD_MS) {
 			rateLimitStore.delete(key);

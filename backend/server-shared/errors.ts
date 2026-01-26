@@ -133,9 +133,24 @@ export function sanitizeError(
 	}
 
 	if (error instanceof NotionApiError) {
+		// Provide more specific error messages based on the error type
+		let message = "Failed to save recipe to Notion.";
+
+		if (error.propertyName && error.propertyType) {
+			message += ` The property "${error.propertyName}" is missing or has the wrong type (expected: ${error.propertyType}).`;
+			message += " Please check your Notion database schema matches the required properties.";
+		} else if (error.statusCode === 401 || error.statusCode === 403) {
+			message +=
+				" Please check your Notion API key and ensure the integration has access to the database.";
+		} else if (error.statusCode === 404) {
+			message += " The database or page was not found. Please check your NOTION_DATABASE_ID.";
+		} else {
+			message += " Please check your Notion API configuration.";
+		}
+
 		return {
 			statusCode: HttpStatus.BadGateway,
-			message: "Failed to save recipe to Notion. Please check your Notion API configuration.",
+			message,
 		};
 	}
 

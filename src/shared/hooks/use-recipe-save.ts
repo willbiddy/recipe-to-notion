@@ -4,7 +4,7 @@
 
 import { type Accessor, createSignal, type Setter } from "solid-js";
 import type { RecipeResponse } from "../api.js";
-import { StatusType } from "../components/StatusMessage.js";
+import { StatusType } from "../components/status-message.js";
 import { ErrorMessageKey, getErrorMessage } from "../constants.js";
 import { isApiKeyError } from "../error-utils.js";
 import type { StorageAdapter } from "../storage.js";

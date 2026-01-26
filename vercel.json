@@ -69,6 +69,54 @@
 		{
 			"source": "/shared/ui.js",
 			"destination": "/api/assets?path=/shared/ui.js"
+		},
+		{
+			"source": "/api/web.js",
+			"destination": "/api/assets?path=/web.js"
+		},
+		{
+			"source": "/api/web.css",
+			"destination": "/api/assets?path=/web.css"
+		},
+		{
+			"source": "/api/favicon.ico",
+			"destination": "/api/assets?path=/favicon.ico"
+		},
+		{
+			"source": "/api/favicon.png",
+			"destination": "/api/assets?path=/favicon.png"
+		},
+		{
+			"source": "/api/favicon-16x16.png",
+			"destination": "/api/assets?path=/favicon-16x16.png"
+		},
+		{
+			"source": "/api/favicon-32x32.png",
+			"destination": "/api/assets?path=/favicon-32x32.png"
+		},
+		{
+			"source": "/api/favicon-white.png",
+			"destination": "/api/assets?path=/favicon-white.png"
+		},
+		{
+			"source": "/api/favicon-16x16-white.png",
+			"destination": "/api/assets?path=/favicon-16x16-white.png"
+		},
+		{
+			"source": "/api/favicon-32x32-white.png",
+			"destination": "/api/assets?path=/favicon-32x32-white.png"
+		},
+		{
+			"source": "/api/apple-touch-icon.png",
+			"destination": "/api/assets?path=/apple-touch-icon.png"
+		},
+		{
+			"source": "/api/fork-and-knife.png",
+			"destination": "/api/assets?path=/fork-and-knife.png"
+		},
+		{
+			"source": "/api/manifest.json",
+			"destination": "/api/assets?path=/manifest.json"
 		}
 	],
 	"functions": {

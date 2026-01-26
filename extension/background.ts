@@ -8,7 +8,7 @@
  */
 const CONTEXT_MENU = {
 	ID: "save-recipe",
-	TITLE: "Save Recipe with recipe-to-notion",
+	TITLE: "Save Recipe with Recipe Clipper for Notion",
 	CONTEXTS: ["page" as chrome.contextMenus.ContextType],
 } as const;
 
@@ -51,21 +51,25 @@ async function getThemePreference(): Promise<"light" | "dark"> {
  */
 async function detectSystemTheme(): Promise<"light" | "dark"> {
 	try {
-		// Try to get an active tab to detect theme
-		const tabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
-		if (tabs[0]?.id) {
-			const results = await chrome.scripting.executeScript({
-				target: { tabId: tabs[0].id },
-				func: () => {
-					return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-				},
-			});
-			if (results[0]?.result) {
-				return results[0].result as "light" | "dark";
+		// Try to get any tab to detect theme (not just active)
+		const tabs = await chrome.tabs.query({});
+		for (const tab of tabs) {
+			if (tab.id) {
+				try {
+					const results = await chrome.scripting.executeScript({
+						target: { tabId: tab.id },
+						func: () => {
+							return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+						},
+					});
+					if (results[0]?.result) {
+						return results[0].result as "light" | "dark";
+					}
+				} catch {}
 			}
 		}
 	} catch {
-		// If we can't detect (e.g., no tabs, no permissions), fall back to stored preference
+		// If we can't detect, fall back to stored preference
 	}
 	// Fall back to stored preference or default to light
 	return await getThemePreference();

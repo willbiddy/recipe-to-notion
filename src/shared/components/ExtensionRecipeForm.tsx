@@ -6,8 +6,8 @@
 import { createSignal, onMount, Show } from "solid-js";
 import { type RecipeResponse, saveRecipe } from "../api.js";
 import { createStorageAdapter } from "../storage.js";
+import { ApiSecretPrompt } from "./ApiSecretPrompt.js";
 import { ProgressIndicator } from "./ProgressIndicator.js";
-import { SettingsPanel } from "./SettingsPanel.js";
 import { StatusMessage, StatusType, TextSize } from "./StatusMessage.js";
 import { UrlDisplay } from "./UrlDisplay.js";
 
@@ -42,7 +42,8 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 	const [loading, setLoading] = createSignal(false);
 	const [status, setStatus] = createSignal<{ message: string; type: StatusType } | null>(null);
 	const [progress, setProgress] = createSignal<string | null>(null);
-	const [settingsOpen, setSettingsOpen] = createSignal(false);
+	const [showApiPrompt, setShowApiPrompt] = createSignal(false);
+	const [pendingSave, setPendingSave] = createSignal<(() => void) | null>(null);
 
 	/**
 	 * Saves a recipe with progress streaming.
@@ -73,9 +74,9 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 	};
 
 	/**
-	 * Handles the save button click.
+	 * Actually saves the recipe (called after API secret is confirmed).
 	 */
-	const handleSave = async () => {
+	const performSave = async () => {
 		const url = currentUrl();
 
 		if (!url) {
@@ -128,36 +129,33 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 	};
 
 	/**
-	 * Toggles settings panel.
+	 * Handles the save button click.
 	 */
-	const toggleSettings = () => {
-		setSettingsOpen(!settingsOpen());
-	};
-
-	/**
-	 * Checks if API key is configured and updates status accordingly.
-	 */
-	const checkApiKey = async () => {
+	const handleSave = async () => {
+		// Check if API secret is configured
 		const apiKey = await storage.getApiKey();
-		if (apiKey) {
-			// Clear the error status if API key exists
-			const currentStatus = status();
-			if (currentStatus?.message.includes("API secret not configured")) {
-				setStatus(null);
-			}
-		} else {
-			setStatus({
-				message: "API secret not configured",
-				type: StatusType.Error,
-			});
+		if (!apiKey) {
+			// Show prompt and save the save action for later
+			setPendingSave(() => performSave);
+			setShowApiPrompt(true);
+			return;
 		}
+
+		// API secret exists, proceed with save
+		await performSave();
 	};
 
 	/**
-	 * Handles when API key is saved in settings.
+	 * Handles when API secret is saved in the prompt.
 	 */
-	const handleApiKeySaved = () => {
-		checkApiKey();
+	const handleApiSecretSaved = () => {
+		setShowApiPrompt(false);
+		// Execute the pending save if there was one
+		const save = pendingSave();
+		if (save) {
+			setPendingSave(null);
+			save();
+		}
 	};
 
 	// Initialize on mount
@@ -165,14 +163,6 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 		const { url, title } = await getCurrentTab();
 		setCurrentUrl(url);
 		setCurrentTitle(title);
-
-		const apiKey = await storage.getApiKey();
-		if (!apiKey) {
-			setStatus({
-				message: "API secret not configured",
-				type: StatusType.Error,
-			});
-		}
 	});
 
 	return (
@@ -223,58 +213,14 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 				{(s) => <StatusMessage message={s().message} type={s().type} textSize={TextSize.Xs} />}
 			</Show>
 
-			{/* Settings Button */}
-			<div class="flex items-center justify-start pt-2">
-				<button
-					id="settings-button"
-					type="button"
-					onClick={toggleSettings}
-					aria-label="Toggle settings panel"
-					aria-expanded={settingsOpen()}
-					aria-controls="settings-panel"
-					class="text-xs text-gray-600 hover:text-gray-900 transition-colors duration-200 flex items-center gap-2"
-					title="Settings"
-				>
-					<svg
-						width="14"
-						height="14"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						aria-hidden="true"
-					>
-						<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-						<circle cx="12" cy="12" r="3" />
-					</svg>
-					<span>Settings</span>
-					<svg
-						class={`w-3 h-3 transition-transform duration-200 ${settingsOpen() ? "rotate-180" : ""}`}
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-						aria-hidden="true"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M19 9l-7 7-7-7"
-						/>
-					</svg>
-				</button>
-			</div>
-
-			{/* Settings Panel */}
-			<Show when={settingsOpen()}>
-				<SettingsPanel
-					textSize={TextSize.Xs}
-					panelClass="flex flex-col gap-3 pt-3 border-t border-gray-200"
-					helpTextClass="text-xs text-gray-600"
-					onClose={toggleSettings}
-					onApiKeySaved={handleApiKeySaved}
+			{/* API Secret Prompt */}
+			<Show when={showApiPrompt()}>
+				<ApiSecretPrompt
+					onSecretSaved={handleApiSecretSaved}
+					onCancel={() => {
+						setShowApiPrompt(false);
+						setPendingSave(null);
+					}}
 				/>
 			</Show>
 		</div>

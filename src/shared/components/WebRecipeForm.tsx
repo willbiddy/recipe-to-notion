@@ -6,9 +6,9 @@
 import { createSignal, onMount, Show } from "solid-js";
 import { type RecipeResponse, saveRecipe } from "../api.js";
 import { createStorageAdapter } from "../storage.js";
+import { ApiSecretPrompt } from "./ApiSecretPrompt.js";
 import { ProgressIndicator } from "./ProgressIndicator.js";
 import { RecipeInfo, type RecipeInfoData } from "./RecipeInfo.js";
-import { SettingsPanel } from "./SettingsPanel.js";
 import { StatusMessage, StatusType } from "./StatusMessage.js";
 
 /**
@@ -53,7 +53,8 @@ export function WebRecipeForm() {
 	const [status, setStatus] = createSignal<{ message: string; type: StatusType } | null>(null);
 	const [progress, setProgress] = createSignal<string | null>(null);
 	const [recipeInfo, setRecipeInfo] = createSignal<RecipeInfoData | null>(null);
-	const [settingsOpen, setSettingsOpen] = createSignal(false);
+	const [showApiPrompt, setShowApiPrompt] = createSignal(false);
+	const [pendingSave, setPendingSave] = createSignal<(() => void) | null>(null);
 
 	function urlValid() {
 		const currentUrl = url();
@@ -95,9 +96,9 @@ export function WebRecipeForm() {
 	};
 
 	/**
-	 * Handles the save button click.
+	 * Actually saves the recipe (called after API secret is confirmed).
 	 */
-	const handleSave = async () => {
+	const performSave = async () => {
 		const currentUrl = url().trim();
 
 		if (!currentUrl) {
@@ -146,6 +147,23 @@ export function WebRecipeForm() {
 	};
 
 	/**
+	 * Handles the save button click.
+	 */
+	const handleSave = async () => {
+		// Check if API secret is configured
+		const apiKey = await storage.getApiKey();
+		if (!apiKey) {
+			// Show prompt and save the save action for later
+			setPendingSave(() => performSave);
+			setShowApiPrompt(true);
+			return;
+		}
+
+		// API secret exists, proceed with save
+		await performSave();
+	};
+
+	/**
 	 * Clears the URL input.
 	 */
 	const clearUrl = () => {
@@ -173,10 +191,16 @@ export function WebRecipeForm() {
 	};
 
 	/**
-	 * Toggles settings panel.
+	 * Handles when API secret is saved in the prompt.
 	 */
-	const toggleSettings = () => {
-		setSettingsOpen(!settingsOpen());
+	const handleApiSecretSaved = () => {
+		setShowApiPrompt(false);
+		// Execute the pending save if there was one
+		const save = pendingSave();
+		if (save) {
+			setPendingSave(null);
+			save();
+		}
 	};
 
 	/**
@@ -195,6 +219,10 @@ export function WebRecipeForm() {
 						setTimeout(() => {
 							handleSave();
 						}, AUTO_SUBMIT_DELAY_MS);
+					} else {
+						// Show prompt if no API key
+						setPendingSave(() => performSave);
+						setShowApiPrompt(true);
 					}
 				});
 			} catch {
@@ -204,15 +232,8 @@ export function WebRecipeForm() {
 	};
 
 	// Initialize on mount
-	onMount(async () => {
+	onMount(() => {
 		handleQueryParameters();
-		const key = await storage.getApiKey();
-		if (!key) {
-			setStatus({
-				message: "API secret not configured",
-				type: StatusType.Error,
-			});
-		}
 	});
 
 	return (
@@ -270,7 +291,7 @@ export function WebRecipeForm() {
 				type="button"
 				onClick={handleSave}
 				disabled={loading()}
-				aria-label="Save recipe to Notion"
+				aria-label="Save recipe with Recipe Clipper for Notion"
 				class="btn-primary group"
 			>
 				<Show
@@ -317,53 +338,14 @@ export function WebRecipeForm() {
 
 			<div class="flex-grow" />
 
-			{/* Settings Button */}
-			<div class="flex items-center justify-start pt-4 mt-4">
-				<button
-					type="button"
-					onClick={toggleSettings}
-					aria-label="Toggle settings panel"
-					aria-expanded={settingsOpen()}
-					aria-controls="settings-panel"
-					class="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200 flex items-center gap-2"
-				>
-					<svg
-						width="16"
-						height="16"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						aria-hidden="true"
-					>
-						<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-						<circle cx="12" cy="12" r="3" />
-					</svg>
-					<span>Settings</span>
-					<svg
-						class={`w-3 h-3 transition-transform duration-200 ${settingsOpen() ? "rotate-180" : ""}`}
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-						aria-hidden="true"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M19 9l-7 7-7-7"
-						/>
-					</svg>
-				</button>
-			</div>
-
-			{/* Settings Panel */}
-			<Show when={settingsOpen()}>
-				<SettingsPanel
-					panelClass="flex flex-col gap-4 pt-4 mt-4 transition-all duration-300 ease-in-out overflow-hidden animate-slide-down"
-					onClose={toggleSettings}
+			{/* API Secret Prompt */}
+			<Show when={showApiPrompt()}>
+				<ApiSecretPrompt
+					onSecretSaved={handleApiSecretSaved}
+					onCancel={() => {
+						setShowApiPrompt(false);
+						setPendingSave(null);
+					}}
 				/>
 			</Show>
 		</div>

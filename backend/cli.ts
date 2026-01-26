@@ -44,9 +44,6 @@ const main = defineCommand({
 			process.exit(1);
 		}
 
-		/**
-		 * Handle --html flag (single URL only).
-		 */
 		if (args.html) {
 			if (urls.length > 1) {
 				consola.warn("--html option only supports one URL at a time");

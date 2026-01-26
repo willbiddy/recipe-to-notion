@@ -4,12 +4,6 @@ import type { CategorizedIngredient, RecipeTags } from "../tagger.js";
 import { IngredientCategory } from "../tagger.js";
 import { normalizeDescriptionText, truncate } from "./utils.js";
 
-/**
- * Returns the standard grocery store category order.
- * Produce → Bakery → Meat & seafood → Pantry → Dairy & eggs → Frozen → Other
- *
- * Categories not in this list will appear after Frozen in alphabetical order.
- */
 const CATEGORY_ORDER: IngredientCategory[] = [
 	IngredientCategory.Produce,
 	IngredientCategory.Bakery,

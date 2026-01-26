@@ -9,10 +9,7 @@ import { consola } from "consola";
 import { HttpStatus } from "../backend/server-shared/constants.js";
 import { createErrorResponse, generateRequestId } from "../backend/server-shared/errors.js";
 import { setCorsHeaders, setSecurityHeaders } from "../backend/server-shared/headers.js";
-import {
-	handleRecipeRequest,
-	handleRecipeStream,
-} from "../backend/server-shared/recipe-handler.js";
+import { handleRecipeRequest } from "../backend/server-shared/recipe-handler.js";
 
 /**
  * Main handler for the /api/recipes endpoint.
@@ -44,19 +41,11 @@ export default {
 		};
 
 		try {
-			const body = (await req.json()) as { url?: string; stream?: boolean };
-			if (body.stream && typeof body.url === "string") {
-				return handleRecipeStream({
-					url: body.url,
-					requestId,
-					includeFullData: true,
-				});
-			}
-
 			return await handleRecipeRequest({
 				request: req,
 				requestId,
 				createErrorResponse: createErrorResponseWithLogging,
+				includeFullDataInStream: true,
 			});
 		} catch (error) {
 			consola.error(`[${requestId}] Recipe processing error:`, error);

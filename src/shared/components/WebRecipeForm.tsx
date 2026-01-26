@@ -252,7 +252,7 @@ export function WebRecipeForm() {
 						class="input-field"
 					/>
 					<svg
-						class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-primary-600 pointer-events-none"
+						class="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-primary-600 pointer-events-none"
 						fill="none"
 						stroke="currentColor"
 						viewBox="0 0 24 24"
@@ -295,9 +295,9 @@ export function WebRecipeForm() {
 						</Show>
 					</div>
 				</div>
-				<p class="text-base text-primary-900 flex items-start gap-2 leading-relaxed">
+				<p class="text-base text-primary-800 flex items-start gap-2 leading-relaxed font-normal">
 					<svg
-						class="w-5 h-5 text-primary-700 mt-0.5 flex-shrink-0"
+						class="w-5 h-5 text-primary-600 mt-0.5 flex-shrink-0"
 						fill="none"
 						stroke="currentColor"
 						viewBox="0 0 24 24"

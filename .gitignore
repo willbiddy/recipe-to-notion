@@ -8,13 +8,14 @@ dist
 recipe-clipper-for-notion
 recipe-to-notion
 
-# extension build output
-extension/*.js
-extension/*.js.map
+# extension build output (built by Vercel/build process)
+extension/popup.js
+extension/popup.js.map
+extension/styles.css
 extension/shared/*.js
 extension/shared/*.js.map
 
-# web interface build output
+# web interface build output (built by Vercel/build process)
 public/web.js
 public/web.js.map
 public/web.css

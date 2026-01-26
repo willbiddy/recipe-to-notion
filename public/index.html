@@ -21,76 +21,20 @@
 		<link rel="shortcut icon" href="/api/favicon" />
 	</head>
 	<body class="min-h-screen gradient-bg text-gray-900 text-base">
-		<div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 lg:py-16">
-			<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-16 items-start">
-				<!-- Left Column: Intro -->
-				<header class="lg:sticky lg:top-8">
-					<div class="text-center lg:text-left">
-						<div class="inline-flex items-center justify-center w-24 h-24 mb-8 transform hover:scale-105 transition-transform duration-300 lg:mx-0 mx-auto">
-							<img src="/api/fork-and-knife" alt="Recipe Clipper for Notion" class="w-24 h-24 object-contain" />
-						</div>
-						<h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-primary-600 via-accent-600 to-primary-700 bg-clip-text text-transparent mb-8 leading-tight">Recipe Clipper for Notion</h1>
-						<div class="space-y-8">
-							<p class="text-xl sm:text-2xl text-gray-900 leading-relaxed font-medium">
-								Save recipes from any website to your Notion database with one click. No more copying and pasting—just paste a recipe URL and get a beautifully formatted Notion page with cover photos, organized ingredients, and AI-powered tags.
-							</p>
-							<div class="bg-gradient-to-br from-primary-50 to-accent-50 border-2 border-primary-200 rounded-3xl p-8 shadow-sm">
-								<div class="flex items-start gap-5">
-									<div class="flex-shrink-0 mt-1">
-										<svg class="w-7 h-7 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
-										</svg>
-									</div>
-									<div class="flex-1">
-										<h2 class="text-2xl font-bold text-primary-900 mb-6">How it works</h2>
-										<div class="space-y-5">
-											<div class="flex items-start gap-4">
-												<span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-600 text-white text-base font-bold flex items-center justify-center mt-0.5" aria-hidden="true">1</span>
-												<p class="text-lg text-primary-900 leading-relaxed">
-													<strong class="font-semibold">Paste a recipe URL</strong> from any website—we support most recipe sites including NYT Cooking, AllRecipes, and more.
-												</p>
-											</div>
-											<div class="flex items-start gap-4">
-												<span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-600 text-white text-base font-bold flex items-center justify-center mt-0.5" aria-hidden="true">2</span>
-												<p class="text-lg text-primary-900 leading-relaxed">
-													<strong class="font-semibold">We extract the recipe data</strong> using structured data (JSON-LD) and intelligent HTML parsing to capture ingredients, instructions, and images.
-												</p>
-											</div>
-											<div class="flex items-start gap-4">
-												<span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-600 text-white text-base font-bold flex items-center justify-center mt-0.5" aria-hidden="true">3</span>
-												<p class="text-lg text-primary-900 leading-relaxed">
-													<strong class="font-semibold">Claude AI analyzes</strong> the recipe to automatically add cuisine tags, meal types (breakfast, lunch, dinner), healthiness scores (0-10), and ingredient categories.
-												</p>
-											</div>
-											<div class="flex items-start gap-4">
-												<span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-600 text-white text-base font-bold flex items-center justify-center mt-0.5" aria-hidden="true">4</span>
-												<p class="text-lg text-primary-900 leading-relaxed">
-													<strong class="font-semibold">A beautiful Notion page is created</strong> with cover photos, organized ingredients grouped by shopping aisle, numbered instructions, and all the AI-generated metadata for easy searching and filtering.
-												</p>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="bg-accent-50/60 border-2 border-accent-200 rounded-3xl p-6">
-								<div class="flex items-start gap-4">
-									<svg class="w-6 h-6 text-accent-700 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-									</svg>
-									<div>
-										<h3 class="text-xl font-semibold text-accent-900 mb-3">Setup required</h3>
-										<p class="text-lg text-accent-900 leading-relaxed">
-											Before using this tool, you'll need to deploy it to Vercel and configure your Notion database. <a href="https://github.com/willbiddy/recipe-to-notion" target="_blank" rel="noopener noreferrer" class="font-semibold underline hover:text-accent-900 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 rounded">See setup instructions</a> for detailed steps.
-										</p>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</header>
+		<div class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 lg:py-16">
+			<!-- Hero Section: Centered -->
+			<header class="text-center mb-12 sm:mb-16">
+				<div class="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 mb-6 sm:mb-8 transform hover:scale-105 transition-transform duration-300">
+					<img src="/api/fork-and-knife" alt="Recipe Clipper for Notion" class="w-20 h-20 sm:w-24 sm:h-24 object-contain" />
+				</div>
+				<h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-primary-600 via-accent-600 to-primary-700 bg-clip-text text-transparent mb-6 sm:mb-8 leading-tight">Recipe Clipper for Notion</h1>
+				<p class="text-lg sm:text-xl text-gray-700 leading-relaxed max-w-2xl mx-auto font-normal">
+					Save recipes from any website to your Notion database with one click. No more copying and pasting—just paste a recipe URL and get a beautifully formatted Notion page with cover photos, organized ingredients, and AI-powered tags.
+				</p>
+			</header>
 
-				<!-- Right Column: Form -->
-				<main id="main-content" class="card">
+			<!-- Form Card: Centered -->
+			<main id="main-content" class="card max-w-2xl mx-auto mb-16 sm:mb-20">
 				<div class="flex flex-col gap-6">
 					<label for="url-input" class="text-xl font-semibold text-primary-900 flex items-center gap-3">
 						<svg class="w-6 h-6 text-primary-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -110,7 +54,7 @@
 							aria-invalid="false"
 							class="input-field"
 						/>
-						<svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-primary-600 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+						<svg class="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-primary-600 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
 						</svg>
 						<button
@@ -128,8 +72,8 @@
 						</button>
 						<div id="url-validation" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 					</div>
-					<p id="url-help" class="text-base text-primary-900 flex items-start gap-2 leading-relaxed">
-						<svg class="w-5 h-5 text-primary-700 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+					<p id="url-help" class="text-base text-primary-800 flex items-start gap-2 leading-relaxed font-normal">
+						<svg class="w-5 h-5 text-primary-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
 						</svg>
 						Paste a recipe URL from any website. The recipe will be scraped, analyzed, and saved to your Notion database.
@@ -255,7 +199,56 @@
 						<a href="https://www.flaticon.com/free-icons/cutlery" title="cutlery icons" target="_blank" rel="noopener noreferrer" class="hover:underline focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded">Cutlery icons created by Freepik - Flaticon</a>
 					</p>
 				</div>
-		</main>
+			</main>
+
+			<!-- How it works: 3-column grid -->
+			<section class="mb-12 sm:mb-16">
+				<h2 class="text-3xl sm:text-4xl font-bold text-primary-900 text-center mb-8 sm:mb-12">How it works</h2>
+				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+					<div class="bg-gradient-to-br from-primary-50 to-accent-50 border-2 border-primary-200 rounded-3xl p-6 sm:p-8 shadow-sm text-center">
+						<div class="w-12 h-12 rounded-full bg-primary-600 text-white text-xl font-bold flex items-center justify-center mx-auto mb-4" aria-hidden="true">1</div>
+						<h3 class="text-lg font-semibold text-primary-900 mb-3">Paste a recipe URL</h3>
+						<p class="text-base text-primary-800 leading-relaxed">
+							From any website—we support most recipe sites including NYT Cooking, AllRecipes, and more.
+						</p>
+					</div>
+					<div class="bg-gradient-to-br from-primary-50 to-accent-50 border-2 border-primary-200 rounded-3xl p-6 sm:p-8 shadow-sm text-center">
+						<div class="w-12 h-12 rounded-full bg-primary-600 text-white text-xl font-bold flex items-center justify-center mx-auto mb-4" aria-hidden="true">2</div>
+						<h3 class="text-lg font-semibold text-primary-900 mb-3">We extract the data</h3>
+						<p class="text-base text-primary-800 leading-relaxed">
+							Using structured data (JSON-LD) and intelligent HTML parsing to capture ingredients, instructions, and images.
+						</p>
+					</div>
+					<div class="bg-gradient-to-br from-primary-50 to-accent-50 border-2 border-primary-200 rounded-3xl p-6 sm:p-8 shadow-sm text-center">
+						<div class="w-12 h-12 rounded-full bg-primary-600 text-white text-xl font-bold flex items-center justify-center mx-auto mb-4" aria-hidden="true">3</div>
+						<h3 class="text-lg font-semibold text-primary-900 mb-3">Claude AI analyzes</h3>
+						<p class="text-base text-primary-800 leading-relaxed">
+							Automatically adds cuisine tags, meal types, healthiness scores, and ingredient categories.
+						</p>
+					</div>
+					<div class="bg-gradient-to-br from-primary-50 to-accent-50 border-2 border-primary-200 rounded-3xl p-6 sm:p-8 shadow-sm text-center">
+						<div class="w-12 h-12 rounded-full bg-primary-600 text-white text-xl font-bold flex items-center justify-center mx-auto mb-4" aria-hidden="true">4</div>
+						<h3 class="text-lg font-semibold text-primary-900 mb-3">Notion page created</h3>
+						<p class="text-base text-primary-800 leading-relaxed">
+							With cover photos, organized ingredients, numbered instructions, and AI-generated metadata.
+						</p>
+					</div>
+				</div>
+			</section>
+
+			<!-- Setup Notice -->
+			<div class="bg-accent-50/60 border-2 border-accent-200 rounded-3xl p-6 max-w-2xl mx-auto">
+				<div class="flex items-start gap-4">
+					<svg class="w-6 h-6 text-accent-700 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+					</svg>
+					<div>
+						<h3 class="text-xl font-semibold text-accent-900 mb-3">Setup required</h3>
+						<p class="text-lg text-accent-900 leading-relaxed">
+							Before using this tool, you'll need to deploy it to Vercel and configure your Notion database. <a href="https://github.com/willbiddy/recipe-to-notion" target="_blank" rel="noopener noreferrer" class="font-semibold underline hover:text-accent-900 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 rounded">See setup instructions</a> for detailed steps.
+						</p>
+					</div>
+				</div>
 			</div>
 		</div>
 

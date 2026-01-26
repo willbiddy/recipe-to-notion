@@ -1,14 +1,11 @@
 import type * as cheerio from "cheerio";
 import { ParseError } from "../errors.js";
 import type { Recipe } from "../scraper.js";
+import { hasProperty, isArray, isObject, isString } from "../shared/type-guards.js";
 import {
 	cleanRecipeName,
 	decodeHtmlEntities,
 	filterEditorNotes,
-	hasProperty,
-	isArray,
-	isObject,
-	isString,
 	normalizeIngredientParentheses,
 	parseDuration,
 } from "./shared.js";

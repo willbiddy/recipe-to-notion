@@ -6,7 +6,6 @@
 import { render } from "solid-js/web";
 import { WebRecipeForm } from "../shared/components/web-recipe-form.js";
 
-// Mount the component to the main-content element
 const mainContent = document.getElementById("main-content");
 
 if (mainContent) {

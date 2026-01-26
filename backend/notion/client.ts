@@ -2,6 +2,9 @@ import { Client } from "@notionhq/client";
 
 /**
  * Pattern to match dashes in Notion page IDs (for URL conversion).
+ *
+ * Notion page IDs can include dashes, but URLs require them to be removed.
+ * This pattern is used to strip all dashes when converting a page ID to a URL.
  */
 const PAGE_ID_DASH_PATTERN = /-/g;
 

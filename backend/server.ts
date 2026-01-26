@@ -1,20 +1,8 @@
 import { consola } from "consola";
 import { HttpStatus } from "./server-shared/constants.js";
 import { createErrorResponse, generateRequestId } from "./server-shared/errors.js";
-import { setCorsHeaders } from "./server-shared/headers.js";
+import { handleOptionsRequest, setCorsHeaders } from "./server-shared/headers.js";
 import { handleRecipeRequest } from "./server-shared/recipe-handler.js";
-
-/**
- * Handles OPTIONS preflight requests for CORS.
- *
- * @param request - The incoming request to extract origin from.
- * @returns Response with CORS headers and 204 No Content status.
- */
-function handleOptions(request: Request): Response {
-	const response = new Response(null, { status: HttpStatus.NoContent });
-	setCorsHeaders(response, request);
-	return response;
-}
 
 /**
  * Handles health check requests.
@@ -61,7 +49,7 @@ export async function handleRequest(request: Request): Promise<Response> {
 	logRequest(request, requestId);
 
 	if (request.method === "OPTIONS") {
-		return handleOptions(request);
+		return handleOptionsRequest(request);
 	}
 
 	if (url.pathname === "/health" && request.method === "GET") {

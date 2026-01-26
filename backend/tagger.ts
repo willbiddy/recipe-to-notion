@@ -101,7 +101,7 @@ enum ClaudeModel {
 }
 
 /**
- * Gets the active Claude model from environment variable or defaults to Sonnet.
+ * Gets the Claude model from environment variable or defaults to Sonnet.
  *
  * Set CLAUDE_MODEL environment variable to one of: "haiku", "sonnet", or "opus".
  * Defaults to "sonnet" if not set or invalid.
@@ -113,7 +113,7 @@ enum ClaudeModel {
  *
  * @returns The Claude model identifier to use.
  */
-function getActiveModel(): string {
+function getClaudeModel(): string {
 	const envModel = process.env.CLAUDE_MODEL?.toLowerCase();
 
 	switch (envModel) {
@@ -128,7 +128,7 @@ function getActiveModel(): string {
 	}
 }
 
-const ACTIVE_MODEL = getActiveModel();
+const ACTIVE_MODEL = getClaudeModel();
 
 /**
  * Claude API configuration limits.
@@ -273,17 +273,20 @@ async function callClaudeAPI(
 				error,
 			);
 		}
-		if (error instanceof Error) {
-			const causeMessage =
-				error.cause && typeof error.cause === "object" && "message" in error.cause
-					? String(error.cause.message)
-					: undefined;
-			throw new TaggingError(
-				`Failed to call Anthropic API: ${error.message}${causeMessage ? `. Cause: ${causeMessage}` : ""}`,
-				error,
-			);
-		}
-		throw new TaggingError(`Failed to call Anthropic API: ${String(error)}`, error);
+
+		const errorMessage = error instanceof Error ? error.message : String(error);
+		const causeMessage =
+			error instanceof Error &&
+			error.cause &&
+			typeof error.cause === "object" &&
+			"message" in error.cause
+				? String(error.cause.message)
+				: undefined;
+
+		throw new TaggingError(
+			`Failed to call Anthropic API: ${errorMessage}${causeMessage ? `. Cause: ${causeMessage}` : ""}`,
+			error instanceof Error ? error : new Error(String(error)),
+		);
 	}
 }
 

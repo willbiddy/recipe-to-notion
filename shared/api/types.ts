@@ -1,4 +1,4 @@
-import type { ProgressType } from "../../backend/process-recipe.js";
+import type { ProgressType } from "../constants.js";
 
 /**
  * Response format from the server API.

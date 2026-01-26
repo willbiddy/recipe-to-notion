@@ -1,3 +1,4 @@
+import { ProgressType } from "../shared/constants.js";
 import { getNotionConfig, loadConfig } from "./config.js";
 import { DuplicateRecipeError } from "./errors.js";
 import type { RecipeLogger } from "./logger.js";
@@ -28,16 +29,8 @@ export type ProcessResult = {
 };
 
 /**
- * Progress event types during recipe processing.
+ * Progress event payload; see {@link ProgressType}.
  */
-export enum ProgressType {
-	CheckingDuplicates = "checking_duplicates",
-	Scraping = "scraping",
-	Tagging = "tagging",
-	Saving = "saving",
-}
-
-/** Progress event payload; see {@link ProgressType}. */
 export type ProgressEvent =
 	| { type: ProgressType.CheckingDuplicates; message: string }
 	| { type: ProgressType.Scraping; message: string }
@@ -98,12 +91,12 @@ export type ProcessRecipeOptions = {
 export async function processRecipe(options: ProcessRecipeOptions): Promise<ProcessResult> {
 	const {
 		url,
-		recipe: providedRecipe,
+		recipe: preScrapedRecipe,
 		onProgress: progressCallback,
 		logger: recipeLogger,
 	} = options;
 
-	if (!url && !providedRecipe) {
+	if (!url && !preScrapedRecipe) {
 		throw new Error("Either url or recipe must be provided");
 	}
 
@@ -112,7 +105,7 @@ export async function processRecipe(options: ProcessRecipeOptions): Promise<Proc
 
 	recipeLogger?.onStart?.();
 
-	const recipeUrl = url || providedRecipe?.sourceUrl;
+	const recipeUrl = url || (preScrapedRecipe ? preScrapedRecipe.sourceUrl : undefined);
 	if (!recipeUrl) {
 		throw new Error("Recipe URL is required for duplicate checking");
 	}
@@ -131,8 +124,8 @@ export async function processRecipe(options: ProcessRecipeOptions): Promise<Proc
 	recipeLogger?.onNoDuplicateFound?.();
 
 	let recipe: Recipe;
-	if (providedRecipe) {
-		recipe = providedRecipe;
+	if (preScrapedRecipe) {
+		recipe = preScrapedRecipe;
 		recipeLogger?.onScraped?.(recipe);
 	} else if (url) {
 		progressCallback?.({
@@ -156,7 +149,8 @@ export async function processRecipe(options: ProcessRecipeOptions): Promise<Proc
 
 	const titleDuplicate = await checkForDuplicateByTitle({
 		recipeName: recipe.name,
-		...notionConfig,
+		notionApiKey: notionConfig.notionApiKey,
+		databaseId: notionConfig.databaseId,
 	});
 
 	checkAndThrowIfDuplicate(titleDuplicate, recipeLogger);
@@ -169,7 +163,8 @@ export async function processRecipe(options: ProcessRecipeOptions): Promise<Proc
 	const pageId = await createRecipePage({
 		recipe,
 		tags,
-		...notionConfig,
+		notionApiKey: notionConfig.notionApiKey,
+		databaseId: notionConfig.databaseId,
 		skipDuplicateCheck: true,
 	});
 

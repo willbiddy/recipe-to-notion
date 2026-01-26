@@ -103,20 +103,3 @@ export function isNullOrUndefined(value: unknown): value is null | undefined {
 export function isNotNullOrUndefined<T>(value: T | null | undefined): value is T {
 	return value !== null && value !== undefined;
 }
-
-/**
- * Gets the error message from an unknown error value.
- * Handles Error instances, objects with message property, and converts other types to strings.
- *
- * @param error - The error value to extract message from.
- * @returns The error message string.
- */
-export function getErrorMessage(error: unknown): string {
-	if (isError(error)) {
-		return error.message;
-	}
-	if (isObject(error) && hasProperty(error, "message") && isString(error.message)) {
-		return error.message;
-	}
-	return String(error);
-}

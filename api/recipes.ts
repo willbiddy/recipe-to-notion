@@ -8,7 +8,7 @@
 import { consola } from "consola";
 import { HttpStatus } from "../backend/server-shared/constants.js";
 import { createErrorResponse, generateRequestId } from "../backend/server-shared/errors.js";
-import { setCorsHeaders, setSecurityHeaders } from "../backend/server-shared/headers.js";
+import { handleOptionsRequest } from "../backend/server-shared/headers.js";
 import { handleRecipeRequest } from "../backend/server-shared/recipe-handler.js";
 
 /**
@@ -25,17 +25,14 @@ export default {
 		const requestId = generateRequestId();
 
 		if (req.method === "OPTIONS") {
-			const response = new Response(null, { status: HttpStatus.NoContent });
-			setSecurityHeaders(response);
-			setCorsHeaders(response, req);
-			return response;
+			return handleOptionsRequest(req);
 		}
 
 		if (req.method !== "POST") {
 			return createErrorResponse("Method not allowed", HttpStatus.MethodNotAllowed, true);
 		}
 
-		const createErrorResponseWithLogging = (error: string, status: number): Response => {
+		const createLoggedErrorResponse = (error: string, status: number): Response => {
 			consola.error(`[${requestId}] Request error: ${error}`);
 			return createErrorResponse(error, status, true);
 		};
@@ -44,7 +41,7 @@ export default {
 			return await handleRecipeRequest({
 				request: req,
 				requestId,
-				createErrorResponse: createErrorResponseWithLogging,
+				createErrorResponse: createLoggedErrorResponse,
 				includeFullDataInStream: true,
 			});
 		} catch (error) {

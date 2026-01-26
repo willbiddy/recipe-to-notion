@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ProgressType } from "../../backend/process-recipe.js";
+import { ProgressType } from "../constants.js";
 import { type ServerProgressEvent, ServerProgressEventType } from "./types.js";
 
 /**
@@ -8,7 +8,7 @@ import { type ServerProgressEvent, ServerProgressEventType } from "./types.js";
 const progressEventSchema = z.object({
 	type: z.literal(ServerProgressEventType.Progress),
 	message: z.string(),
-	progressType: z.string() as z.ZodType<ProgressType>,
+	progressType: z.nativeEnum(ProgressType),
 });
 
 /**

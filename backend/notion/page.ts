@@ -1,4 +1,3 @@
-import type { Client } from "@notionhq/client";
 import { DuplicateRecipeError } from "../errors.js";
 import { buildPageBody } from "./blocks.js";
 import { createNotionClient } from "./client.js";
@@ -58,6 +57,6 @@ export async function createRecipePage({
 		imageUrl: recipe.imageUrl,
 	});
 
-	const page = await notion.pages.create(pageParams as Parameters<Client["pages"]["create"]>[0]);
+	const page = await notion.pages.create(pageParams);
 	return page.id;
 }

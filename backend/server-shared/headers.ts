@@ -10,6 +10,21 @@ export function setSecurityHeaders(response: Response): void {
 }
 
 /**
+ * Handles OPTIONS preflight requests for CORS.
+ *
+ * Creates a 204 No Content response with CORS and security headers.
+ *
+ * @param request - The incoming request to extract origin from.
+ * @returns Response with CORS headers and 204 No Content status.
+ */
+export function handleOptionsRequest(request: Request): Response {
+	const response = new Response(null, { status: 204 });
+	setSecurityHeaders(response);
+	setCorsHeaders(response, request);
+	return response;
+}
+
+/**
  * Gets the allowed CORS origin from environment configuration.
  *
  * If CORS_ORIGIN is set, uses that value (supports comma-separated list for multiple origins).

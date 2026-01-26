@@ -2,6 +2,7 @@ import type * as cheerio from "cheerio";
 import { hasProperty, isArray, isObject, isString } from "../../shared/type-guards.js";
 import { ParseError } from "../errors.js";
 import type { Recipe } from "../scraper.js";
+import { ScrapeMethod } from "../scraper.js";
 import {
 	cleanRecipeName,
 	decodeHtmlEntities,
@@ -41,10 +42,14 @@ export function parseJsonLd($: cheerio.CheerioAPI, sourceUrl: string): Recipe | 
 }
 
 /**
- * Checks if an object is a Recipe type.
+ * Checks if an object is a Recipe type in JSON-LD format.
  *
- * @param data - The object to check.
- * @returns True if the object has @type "Recipe" or includes "Recipe" in an array.
+ * Validates that the object has the @type property set to "Recipe" or contains
+ * "Recipe" in an array of types. This is used to identify Recipe objects within
+ * JSON-LD structures that may contain multiple schema.org types.
+ *
+ * @param data - The object to check for Recipe type.
+ * @returns True if the object is identified as a Recipe type, false otherwise.
  */
 export function isRecipeType(data: Record<string, unknown>): boolean {
 	return data["@type"] === "Recipe" || (isArray(data["@type"]) && data["@type"].includes("Recipe"));
@@ -166,7 +171,7 @@ function extractFromJsonLd(data: Record<string, unknown>, sourceUrl: string): Re
 	return {
 		name: decodeHtmlEntities(cleanRecipeName(data.name)),
 		sourceUrl,
-		scrapeMethod: "json-ld",
+		scrapeMethod: ScrapeMethod.JsonLd,
 		author,
 		totalTimeMinutes:
 			parseDuration(data.totalTime as string | undefined) ??

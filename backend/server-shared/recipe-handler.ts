@@ -9,7 +9,7 @@ import { loadConfig } from "../config.js";
 import { createConsoleLogger } from "../logger.js";
 import { getNotionPageUrl } from "../notion/client.js";
 import { type ProgressEvent, processRecipe } from "../process-recipe.js";
-import { checkRateLimit, getClientIdentifier } from "../rate-limit.js";
+import { checkRateLimit, getRateLimitIdentifier } from "../rate-limit.js";
 import {
 	MAX_REQUEST_BODY_SIZE,
 	type RecipeRequest,
@@ -51,7 +51,7 @@ export type RecipeHandlerOptions = {
 /**
  * Options for recipe stream handling.
  */
-export type RecipeStreamOptions = {
+export type HandleRecipeStreamOptions = {
 	/**
 	 * The recipe URL to process.
 	 */
@@ -74,7 +74,7 @@ export type RecipeStreamOptions = {
  * @param options - Stream handling options.
  * @returns Response with SSE stream for progress updates.
  */
-export function handleRecipeStream(options: RecipeStreamOptions): Response {
+export function handleRecipeStream(options: HandleRecipeStreamOptions): Response {
 	const { url, requestId, includeFullData = false } = options;
 	const stream = new ReadableStream({
 		async start(controller) {
@@ -180,7 +180,7 @@ export async function handleRecipeRequest(options: RecipeHandlerOptions): Promis
 
 	const config = loadConfig();
 
-	const clientId = getClientIdentifier(request);
+	const clientId = getRateLimitIdentifier(request);
 	const rateLimit = checkRateLimit(clientId);
 
 	if (!rateLimit.allowed) {

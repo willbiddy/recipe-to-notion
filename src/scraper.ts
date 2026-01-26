@@ -2,6 +2,7 @@ import * as cheerio from "cheerio";
 import { ParseError, ScrapingError } from "./errors.js";
 import { extractAuthorFromHtml, parseHtml } from "./parsers/html.js";
 import { parseJsonLd } from "./parsers/json-ld.js";
+import { REQUEST_TIMEOUT_MS } from "./shared/constants.js";
 
 /**
  * Browser-like HTTP headers to avoid bot detection.
@@ -120,12 +121,6 @@ function parseRecipeFromHtml(html: string, sourceUrl: string): Recipe {
 
 	return recipe;
 }
-
-/**
- * Request timeout in milliseconds (30 seconds).
- * Prevents DoS attacks via slow responses or resource exhaustion.
- */
-const REQUEST_TIMEOUT_MS = 30_000;
 
 /**
  * Fetches a recipe URL and extracts structured data.

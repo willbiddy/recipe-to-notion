@@ -4,6 +4,7 @@
  */
 
 import { createSignal, onMount, Show } from "solid-js";
+import { SUCCESS_STATUS_CLEAR_DELAY_MS } from "../constants.js";
 import { createStorageAdapter } from "../storage.js";
 import { StatusMessage, StatusType, TextSize } from "./status-message.js";
 
@@ -31,8 +32,6 @@ export function SettingsPanel(props: SettingsPanelProps) {
 		message: string;
 		type: StatusType;
 	} | null>(null);
-
-	const SUCCESS_STATUS_CLEAR_DELAY_MS = 2000;
 
 	async function loadApiKey() {
 		const key = await storage.getApiKey();

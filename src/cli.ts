@@ -174,11 +174,11 @@ async function handleRecipeFromHtml(
 	config: Config,
 ): Promise<boolean> {
 	consola.start("Checking for duplicates...");
-	const urlDuplicate = await checkForDuplicateByUrl(
+	const urlDuplicate = await checkForDuplicateByUrl({
 		url,
-		config.NOTION_API_KEY,
-		config.NOTION_DATABASE_ID,
-	);
+		notionApiKey: config.NOTION_API_KEY,
+		databaseId: config.NOTION_DATABASE_ID,
+	});
 
 	if (urlDuplicate) {
 		consola.warn(`Duplicate: "${urlDuplicate.title}" already exists at ${urlDuplicate.notionUrl}`);
@@ -188,11 +188,11 @@ async function handleRecipeFromHtml(
 
 	const recipe = await fetchRecipe(url, htmlPath);
 
-	const titleDuplicate = await checkForDuplicateByTitle(
-		recipe.name,
-		config.NOTION_API_KEY,
-		config.NOTION_DATABASE_ID,
-	);
+	const titleDuplicate = await checkForDuplicateByTitle({
+		recipeName: recipe.name,
+		notionApiKey: config.NOTION_API_KEY,
+		databaseId: config.NOTION_DATABASE_ID,
+	});
 
 	if (titleDuplicate) {
 		consola.warn(

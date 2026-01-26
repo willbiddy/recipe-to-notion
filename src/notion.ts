@@ -19,20 +19,7 @@ const PropertyNames = {
 	HEALTHINESS: "Healthiness",
 } as const;
 
-/**
- * Maximum text length for Notion text blocks (characters).
- */
-const MAX_TEXT_LENGTH = 2000;
-
-/**
- * Maximum number of blocks allowed in a Notion page.
- */
-const MAX_NOTION_BLOCKS = 100;
-
-/**
- * Length of ellipsis string ("...") used when truncating text.
- */
-const ELLIPSIS_LENGTH = 3;
+import { ELLIPSIS_LENGTH, MAX_NOTION_BLOCKS, MAX_TEXT_LENGTH } from "./shared/constants.js";
 
 /**
  * Pattern to match escaped double newlines in description text.
@@ -48,6 +35,15 @@ const ESCAPED_SINGLE_NEWLINE_PATTERN = /\\n/g;
  * Pattern to match dashes in Notion page IDs (for URL conversion).
  */
 const PAGE_ID_DASH_PATTERN = /-/g;
+
+/**
+ * Notion API error structure.
+ */
+type NotionApiErrorResponse = {
+	code?: string;
+	message?: string;
+	status?: number;
+};
 
 /**
  * Information about an existing recipe that matches a duplicate check.
@@ -80,6 +76,39 @@ export type DuplicateInfo = {
 export function getNotionPageUrl(pageId: string): string {
 	const cleanId = pageId.replace(PAGE_ID_DASH_PATTERN, "");
 	return `https://www.notion.so/${cleanId}`;
+}
+
+/**
+ * Type guard to check if an error is a Notion API error response.
+ *
+ * @param error - The error to check.
+ * @returns True if the error has the structure of a Notion API error.
+ */
+function isNotionApiErrorResponse(error: unknown): error is NotionApiErrorResponse {
+	return isObject(error) && hasProperty(error, "code");
+}
+
+/**
+ * Handles Notion API errors and converts them to NotionApiError.
+ *
+ * Extracts error details from Notion API error responses and creates
+ * appropriate NotionApiError instances with property information.
+ *
+ * @param error - The error from the Notion API.
+ * @param propertyName - The Notion property name that was being accessed.
+ * @param propertyType - The expected type of the property.
+ * @throws NotionApiError with detailed error information.
+ */
+function handleNotionApiError(error: unknown, propertyName: string, propertyType: string): never {
+	if (isNotionApiErrorResponse(error)) {
+		throw new NotionApiError({
+			message: `Notion API error: ${error.status || "Unknown"} ${error.message || "Unknown error"}. ${error.code ? `(code: ${error.code})` : ""}. Check that the property "${propertyName}" exists in your database and is a ${propertyType} type.`,
+			statusCode: error.status || 500,
+			propertyName,
+			propertyType,
+		});
+	}
+	throw error;
 }
 
 type SearchPagesOptions = {
@@ -136,21 +165,30 @@ async function searchPagesInDatabase(options: SearchPagesOptions): Promise<Dupli
 }
 
 /**
+ * Options for checking duplicate recipes by URL.
+ */
+export type CheckDuplicateByUrlOptions = {
+	/** Recipe URL to check for duplicates. */
+	url: string;
+	/** Notion integration API key. */
+	notionApiKey: string;
+	/** Target Notion database ID. */
+	databaseId: string;
+};
+
+/**
  * Checks if a recipe with the same URL already exists in the database.
  *
  * Useful for early duplicate detection before scraping.
  * Queries for recipes with the same URL using the Notion SDK.
  *
- * @param url - Recipe URL to check for duplicates.
- * @param notionApiKey - Notion integration API key.
- * @param databaseId - Target Notion database ID.
+ * @param options - Options for checking duplicates.
  * @returns Information about the duplicate if found, null otherwise.
  */
 export async function checkForDuplicateByUrl(
-	url: string,
-	notionApiKey: string,
-	databaseId: string,
+	options: CheckDuplicateByUrlOptions,
 ): Promise<DuplicateInfo | null> {
+	const { url, notionApiKey, databaseId } = options;
 	const notion = new Client({ auth: notionApiKey });
 
 	try {
@@ -180,18 +218,21 @@ export async function checkForDuplicateByUrl(
 			},
 		});
 	} catch (error) {
-		if (isObject(error) && hasProperty(error, "code")) {
-			const notionError = error as { code?: string; message?: string; status?: number };
-			throw new NotionApiError({
-				message: `Notion API error: ${notionError.status || "Unknown"} ${notionError.message || "Unknown error"}. ${notionError.code ? `(code: ${notionError.code})` : ""}. Check that the property "${PropertyNames.SOURCE}" exists in your database and is a URL type.`,
-				statusCode: notionError.status || 500,
-				propertyName: PropertyNames.SOURCE,
-				propertyType: "URL",
-			});
-		}
-		throw error;
+		handleNotionApiError(error, PropertyNames.SOURCE, "URL");
 	}
 }
+
+/**
+ * Options for checking duplicate recipes by title.
+ */
+export type CheckDuplicateByTitleOptions = {
+	/** Recipe name to check for duplicates. */
+	recipeName: string;
+	/** Notion integration API key. */
+	notionApiKey: string;
+	/** Target Notion database ID. */
+	databaseId: string;
+};
 
 /**
  * Checks if a recipe with the same title already exists in the database.
@@ -199,16 +240,13 @@ export async function checkForDuplicateByUrl(
  * Use this after already checking for URL duplicates to avoid redundant API calls.
  * Queries for recipes with the same title using the Notion SDK.
  *
- * @param recipeName - Recipe name to check for duplicates.
- * @param notionApiKey - Notion integration API key.
- * @param databaseId - Target Notion database ID.
+ * @param options - Options for checking duplicates.
  * @returns Information about the duplicate if found, null otherwise.
  */
 export async function checkForDuplicateByTitle(
-	recipeName: string,
-	notionApiKey: string,
-	databaseId: string,
+	options: CheckDuplicateByTitleOptions,
 ): Promise<DuplicateInfo | null> {
+	const { recipeName, notionApiKey, databaseId } = options;
 	const notion = new Client({ auth: notionApiKey });
 
 	try {
@@ -236,16 +274,7 @@ export async function checkForDuplicateByTitle(
 			},
 		});
 	} catch (error) {
-		if (isObject(error) && hasProperty(error, "code")) {
-			const notionError = error as { code?: string; message?: string; status?: number };
-			throw new NotionApiError({
-				message: `Notion API error: ${notionError.status || "Unknown"} ${notionError.message || "Unknown error"}. ${notionError.code ? `(code: ${notionError.code})` : ""}. Check that the property "${PropertyNames.NAME}" exists in your database and is a Title type.`,
-				statusCode: notionError.status || 500,
-				propertyName: PropertyNames.NAME,
-				propertyType: "Title",
-			});
-		}
-		throw error;
+		handleNotionApiError(error, PropertyNames.NAME, "Title");
 	}
 }
 
@@ -272,13 +301,21 @@ async function checkForDuplicate({
 	skipUrlCheck = false,
 }: CheckForDuplicateOptions): Promise<DuplicateInfo | null> {
 	if (!skipUrlCheck) {
-		const urlDuplicate = await checkForDuplicateByUrl(recipe.sourceUrl, notionApiKey, databaseId);
+		const urlDuplicate = await checkForDuplicateByUrl({
+			url: recipe.sourceUrl,
+			notionApiKey,
+			databaseId,
+		});
 		if (urlDuplicate) {
 			return urlDuplicate;
 		}
 	}
 
-	return await checkForDuplicateByTitle(recipe.name, notionApiKey, databaseId);
+	return await checkForDuplicateByTitle({
+		recipeName: recipe.name,
+		notionApiKey,
+		databaseId,
+	});
 }
 
 /**

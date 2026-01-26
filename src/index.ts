@@ -95,11 +95,11 @@ export async function processRecipe(
 		message: PROGRESS_MESSAGES[ProgressType.CheckingDuplicates],
 	});
 	logger?.onCheckingDuplicates?.();
-	const urlDuplicate = await checkForDuplicateByUrl(
+	const urlDuplicate = await checkForDuplicateByUrl({
 		url,
-		config.NOTION_API_KEY,
-		config.NOTION_DATABASE_ID,
-	);
+		notionApiKey: config.NOTION_API_KEY,
+		databaseId: config.NOTION_DATABASE_ID,
+	});
 
 	if (urlDuplicate) {
 		logger?.onDuplicateFound?.(urlDuplicate.title, urlDuplicate.notionUrl);
@@ -117,11 +117,11 @@ export async function processRecipe(
 	const tags = await tagRecipe(recipe, config.ANTHROPIC_API_KEY);
 	logger?.onTagged?.();
 
-	const titleDuplicate = await checkForDuplicateByTitle(
-		recipe.name,
-		config.NOTION_API_KEY,
-		config.NOTION_DATABASE_ID,
-	);
+	const titleDuplicate = await checkForDuplicateByTitle({
+		recipeName: recipe.name,
+		notionApiKey: config.NOTION_API_KEY,
+		databaseId: config.NOTION_DATABASE_ID,
+	});
 
 	if (titleDuplicate) {
 		logger?.onDuplicateFound?.(titleDuplicate.title, titleDuplicate.notionUrl);

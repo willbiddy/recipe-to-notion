@@ -52,10 +52,7 @@ type RateLimitEntry = {
  */
 const rateLimitStore = new Map<string, RateLimitEntry>();
 
-/**
- * Cleanup interval to remove expired entries (runs every 5 minutes).
- */
-const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
+import { CLEANUP_INTERVAL_MS } from "./shared/constants.js";
 
 /**
  * Cleans up expired rate limit entries to prevent memory leaks.

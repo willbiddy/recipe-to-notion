@@ -87,7 +87,7 @@ export function parseDuration(iso: string | undefined): number | null {
  * Maximum length for author name suffixes (characters).
  * Used to distinguish author names from recipe name parts.
  */
-const MAX_AUTHOR_SUFFIX_LENGTH = 50;
+import { MAX_AUTHOR_SUFFIX_LENGTH } from "../shared/constants.js";
 
 /**
  * Cleans recipe names by removing common suffixes and author patterns.

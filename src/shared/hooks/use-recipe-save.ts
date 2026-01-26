@@ -11,6 +11,16 @@ import type { StorageAdapter } from "../storage.js";
 import { isValidHttpUrl } from "../url-utils.js";
 
 /**
+ * Options for API secret prompt handlers.
+ */
+export type ApiSecretHandlers = {
+	setShowApiPrompt: Setter<boolean>;
+	setPendingSave: Setter<(() => void) | null>;
+	pendingSave: Accessor<(() => void) | null>;
+	performSave: () => Promise<void>;
+};
+
+/**
  * Options for the useRecipeSave hook.
  */
 export type UseRecipeSaveOptions = {
@@ -54,6 +64,8 @@ export type UseRecipeSaveResult = {
 	performSave: () => Promise<void>;
 	isInvalidApiKey: Accessor<boolean>;
 	setIsInvalidApiKey: Setter<boolean>;
+	handleApiSecretSaved: () => void;
+	handleUpdateApiKey: () => void;
 };
 
 /**
@@ -167,10 +179,33 @@ export function useRecipeSave(options: UseRecipeSaveOptions): UseRecipeSaveResul
 		}
 	}
 
+	/**
+	 * Handles when API secret is saved in the prompt.
+	 */
+	function handleApiSecretSaved(handlers: ApiSecretHandlers) {
+		handlers.setShowApiPrompt(false);
+		setIsInvalidApiKey(false);
+		const save = handlers.pendingSave();
+		if (save) {
+			handlers.setPendingSave(null);
+			save();
+		}
+	}
+
+	/**
+	 * Handles updating the API key when it's invalid.
+	 */
+	function handleUpdateApiKey(handlers: ApiSecretHandlers) {
+		handlers.setPendingSave(() => handlers.performSave);
+		handlers.setShowApiPrompt(true);
+	}
+
 	return {
 		saveRecipeWithProgress,
 		performSave,
 		isInvalidApiKey,
 		setIsInvalidApiKey,
+		handleApiSecretSaved: (handlers: ApiSecretHandlers) => handleApiSecretSaved(handlers),
+		handleUpdateApiKey: (handlers: ApiSecretHandlers) => handleUpdateApiKey(handlers),
 	};
 }

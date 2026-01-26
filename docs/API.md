@@ -70,7 +70,7 @@ Or:
 ```json
 {
   "type": "progress",
-  "message": "Generating AI tags and scores...",
+  "message": "Generating tags...",
   "progressType": "tagging"
 }
 ```

@@ -1,4 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
+import { consola } from "consola";
 
 /**
  * HTTP status codes used for security-related responses.
@@ -89,7 +90,7 @@ export function validateApiKeyHeader(
 	const expectedKey = process.env.API_SECRET?.trim();
 
 	if (!expectedKey) {
-		console.error("API_SECRET environment variable is not set");
+		consola.error("API_SECRET environment variable is not set");
 		return createErrorResponse(
 			"Server configuration error",
 			SecurityHttpStatus.InternalServerError,

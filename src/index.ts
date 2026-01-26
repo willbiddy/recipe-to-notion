@@ -56,7 +56,7 @@ export type ProgressEvent =
 const PROGRESS_MESSAGES = {
 	[ProgressType.CheckingDuplicates]: "Checking for duplicates...",
 	[ProgressType.Scraping]: "Scraping recipe...",
-	[ProgressType.Tagging]: "Generating AI tags and scores...",
+	[ProgressType.Tagging]: "Generating tags...",
 	[ProgressType.Saving]: "Saving to Notion...",
 } as const;
 
@@ -140,6 +140,8 @@ export async function processRecipe(
 
 	const notionUrl = getNotionPageUrl(pageId);
 	logger?.onSaved?.(notionUrl);
+
+	logger?.onSummary?.(recipe, tags);
 
 	return { recipe, tags, pageId };
 }

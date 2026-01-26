@@ -5,6 +5,7 @@
  * Supports both streaming (SSE) and non-streaming responses.
  */
 
+import { consola } from "consola";
 import { ProgressType } from "../src/index.js";
 import { checkRateLimit, getClientIdentifier } from "../src/rate-limit.js";
 import {
@@ -60,10 +61,10 @@ function handleRecipeStream(url: string, requestId?: string): Response {
 				});
 
 				const { processRecipe } = await import("../src/index.js");
-				const { createCliLogger, printRecipeSummary } = await import("../src/logger.js");
+				const { createConsoleLogger } = await import("../src/logger.js");
 				const { getNotionPageUrl } = await import("../src/notion.js");
 
-				const logger = createCliLogger();
+				const logger = createConsoleLogger();
 
 				const result = await processRecipe(
 					url,
@@ -76,8 +77,6 @@ function handleRecipeStream(url: string, requestId?: string): Response {
 					},
 					logger,
 				);
-
-				printRecipeSummary(result.recipe, result.tags);
 
 				const notionUrl = getNotionPageUrl(result.pageId);
 				sendEvent({
@@ -99,20 +98,20 @@ function handleRecipeStream(url: string, requestId?: string): Response {
 					},
 				});
 			} catch (error) {
-				console.error("Recipe processing error in stream:", error);
+				consola.error("Recipe processing error in stream:", error);
 				if (error instanceof Error) {
-					console.error("Error name:", error.name);
-					console.error("Error message:", error.message);
-					console.error("Error stack:", error.stack);
+					consola.error("Error name:", error.name);
+					consola.error("Error message:", error.message);
+					consola.error("Error stack:", error.stack);
 					if ("cause" in error && error.cause) {
-						console.error("Error cause:", error.cause);
+						consola.error("Error cause:", error.cause);
 					}
 				} else {
-					console.error("Error type:", typeof error);
-					console.error("Error value:", JSON.stringify(error, null, 2));
+					consola.error("Error type:", typeof error);
+					consola.error("Error value:", JSON.stringify(error, null, 2));
 				}
 
-				const { message, notionUrl } = sanitizeError(error, { error: console.error }, requestId);
+				const { message, notionUrl } = sanitizeError(error, { error: consola.error }, requestId);
 
 				try {
 					sendEvent({
@@ -122,13 +121,13 @@ function handleRecipeStream(url: string, requestId?: string): Response {
 						...(notionUrl && { notionUrl }),
 					});
 				} catch (e) {
-					console.error("Error sending error event:", e);
+					consola.error("Error sending error event:", e);
 				}
 			} finally {
 				try {
 					controller.close();
 				} catch (e) {
-					console.error("Error closing stream:", e);
+					consola.error("Error closing stream:", e);
 				}
 			}
 		},
@@ -205,7 +204,7 @@ export default {
 
 		const authHeader = req.headers.get("Authorization");
 		const authError = validateApiKeyHeader(authHeader, (error, status) => {
-			console.error(`[${requestId}] Authentication failed: ${error}`);
+			consola.error(`[${requestId}] Authentication failed: ${error}`);
 			return createErrorResponse(error, status, false);
 		});
 
@@ -215,7 +214,7 @@ export default {
 
 		const contentLength = req.headers.get("Content-Length");
 		const sizeError = validateRequestSize(contentLength, MAX_REQUEST_BODY_SIZE, (error, status) => {
-			console.error(`[${requestId}] Request size validation failed: ${error}`);
+			consola.error(`[${requestId}] Request size validation failed: ${error}`);
 			return createErrorResponse(error, status, false);
 		});
 
@@ -227,7 +226,7 @@ export default {
 			const body = (await req.json()) as RecipeRequest;
 
 			const validationError = validateRecipeRequest(body, (error, status) => {
-				console.error(`[${requestId}] Request validation failed: ${error}`);
+				consola.error(`[${requestId}] Request validation failed: ${error}`);
 				return createErrorResponse(error, status, false);
 			});
 
@@ -240,13 +239,11 @@ export default {
 			}
 
 			const { processRecipe } = await import("../src/index.js");
-			const { createCliLogger, printRecipeSummary } = await import("../src/logger.js");
+			const { createConsoleLogger } = await import("../src/logger.js");
 			const { getNotionPageUrl } = await import("../src/notion.js");
 
-			const logger = createCliLogger();
+			const logger = createConsoleLogger();
 			const result = await processRecipe(body.url, undefined, logger);
-
-			printRecipeSummary(result.recipe, result.tags);
 
 			const savedNotionUrl = getNotionPageUrl(result.pageId);
 
@@ -268,8 +265,8 @@ export default {
 			setCorsHeaders(response);
 			return response;
 		} catch (error) {
-			console.error("Recipe processing error:", error);
-			return handleRecipeError(error, { error: console.error }, requestId);
+			consola.error("Recipe processing error:", error);
+			return handleRecipeError(error, { error: consola.error }, requestId);
 		}
 	},
 };

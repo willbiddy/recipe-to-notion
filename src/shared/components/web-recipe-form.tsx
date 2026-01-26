@@ -3,7 +3,7 @@
  * Handles recipe URL submission, progress updates, and settings management.
  */
 
-import { createMemo, createSignal, onMount, Show } from "solid-js";
+import { createMemo, createSignal, onCleanup, onMount, Show } from "solid-js";
 import { ErrorMessageKey } from "../constants.js";
 import { useRecipeSave } from "../hooks/use-recipe-save.js";
 import { createStorageAdapter } from "../storage.js";
@@ -53,7 +53,14 @@ export function WebRecipeForm() {
 
 	const showClearButton = createMemo(() => url().trim() !== "");
 
-	const { performSave, isInvalidApiKey, setIsInvalidApiKey } = useRecipeSave({
+	const timeoutIds: number[] = [];
+
+	const {
+		performSave,
+		isInvalidApiKey,
+		handleApiSecretSaved: createHandleApiSecretSaved,
+		handleUpdateApiKey: createHandleUpdateApiKey,
+	} = useRecipeSave({
 		storage,
 		getApiUrl: () => `${getServerUrl()}/api/recipes`,
 		getCurrentUrl: () => url().trim() || null,
@@ -61,9 +68,10 @@ export function WebRecipeForm() {
 		setLoading,
 		setProgress,
 		onSuccess: () => {
-			setTimeout(() => {
+			const id = setTimeout(() => {
 				setUrl("");
 			}, CLEAR_URL_INPUT_DELAY_MS);
+			timeoutIds.push(id);
 		},
 		onComplete: (data) => {
 			setRecipeInfo(data);
@@ -116,31 +124,24 @@ export function WebRecipeForm() {
 		}
 	}
 
-	/**
-	 * Handles when API secret is saved in the prompt.
-	 */
-	function handleApiSecretSaved() {
-		setShowApiPrompt(false);
-		setIsInvalidApiKey(false);
-		const save = pendingSave();
-		if (save) {
-			setPendingSave(null);
-			save();
-		}
-	}
+	const handleApiSecretSaved = createHandleApiSecretSaved({
+		setShowApiPrompt,
+		setPendingSave,
+		pendingSave,
+		performSave,
+	});
 
-	/**
-	 * Handles updating the API key when it's invalid.
-	 */
-	function handleUpdateApiKey() {
-		setPendingSave(() => performSave);
-		setShowApiPrompt(true);
-	}
+	const handleUpdateApiKey = createHandleUpdateApiKey({
+		setShowApiPrompt,
+		setPendingSave,
+		pendingSave,
+		performSave,
+	});
 
 	/**
 	 * Handles query parameters for auto-submit functionality.
 	 */
-	function handleQueryParameters() {
+	async function handleQueryParameters() {
 		const urlParams = new URLSearchParams(window.location.search);
 		const urlParam = urlParams.get("url");
 
@@ -148,24 +149,30 @@ export function WebRecipeForm() {
 			try {
 				new URL(urlParam);
 				setUrl(urlParam);
-				storage.getApiKey().then((key) => {
-					if (key) {
-						setTimeout(() => {
-							handleSave();
-						}, AUTO_SUBMIT_DELAY_MS);
-					} else {
-						setPendingSave(() => performSave);
-						setShowApiPrompt(true);
-					}
-				});
+				const key = await storage.getApiKey();
+				if (key) {
+					const id = setTimeout(() => {
+						handleSave();
+					}, AUTO_SUBMIT_DELAY_MS);
+					timeoutIds.push(id);
+				} else {
+					setPendingSave(() => performSave);
+					setShowApiPrompt(true);
+				}
 			} catch {
-				console.warn("Invalid URL in query parameters:", urlParam);
+				// Invalid URL format in query parameters, ignore
 			}
 		}
 	}
 
 	onMount(() => {
 		handleQueryParameters();
+	});
+
+	onCleanup(() => {
+		for (const id of timeoutIds) {
+			clearTimeout(id);
+		}
 	});
 
 	return (

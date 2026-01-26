@@ -9,6 +9,7 @@ import {
 	TaggingError,
 	ValidationError,
 } from "./errors.js";
+import type { RecipeResponse } from "./shared/api.js";
 
 /**
  * HTTP status codes used throughout the server.
@@ -23,16 +24,6 @@ export enum HttpStatus {
 	InternalServerError = 500,
 	BadGateway = 502,
 }
-
-/**
- * Response format for the /api/recipes endpoint.
- */
-export type RecipeResponse = {
-	success: boolean;
-	pageId?: string;
-	notionUrl?: string;
-	error?: string;
-};
 
 /**
  * Rate limit header names for responses.
@@ -278,6 +269,35 @@ export function handleRecipeError(
 	};
 
 	const response = Response.json(errorResponse, { status: statusCode });
+	setSecurityHeaders(response);
+	setCorsHeaders(response);
+	return response;
+}
+
+/**
+ * Creates a rate limit error response.
+ *
+ * @param rateLimit - Rate limit information.
+ * @returns Response with rate limit error and headers.
+ */
+export function createRateLimitResponse(rateLimit: {
+	allowed: boolean;
+	resetAt: number;
+}): Response {
+	const response = Response.json(
+		{
+			success: false,
+			error: "Rate limit exceeded. Please try again later.",
+		},
+		{
+			status: 429,
+			headers: {
+				[RATE_LIMIT_HEADERS.LIMIT]: String(DEFAULT_RATE_LIMIT_VALUE),
+				[RATE_LIMIT_HEADERS.REMAINING]: "0",
+				[RATE_LIMIT_HEADERS.RESET]: new Date(rateLimit.resetAt).toISOString(),
+			},
+		},
+	);
 	setSecurityHeaders(response);
 	setCorsHeaders(response);
 	return response;

@@ -64,8 +64,8 @@ export type UseRecipeSaveResult = {
 	performSave: () => Promise<void>;
 	isInvalidApiKey: Accessor<boolean>;
 	setIsInvalidApiKey: Setter<boolean>;
-	handleApiSecretSaved: () => void;
-	handleUpdateApiKey: () => void;
+	handleApiSecretSaved: (handlers: ApiSecretHandlers) => void;
+	handleUpdateApiKey: (handlers: ApiSecretHandlers) => void;
 };
 
 /**

@@ -129,7 +129,7 @@ export async function scrapeRecipe(url: string): Promise<Recipe> {
 					message:
 						`Failed to fetch ${url}: 403 Forbidden. This site blocks automated requests.\n` +
 						`  Tip: Save the page source in your browser and use --html:\n` +
-						`  bun src/cli.ts --html ~/Downloads/recipe.html "${url}"`,
+						`  bun backend/cli.ts --html ~/Downloads/recipe.html "${url}"`,
 					originalUrl: url,
 					statusCode: 403,
 				});

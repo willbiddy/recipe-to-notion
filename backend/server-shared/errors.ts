@@ -68,6 +68,53 @@ function handleScrapingError(error: ScrapingError): {
 }
 
 /**
+ * Handles Notion API errors with property-specific or status-based messages.
+ *
+ * @param error - The Notion API error.
+ * @returns Sanitized message and status code for client.
+ */
+function handleNotionApiError(error: NotionApiError): {
+	message: string;
+	statusCode: number;
+} {
+	let message = "Failed to save recipe to Notion.";
+
+	if (error.propertyName && error.propertyType) {
+		message += ` The property "${error.propertyName}" is missing or has the wrong type (expected: ${error.propertyType}).`;
+		message += " Please check your Notion database schema matches the required properties.";
+	} else if (error.statusCode === 401 || error.statusCode === 403) {
+		message +=
+			" Please check your Notion API key and ensure the integration has access to the database.";
+	} else if (error.statusCode === 404) {
+		message += " The database or page was not found. Please check your NOTION_DATABASE_ID.";
+	} else {
+		message += " Please check your Notion API configuration.";
+	}
+
+	return {
+		statusCode: HttpStatus.BadGateway,
+		message,
+	};
+}
+
+type SanitizedError = { message: string; notionUrl?: string; statusCode: number };
+
+const FALLBACK_MESSAGE = "An error occurred while processing the recipe. Please try again.";
+
+const ERROR_HANDLERS: Array<(e: unknown) => SanitizedError | null> = [
+	(e): SanitizedError | null =>
+		e instanceof DuplicateRecipeError ? handleDuplicateError(e) : null,
+	(e): SanitizedError | null => (e instanceof ScrapingError ? handleScrapingError(e) : null),
+	(e): SanitizedError | null => (e instanceof NotionApiError ? handleNotionApiError(e) : null),
+	(e): SanitizedError | null =>
+		e instanceof ValidationError ? { statusCode: HttpStatus.BadRequest, message: e.message } : null,
+	(e): SanitizedError | null =>
+		e instanceof ParseError || e instanceof TaggingError
+			? { statusCode: HttpStatus.InternalServerError, message: FALLBACK_MESSAGE }
+			: null,
+];
+
+/**
  * Sanitizes error messages for client responses.
  *
  * Logs detailed errors server-side with full stack traces and error details, but returns
@@ -83,7 +130,7 @@ export function sanitizeError(
 	error: unknown,
 	logger: ErrorLogger,
 	requestId?: string,
-): { message: string; notionUrl?: string; statusCode: number } {
+): SanitizedError {
 	const fullError = error instanceof Error ? error : new Error(String(error));
 
 	const logPrefix = requestId ? `[${requestId}]` : "";
@@ -98,52 +145,14 @@ export function sanitizeError(
 	}
 	logger.error(`${logPrefix} Recipe processing error:`, errorDetails);
 
-	if (error instanceof DuplicateRecipeError) {
-		return handleDuplicateError(error);
-	}
-
-	if (error instanceof ScrapingError) {
-		return handleScrapingError(error);
-	}
-
-	if (error instanceof NotionApiError) {
-		let message = "Failed to save recipe to Notion.";
-
-		if (error.propertyName && error.propertyType) {
-			message += ` The property "${error.propertyName}" is missing or has the wrong type (expected: ${error.propertyType}).`;
-			message += " Please check your Notion database schema matches the required properties.";
-		} else if (error.statusCode === 401 || error.statusCode === 403) {
-			message +=
-				" Please check your Notion API key and ensure the integration has access to the database.";
-		} else if (error.statusCode === 404) {
-			message += " The database or page was not found. Please check your NOTION_DATABASE_ID.";
-		} else {
-			message += " Please check your Notion API configuration.";
-		}
-
-		return {
-			statusCode: HttpStatus.BadGateway,
-			message,
-		};
-	}
-
-	if (error instanceof ValidationError) {
-		return {
-			statusCode: HttpStatus.BadRequest,
-			message: error.message,
-		};
-	}
-
-	if (error instanceof ParseError || error instanceof TaggingError) {
-		return {
-			statusCode: HttpStatus.InternalServerError,
-			message: "An error occurred while processing the recipe. Please try again.",
-		};
+	for (const handle of ERROR_HANDLERS) {
+		const result = handle(error);
+		if (result) return result;
 	}
 
 	return {
 		statusCode: HttpStatus.InternalServerError,
-		message: "An error occurred while processing the recipe. Please try again.",
+		message: FALLBACK_MESSAGE,
 	};
 }
 

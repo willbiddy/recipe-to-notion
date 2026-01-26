@@ -120,11 +120,11 @@ function numberedItem(text: string): unknown {
 /**
  * Builds ingredient blocks grouped by category.
  *
- * @param grouped - Map of category names to arrays of ingredients.
+ * @param grouped - Map of category names to arrays of categorized ingredients.
  * @returns Array of Notion block objects for ingredients.
  */
 function buildIngredientBlocks(
-	grouped: Map<IngredientCategory, Array<{ name: string }>>,
+	grouped: Map<IngredientCategory, CategorizedIngredient[]>,
 ): unknown[] {
 	const blocks: unknown[] = [];
 
@@ -171,14 +171,7 @@ export function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
 	if (tags.ingredients && tags.ingredients.length > 0) {
 		blocks.push(heading1("Ingredients"));
 		const grouped = groupIngredientsByCategory(tags.ingredients);
-		const simplified = new Map<IngredientCategory, Array<{ name: string }>>();
-		for (const [category, ingredients] of grouped.entries()) {
-			simplified.set(
-				category,
-				ingredients.map((ing) => ({ name: ing.name })),
-			);
-		}
-		blocks.push(...buildIngredientBlocks(simplified));
+		blocks.push(...buildIngredientBlocks(grouped));
 	} else if (recipe.ingredients.length > 0) {
 		blocks.push(heading1("Ingredients"));
 		blocks.push(...recipe.ingredients.map((ingredient) => bulletItem(ingredient)));

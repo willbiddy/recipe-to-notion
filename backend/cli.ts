@@ -3,8 +3,8 @@
  * CLI entry point for recipe-to-notion.
  *
  * Usage:
- *   bun src/cli.ts <url> [urls...]
- *   bun src/cli.ts --html <path> <url>
+ *   bun backend/cli.ts <url> [urls...]
+ *   bun backend/cli.ts --html <path> <url>
  */
 import { defineCommand, runMain } from "citty";
 import { consola } from "consola";

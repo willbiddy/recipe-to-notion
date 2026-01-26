@@ -19,7 +19,7 @@ function decodeHtmlEntitiesBrowser(str: string): string {
 
 /**
  * Extracts author name from various JSON-LD author formats.
- * Matches the logic from src/parsers/json-ld.ts parseAuthor function.
+ * Matches the logic from backend/parsers/json-ld.ts parseAuthor function.
  */
 function parseAuthor(author: unknown): string | null {
 	if (!author) return null;
@@ -41,7 +41,7 @@ function parseAuthor(author: unknown): string | null {
 
 /**
  * Extracts recipe title and author from JSON-LD structured data in the current page.
- * Uses the actual shared parser functions.
+ * Uses the actual shared parser functions. Skips malformed JSON-LD blocks.
  */
 function extractRecipeDataFromJsonLd(): { title: string | null; author: string | null } {
 	try {
@@ -63,10 +63,12 @@ function extractRecipeDataFromJsonLd(): { title: string | null; author: string |
 						author: author || null,
 					};
 				}
-			} catch {}
+			} catch {
+				/* Skip malformed JSON-LD block */
+			}
 		}
 	} catch {
-		// Failed to extract recipe data
+		/* Failed to extract recipe data */
 	}
 	return { title: null, author: null };
 }

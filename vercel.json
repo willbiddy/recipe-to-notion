@@ -67,10 +67,6 @@
 			"destination": "/api/assets?path=/shared/storage.js"
 		},
 		{
-			"source": "/shared/ui.js",
-			"destination": "/api/assets?path=/shared/ui.js"
-		},
-		{
 			"source": "/api/web.js",
 			"destination": "/api/assets?path=/web.js"
 		},

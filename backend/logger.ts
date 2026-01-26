@@ -133,8 +133,3 @@ export function createSilentLogger(): RecipeLogger {
 		// All methods are intentionally empty - no output
 	};
 }
-
-/**
- * @deprecated Use createConsoleLogger() instead. This function is kept for backwards compatibility.
- */
-export const createCliLogger = createConsoleLogger;

@@ -23,7 +23,7 @@ export default {
 		if (req.method === "OPTIONS") {
 			const response = new Response(null, { status: HttpStatus.NoContent });
 			setSecurityHeaders(response);
-			setCorsHeaders(response);
+			setCorsHeaders(response, req);
 			return response;
 		}
 
@@ -34,7 +34,7 @@ export default {
 			},
 		);
 		setSecurityHeaders(response);
-		setCorsHeaders(response);
+		setCorsHeaders(response, req);
 		return response;
 	},
 };

@@ -7,22 +7,24 @@ import { handleRecipeRequest } from "./server-shared/recipe-handler.js";
 /**
  * Handles OPTIONS preflight requests for CORS.
  *
+ * @param request - The incoming request to extract origin from.
  * @returns Response with CORS headers and 204 No Content status.
  */
-function handleOptions(): Response {
+function handleOptions(request: Request): Response {
 	const response = new Response(null, { status: HttpStatus.NoContent });
-	setCorsHeaders(response);
+	setCorsHeaders(response, request);
 	return response;
 }
 
 /**
  * Handles health check requests.
  *
+ * @param request - The incoming request to extract origin from.
  * @returns Response with health status and CORS headers.
  */
-function handleHealth(): Response {
+function handleHealth(request: Request): Response {
 	const response = Response.json({ status: "ok", service: "recipe-to-notion" });
-	setCorsHeaders(response);
+	setCorsHeaders(response, request);
 	return response;
 }
 
@@ -70,11 +72,11 @@ export async function handleRequest(request: Request): Promise<Response> {
 	logRequest(request, requestId);
 
 	if (request.method === "OPTIONS") {
-		return handleOptions();
+		return handleOptions(request);
 	}
 
 	if (url.pathname === "/health" && request.method === "GET") {
-		return handleHealth();
+		return handleHealth(request);
 	}
 
 	if (url.pathname === "/api/recipes" && request.method === "POST") {
@@ -85,7 +87,5 @@ export async function handleRequest(request: Request): Promise<Response> {
 		});
 	}
 
-	const response = Response.json({ error: "Not found" }, { status: HttpStatus.NotFound });
-	setCorsHeaders(response);
-	return response;
+	return createErrorResponseWithHeaders("Not found", HttpStatus.NotFound);
 }

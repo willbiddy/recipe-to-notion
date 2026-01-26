@@ -1,3 +1,4 @@
+import type { Client } from "@notionhq/client";
 import { DuplicateRecipeError } from "../errors.js";
 import type { Recipe } from "../scraper.js";
 import { buildPageBody } from "./blocks.js";
@@ -79,6 +80,10 @@ export async function createRecipePage({
 		imageUrl: recipe.imageUrl,
 	});
 
-	const page = await notion.pages.create(pageParams as Parameters<typeof notion.pages.create>[0]);
+	// Type assertion is safe here because buildPageParams constructs a valid
+	// Notion page creation parameters object that matches the SDK's expected type.
+	// The Record<string, unknown> return type is necessary because properties
+	// are dynamically constructed based on recipe data.
+	const page = await notion.pages.create(pageParams as Parameters<Client["pages"]["create"]>[0]);
 	return page.id;
 }

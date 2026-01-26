@@ -3,6 +3,13 @@
  */
 
 import { SolidPlugin } from "@dschz/bun-plugin-solid";
+import { handleBuildResult, validateBuildFiles, writeBuildOutput } from "./build-utils.js";
+
+/**
+ * Gets the server URL from environment variable or uses default.
+ * Defaults to production Vercel URL if not set.
+ */
+const serverUrl = process.env.EXTENSION_SERVER_URL || "https://recipe-to-notion-xi.vercel.app";
 
 // Build the extension popup with Solid.js plugin
 const popupResult = await Bun.build({
@@ -10,6 +17,9 @@ const popupResult = await Bun.build({
 	target: "browser",
 	minify: true,
 	sourcemap: "external",
+	define: {
+		EXTENSION_SERVER_URL: JSON.stringify(serverUrl),
+	},
 	plugins: [
 		SolidPlugin({
 			generate: "dom",
@@ -19,22 +29,15 @@ const popupResult = await Bun.build({
 	],
 });
 
-if (!popupResult.success) {
-	console.error("Popup build failed:", popupResult.logs);
-	process.exit(1);
-}
+handleBuildResult(popupResult, "Popup");
 
 // Write the popup output to the correct file
 const popupOutput = popupResult.outputs[0];
-if (popupOutput) {
-	await Bun.write("extension/popup.js", popupOutput);
-	if (popupOutput.sourcemap) {
-		await Bun.write("extension/popup.js.map", popupOutput.sourcemap);
-	}
-} else {
-	console.error("Popup build succeeded but no output file was generated");
-	process.exit(1);
-}
+await writeBuildOutput({
+	output: popupOutput,
+	targetPath: "extension/popup.js",
+	name: "popup",
+});
 
 // Build the background service worker
 const backgroundResult = await Bun.build({
@@ -44,22 +47,15 @@ const backgroundResult = await Bun.build({
 	sourcemap: "external",
 });
 
-if (!backgroundResult.success) {
-	console.error("Background build failed:", backgroundResult.logs);
-	process.exit(1);
-}
+handleBuildResult(backgroundResult, "Background");
 
 // Write the background output to the correct file
 const backgroundOutput = backgroundResult.outputs[0];
-if (backgroundOutput) {
-	await Bun.write("extension/background.js", backgroundOutput);
-	if (backgroundOutput.sourcemap) {
-		await Bun.write("extension/background.js.map", backgroundOutput.sourcemap);
-	}
-} else {
-	console.error("Background build succeeded but no output file was generated");
-	process.exit(1);
-}
+await writeBuildOutput({
+	output: backgroundOutput,
+	targetPath: "extension/background.js",
+	name: "background",
+});
 
 // Build the content script
 const contentScriptResult = await Bun.build({
@@ -69,34 +65,17 @@ const contentScriptResult = await Bun.build({
 	sourcemap: "external",
 });
 
-if (!contentScriptResult.success) {
-	console.error("Content script build failed:", contentScriptResult.logs);
-	process.exit(1);
-}
+handleBuildResult(contentScriptResult, "Content script");
 
 // Write the content script output to the correct file
 const contentScriptOutput = contentScriptResult.outputs[0];
-if (contentScriptOutput) {
-	await Bun.write("extension/content-script.js", contentScriptOutput);
-	if (contentScriptOutput.sourcemap) {
-		await Bun.write("extension/content-script.js.map", contentScriptOutput.sourcemap);
-	}
-} else {
-	console.error("Content script build succeeded but no output file was generated");
-	process.exit(1);
-}
+await writeBuildOutput({
+	output: contentScriptOutput,
+	targetPath: "extension/content-script.js",
+	name: "content script",
+});
 
 // Validate that all output files exist
-const { existsSync } = await import("node:fs");
-const requiredFiles = [
-	"extension/popup.js",
-	"extension/background.js",
-	"extension/content-script.js",
-];
-
-for (const file of requiredFiles) {
-	if (!existsSync(file)) {
-		console.error(`Build failed: ${file} was not created`);
-		process.exit(1);
-	}
-}
+validateBuildFiles({
+	files: ["extension/popup.js", "extension/background.js", "extension/content-script.js"],
+});

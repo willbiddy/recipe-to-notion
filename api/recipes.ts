@@ -30,18 +30,12 @@ export default {
 		if (req.method === "OPTIONS") {
 			const response = new Response(null, { status: HttpStatus.NoContent });
 			setSecurityHeaders(response);
-			setCorsHeaders(response);
+			setCorsHeaders(response, req);
 			return response;
 		}
 
 		if (req.method !== "POST") {
-			const response = Response.json(
-				{ error: "Method not allowed" },
-				{ status: HttpStatus.MethodNotAllowed },
-			);
-			setSecurityHeaders(response);
-			setCorsHeaders(response);
-			return response;
+			return createErrorResponse("Method not allowed", HttpStatus.MethodNotAllowed, true);
 		}
 
 		// Create error response function that logs errors with request ID
@@ -50,12 +44,27 @@ export default {
 			return createErrorResponse(error, status, true);
 		};
 
+		// Validate Content-Length header before parsing body
+		const {
+			validateRequestSize,
+			validateActualBodySize,
+			validateRecipeRequest,
+			MAX_REQUEST_BODY_SIZE,
+		} = await import("../backend/security.js");
+
+		const sizeError = validateRequestSize(
+			req.headers.get("Content-Length"),
+			MAX_REQUEST_BODY_SIZE,
+			createErrorResponseWithLogging,
+		);
+
+		if (sizeError) {
+			return sizeError;
+		}
+
 		// Parse and validate request body
 		try {
 			const body = (await req.json()) as unknown;
-			const { validateActualBodySize, validateRecipeRequest, MAX_REQUEST_BODY_SIZE } = await import(
-				"../backend/security.js"
-			);
 
 			// Validate actual body size after parsing (defense-in-depth)
 			const actualSizeError = validateActualBodySize(

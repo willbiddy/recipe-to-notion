@@ -6,135 +6,13 @@
  */
 
 import { consola } from "consola";
-import { ProgressType } from "../backend/process-recipe.js";
-import { checkRateLimit, getClientIdentifier } from "../backend/rate-limit.js";
-import {
-	MAX_REQUEST_BODY_SIZE,
-	type RecipeRequest,
-	validateApiKeyHeader,
-	validateRecipeRequest,
-	validateRequestSize,
-} from "../backend/security.js";
-import {
-	DEFAULT_RATE_LIMIT_VALUE,
-	HttpStatus,
-	RATE_LIMIT_HEADERS,
-} from "../backend/server-shared/constants.js";
-import {
-	createErrorResponse,
-	createRateLimitResponse,
-	generateRequestId,
-	handleRecipeError,
-	logErrorDetails,
-	sanitizeError,
-} from "../backend/server-shared/errors.js";
+import { HttpStatus } from "../backend/server-shared/constants.js";
+import { createErrorResponse, generateRequestId } from "../backend/server-shared/errors.js";
 import { setCorsHeaders, setSecurityHeaders } from "../backend/server-shared/headers.js";
-import { type RecipeResponse, ServerProgressEventType } from "../shared/api/types.js";
-
-/**
- * Handles recipe processing requests with Server-Sent Events for progress.
- *
- * Streams progress updates to the client as the recipe is processed. Encodes events
- * as SSE format and handles errors gracefully by sending error events through the stream.
- *
- * @param url - The recipe URL to process.
- * @param requestId - Optional request correlation ID for logging.
- * @returns Response with SSE stream for progress updates.
- */
-function handleRecipeStream(url: string, requestId?: string): Response {
-	const stream = new ReadableStream({
-		async start(controller) {
-			const encoder = new TextEncoder();
-
-			const sendEvent = (data: object) => {
-				try {
-					const message = `data: ${JSON.stringify(data)}\n\n`;
-					controller.enqueue(encoder.encode(message));
-				} catch (e) {
-					console.error("Error sending SSE event:", e);
-				}
-			};
-
-			try {
-				sendEvent({
-					type: ServerProgressEventType.Progress,
-					message: "Starting...",
-					progressType: ProgressType.Starting,
-				});
-
-				const { processRecipe } = await import("../backend/process-recipe.js");
-				const { createConsoleLogger } = await import("../backend/logger.js");
-				const { getNotionPageUrl } = await import("../backend/notion/client.js");
-
-				const logger = createConsoleLogger();
-
-				const result = await processRecipe(
-					url,
-					(event) => {
-						sendEvent({
-							type: ServerProgressEventType.Progress,
-							message: event.message,
-							progressType: event.type,
-						});
-					},
-					logger,
-				);
-
-				const notionUrl = getNotionPageUrl(result.pageId);
-				sendEvent({
-					type: ServerProgressEventType.Complete,
-					success: true,
-					pageId: result.pageId,
-					notionUrl,
-					recipe: {
-						name: result.recipe.name,
-						author: result.recipe.author,
-						ingredients: result.recipe.ingredients,
-						instructions: result.recipe.instructions,
-					},
-					tags: {
-						tags: result.tags.tags,
-						mealType: result.tags.mealType,
-						healthiness: result.tags.healthiness,
-						totalTimeMinutes: result.tags.totalTimeMinutes,
-					},
-				});
-			} catch (error) {
-				consola.error("Recipe processing error in stream:", error);
-				logErrorDetails(error, { error: consola.error }, requestId);
-
-				const { message, notionUrl } = sanitizeError(error, { error: consola.error }, requestId);
-
-				try {
-					sendEvent({
-						type: ServerProgressEventType.Error,
-						success: false,
-						error: message,
-						...(notionUrl && { notionUrl }),
-					});
-				} catch (e) {
-					consola.error("Error sending error event:", e);
-				}
-			} finally {
-				try {
-					controller.close();
-				} catch (e) {
-					consola.error("Error closing stream:", e);
-				}
-			}
-		},
-	});
-
-	const response = new Response(stream, {
-		headers: {
-			"Content-Type": "text/event-stream",
-			"Cache-Control": "no-cache",
-			Connection: "keep-alive",
-		},
-	});
-	setCorsHeaders(response);
-	return response;
-}
+import {
+	handleRecipeRequest,
+	handleRecipeStream,
+} from "../backend/server-shared/recipe-handler.js";
 
 /**
  * Main handler for the /api/recipes endpoint.
@@ -172,76 +50,49 @@ export default {
 			return response;
 		}
 
-		const clientId = getClientIdentifier(req);
-		const rateLimit = checkRateLimit(clientId);
-		if (!rateLimit.allowed) {
-			return createRateLimitResponse(rateLimit);
-		}
-
-		const authHeader = req.headers.get("Authorization");
-		const authError = validateApiKeyHeader(authHeader, (error, status) => {
-			consola.error(`[${requestId}] Authentication failed: ${error}`);
+		// Create error response function that logs errors with request ID
+		const createErrorResponseWithLogging = (error: string, status: number): Response => {
+			consola.error(`[${requestId}] Request error: ${error}`);
 			return createErrorResponse(error, status, false);
-		});
+		};
 
-		if (authError) {
-			return authError;
-		}
-
-		const contentLength = req.headers.get("Content-Length");
-		const sizeError = validateRequestSize(contentLength, MAX_REQUEST_BODY_SIZE, (error, status) => {
-			consola.error(`[${requestId}] Request size validation failed: ${error}`);
-			return createErrorResponse(error, status, false);
-		});
-
-		if (sizeError) {
-			return sizeError;
-		}
-
+		// Parse and validate request body
 		try {
-			const body = (await req.json()) as RecipeRequest;
+			const body = (await req.json()) as unknown;
+			const { validateRecipeRequest } = await import("../backend/security.js");
+			const validationResult = validateRecipeRequest(body, createErrorResponseWithLogging);
 
-			const validationError = validateRecipeRequest(body, (error, status) => {
-				consola.error(`[${requestId}] Request validation failed: ${error}`);
-				return createErrorResponse(error, status, false);
-			});
-
-			if (validationError) {
-				return validationError;
+			if (!validationResult.success) {
+				return validationResult.response;
 			}
 
-			if (body.stream) {
-				return handleRecipeStream(body.url, requestId);
+			// If streaming, use the enhanced stream handler with full data
+			if (validationResult.data.stream) {
+				return handleRecipeStream({
+					url: validationResult.data.url,
+					requestId,
+					includeFullData: true,
+				});
 			}
 
-			const { processRecipe } = await import("../backend/process-recipe.js");
-			const { createConsoleLogger } = await import("../backend/logger.js");
-			const { getNotionPageUrl } = await import("../backend/notion/client.js");
-
-			const logger = createConsoleLogger();
-			const result = await processRecipe(body.url, undefined, logger);
-
-			const savedNotionUrl = getNotionPageUrl(result.pageId);
-
-			const successResponse: RecipeResponse = {
-				success: true,
-				pageId: result.pageId,
-				notionUrl: savedNotionUrl,
-			};
-
-			const response = Response.json(successResponse, {
-				status: HttpStatus.OK,
-				headers: {
-					[RATE_LIMIT_HEADERS.LIMIT]: String(DEFAULT_RATE_LIMIT_VALUE),
-					[RATE_LIMIT_HEADERS.REMAINING]: rateLimit.remaining.toString(),
-					[RATE_LIMIT_HEADERS.RESET]: new Date(rateLimit.resetAt).toISOString(),
-				},
+			// For non-streaming, use the shared handler with pre-parsed body
+			// Create a new request object since the body was already consumed
+			const reconstructedRequest = new Request(req.url, {
+				method: req.method,
+				headers: req.headers,
 			});
-			setSecurityHeaders(response);
-			setCorsHeaders(response);
-			return response;
+
+			return await handleRecipeRequest({
+				request: reconstructedRequest,
+				parsedBody: validationResult.data,
+				requestId,
+				createErrorResponse: createErrorResponseWithLogging,
+			});
 		} catch (error) {
-			consola.error("Recipe processing error:", error);
+			consola.error(`[${requestId}] Recipe processing error:`, error);
+			const { handleRecipeError, logErrorDetails } = await import(
+				"../backend/server-shared/errors.js"
+			);
 			logErrorDetails(error, { error: consola.error }, requestId);
 			return handleRecipeError(error, { error: consola.error }, requestId);
 		}

@@ -1,6 +1,3 @@
-/**
- * Shared server utilities for both Bun server and Vercel serverless functions.
- */
 import {
 	DuplicateRecipeError,
 	NotionApiError,
@@ -8,36 +5,10 @@ import {
 	ScrapingError,
 	TaggingError,
 	ValidationError,
-} from "./errors.js";
-import type { RecipeResponse } from "./shared/api.js";
-
-/**
- * HTTP status codes used throughout the server.
- */
-export enum HttpStatus {
-	OK = 200,
-	NoContent = 204,
-	BadRequest = 400,
-	NotFound = 404,
-	MethodNotAllowed = 405,
-	Conflict = 409,
-	InternalServerError = 500,
-	BadGateway = 502,
-}
-
-/**
- * Rate limit header names for responses.
- */
-export const RATE_LIMIT_HEADERS = {
-	LIMIT: "X-RateLimit-Limit",
-	REMAINING: "X-RateLimit-Remaining",
-	RESET: "X-RateLimit-Reset",
-} as const;
-
-/**
- * Default rate limit value (requests per minute).
- */
-export const DEFAULT_RATE_LIMIT_VALUE = 10;
+} from "../errors.js";
+import type { RecipeResponse } from "../shared/api/index.js";
+import { setCorsHeaders, setSecurityHeaders } from "./headers.js";
+import { DEFAULT_RATE_LIMIT_VALUE, HttpStatus, RATE_LIMIT_HEADERS } from "./index.js";
 
 /**
  * Logger interface for error logging.
@@ -45,65 +16,6 @@ export const DEFAULT_RATE_LIMIT_VALUE = 10;
 export type ErrorLogger = {
 	error(message: string, details?: unknown): void;
 };
-
-/**
- * Sets security headers on responses.
- *
- * @param response - The response object to add security headers to.
- */
-export function setSecurityHeaders(response: Response): void {
-	response.headers.set("X-Content-Type-Options", "nosniff");
-	response.headers.set("X-Frame-Options", "DENY");
-	response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-}
-
-/**
- * Handles CORS headers for browser extension requests.
- *
- * @param response - The response object to add CORS headers to.
- */
-export function setCorsHeaders(response: Response): void {
-	response.headers.set("Access-Control-Allow-Origin", "*");
-	response.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-	response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
-	response.headers.set("Access-Control-Expose-Headers", "*");
-	response.headers.set("Access-Control-Allow-Credentials", "false");
-}
-
-/**
- * Creates an error response with CORS headers.
- *
- * @param error - The error message to include in the response.
- * @param status - The HTTP status code for the error.
- * @param includeSecurityHeaders - Whether to include security headers (default: true).
- * @returns Response with error details and CORS headers.
- */
-export function createErrorResponse(
-	error: string,
-	status: number,
-	includeSecurityHeaders: boolean = true,
-): Response {
-	const errorResponse: RecipeResponse = {
-		success: false,
-		error,
-	};
-	const response = Response.json(errorResponse, { status });
-
-	if (includeSecurityHeaders) {
-		setSecurityHeaders(response);
-	}
-	setCorsHeaders(response);
-	return response;
-}
-
-/**
- * Generates a unique request correlation ID.
- *
- * @returns A unique request ID string.
- */
-export function generateRequestId(): string {
-	return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
-}
 
 /**
  * Handles duplicate recipe errors.
@@ -326,6 +238,32 @@ export function createRateLimitResponse(rateLimit: {
 		},
 	);
 	setSecurityHeaders(response);
+	setCorsHeaders(response);
+	return response;
+}
+
+/**
+ * Creates an error response with CORS headers.
+ *
+ * @param error - The error message to include in the response.
+ * @param status - The HTTP status code for the error.
+ * @param includeSecurityHeaders - Whether to include security headers (default: true).
+ * @returns Response with error details and CORS headers.
+ */
+export function createErrorResponse(
+	error: string,
+	status: number,
+	includeSecurityHeaders: boolean = true,
+): Response {
+	const errorResponse: RecipeResponse = {
+		success: false,
+		error,
+	};
+	const response = Response.json(errorResponse, { status });
+
+	if (includeSecurityHeaders) {
+		setSecurityHeaders(response);
+	}
 	setCorsHeaders(response);
 	return response;
 }

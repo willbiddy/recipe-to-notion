@@ -1,7 +1,7 @@
 import { consola } from "consola";
 import { type ProgressEvent, processRecipe } from "./index.js";
 import { createConsoleLogger } from "./logger.js";
-import { getNotionPageUrl } from "./notion.js";
+import { getNotionPageUrl } from "./notion/index.js";
 import { checkRateLimit, getClientIdentifier } from "./rate-limit.js";
 import {
 	MAX_REQUEST_BODY_SIZE,
@@ -20,8 +20,8 @@ import {
 	sanitizeError,
 	setCorsHeaders,
 	setSecurityHeaders,
-} from "./server-shared.js";
-import { type RecipeResponse, ServerProgressEventType } from "./shared/api.js";
+} from "./server-shared/index.js";
+import { type RecipeResponse, ServerProgressEventType } from "./shared/api/index.js";
 
 /**
  * Handles OPTIONS preflight requests for CORS.

@@ -65,6 +65,10 @@
 		@apply w-full min-h-[48px] px-5 py-3 bg-primary-600 text-white border-none rounded-xl text-base font-medium cursor-pointer transition-all duration-200 hover:bg-primary-700 active:bg-primary-800 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:ring-offset-2;
 	}
 
+	.btn-primary-minimal {
+		@apply w-full min-h-[44px] px-4 py-2.5 bg-primary-600 text-white border-none rounded-lg text-sm font-medium cursor-pointer transition-all duration-200 hover:bg-primary-700 active:bg-primary-800 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-primary-500/50;
+	}
+
 	.btn-primary-sm {
 		@apply min-h-[44px] px-5 py-3 bg-gradient-to-r from-primary-600 to-accent-600 text-white border-none rounded-2xl text-base font-semibold cursor-pointer transition-all duration-200 hover:from-primary-700 hover:to-accent-700 shadow-button-sm hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 focus:outline-none focus:ring-4 focus:ring-primary-500/50 focus:ring-offset-2;
 	}
@@ -87,17 +91,33 @@
 		@apply bg-primary-50 text-primary-800 border-2 border-primary-200;
 	}
 
+	.status-info-minimal {
+		@apply text-primary-600;
+	}
+
 	.status-success {
 		@apply bg-success-50 text-success-800 border-2 border-success-300;
+	}
+
+	.status-success-minimal {
+		@apply text-green-600;
 	}
 
 	.status-error {
 		@apply bg-error-50 text-error-800 border-2 border-error-200 whitespace-pre-line;
 	}
 
+	.status-error-minimal {
+		@apply text-red-600 whitespace-pre-line;
+	}
+
 	/* Input Components */
 	.input-field {
 		@apply w-full px-4 py-3.5 text-base text-gray-900 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all duration-200 bg-white placeholder:text-gray-400 invalid:border-red-300 invalid:focus:ring-red-500/30 invalid:focus:border-red-500;
+	}
+
+	.input-field-minimal {
+		@apply w-full px-3 py-2.5 text-sm text-gray-900 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all duration-200 bg-white placeholder:text-gray-400 invalid:border-red-300 invalid:focus:ring-red-500/30 invalid:focus:border-red-500;
 	}
 
 	.input-field-settings {

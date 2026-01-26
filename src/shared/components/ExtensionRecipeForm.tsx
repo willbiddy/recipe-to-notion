@@ -22,13 +22,75 @@ export type ExtensionRecipeFormProps = {
 const NOTION_OPEN_DELAY_MS = 500;
 
 /**
- * Gets the current active tab URL and title.
+ * Extracts the website name from a URL (e.g., "bonappetit.com" -> "Bon Appétit").
  */
-async function getCurrentTab(): Promise<{ url: string | null; title: string | null }> {
+function getWebsiteName(url: string): string | null {
+	try {
+		const urlObj = new URL(url);
+		const hostname = urlObj.hostname;
+
+		// Remove www. prefix if present
+		const cleanHostname = hostname.replace(/^www\./, "");
+
+		// Extract the main domain name (e.g., "bonappetit.com" -> "bonappetit")
+		const parts = cleanHostname.split(".");
+		if (parts.length >= 2) {
+			const domain = parts[parts.length - 2];
+			if (domain) {
+				// Convert to title case
+				return domain.charAt(0).toUpperCase() + domain.slice(1).replace(/([A-Z])/g, " $1");
+			}
+		}
+
+		return cleanHostname;
+	} catch {
+		return null;
+	}
+}
+
+/**
+ * Gets the current active tab URL, title, recipe title, and author if available.
+ * Uses the content script to extract recipe data, which can import the actual parser code.
+ */
+async function getCurrentTab(): Promise<{
+	url: string | null;
+	title: string | null;
+	recipeTitle: string | null;
+	author: string | null;
+	websiteName: string | null;
+}> {
 	const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+	const url = tab?.url || null;
+	const title = tab?.title || null;
+	let recipeTitle: string | null = null;
+	let author: string | null = null;
+	let websiteName: string | null = null;
+
+	// Extract website name from URL
+	if (url) {
+		websiteName = getWebsiteName(url);
+	}
+
+	// Try to extract recipe data from JSON-LD using the content script
+	if (tab?.id && url && (url.startsWith("http://") || url.startsWith("https://"))) {
+		try {
+			// Send message to content script to extract recipe data
+			const response = await chrome.tabs.sendMessage(tab.id, {
+				type: "extract-recipe-data",
+			});
+			recipeTitle = response?.title || null;
+			author = response?.author || null;
+		} catch {
+			// If messaging fails (e.g., content script not loaded, chrome:// pages), silently fail
+		}
+	}
+
 	return {
-		url: tab?.url || null,
-		title: tab?.title || null,
+		url,
+		title,
+		recipeTitle,
+		author,
+		websiteName,
 	};
 }
 
@@ -39,11 +101,15 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 	const storage = createStorageAdapter();
 	const [currentUrl, setCurrentUrl] = createSignal<string | null>(null);
 	const [currentTitle, setCurrentTitle] = createSignal<string | null>(null);
+	const [recipeTitle, setRecipeTitle] = createSignal<string | null>(null);
+	const [recipeAuthor, setRecipeAuthor] = createSignal<string | null>(null);
+	const [websiteName, setWebsiteName] = createSignal<string | null>(null);
 	const [loading, setLoading] = createSignal(false);
 	const [status, setStatus] = createSignal<{ message: string; type: StatusType } | null>(null);
 	const [progress, setProgress] = createSignal<string | null>(null);
 	const [showApiPrompt, setShowApiPrompt] = createSignal(false);
 	const [pendingSave, setPendingSave] = createSignal<(() => void) | null>(null);
+	const [isInvalidApiKey, setIsInvalidApiKey] = createSignal(false);
 
 	/**
 	 * Saves a recipe with progress streaming.
@@ -115,7 +181,22 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 					chrome.tabs.create({ url: result.notionUrl });
 				}, NOTION_OPEN_DELAY_MS);
 			} else {
-				setStatus({ message: result.error || "Failed to save recipe", type: StatusType.Error });
+				const errorMessage = result.error || "Failed to save recipe";
+				// Check if error is related to invalid API key
+				const isApiKeyError =
+					errorMessage.toLowerCase().includes("invalid api key") ||
+					errorMessage.toLowerCase().includes("missing authorization") ||
+					errorMessage.toLowerCase().includes("invalid authorization");
+
+				if (isApiKeyError) {
+					setIsInvalidApiKey(true);
+					setStatus({message: "Invalid API key. Please update your API secret.",
+						type: StatusType.Error,
+					});
+				} else {
+					setIsInvalidApiKey(false);
+					setStatus({ message: errorMessage, type: StatusType.Error });
+				}
 			}
 		} catch (error) {
 			setStatus({
@@ -150,6 +231,7 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 	 */
 	const handleApiSecretSaved = () => {
 		setShowApiPrompt(false);
+		setIsInvalidApiKey(false);
 		// Execute the pending save if there was one
 		const save = pendingSave();
 		if (save) {
@@ -158,24 +240,39 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 		}
 	};
 
+	/**
+	 * Handles updating the API key when it's invalid.
+	 */
+	const handleUpdateApiKey = () => {
+		setPendingSave(() => performSave);
+		setShowApiPrompt(true);
+	};
+
 	// Initialize on mount
 	onMount(async () => {
-		const { url, title } = await getCurrentTab();
+		const { url, title, recipeTitle, author, websiteName } = await getCurrentTab();
 		setCurrentUrl(url);
 		setCurrentTitle(title);
+		setRecipeTitle(recipeTitle);
+		setRecipeAuthor(author);
+		setWebsiteName(websiteName);
 	});
 
 	return (
 		<div class="flex flex-col gap-3">
 			{/* URL Display */}
-			<UrlDisplay url={currentUrl()} title={currentTitle()} />
+			<UrlDisplay
+				url={currentUrl()}
+				title={recipeTitle() || currentTitle()}
+				source={recipeAuthor() || websiteName()}
+			/>
 
 			{/* Save Button */}
 			<button
 				id="save-button"
 				type="button"
 				onClick={handleSave}
-				disabled={loading()}
+				disabled={loading() || isInvalidApiKey()}
 				class="btn-primary group"
 			>
 				<Show
@@ -210,7 +307,20 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 
 			{/* Status Message */}
 			<Show when={status()}>
-				{(s) => <StatusMessage message={s().message} type={s().type} textSize={TextSize.Xs} />}
+				{(s) => (
+					<div class="flex flex-col gap-2">
+						<StatusMessage message={s().message} type={s().type} textSize={TextSize.Xs} />
+						<Show when={isInvalidApiKey()}>
+							<button
+								type="button"
+								onClick={handleUpdateApiKey}
+								class="w-full px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors duration-200"
+							>
+								Update API Secret
+							</button>
+						</Show>
+					</div>
+				)}
 			</Show>
 
 			{/* API Secret Prompt */}

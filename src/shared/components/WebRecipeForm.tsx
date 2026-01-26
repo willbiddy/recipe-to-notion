@@ -55,6 +55,7 @@ export function WebRecipeForm() {
 	const [recipeInfo, setRecipeInfo] = createSignal<RecipeInfoData | null>(null);
 	const [showApiPrompt, setShowApiPrompt] = createSignal(false);
 	const [pendingSave, setPendingSave] = createSignal<(() => void) | null>(null);
+	const [isInvalidApiKey, setIsInvalidApiKey] = createSignal(false);
 
 	function urlValid() {
 		const currentUrl = url();
@@ -133,7 +134,23 @@ export function WebRecipeForm() {
 					type: StatusType.Info,
 				});
 			} else {
-				setStatus({ message: result.error || "Failed to save recipe", type: StatusType.Error });
+				const errorMessage = result.error || "Failed to save recipe";
+				// Check if error is related to invalid API key
+				const isApiKeyError =
+					errorMessage.toLowerCase().includes("invalid api key") ||
+					errorMessage.toLowerCase().includes("missing authorization") ||
+					errorMessage.toLowerCase().includes("invalid authorization");
+
+				if (isApiKeyError) {
+					setIsInvalidApiKey(true);
+					setStatus({
+						message: "Invalid API key. Please update your API secret.",
+						type: StatusType.Error,
+					});
+				} else {
+					setIsInvalidApiKey(false);
+					setStatus({ message: errorMessage, type: StatusType.Error });
+				}
 			}
 		} catch (error) {
 			setStatus({
@@ -195,12 +212,21 @@ export function WebRecipeForm() {
 	 */
 	const handleApiSecretSaved = () => {
 		setShowApiPrompt(false);
+		setIsInvalidApiKey(false);
 		// Execute the pending save if there was one
 		const save = pendingSave();
 		if (save) {
 			setPendingSave(null);
 			save();
 		}
+	};
+
+	/**
+	 * Handles updating the API key when it's invalid.
+	 */
+	const handleUpdateApiKey = () => {
+		setPendingSave(() => performSave);
+		setShowApiPrompt(true);
 	};
 
 	/**
@@ -237,52 +263,48 @@ export function WebRecipeForm() {
 	});
 
 	return (
-		<div class="flex flex-col gap-4">
+		<div class="flex flex-col gap-3">
 			{/* URL Input */}
-			<div class="flex flex-col gap-3">
-				<div class="relative">
-					<input
-						type="url"
-						id="url-input"
-						name="recipe-url"
-						value={url()}
-						onInput={handleUrlInput}
-						onKeyDown={handleKeyDown}
-						placeholder="Paste recipe URL..."
-						autocomplete="url"
-						aria-label="Recipe URL"
-						aria-invalid={urlValid() === false ? "true" : "false"}
-						class="input-field"
-					/>
-					<Show when={showClearButton()}>
-						<button
-							type="button"
-							onClick={clearUrl}
-							class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-							aria-label="Clear URL"
-							title="Clear URL"
+			<div class="relative">
+				<input
+					type="url"
+					id="url-input"
+					name="recipe-url"
+					value={url()}
+					onInput={handleUrlInput}
+					onKeyDown={handleKeyDown}
+					placeholder="Paste recipe URL..."
+					autocomplete="url"
+					aria-label="Recipe URL"
+					aria-invalid={urlValid() === false ? "true" : "false"}
+					class="input-field-minimal"
+				/>
+				<Show when={showClearButton()}>
+					<button
+						type="button"
+						onClick={clearUrl}
+						class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 rounded transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+						aria-label="Clear URL"
+						title="Clear URL"
+					>
+						<svg
+							class="w-4 h-4"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+							aria-hidden="true"
 						>
-							<svg
-								class="w-5 h-5"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-								aria-hidden="true"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M6 18L18 6M6 6l12 12"
-								/>
-							</svg>
-						</button>
-					</Show>
-					<div class="sr-only" aria-live="polite" aria-atomic="true">
-						<Show when={urlValid() !== null}>
-							{urlValid() ? "Valid URL" : "Invalid URL format"}
-						</Show>
-					</div>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M6 18L18 6M6 6l12 12"
+							/>
+						</svg>
+					</button>
+				</Show>
+				<div class="sr-only" aria-live="polite" aria-atomic="true">
+					<Show when={urlValid() !== null}>{urlValid() ? "Valid URL" : "Invalid URL format"}</Show>
 				</div>
 			</div>
 
@@ -292,13 +314,13 @@ export function WebRecipeForm() {
 				onClick={handleSave}
 				disabled={loading()}
 				aria-label="Save recipe with Recipe Clipper for Notion"
-				class="btn-primary group"
+				class="btn-primary-minimal group"
 			>
 				<Show
 					when={loading()}
 					fallback={
 						<svg
-							class="w-5 h-5 group-hover:translate-x-0.5 transition-transform duration-200"
+							class="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200"
 							fill="none"
 							stroke="currentColor"
 							viewBox="0 0 24 24"
@@ -318,25 +340,32 @@ export function WebRecipeForm() {
 						aria-hidden="true"
 					/>
 				</Show>
-				<span class="button-text">{loading() ? "Processing..." : "Save Recipe"}</span>
+				<span>{loading() ? "Processing..." : "Save Recipe"}</span>
 			</button>
 
 			{/* Progress Indicator */}
 			<Show when={progress()}>{(msg) => <ProgressIndicator message={msg()} />}</Show>
 
 			{/* Status Message */}
-			<Show when={status()}>{(s) => <StatusMessage message={s().message} type={s().type} />}</Show>
-
-			{/* Recipe Info */}
-			<Show when={recipeInfo()}>
-				{(info) => (
-					<div class="py-4 px-5 rounded-2xl text-sm leading-relaxed animate-[fadeIn_0.2s_ease-in] shadow-sm">
-						<RecipeInfo data={info()} />
+			<Show when={status()}>
+				{(s) => (
+					<div class="flex flex-col gap-2">
+						<StatusMessage message={s().message} type={s().type} />
+						<Show when={isInvalidApiKey()}>
+							<button
+								type="button"
+								onClick={handleUpdateApiKey}
+								class="w-full px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors duration-200"
+							>
+								Update API Secret
+							</button>
+						</Show>
 					</div>
 				)}
 			</Show>
 
-			<div class="flex-grow" />
+			{/* Recipe Info */}
+			<Show when={recipeInfo()}>{(info) => <RecipeInfo data={info()} />}</Show>
 
 			{/* API Secret Prompt */}
 			<Show when={showApiPrompt()}>

@@ -39,12 +39,6 @@ After adding:
 
 ### Manual Setup: Create the Shortcut Yourself
 
-If you prefer to create it manually, follow the screenshot below exactly:
-
-<img src="ios-shortcut-setup.png" alt="iOS Shortcut setup showing four actions: Get URLs from Input, Text action with base URL, Combine Text action combining Text and URLs variables, and Open URL action using Combined Text variable" style="max-height: 200px; width: auto;">
-
-**Exact Action List (match the screenshot above):**
-
 1. **Action 1: "Get URLs from Input"**
    - Search for: `Get URLs from Input`
    - Add it (no configuration needed)

@@ -32,12 +32,14 @@ export default {
 		} catch (error) {
 			consola.error("Error serving index.html:", error);
 			consola.error("Tried to read from:", indexPath);
+			consola.error("Current working directory:", process.cwd());
+			consola.error("__dirname:", __dirname);
 
-			const errorMessage = error instanceof Error ? error.message : String(error);
+			// Return a more user-friendly error without exposing internal paths
 			return createErrorResponse(
-				`Not Found. Path: ${indexPath}, Error: ${errorMessage}`,
-				HttpStatus.NotFound,
-				false,
+				"Failed to load the web interface. Please check the server logs.",
+				HttpStatus.InternalServerError,
+				true,
 			);
 		}
 	},

@@ -46,17 +46,6 @@ function logRequest(request: Request, requestId?: string): void {
 }
 
 /**
- * Creates an error response with CORS and security headers.
- *
- * @param error - The error message to include in the response.
- * @param status - The HTTP status code for the error.
- * @returns Response with error details and CORS headers.
- */
-function createErrorResponseWithHeaders(error: string, status: number): Response {
-	return createErrorResponse(error, status, true);
-}
-
-/**
  * Main request handler for the HTTP server.
  *
  * Routes requests to appropriate handlers based on path and method.
@@ -83,9 +72,10 @@ export async function handleRequest(request: Request): Promise<Response> {
 		return await handleRecipeRequest({
 			request,
 			requestId,
-			createErrorResponse: createErrorResponseWithHeaders,
+			createErrorResponse: (error: string, status: number) =>
+				createErrorResponse(error, status, true),
 		});
 	}
 
-	return createErrorResponseWithHeaders("Not found", HttpStatus.NotFound);
+	return createErrorResponse("Not found", HttpStatus.NotFound, true);
 }

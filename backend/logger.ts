@@ -129,7 +129,5 @@ export function createConsoleLogger(): RecipeLogger {
  * Useful when you want to explicitly pass a logger but suppress all output.
  */
 export function createSilentLogger(): RecipeLogger {
-	return {
-		// All methods are intentionally empty - no output
-	};
+	return {};
 }

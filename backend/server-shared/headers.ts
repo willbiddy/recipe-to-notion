@@ -22,21 +22,17 @@ function getAllowedOrigin(requestOrigin?: string | null): string {
 	const corsOrigin = process.env.CORS_ORIGIN;
 
 	if (!corsOrigin) {
-		// Default to wildcard for extension compatibility
 		return "*";
 	}
 
-	// If multiple origins are specified, check if request origin matches
 	if (corsOrigin.includes(",")) {
 		const allowedOrigins = corsOrigin.split(",").map((origin) => origin.trim());
 		if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
 			return requestOrigin;
 		}
-		// If no match and multiple origins specified, return first (or could return "*" for preflight)
 		return allowedOrigins[0] || "*";
 	}
 
-	// Single origin specified
 	return corsOrigin.trim();
 }
 

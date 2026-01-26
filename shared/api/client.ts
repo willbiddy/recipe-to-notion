@@ -8,9 +8,9 @@ import { validateServerProgressEvent } from "./validation.js";
 const SSE_DATA_PREFIX = "data: ";
 
 /**
- * Length of SSE data prefix (for slicing JSON data from event line).
+ * Length of SSE data prefix string (for slicing JSON data from event line).
  */
-const SSE_DATA_PREFIX_LENGTH = 6;
+const SSE_DATA_PREFIX_LENGTH = SSE_DATA_PREFIX.length;
 
 /**
  * Formats network errors into user-friendly messages.
@@ -156,9 +156,7 @@ export async function saveRecipe({
 											});
 											return;
 										}
-									} catch {
-										// Ignore parse errors for malformed SSE events
-									}
+									} catch {}
 								}
 							}
 

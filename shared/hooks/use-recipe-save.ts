@@ -143,7 +143,6 @@ export function useRecipeSave(options: UseRecipeSaveOptions): UseRecipeSaveResul
 							type: StatusType.Info,
 						});
 					}
-					// If message is undefined, the callback handles status itself
 				} else {
 					options.setStatus({
 						message: `This recipe already exists. <a href="${result.notionUrl}" target="_blank" class="underline font-semibold">Open in Notion</a>`,

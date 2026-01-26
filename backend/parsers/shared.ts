@@ -81,7 +81,6 @@ export function parseDuration(iso: string | undefined): number | null {
 	const hours = parseInt(match[1] || "0", 10);
 	const minutes = parseInt(match[2] || "0", 10);
 	const totalMinutes = hours * 60 + minutes;
-	// Return 0 for valid zero durations, only null if parsing failed (handled above)
 	return totalMinutes;
 }
 

@@ -335,8 +335,6 @@ function calculateFinalTime(
 	scrapedTime: number | null | undefined,
 	aiEstimatedTime: number,
 ): number {
-	// Use scraped time if available, otherwise fall back to AI estimate
-	// The nullish coalescing operator ensures we always have a number
 	return scrapedTime ?? aiEstimatedTime;
 }
 

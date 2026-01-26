@@ -33,9 +33,7 @@ export function parseJsonLd($: cheerio.CheerioAPI, sourceUrl: string): Recipe | 
 			if (recipeData) {
 				return extractFromJsonLd(recipeData, sourceUrl);
 			}
-		} catch {
-			// Skip malformed JSON-LD blocks and continue searching
-		}
+		} catch {}
 	}
 	return null;
 }
@@ -188,15 +186,15 @@ function extractFromJsonLd(data: Record<string, unknown>, sourceUrl: string): Re
  * converting numbers to display strings and extracting the first item
  * from arrays.
  *
- * @param yield_ - The recipe yield data in various formats.
+ * @param recipeYield - The recipe yield data in various formats.
  * @returns A normalized serving string, or null if unavailable.
  */
-function parseServings(yield_: unknown): string | null {
-	if (!yield_) return null;
+function parseServings(recipeYield: unknown): string | null {
+	if (!recipeYield) return null;
 
-	if (isString(yield_)) return yield_;
-	if (typeof yield_ === "number") return `${yield_} servings`;
-	if (isArray(yield_)) return String(yield_[0]);
+	if (isString(recipeYield)) return recipeYield;
+	if (typeof recipeYield === "number") return `${recipeYield} servings`;
+	if (isArray(recipeYield)) return String(recipeYield[0]);
 	return null;
 }
 

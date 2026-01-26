@@ -49,7 +49,6 @@ export function UrlDisplay(props: UrlDisplayProps) {
 		);
 	}
 
-	// Just title (no source)
 	if (hasTitle) {
 		return (
 			<div

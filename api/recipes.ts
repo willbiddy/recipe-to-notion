@@ -38,63 +38,23 @@ export default {
 			return createErrorResponse("Method not allowed", HttpStatus.MethodNotAllowed, true);
 		}
 
-		// Create error response function that logs errors with request ID
 		const createErrorResponseWithLogging = (error: string, status: number): Response => {
 			consola.error(`[${requestId}] Request error: ${error}`);
 			return createErrorResponse(error, status, true);
 		};
 
-		// Validate Content-Length header before parsing body
-		const {
-			validateRequestSize,
-			validateActualBodySize,
-			validateRecipeRequest,
-			MAX_REQUEST_BODY_SIZE,
-		} = await import("../backend/security.js");
-
-		const sizeError = validateRequestSize(
-			req.headers.get("Content-Length"),
-			MAX_REQUEST_BODY_SIZE,
-			createErrorResponseWithLogging,
-		);
-
-		if (sizeError) {
-			return sizeError;
-		}
-
-		// Parse and validate request body
 		try {
-			const body = (await req.json()) as unknown;
-
-			// Validate actual body size after parsing (defense-in-depth)
-			const actualSizeError = validateActualBodySize(
-				body,
-				MAX_REQUEST_BODY_SIZE,
-				createErrorResponseWithLogging,
-			);
-			if (actualSizeError) {
-				return actualSizeError;
-			}
-
-			const validationResult = validateRecipeRequest(body, createErrorResponseWithLogging);
-
-			if (!validationResult.success) {
-				return validationResult.response;
-			}
-
-			// If streaming, use the enhanced stream handler with full data
-			if (validationResult.data.stream) {
+			const body = (await req.json()) as { url?: string; stream?: boolean };
+			if (body.stream && typeof body.url === "string") {
 				return handleRecipeStream({
-					url: validationResult.data.url,
+					url: body.url,
 					requestId,
 					includeFullData: true,
 				});
 			}
 
-			// For non-streaming, use the shared handler with pre-parsed body
 			return await handleRecipeRequest({
 				request: req,
-				parsedBody: validationResult.data,
 				requestId,
 				createErrorResponse: createErrorResponseWithLogging,
 			});

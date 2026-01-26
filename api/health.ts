@@ -3,28 +3,14 @@
  * Maps to GET /api/health
  */
 
-/**
- * HTTP status codes used in the health endpoint.
- */
-enum HttpStatus {
-	OK = 200,
-	NoContent = 204,
-}
+import { HttpStatus } from "../backend/server-shared/constants.js";
+
+import { setCorsHeaders, setSecurityHeaders } from "../backend/server-shared/headers.js";
 
 /**
  * Service name for health check responses.
  */
 const SERVICE_NAME = "recipe-to-notion";
-
-/**
- * CORS headers for health check endpoint.
- */
-const CORS_HEADERS = {
-	"Content-Type": "application/json",
-	"Access-Control-Allow-Origin": "*",
-	"Access-Control-Allow-Methods": "GET, OPTIONS",
-	"Access-Control-Allow-Headers": "Content-Type",
-} as const;
 
 export default {
 	/**
@@ -35,13 +21,20 @@ export default {
 	 */
 	fetch(req: Request): Response {
 		if (req.method === "OPTIONS") {
-			return new Response(null, { status: HttpStatus.NoContent, headers: CORS_HEADERS });
+			const response = new Response(null, { status: HttpStatus.NoContent });
+			setSecurityHeaders(response);
+			setCorsHeaders(response);
+			return response;
 		}
 
-		const responseBody = JSON.stringify({ status: "ok", service: SERVICE_NAME });
-		return new Response(responseBody, {
-			status: HttpStatus.OK,
-			headers: CORS_HEADERS,
-		});
+		const response = Response.json(
+			{ status: "ok", service: SERVICE_NAME },
+			{
+				status: HttpStatus.OK,
+			},
+		);
+		setSecurityHeaders(response);
+		setCorsHeaders(response);
+		return response;
 	},
 };

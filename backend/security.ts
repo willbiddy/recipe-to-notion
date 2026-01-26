@@ -202,3 +202,38 @@ export function validateRequestSize(
 
 	return null;
 }
+
+/**
+ * Validates the actual request body size after parsing.
+ *
+ * This provides defense-in-depth by validating the actual body size,
+ * not just the Content-Length header, which could be incorrect or manipulated.
+ *
+ * @param body - The parsed request body object.
+ * @param maxSize - Maximum allowed size in bytes (default: MAX_REQUEST_BODY_SIZE).
+ * @param createErrorResponse - Function to create error responses.
+ * @returns Null if valid, or an error response if invalid.
+ */
+export function validateActualBodySize(
+	body: unknown,
+	maxSize: number = MAX_REQUEST_BODY_SIZE,
+	createErrorResponse: (error: string, status: number) => Response,
+): Response | null {
+	try {
+		const bodyString = JSON.stringify(body);
+		const bodySize = new TextEncoder().encode(bodyString).length;
+
+		if (bodySize > maxSize) {
+			return createErrorResponse(
+				`Request body too large. Maximum size is ${maxSize / 1024}KB`,
+				SecurityHttpStatus.BadRequest,
+			);
+		}
+
+		return null;
+	} catch {
+		// If stringification fails, the body is likely invalid JSON anyway
+		// Let the JSON parsing error handle it
+		return null;
+	}
+}

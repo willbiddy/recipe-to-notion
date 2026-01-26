@@ -1,4 +1,18 @@
+#!/bin/sh
+# Run lint-staged to format and lint staged files
 bunx lint-staged
+
+# Run typecheck (fast, catches type errors)
 bun run typecheck
-bun run build:web
-bun run build:extension
+
+# Only build if relevant files changed (web or extension)
+# This speeds up commits that don't touch frontend code
+# Set SKIP_BUILD=1 to skip builds even if files changed
+if [ "$SKIP_BUILD" = "1" ]; then
+	echo "Skipping builds (SKIP_BUILD=1 set)"
+elif git diff --cached --name-only | grep -qE "(web/|extension/|shared/components/|scripts/build)"; then
+	bun run build:web
+	bun run build:extension
+else
+	echo "Skipping builds (no frontend changes detected)"
+fi

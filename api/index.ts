@@ -7,13 +7,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { consola } from "consola";
-
-/**
- * HTTP status codes used in the index endpoint.
- */
-enum HttpStatus {
-	NotFound = 404,
-}
+import { HttpStatus } from "../backend/server-shared/constants.js";
 
 /**
  * Content type for HTML responses.

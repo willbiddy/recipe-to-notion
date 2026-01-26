@@ -31,6 +31,9 @@ if (popupOutput) {
 	if (popupOutput.sourcemap) {
 		await Bun.write("extension/popup.js.map", popupOutput.sourcemap);
 	}
+} else {
+	console.error("Popup build succeeded but no output file was generated");
+	process.exit(1);
 }
 
 // Build the background service worker
@@ -53,6 +56,9 @@ if (backgroundOutput) {
 	if (backgroundOutput.sourcemap) {
 		await Bun.write("extension/background.js.map", backgroundOutput.sourcemap);
 	}
+} else {
+	console.error("Background build succeeded but no output file was generated");
+	process.exit(1);
 }
 
 // Build the content script
@@ -74,5 +80,23 @@ if (contentScriptOutput) {
 	await Bun.write("extension/content-script.js", contentScriptOutput);
 	if (contentScriptOutput.sourcemap) {
 		await Bun.write("extension/content-script.js.map", contentScriptOutput.sourcemap);
+	}
+} else {
+	console.error("Content script build succeeded but no output file was generated");
+	process.exit(1);
+}
+
+// Validate that all output files exist
+const { existsSync } = await import("node:fs");
+const requiredFiles = [
+	"extension/popup.js",
+	"extension/background.js",
+	"extension/content-script.js",
+];
+
+for (const file of requiredFiles) {
+	if (!existsSync(file)) {
+		console.error(`Build failed: ${file} was not created`);
+		process.exit(1);
 	}
 }

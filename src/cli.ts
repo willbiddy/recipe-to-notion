@@ -11,7 +11,7 @@ import { consola } from "consola";
 import { colors } from "consola/utils";
 import { type Config, loadConfig } from "./config.js";
 import { processRecipe } from "./index.js";
-import { createCliLogger, printRecipeSummary } from "./logger.js";
+import { createConsoleLogger } from "./logger.js";
 import {
 	checkForDuplicateByTitle,
 	checkForDuplicateByUrl,
@@ -119,7 +119,7 @@ async function processUrlsSequentially(
 		}
 
 		if (urls.length > 1) {
-			console.log();
+			consola.log("");
 		}
 	}
 
@@ -143,9 +143,8 @@ async function handleRecipe(url: string, config: Config, htmlPath?: string): Pro
 			return await handleRecipeFromHtml(url, htmlPath, config);
 		}
 
-		const logger = createCliLogger();
-		const result = await processRecipe(url, undefined, logger);
-		printRecipeSummary(result.recipe, result.tags);
+		const logger = createConsoleLogger();
+		await processRecipe(url, undefined, logger);
 		return true;
 	} catch (err) {
 		const message = err instanceof Error ? err.message : String(err);
@@ -185,7 +184,7 @@ async function handleRecipeFromHtml(
 		consola.warn(`Duplicate: "${urlDuplicate.title}" already exists at ${urlDuplicate.notionUrl}`);
 		return false;
 	}
-	consola.success("No duplicate URL found");
+	consola.success("No duplicates");
 
 	const recipe = await fetchRecipe(url, htmlPath);
 
@@ -203,7 +202,6 @@ async function handleRecipeFromHtml(
 	}
 
 	const tags = await generateTags(recipe, config);
-	printRecipeSummary(recipe, tags);
 
 	await saveToNotion(recipe, tags, config);
 	return true;
@@ -234,9 +232,9 @@ async function fetchRecipe(url: string, htmlPath?: string): Promise<Recipe> {
  * @returns AI-generated tags and scores for the recipe.
  */
 async function generateTags(recipe: Recipe, config: Config): Promise<RecipeTags> {
-	consola.start("Generating AI scores and tags...");
+	consola.start("Generating tags...");
 	const tags = await tagRecipe(recipe, config.ANTHROPIC_API_KEY);
-	consola.success("Tagged recipe");
+	consola.success("Tags generated");
 	return tags;
 }
 
@@ -271,7 +269,7 @@ function printSummary(results: { succeeded: number; failed: number }): void {
 	const total = results.succeeded + results.failed;
 
 	if (total > 1) {
-		console.log();
+		consola.log("");
 		consola.info(
 			`Processed ${total} recipes: ${colors.green(`${results.succeeded} succeeded`)}, ${colors.red(`${results.failed} failed`)}`,
 		);

@@ -6,6 +6,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { consola } from "consola";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -167,7 +168,7 @@ export default {
 				},
 			});
 		} catch (error) {
-			console.error(`Error serving asset ${pathname}:`, error);
+			consola.error(`Error serving asset ${pathname}:`, error);
 			return new Response("Not Found", { status: 404 });
 		}
 	},

@@ -3,7 +3,7 @@
  * Handles recipe URL submission from current tab, progress updates, and settings management.
  */
 
-import { createSignal, onMount, Show } from "solid-js";
+import { createSignal, onCleanup, onMount, Show } from "solid-js";
 import { useRecipeSave } from "../hooks/use-recipe-save.js";
 import { createStorageAdapter } from "../storage.js";
 import { getWebsiteName, isValidHttpUrl } from "../url-utils.js";
@@ -82,7 +82,14 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 	const [showApiPrompt, setShowApiPrompt] = createSignal(false);
 	const [pendingSave, setPendingSave] = createSignal<(() => void) | null>(null);
 
-	const { performSave, isInvalidApiKey, setIsInvalidApiKey } = useRecipeSave({
+	const timeoutIds: number[] = [];
+
+	const {
+		performSave,
+		isInvalidApiKey,
+		handleApiSecretSaved: createHandleApiSecretSaved,
+		handleUpdateApiKey: createHandleUpdateApiKey,
+	} = useRecipeSave({
 		storage,
 		getApiUrl: () => `${props.getServerUrl()}/api/recipes`,
 		getCurrentUrl: () => currentUrl(),
@@ -91,20 +98,23 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 		setProgress,
 		onSuccess: (result) => {
 			setStatus({ message: "Recipe saved successfully!", type: StatusType.Success });
-			setTimeout(() => {
+			const id1 = setTimeout(() => {
 				setStatus({ message: "Opening...", type: StatusType.Info });
-				setTimeout(() => {
-					if (result.notionUrl) {
-						chrome.tabs.create({ url: result.notionUrl });
-					}
-				}, NOTION_OPEN_DELAY_MS);
 			}, NOTION_OPEN_DELAY_MS);
+			timeoutIds.push(id1);
+			const id2 = setTimeout(() => {
+				if (result.notionUrl) {
+					chrome.tabs.create({ url: result.notionUrl });
+				}
+			}, NOTION_OPEN_DELAY_MS * 2);
+			timeoutIds.push(id2);
 		},
 		onDuplicate: (notionUrl) => {
 			setStatus({ message: "This recipe already exists. Opening...", type: StatusType.Info });
-			setTimeout(() => {
+			const id = setTimeout(() => {
 				chrome.tabs.create({ url: notionUrl });
 			}, NOTION_OPEN_DELAY_MS);
+			timeoutIds.push(id);
 			return undefined;
 		},
 	});
@@ -123,26 +133,19 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 		await performSave();
 	}
 
-	/**
-	 * Handles when API secret is saved in the prompt.
-	 */
-	function handleApiSecretSaved() {
-		setShowApiPrompt(false);
-		setIsInvalidApiKey(false);
-		const save = pendingSave();
-		if (save) {
-			setPendingSave(null);
-			save();
-		}
-	}
+	const handleApiSecretSaved = createHandleApiSecretSaved({
+		setShowApiPrompt,
+		setPendingSave,
+		pendingSave,
+		performSave,
+	});
 
-	/**
-	 * Handles updating the API key when it's invalid.
-	 */
-	function handleUpdateApiKey() {
-		setPendingSave(() => performSave);
-		setShowApiPrompt(true);
-	}
+	const handleUpdateApiKey = createHandleUpdateApiKey({
+		setShowApiPrompt,
+		setPendingSave,
+		pendingSave,
+		performSave,
+	});
 
 	onMount(async () => {
 		const { url, title, recipeTitle, author, websiteName } = await getCurrentTab();
@@ -151,6 +154,12 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 		setRecipeTitle(recipeTitle);
 		setRecipeAuthor(author);
 		setWebsiteName(websiteName);
+	});
+
+	onCleanup(() => {
+		for (const id of timeoutIds) {
+			clearTimeout(id);
+		}
 	});
 
 	return (

@@ -119,7 +119,7 @@ The web interface uses Server-Sent Events (SSE) to show real-time progress while
 - "Starting..." - Initial connection
 - "Checking for duplicates..." - Verifying recipe doesn't already exist
 - "Scraping recipe..." - Fetching recipe data
-- "Generating AI tags and scores..." - Claude processing
+- "Generating tags..." - Claude processing
 - "Saving to Notion..." - Creating Notion page
 
 ### Auto-submit with Query Parameters

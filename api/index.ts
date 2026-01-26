@@ -6,6 +6,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { consola } from "consola";
 
 /**
  * HTTP status codes used in the index endpoint.
@@ -40,8 +41,8 @@ export default {
 				},
 			});
 		} catch (error) {
-			console.error("Error serving index.html:", error);
-			console.error("Tried to read from:", indexPath);
+			consola.error("Error serving index.html:", error);
+			consola.error("Tried to read from:", indexPath);
 
 			const errorMessage = error instanceof Error ? error.message : String(error);
 			return new Response(`Not Found. Path: ${indexPath}, Error: ${errorMessage}`, {

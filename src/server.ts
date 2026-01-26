@@ -1,6 +1,6 @@
 import { consola } from "consola";
 import { type ProgressEvent, processRecipe } from "./index.js";
-import { createCliLogger, printRecipeSummary } from "./logger.js";
+import { createConsoleLogger } from "./logger.js";
 import { getNotionPageUrl } from "./notion.js";
 import { checkRateLimit, getClientIdentifier } from "./rate-limit.js";
 import {
@@ -83,7 +83,7 @@ function handleRecipeStream(_request: Request, url: string, requestId?: string):
 			}
 
 			try {
-				const logger = createCliLogger();
+				const logger = createConsoleLogger();
 
 				const result = await processRecipe(
 					url,
@@ -96,8 +96,6 @@ function handleRecipeStream(_request: Request, url: string, requestId?: string):
 					},
 					logger,
 				);
-
-				printRecipeSummary(result.recipe, result.tags);
 
 				const notionUrl = getNotionPageUrl(result.pageId);
 				sendEvent({
@@ -219,10 +217,8 @@ async function handleRecipe(request: Request, requestId?: string): Promise<Respo
 			return handleRecipeStream(request, body.url, requestId);
 		}
 
-		const logger = createCliLogger();
+		const logger = createConsoleLogger();
 		const result = await processRecipe(body.url, undefined, logger);
-
-		printRecipeSummary(result.recipe, result.tags);
 
 		const savedNotionUrl = getNotionPageUrl(result.pageId);
 

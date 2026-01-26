@@ -1,69 +1,8 @@
+import { consola } from "consola";
+import { colors } from "consola/utils";
 import type { Recipe } from "./scraper.js";
 import type { RecipeTags } from "./tagger.js";
 import { HealthinessScore } from "./tagger.js";
-
-/**
- * Fallback logger interface matching consola's API.
- */
-type FallbackLogger = {
-	ready(msg: string): void;
-	start(msg: string): void;
-	success(msg: string): void;
-	warn(msg: string): void;
-	error(msg: string): void;
-	info(msg: string): void;
-	box(options: { title: string; message: string }): void;
-};
-
-/**
- * Fallback logger when consola is not available (e.g., in serverless environments).
- */
-const fallbackLogger: FallbackLogger = {
-	ready: (msg: string) => console.log(`✓ ${msg}`),
-	start: (msg: string) => console.log(`→ ${msg}`),
-	success: (msg: string) => console.log(`✓ ${msg}`),
-	warn: (msg: string) => console.warn(`⚠ ${msg}`),
-	error: (msg: string) => console.error(`✗ ${msg}`),
-	info: (msg: string) => console.info(`ℹ ${msg}`),
-	box: ({ title, message }: { title: string; message: string }) => {
-		console.log(`\n${title}`);
-		console.log(message);
-		console.log();
-	},
-};
-
-const fallbackColors = {
-	underline: (str: string) => str,
-	blue: (str: string) => str,
-};
-
-/**
- * Gets the consola logger, falling back to console if not available.
- * In serverless environments, consola may not be bundled, so we always use the fallback.
- * For local/CLI usage, consola will be available via static imports in other files.
- *
- * @returns Logger instance (fallback in serverless, consola in CLI).
- */
-function getConsola(): FallbackLogger {
-	return fallbackLogger;
-}
-
-/**
- * Color utility functions interface.
- */
-type ColorUtils = {
-	underline(str: string): string;
-	blue(str: string): string;
-};
-
-/**
- * Gets color utilities, falling back to no-op functions if not available.
- *
- * @returns Color utility functions.
- */
-function getColors(): ColorUtils {
-	return fallbackColors;
-}
 
 /**
  * Logger type for recipe processing steps.
@@ -111,39 +50,38 @@ export type RecipeLogger = {
 	 */
 	onSaved?(notionUrl: string): void;
 	/**
+	 * Called to display the recipe summary after processing completes.
+	 */
+	onSummary?(recipe: Recipe, tags: RecipeTags): void;
+	/**
 	 * Called when an error occurs.
 	 */
 	onError?(message: string): void;
 };
 
 /**
- * Displays a formatted summary of the scraped and tagged recipe.
- * Shared between CLI and server for consistent output.
+ * Creates a console logger that uses consola for all output.
+ * Suitable for both CLI and server contexts where console output is desired.
  */
-export function printRecipeSummary(recipe: Recipe, tags: RecipeTags): void {
-	const message = [
-		recipe.author ? `Author:      ${recipe.author}` : null,
-		`Tags:        ${tags.tags.join(", ")}`,
-		`Meal type:   ${tags.mealType.join(", ")}`,
-		`Healthiness: ${tags.healthiness}/${HealthinessScore.Max}`,
-		`Minutes:     ${tags.totalTimeMinutes}`,
-		`Ingredients: ${recipe.ingredients.length} items`,
-		`Steps:       ${recipe.instructions.length} steps`,
-	]
-		.filter((line) => line !== null)
-		.join("\n");
+export function createConsoleLogger(): RecipeLogger {
+	const formatSummary = (recipe: Recipe, tags: RecipeTags): void => {
+		const formatLabel = (label: string) => colors.bold(colors.cyan(label));
 
-	const consola = getConsola();
-	consola.box({ title: recipe.name, message });
-}
+		const message = [
+			recipe.author ? `${formatLabel("Author:")}      ${recipe.author}` : null,
+			`${formatLabel("Tags:")}        ${tags.tags.join(", ")}`,
+			`${formatLabel("Meal type:")}   ${tags.mealType.join(", ")}`,
+			`${formatLabel("Healthiness:")} ${colors.bold(String(tags.healthiness))}/${HealthinessScore.Max}`,
+			`${formatLabel("Minutes:")}     ${colors.bold(String(tags.totalTimeMinutes))}`,
+			`${formatLabel("Ingredients:")} ${colors.bold(String(recipe.ingredients.length))} items`,
+			`${formatLabel("Steps:")}       ${colors.bold(String(recipe.instructions.length))} steps`,
+		]
+			.filter((line) => line !== null)
+			.join("\n");
 
-/**
- * Creates a CLI-style logger that uses consola for all output.
- * Falls back to console if consola is not available.
- */
-export function createCliLogger(): RecipeLogger {
-	const consola = getConsola();
-	const colors = getColors();
+		const formattedTitle = colors.bold(colors.green(recipe.name));
+		consola.box({ title: formattedTitle, message });
+	};
 
 	return {
 		onStart() {
@@ -153,32 +91,50 @@ export function createCliLogger(): RecipeLogger {
 			consola.start("Checking for duplicates...");
 		},
 		onNoDuplicateFound() {
-			consola.success("No duplicate URL found");
+			consola.success("No duplicates");
 		},
-		onDuplicateFound(title, notionUrl) {
+		onDuplicateFound(title: string, notionUrl: string) {
 			consola.warn(`Duplicate: "${title}" already exists at ${notionUrl}`);
 		},
 		onScraping() {
 			consola.start("Scraping recipe...");
 		},
-		onScraped(recipe) {
+		onScraped(recipe: Recipe) {
 			const methodLabel = recipe.scrapeMethod === "json-ld" ? "(JSON-LD)" : "(HTML fallback)";
 			consola.success(`Scraped: ${recipe.name} ${methodLabel}`);
 		},
 		onTagging() {
-			consola.start("Generating AI scores and tags...");
+			consola.start("Generating tags...");
 		},
 		onTagged() {
-			consola.success("Tagged recipe");
+			consola.success("Tags generated");
 		},
 		onSaving() {
 			consola.start("Saving to Notion...");
 		},
-		onSaved(notionUrl) {
+		onSaved(notionUrl: string) {
 			consola.success(`Saved to Notion: ${colors.underline(colors.blue(notionUrl))}`);
 		},
-		onError(message) {
+		onSummary(recipe: Recipe, tags: RecipeTags) {
+			formatSummary(recipe, tags);
+		},
+		onError(message: string) {
 			consola.error(`Failed: ${message}`);
 		},
 	};
 }
+
+/**
+ * Creates a silent logger that doesn't output anything.
+ * Useful when you want to explicitly pass a logger but suppress all output.
+ */
+export function createSilentLogger(): RecipeLogger {
+	return {
+		// All methods are intentionally empty - no output
+	};
+}
+
+/**
+ * @deprecated Use createConsoleLogger() instead. This function is kept for backwards compatibility.
+ */
+export const createCliLogger = createConsoleLogger;

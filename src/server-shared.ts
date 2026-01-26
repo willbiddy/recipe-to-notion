@@ -245,6 +245,33 @@ export function sanitizeError(
 }
 
 /**
+ * Logs detailed error information for debugging.
+ *
+ * Provides comprehensive error logging with stack traces, error causes, and type information.
+ * Useful for server-side debugging while keeping client messages sanitized.
+ *
+ * @param error - The error that occurred.
+ * @param logger - Logger instance for error logging.
+ * @param context - Optional context string to include in log messages.
+ */
+export function logErrorDetails(error: unknown, logger: ErrorLogger, context?: string): void {
+	const contextPrefix = context ? `[${context}] ` : "";
+
+	if (error instanceof Error) {
+		logger.error(`${contextPrefix}Error name:`, error.name);
+		logger.error(`${contextPrefix}Error message:`, error.message);
+		logger.error(`${contextPrefix}Error stack:`, error.stack);
+
+		if ("cause" in error && error.cause) {
+			logger.error(`${contextPrefix}Error cause:`, error.cause);
+		}
+	} else {
+		logger.error(`${contextPrefix}Error type:`, typeof error);
+		logger.error(`${contextPrefix}Error value:`, JSON.stringify(error, null, 2));
+	}
+}
+
+/**
  * Handles errors from recipe processing and returns appropriate response.
  *
  * Determines the correct HTTP status code based on error type (duplicate, scraping failure, etc.)

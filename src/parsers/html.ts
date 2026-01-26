@@ -1,7 +1,7 @@
 import type * as cheerio from "cheerio";
 import type { Element } from "domhandler";
 import type { Recipe } from "../scraper.js";
-import { SchemaOrgRecipeUrl } from "../shared/constants.js";
+import { MAX_SITE_NAME_LENGTH, SchemaOrgRecipeUrl } from "../shared/constants.js";
 import {
 	cleanRecipeName,
 	decodeHtmlEntities,
@@ -11,11 +11,6 @@ import {
 	normalizeIngredientParentheses,
 	parseDuration,
 } from "./shared.js";
-
-/**
- * Maximum length for site name to be considered as author (characters).
- */
-const MAX_SITE_NAME_LENGTH = 50;
 
 /**
  * Extracts author from HTML using various patterns.

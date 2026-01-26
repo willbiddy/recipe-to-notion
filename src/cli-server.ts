@@ -11,32 +11,14 @@ import getPort from "get-port";
 import { ValidationError } from "./errors.js";
 import { handleRequest } from "./server.js";
 
+import { DEFAULT_PORT, IDLE_TIMEOUT_SECONDS, MAX_PORT, MIN_PORT } from "./shared/constants.js";
+
 /**
  * HTTP status codes used in the server.
  */
 enum HttpStatus {
 	InternalServerError = 500,
 }
-
-/**
- * Default server port.
- */
-const DEFAULT_PORT = 3000;
-
-/**
- * Minimum valid port number.
- */
-const MIN_PORT = 1;
-
-/**
- * Maximum valid port number.
- */
-const MAX_PORT = 65535;
-
-/**
- * Server idle timeout in seconds.
- */
-const IDLE_TIMEOUT_SECONDS = 60;
 
 /**
  * Validate environment variables are loaded.

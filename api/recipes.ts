@@ -22,6 +22,7 @@ import {
 	generateRequestId,
 	HttpStatus,
 	handleRecipeError,
+	logErrorDetails,
 	RATE_LIMIT_HEADERS,
 	sanitizeError,
 	setCorsHeaders,
@@ -99,17 +100,7 @@ function handleRecipeStream(url: string, requestId?: string): Response {
 				});
 			} catch (error) {
 				consola.error("Recipe processing error in stream:", error);
-				if (error instanceof Error) {
-					consola.error("Error name:", error.name);
-					consola.error("Error message:", error.message);
-					consola.error("Error stack:", error.stack);
-					if ("cause" in error && error.cause) {
-						consola.error("Error cause:", error.cause);
-					}
-				} else {
-					consola.error("Error type:", typeof error);
-					consola.error("Error value:", JSON.stringify(error, null, 2));
-				}
+				logErrorDetails(error, { error: consola.error }, requestId);
 
 				const { message, notionUrl } = sanitizeError(error, { error: consola.error }, requestId);
 
@@ -250,6 +241,7 @@ export default {
 			return response;
 		} catch (error) {
 			consola.error("Recipe processing error:", error);
+			logErrorDetails(error, { error: consola.error }, requestId);
 			return handleRecipeError(error, { error: consola.error }, requestId);
 		}
 	},

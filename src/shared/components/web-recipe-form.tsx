@@ -3,25 +3,16 @@
  * Handles recipe URL submission, progress updates, and settings management.
  */
 
-import { createMemo, createSignal, onCleanup, onMount, Show } from "solid-js";
-import { ErrorMessageKey } from "../constants.js";
+import { createMemo, createSignal, onMount, Show } from "solid-js";
+import { AUTO_SUBMIT_DELAY_MS, CLEAR_URL_INPUT_DELAY_MS, ErrorMessageKey } from "../constants.js";
 import { useRecipeSave } from "../hooks/use-recipe-save.js";
+import { useTimeout } from "../hooks/use-timeout.js";
 import { createStorageAdapter } from "../storage.js";
 import { isValidHttpUrl } from "../url-utils.js";
 import { ApiSecretPrompt } from "./api-secret-prompt.js";
 import { ProgressIndicator } from "./progress-indicator.js";
 import { RecipeInfo, type RecipeInfoData } from "./recipe-info.js";
 import { StatusMessage, type StatusType } from "./status-message.js";
-
-/**
- * Delay before auto-submitting URL from query parameters (milliseconds).
- */
-const AUTO_SUBMIT_DELAY_MS = 300;
-
-/**
- * Delay before clearing URL input after successful save (milliseconds).
- */
-const CLEAR_URL_INPUT_DELAY_MS = 500;
 
 /**
  * Gets the server URL from the current origin.
@@ -53,7 +44,7 @@ export function WebRecipeForm() {
 
 	const showClearButton = createMemo(() => url().trim() !== "");
 
-	const timeoutIds: number[] = [];
+	const scheduleTimeout = useTimeout();
 
 	const {
 		performSave,
@@ -68,10 +59,9 @@ export function WebRecipeForm() {
 		setLoading,
 		setProgress,
 		onSuccess: () => {
-			const id = window.setTimeout(() => {
+			scheduleTimeout(() => {
 				setUrl("");
 			}, CLEAR_URL_INPUT_DELAY_MS);
-			timeoutIds.push(id);
 		},
 		onComplete: (data) => {
 			setRecipeInfo(data);
@@ -155,10 +145,9 @@ export function WebRecipeForm() {
 				setUrl(urlParam);
 				const key = await storage.getApiKey();
 				if (key) {
-					const id = window.setTimeout(() => {
+					scheduleTimeout(() => {
 						handleSave();
 					}, AUTO_SUBMIT_DELAY_MS);
-					timeoutIds.push(id);
 				} else {
 					setPendingSave(() => performSave);
 					setShowApiPrompt(true);
@@ -171,12 +160,6 @@ export function WebRecipeForm() {
 
 	onMount(() => {
 		handleQueryParameters();
-	});
-
-	onCleanup(() => {
-		for (const id of timeoutIds) {
-			clearTimeout(id);
-		}
 	});
 
 	return (

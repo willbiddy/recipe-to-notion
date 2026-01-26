@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { consola } from "consola";
+import { MAX_REQUEST_BODY_SIZE, MAX_URL_LENGTH } from "./shared/constants.js";
 
 /**
  * HTTP status codes used for security-related responses.
@@ -9,18 +10,8 @@ export enum SecurityHttpStatus {
 	InternalServerError = 500,
 }
 
-/**
- * Maximum request body size in bytes (10KB).
- * Prevents DoS attacks via large request bodies.
- */
-export const MAX_REQUEST_BODY_SIZE = 10 * 1024;
-
-/**
- * Maximum URL length in characters (2048).
- * Prevents DoS attacks via extremely long URLs.
- * Browsers typically limit URLs to ~2KB, so this aligns with browser behavior.
- */
-export const MAX_URL_LENGTH = 2048;
+// Re-export constants for backward compatibility
+export { MAX_REQUEST_BODY_SIZE, MAX_URL_LENGTH };
 
 /**
  * Request body format for recipe endpoints.

@@ -3,8 +3,10 @@
  * Handles recipe URL submission from current tab, progress updates, and settings management.
  */
 
-import { createSignal, onCleanup, onMount, Show } from "solid-js";
+import { createSignal, onMount, Show } from "solid-js";
+import { NOTION_OPEN_DELAY_MS } from "../constants.js";
 import { useRecipeSave } from "../hooks/use-recipe-save.js";
+import { useTimeout } from "../hooks/use-timeout.js";
 import { createStorageAdapter } from "../storage.js";
 import { getWebsiteName, isValidHttpUrl } from "../url-utils.js";
 import { ApiSecretPrompt } from "./api-secret-prompt.js";
@@ -16,11 +18,6 @@ export type ExtensionRecipeFormProps = {
 	/** Function to get the server URL. */
 	getServerUrl: () => string;
 };
-
-/**
- * Delay before opening Notion page (milliseconds).
- */
-const NOTION_OPEN_DELAY_MS = 500;
 
 /**
  * Gets the current active tab URL, title, recipe title, and author if available.
@@ -82,7 +79,7 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 	const [showApiPrompt, setShowApiPrompt] = createSignal(false);
 	const [pendingSave, setPendingSave] = createSignal<(() => void) | null>(null);
 
-	const timeoutIds: number[] = [];
+	const scheduleTimeout = useTimeout();
 
 	const {
 		performSave,
@@ -98,23 +95,20 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 		setProgress,
 		onSuccess: (result) => {
 			setStatus({ message: "Recipe saved successfully!", type: StatusType.Success });
-			const id1 = window.setTimeout(() => {
+			scheduleTimeout(() => {
 				setStatus({ message: "Opening...", type: StatusType.Info });
 			}, NOTION_OPEN_DELAY_MS);
-			timeoutIds.push(id1);
-			const id2 = window.setTimeout(() => {
+			scheduleTimeout(() => {
 				if (result.notionUrl) {
 					chrome.tabs.create({ url: result.notionUrl });
 				}
 			}, NOTION_OPEN_DELAY_MS * 2);
-			timeoutIds.push(id2);
 		},
 		onDuplicate: (notionUrl) => {
 			setStatus({ message: "This recipe already exists. Opening...", type: StatusType.Info });
-			const id = window.setTimeout(() => {
+			scheduleTimeout(() => {
 				chrome.tabs.create({ url: notionUrl });
 			}, NOTION_OPEN_DELAY_MS);
-			timeoutIds.push(id);
 			return undefined;
 		},
 	});
@@ -158,12 +152,6 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 		setRecipeTitle(recipeTitle);
 		setRecipeAuthor(author);
 		setWebsiteName(websiteName);
-	});
-
-	onCleanup(() => {
-		for (const id of timeoutIds) {
-			clearTimeout(id);
-		}
 	});
 
 	return (

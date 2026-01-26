@@ -25,8 +25,3 @@ export function useTimeout(): (callback: () => void, delay: number) => number {
 		return id;
 	};
 }
-
-/**
- * Type alias for the timeout function returned by useTimeout.
- */
-export type TimeoutFunction = ReturnType<typeof useTimeout>;

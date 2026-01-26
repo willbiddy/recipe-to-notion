@@ -5,7 +5,6 @@
 import { SolidPlugin } from "@dschz/bun-plugin-solid";
 import { handleBuildResult, validateBuildFiles, writeBuildOutput } from "./build-utils.js";
 
-// Build the web interface with Solid.js plugin
 const result = await Bun.build({
 	entrypoints: ["web/web.tsx"],
 	target: "browser",
@@ -30,5 +29,4 @@ await writeBuildOutput({
 	name: "web",
 });
 
-// Validate that output files exist
 validateBuildFiles({ files: ["web/web.js"] });

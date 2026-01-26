@@ -55,19 +55,3 @@ export function loadConfig(): Config {
 
 	return parseResult.data;
 }
-
-/**
- * Extracts Notion-related configuration values.
- *
- * @param config - The full configuration object.
- * @returns Object with Notion API key and database ID.
- */
-export function getNotionConfig(config: Config): {
-	notionApiKey: string;
-	databaseId: string;
-} {
-	return {
-		notionApiKey: config.NOTION_API_KEY,
-		databaseId: config.NOTION_DATABASE_ID,
-	};
-}

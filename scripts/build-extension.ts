@@ -13,7 +13,6 @@ import { handleBuildResult, validateBuildFiles, writeBuildOutput } from "./build
  */
 const serverUrl = process.env.EXTENSION_SERVER_URL || "https://recipe-to-notion-xi.vercel.app";
 
-// Build the extension popup with Solid.js plugin
 const popupResult = await Bun.build({
 	entrypoints: ["extension/popup.tsx"],
 	target: "browser",
@@ -33,7 +32,6 @@ const popupResult = await Bun.build({
 
 handleBuildResult(popupResult, "Popup");
 
-// Write the popup output to the correct file
 const popupOutput = popupResult.outputs[0];
 await writeBuildOutput({
 	output: popupOutput,
@@ -41,7 +39,6 @@ await writeBuildOutput({
 	name: "popup",
 });
 
-// Build the background service worker
 const backgroundResult = await Bun.build({
 	entrypoints: ["extension/background.ts"],
 	target: "browser",
@@ -51,7 +48,6 @@ const backgroundResult = await Bun.build({
 
 handleBuildResult(backgroundResult, "Background");
 
-// Write the background output to the correct file
 const backgroundOutput = backgroundResult.outputs[0];
 await writeBuildOutput({
 	output: backgroundOutput,
@@ -59,7 +55,6 @@ await writeBuildOutput({
 	name: "background",
 });
 
-// Build the content script
 const contentScriptResult = await Bun.build({
 	entrypoints: ["extension/content-script.ts"],
 	target: "browser",
@@ -69,7 +64,6 @@ const contentScriptResult = await Bun.build({
 
 handleBuildResult(contentScriptResult, "Content script");
 
-// Write the content script output to the correct file
 const contentScriptOutput = contentScriptResult.outputs[0];
 await writeBuildOutput({
 	output: contentScriptOutput,
@@ -77,7 +71,6 @@ await writeBuildOutput({
 	name: "content script",
 });
 
-// Validate that all output files exist
 validateBuildFiles({
 	files: ["extension/popup.js", "extension/background.js", "extension/content-script.js"],
 });

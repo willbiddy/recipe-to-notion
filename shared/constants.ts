@@ -2,10 +2,6 @@
  * Centralized constants and enums used throughout the application.
  */
 
-// ============================================================================
-// URL Protocols
-// ============================================================================
-
 /**
  * URL protocols for HTTP/HTTPS validation.
  */
@@ -21,10 +17,6 @@ export enum SchemaOrgRecipeUrl {
 	HTTP = "http://schema.org/Recipe",
 	HTTPS = "https://schema.org/Recipe",
 }
-
-// ============================================================================
-// UI Delays (milliseconds)
-// ============================================================================
 
 /**
  * Delay before opening Notion page after successful save (milliseconds).
@@ -45,10 +37,6 @@ export const CLEAR_URL_INPUT_DELAY_MS = 500;
  * Delay before clearing success status message (milliseconds).
  */
 export const SUCCESS_STATUS_CLEAR_DELAY_MS = 2000;
-
-// ============================================================================
-// Network & Server Configuration
-// ============================================================================
 
 /**
  * Request timeout in milliseconds (30 seconds).
@@ -99,10 +87,6 @@ export const IDLE_TIMEOUT_SECONDS = 60;
  */
 export const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
 
-// ============================================================================
-// Notion Limits
-// ============================================================================
-
 /**
  * Maximum text length for Notion text blocks (characters).
  */
@@ -117,10 +101,6 @@ export const MAX_NOTION_BLOCKS = 100;
  * Length of ellipsis string ("...") used when truncating text.
  */
 export const ELLIPSIS_LENGTH = 3;
-
-// ============================================================================
-// Parsing Limits
-// ============================================================================
 
 /**
  * Maximum length for author name suffixes (characters).
@@ -139,10 +119,6 @@ export const MAX_AUTHOR_SUFFIX_LENGTH = 50;
  * Prevents very long domain names or site titles from being used as author attribution.
  */
 export const MAX_SITE_NAME_LENGTH = 50;
-
-// ============================================================================
-// API Error Patterns
-// ============================================================================
 
 /**
  * API error message patterns for detecting authentication errors.
@@ -172,10 +148,6 @@ export enum ExtensionMessageType {
 	ThemeChanged = "theme-changed",
 }
 
-// ============================================================================
-// Progress Types
-// ============================================================================
-
 /**
  * Progress event types during recipe processing.
  */
@@ -185,10 +157,6 @@ export enum ProgressType {
 	Tagging = "tagging",
 	Saving = "saving",
 }
-
-// ============================================================================
-// Error Messages
-// ============================================================================
 
 /**
  * Error message keys for consistent error messaging.

@@ -1,5 +1,5 @@
 import { ProgressType } from "../shared/constants.js";
-import { getNotionConfig, loadConfig } from "./config.js";
+import { loadConfig } from "./config.js";
 import { DuplicateRecipeError } from "./errors.js";
 import type { RecipeLogger } from "./logger.js";
 import { getNotionPageUrl } from "./notion/client.js";
@@ -101,7 +101,6 @@ export async function processRecipe(options: ProcessRecipeOptions): Promise<Proc
 	}
 
 	const config = loadConfig();
-	const notionConfig = getNotionConfig(config);
 
 	recipeLogger?.onStart?.();
 
@@ -117,7 +116,8 @@ export async function processRecipe(options: ProcessRecipeOptions): Promise<Proc
 	recipeLogger?.onCheckingDuplicates?.();
 	const urlDuplicate = await checkForDuplicateByUrl({
 		url: recipeUrl,
-		...notionConfig,
+		notionApiKey: config.NOTION_API_KEY,
+		databaseId: config.NOTION_DATABASE_ID,
 	});
 
 	checkAndThrowIfDuplicate(urlDuplicate, recipeLogger);
@@ -149,8 +149,8 @@ export async function processRecipe(options: ProcessRecipeOptions): Promise<Proc
 
 	const titleDuplicate = await checkForDuplicateByTitle({
 		recipeName: recipe.name,
-		notionApiKey: notionConfig.notionApiKey,
-		databaseId: notionConfig.databaseId,
+		notionApiKey: config.NOTION_API_KEY,
+		databaseId: config.NOTION_DATABASE_ID,
 	});
 
 	checkAndThrowIfDuplicate(titleDuplicate, recipeLogger);
@@ -163,8 +163,8 @@ export async function processRecipe(options: ProcessRecipeOptions): Promise<Proc
 	const pageId = await createRecipePage({
 		recipe,
 		tags,
-		notionApiKey: notionConfig.notionApiKey,
-		databaseId: notionConfig.databaseId,
+		notionApiKey: config.NOTION_API_KEY,
+		databaseId: config.NOTION_DATABASE_ID,
 		skipDuplicateCheck: true,
 	});
 

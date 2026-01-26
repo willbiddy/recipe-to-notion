@@ -10,11 +10,6 @@ import { consola } from "consola";
 import { HttpStatus } from "../backend/server-shared/constants.js";
 import { createErrorResponse } from "../backend/server-shared/errors.js";
 
-/**
- * Content type for HTML responses.
- */
-const HTML_CONTENT_TYPE = "text/html; charset=utf-8";
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const indexPath = join(__dirname, "..", "web", "index.html");
@@ -31,7 +26,7 @@ export default {
 
 			return new Response(html, {
 				headers: {
-					"Content-Type": HTML_CONTENT_TYPE,
+					"Content-Type": "text/html; charset=utf-8",
 				},
 			});
 		} catch (error) {

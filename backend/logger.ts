@@ -75,7 +75,9 @@ export function createConsoleLogger(): RecipeLogger {
 	 * @param tags - The AI-generated tags and metadata.
 	 */
 	const formatSummary = (recipe: Recipe, tags: RecipeTags): void => {
-		const formatLabel = (label: string) => colors.bold(colors.cyan(label));
+		function formatLabel(label: string) {
+			return colors.bold(colors.cyan(label));
+		}
 
 		const message = [
 			recipe.author ? `${formatLabel("Author:")}      ${recipe.author}` : null,

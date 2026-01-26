@@ -267,6 +267,7 @@ async function callClaudeAPI(
 		}
 
 		const errorMessage = error instanceof Error ? error.message : String(error);
+
 		const causeMessage =
 			error instanceof Error &&
 			error.cause &&

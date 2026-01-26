@@ -129,10 +129,6 @@ export enum ApiErrorPattern {
 	InvalidAuthorization = "invalid authorization",
 }
 
-// ============================================================================
-// Extension Enums
-// ============================================================================
-
 /**
  * Theme options for the browser extension.
  */

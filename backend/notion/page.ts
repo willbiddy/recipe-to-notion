@@ -49,6 +49,7 @@ export async function createRecipePage({
 	}
 
 	const properties = buildPageProperties(recipe, tags);
+
 	const children = buildPageBody(recipe, tags);
 	const pageParams = buildPageParams({
 		databaseId,

@@ -111,7 +111,6 @@ function parseRecipeFromHtml(html: string, sourceUrl: string): Recipe {
  */
 export async function scrapeRecipe(url: string): Promise<Recipe> {
 	const parsedUrl = new URL(url);
-
 	const controller = new AbortController();
 	const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 

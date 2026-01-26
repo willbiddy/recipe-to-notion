@@ -101,7 +101,6 @@ export async function processRecipe(options: ProcessRecipeOptions): Promise<Proc
 	}
 
 	const config = loadConfig();
-
 	recipeLogger?.onStart?.();
 
 	const recipeUrl = url || (preScrapedRecipe ? preScrapedRecipe.sourceUrl : undefined);
@@ -114,6 +113,7 @@ export async function processRecipe(options: ProcessRecipeOptions): Promise<Proc
 		message: PROGRESS_MESSAGES[ProgressType.CheckingDuplicates],
 	});
 	recipeLogger?.onCheckingDuplicates?.();
+
 	const urlDuplicate = await checkForDuplicateByUrl({
 		url: recipeUrl,
 		notionApiKey: config.NOTION_API_KEY,
@@ -124,6 +124,7 @@ export async function processRecipe(options: ProcessRecipeOptions): Promise<Proc
 	recipeLogger?.onNoDuplicateFound?.();
 
 	let recipe: Recipe;
+
 	if (preScrapedRecipe) {
 		recipe = preScrapedRecipe;
 		recipeLogger?.onScraped?.(recipe);

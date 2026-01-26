@@ -124,23 +124,23 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 		await performSave();
 	}
 
-	const handleApiSecretSaved = () => {
+	function handleApiSecretSaved() {
 		createHandleApiSecretSaved({
 			setShowApiPrompt,
 			setPendingSave,
 			pendingSave,
 			performSave,
 		});
-	};
+	}
 
-	const handleUpdateApiKey = () => {
+	function handleUpdateApiKey() {
 		createHandleUpdateApiKey({
 			setShowApiPrompt,
 			setPendingSave,
 			pendingSave,
 			performSave,
 		});
-	};
+	}
 
 	onMount(async () => {
 		const { url, title, recipeTitle, author, websiteName } = await getCurrentTab();

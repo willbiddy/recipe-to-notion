@@ -32,10 +32,10 @@ export default {
 			return createErrorResponse("Method not allowed", HttpStatus.MethodNotAllowed, true);
 		}
 
-		const createLoggedErrorResponse = (error: string, status: number): Response => {
+		function createLoggedErrorResponse(error: string, status: number): Response {
 			consola.error(`[${requestId}] Request error: ${error}`);
 			return createErrorResponse(error, status, true);
-		};
+		}
 
 		try {
 			return await handleRecipeRequest({

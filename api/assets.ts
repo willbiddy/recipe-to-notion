@@ -30,7 +30,15 @@ const ASSET_ROUTES: Record<
 		path: "favicon.png",
 		contentType: "image/png",
 	},
+	"/favicon": {
+		path: "favicon.png",
+		contentType: "image/png",
+	},
 	"/favicon-16x16.png": {
+		path: "favicon-16x16.png",
+		contentType: "image/png",
+	},
+	"/favicon-16x16": {
 		path: "favicon-16x16.png",
 		contentType: "image/png",
 	},
@@ -38,7 +46,15 @@ const ASSET_ROUTES: Record<
 		path: "favicon-32x32.png",
 		contentType: "image/png",
 	},
+	"/favicon-32x32": {
+		path: "favicon-32x32.png",
+		contentType: "image/png",
+	},
 	"/favicon-white.png": {
+		path: "favicon-white.png",
+		contentType: "image/png",
+	},
+	"/favicon-white": {
 		path: "favicon-white.png",
 		contentType: "image/png",
 	},
@@ -46,11 +62,23 @@ const ASSET_ROUTES: Record<
 		path: "favicon-16x16-white.png",
 		contentType: "image/png",
 	},
+	"/favicon-16x16-white": {
+		path: "favicon-16x16-white.png",
+		contentType: "image/png",
+	},
 	"/favicon-32x32-white.png": {
 		path: "favicon-32x32-white.png",
 		contentType: "image/png",
 	},
+	"/favicon-32x32-white": {
+		path: "favicon-32x32-white.png",
+		contentType: "image/png",
+	},
 	"/apple-touch-icon.png": {
+		path: "apple-touch-icon.png",
+		contentType: "image/png",
+	},
+	"/apple-touch-icon": {
 		path: "apple-touch-icon.png",
 		contentType: "image/png",
 	},

@@ -108,24 +108,31 @@ export function StatusMessage(props: StatusMessageProps) {
 
 	const getTypeClass = () => {
 		const statusType = type();
-		if (statusType === StatusType.Success) return "status-success";
-		if (statusType === StatusType.Error) return "status-error";
-		return "status-info";
+		if (statusType === StatusType.Success) return "status-success-minimal";
+		if (statusType === StatusType.Error) return "status-error-minimal";
+		return "status-info-minimal";
 	};
 
 	const baseClasses = () =>
 		props.baseClasses ||
-		`py-4 px-5 rounded-2xl leading-relaxed animate-[fadeIn_0.2s_ease-in] block shadow-sm ${getTextSizeClass()}`;
+		`py-2 leading-relaxed animate-[fadeIn_0.2s_ease-in] block ${getTextSizeClass()}`;
 
 	const isHTML = () => props.message.includes("<") && props.message.includes(">");
 
+	const isError = () => type() === StatusType.Error;
+	const iconColorClass = () => (isError() ? "text-red-600" : "");
+	const textColorClass = () => (isError() ? "text-red-600" : "");
+	const alignmentClass = () => (isError() ? "items-center justify-center" : "items-start");
+
 	return (
 		<output class={`${baseClasses()} ${getTypeClass()}`} aria-live="polite" aria-atomic="true">
-			<div class="flex items-start gap-3">
-				{getStatusIcon(type())}
-				<div class="flex-1">
-					<Show when={isHTML()} fallback={<span>{props.message}</span>}>
-						<span innerHTML={props.message} />
+			<div class={`flex ${alignmentClass()} gap-2`}>
+				<div class={`flex-shrink-0 ${isError() ? "" : "mt-0.5"}`}>
+					<div class={iconColorClass()}>{getStatusIcon(type())}</div>
+				</div>
+				<div class={isError() ? "" : "flex-1"}>
+					<Show when={isHTML()} fallback={<span class={textColorClass()}>{props.message}</span>}>
+						<span class={textColorClass()} innerHTML={props.message} />
 					</Show>
 				</div>
 			</div>

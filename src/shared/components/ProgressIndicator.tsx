@@ -14,15 +14,15 @@ export type ProgressIndicatorProps = {
 export function ProgressIndicator(props: ProgressIndicatorProps) {
 	return (
 		<output
-			class="flex items-center gap-3 py-4 px-5 bg-gradient-to-r from-primary-50 to-accent-50 border-2 border-primary-200 rounded-2xl animate-[fadeIn_0.2s_ease-in] shadow-sm"
+			class="flex items-center gap-2 py-2 text-sm text-primary-600 animate-[fadeIn_0.2s_ease-in]"
 			aria-live="polite"
 			aria-atomic="true"
 		>
 			<div
-				class="spinner w-5 h-5 border-[3px] border-primary-100 border-t-primary-600 rounded-full animate-spin flex-shrink-0"
+				class="spinner w-4 h-4 border-2 border-primary-200 border-t-primary-600 rounded-full animate-spin flex-shrink-0"
 				aria-hidden="true"
 			/>
-			<div class="text-base text-primary-900 font-medium">{props.message}</div>
+			<div class="font-medium">{props.message}</div>
 		</output>
 	);
 }

@@ -54,3 +54,25 @@ if (backgroundOutput) {
 		await Bun.write("extension/background.js.map", backgroundOutput.sourcemap);
 	}
 }
+
+// Build the content script
+const contentScriptResult = await Bun.build({
+	entrypoints: ["extension/content-script.ts"],
+	target: "browser",
+	minify: true,
+	sourcemap: "external",
+});
+
+if (!contentScriptResult.success) {
+	console.error("Content script build failed:", contentScriptResult.logs);
+	process.exit(1);
+}
+
+// Write the content script output to the correct file
+const contentScriptOutput = contentScriptResult.outputs[0];
+if (contentScriptOutput) {
+	await Bun.write("extension/content-script.js", contentScriptOutput);
+	if (contentScriptOutput.sourcemap) {
+		await Bun.write("extension/content-script.js.map", contentScriptOutput.sourcemap);
+	}
+}

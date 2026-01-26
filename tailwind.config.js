@@ -11,7 +11,15 @@ module.exports = {
 	theme: {
 		extend: {
 			fontFamily: {
-				sans: ["Nunito", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
+				sans: [
+					"-apple-system",
+					"BlinkMacSystemFont",
+					"Segoe UI",
+					"Roboto",
+					"Helvetica Neue",
+					"Arial",
+					"sans-serif",
+				],
 			},
 			colors: {
 				primary: {

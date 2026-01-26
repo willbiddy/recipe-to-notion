@@ -47,7 +47,7 @@ export function parseJsonLd($: cheerio.CheerioAPI, sourceUrl: string): Recipe | 
  * @param data - The object to check.
  * @returns True if the object has @type "Recipe" or includes "Recipe" in an array.
  */
-function isRecipeType(data: Record<string, unknown>): boolean {
+export function isRecipeType(data: Record<string, unknown>): boolean {
 	return data["@type"] === "Recipe" || (isArray(data["@type"]) && data["@type"].includes("Recipe"));
 }
 
@@ -115,7 +115,7 @@ function searchObjectProperties(
  * @param visited - Set of visited objects to prevent infinite loops.
  * @returns The Recipe object if found, null otherwise.
  */
-function findRecipeInLd(
+export function findRecipeInLd(
 	data: unknown,
 	visited = new WeakSet<object>(),
 ): Record<string, unknown> | null {

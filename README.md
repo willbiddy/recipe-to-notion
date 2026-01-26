@@ -3,13 +3,10 @@
 Save recipes to Notion without copying and pasting. Paste a URL from almost any recipe site and get a Notion page with the cover photo, ingredients grouped by shopping aisle, instructions, and AI-generated tags. Claude automatically analyzes each recipe to add cuisine tags, meal types, healthiness scores, ingredient categories, and a short description, so you can filter and search your collection later.
 
 **Browser Extension Popup** - One-click recipe saving from any recipe page
-<img src="docs/extension-popup.png" alt="Browser extension popup interface">
 
 **Notion Gallery View** - Browse your recipe collection with cover photos, tags, and meal types
-<img src="docs/notion-gallery.png" alt="Gallery view in Notion showing recipe cards with cover photos, tags, and meal types">
 
 **Notion Recipe Page** - Individual recipe with properties, AI-generated description, and organized ingredients
-<img src="docs/notion-recipe.png" alt="Individual recipe page in Notion with properties, AI-generated description, and ingredients list">
 
 ## How It Works
 

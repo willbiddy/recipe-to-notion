@@ -68,7 +68,7 @@ export function ApiSecretPrompt(props: ApiSecretPromptProps) {
 			onKeyDown={handleBackdropKeyDown}
 		>
 			<div
-				class="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full"
+				class="bg-white rounded-2xl shadow-xl p-6 w-full"
 				role="document"
 				onClick={(e) => e.stopPropagation()}
 				onKeyDown={(e) => e.stopPropagation()}

@@ -241,7 +241,7 @@ bun run build:web
 ```
 
 This:
-- Compiles TypeScript (`public/web.ts` → `public/web.js`)
+- Bundles Solid.js components (`public/web.tsx` → `public/web.js`)
 - Compiles Tailwind CSS (`public/input.css` → `public/web.css`)
 
 ### Local Development
@@ -260,11 +260,19 @@ The web interface will use `localhost:3000` as the server URL automatically.
 public/
 ├── index.html          # Main web page
 ├── manifest.json       # Web App Manifest (PWA + Share Target)
-├── web.ts              # Client-side TypeScript
-├── web.js              # Compiled JavaScript (generated)
+├── web.tsx             # Web interface entry point (Solid.js)
+├── web.js              # Compiled JavaScript bundle (generated)
 ├── input.css           # Tailwind CSS source
 ├── web.css             # Compiled CSS (generated)
 └── tsconfig.json       # TypeScript configuration
+
+src/shared/components/  # Shared Solid.js components
+├── StatusMessage.tsx   # Status message display
+├── ProgressIndicator.tsx # Progress spinner
+├── RecipeInfo.tsx      # Recipe details display
+├── SettingsPanel.tsx   # API key settings (shared)
+├── WebRecipeForm.tsx   # Main web form component
+└── ExtensionRecipeForm.tsx # Extension popup form
 ```
 
 ---

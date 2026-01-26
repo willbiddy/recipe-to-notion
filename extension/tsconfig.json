@@ -9,10 +9,12 @@
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,
 		"resolveJsonModule": true,
+		"jsx": "preserve",
+		"jsxImportSource": "solid-js",
 		"types": ["chrome"],
 		"outDir": ".",
 		"rootDir": "."
 	},
-	"include": ["*.ts"],
+	"include": ["*.ts", "*.tsx"],
 	"exclude": ["node_modules", "*.js", "*.js.map"]
 }

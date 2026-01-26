@@ -27,7 +27,7 @@ First, deploy your server to Vercel. This is a one-time setup.
 bun run build:extension
 ```
 
-This compiles TypeScript files and Tailwind CSS for the extension UI.
+This bundles Solid.js components and compiles Tailwind CSS for the extension UI.
 
 ### Step 3: Configure the Extension
 

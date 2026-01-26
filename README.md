@@ -148,55 +148,11 @@ Use the REST API to integrate Recipe Clipper for Notion into your own applicatio
 
 ---
 
-## Project Structure
-
-```
-src/
-├── cli.ts             Command-line interface
-├── cli-server.ts      HTTP server entry point (local development)
-├── server.ts          HTTP server request handlers (shared logic)
-├── index.ts           Pipeline orchestration for programmatic use
-├── logger.ts          Shared logging interface and CLI logger implementation
-├── scraper.ts         Recipe extraction from URLs and HTML files
-├── tagger.ts          Claude API integration for AI tagging
-├── notion.ts          Notion page creation and duplicate detection
-├── config.ts          Environment variable validation
-├── security.ts        Security utilities
-├── system-prompt.md   Claude instructions for recipe analysis
-└── parsers/
-    ├── json-ld.ts     JSON-LD (schema.org) recipe parsing
-    ├── html.ts        HTML/microdata fallback parsing
-    └── shared.ts      Shared utilities (type guards, helpers)
-
-api/                   Vercel serverless functions
-├── health.ts          Health check endpoint
-└── recipes.ts         Recipe processing endpoint
-
-extension/
-├── manifest.json      Chrome extension manifest (Manifest V3)
-├── popup.html         Extension popup UI (with Tailwind classes)
-├── popup.ts           Popup logic and API communication
-├── background.ts      Service worker for context menu
-├── config.ts          Server URL configuration management
-├── tsconfig.json      TypeScript configuration for extension
-├── input.css          Tailwind CSS source file
-├── styles.css         Compiled Tailwind CSS (generated)
-└── icons/             Extension icons (SVG source files)
-
-public/                 Web interface (mobile-friendly)
-├── index.html         Main web page
-├── manifest.json      Web App Manifest (PWA + Share Target)
-├── web.ts             Client-side TypeScript
-├── web.js             Compiled JavaScript (generated)
-├── input.css          Tailwind CSS source file
-├── web.css            Compiled CSS (generated)
-└── tsconfig.json      TypeScript configuration
-```
-
 **Technologies:**
 
 - [Bun](https://bun.sh/) - JavaScript runtime
 - [TypeScript](https://www.typescriptlang.org/) - Static typing
+- [Solid.js](https://www.solidjs.com/) - Reactive UI framework (web & extension)
 - [Vercel](https://vercel.com/) - Serverless hosting
 - [Cheerio](https://cheerio.js.org/) - HTML parsing
 - [Anthropic SDK](https://docs.anthropic.com/en/api/client-sdks) - Claude AI API client

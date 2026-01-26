@@ -9,9 +9,11 @@
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,
 		"resolveJsonModule": true,
+		"jsx": "preserve",
+		"jsxImportSource": "solid-js",
 		"outDir": ".",
 		"rootDir": "."
 	},
-	"include": ["*.ts"],
+	"include": ["*.ts", "*.tsx", "shared/**/*.ts", "shared/**/*.tsx"],
 	"exclude": ["node_modules", "*.js", "*.js.map"]
 }

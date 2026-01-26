@@ -17,17 +17,17 @@ import {
 } from "../src/security.js";
 import {
 	createErrorResponse,
+	createRateLimitResponse,
 	DEFAULT_RATE_LIMIT_VALUE,
 	generateRequestId,
 	HttpStatus,
 	handleRecipeError,
 	RATE_LIMIT_HEADERS,
-	type RecipeResponse,
 	sanitizeError,
 	setCorsHeaders,
 	setSecurityHeaders,
 } from "../src/server-shared.js";
-import { ServerProgressEventType } from "../src/shared/api.js";
+import { type RecipeResponse, ServerProgressEventType } from "../src/shared/api.js";
 
 /**
  * Handles recipe processing requests with Server-Sent Events for progress.
@@ -183,23 +183,7 @@ export default {
 		const clientId = getClientIdentifier(req);
 		const rateLimit = checkRateLimit(clientId);
 		if (!rateLimit.allowed) {
-			const response = Response.json(
-				{
-					success: false,
-					error: "Rate limit exceeded. Please try again later.",
-				},
-				{
-					status: 429,
-					headers: {
-						[RATE_LIMIT_HEADERS.LIMIT]: String(DEFAULT_RATE_LIMIT_VALUE),
-						[RATE_LIMIT_HEADERS.REMAINING]: "0",
-						[RATE_LIMIT_HEADERS.RESET]: new Date(rateLimit.resetAt).toISOString(),
-					},
-				},
-			);
-			setSecurityHeaders(response);
-			setCorsHeaders(response);
-			return response;
+			return createRateLimitResponse(rateLimit);
 		}
 
 		const authHeader = req.headers.get("Authorization");

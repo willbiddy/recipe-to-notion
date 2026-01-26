@@ -1,16 +1,10 @@
 {
+	"extends": "./tsconfig.base.json",
 	"compilerOptions": {
 		"target": "ES2022",
 		"module": "ESNext",
 		"moduleResolution": "bundler",
-		"esModuleInterop": true,
-		"strict": true,
 		"noUncheckedIndexedAccess": true,
-		"skipLibCheck": true,
-		"forceConsistentCasingInFileNames": true,
-		"resolveJsonModule": true,
-		"jsx": "preserve",
-		"jsxImportSource": "solid-js",
 		"noEmit": true
 	},
 	"include": ["src/**/*"]

@@ -20,10 +20,7 @@ export function isObject(value: unknown): value is Record<string, unknown> {
  * @param key - The property key to check for.
  * @returns True if value is an object containing the specified key.
  */
-export function hasProperty<K extends string>(
-	value: unknown,
-	key: K,
-): value is Record<K, unknown> {
+export function hasProperty<K extends string>(value: unknown, key: K): value is Record<K, unknown> {
 	return isObject(value) && key in value;
 }
 

@@ -2,6 +2,7 @@
  * Shared API and SSE handling logic for both web and extension.
  */
 
+import { z } from "zod";
 import type { ProgressType } from "../index.js";
 import type { StorageAdapter } from "./storage.js";
 
@@ -264,89 +265,64 @@ export async function saveRecipe({
 }
 
 /**
- * Validates that a parsed JSON object is a valid ServerProgressEvent.
+ * Zod schema for Progress event.
+ */
+const progressEventSchema = z.object({
+	type: z.literal(ServerProgressEventType.Progress),
+	message: z.string(),
+	progressType: z.string() as z.ZodType<ProgressType>,
+});
+
+/**
+ * Zod schema for Complete event.
+ */
+const completeEventSchema = z.object({
+	type: z.literal(ServerProgressEventType.Complete),
+	success: z.literal(true),
+	pageId: z.string(),
+	notionUrl: z.string(),
+	recipe: z.object({
+		name: z.string(),
+		author: z.string().nullable(),
+		ingredients: z.array(z.string()),
+		instructions: z.array(z.string()),
+	}),
+	tags: z.object({
+		tags: z.array(z.string()),
+		mealType: z.array(z.string()),
+		healthiness: z.number(),
+		totalTimeMinutes: z.number(),
+	}),
+});
+
+/**
+ * Zod schema for Error event.
+ */
+const errorEventSchema = z.object({
+	type: z.literal(ServerProgressEventType.Error),
+	success: z.literal(false),
+	error: z.string(),
+	notionUrl: z.string().optional(),
+});
+
+/**
+ * Zod schema for ServerProgressEvent (discriminated union).
+ */
+const serverProgressEventSchema = z.discriminatedUnion("type", [
+	progressEventSchema,
+	completeEventSchema,
+	errorEventSchema,
+]);
+
+/**
+ * Validates that a parsed JSON object is a valid ServerProgressEvent using Zod.
  *
  * @param data - The parsed JSON data to validate.
  * @returns The validated ServerProgressEvent, or null if invalid.
  */
 function validateServerProgressEvent(data: unknown): ServerProgressEvent | null {
-	if (!data || typeof data !== "object" || data === null) {
-		return null;
-	}
-
-	const obj = data as Record<string, unknown>;
-
-	if (!("type" in obj) || typeof obj.type !== "string") {
-		return null;
-	}
-
-	if (obj.type === ServerProgressEventType.Progress) {
-		if (typeof obj.message === "string" && "progressType" in obj) {
-			return {
-				type: ServerProgressEventType.Progress,
-				message: obj.message,
-				progressType: obj.progressType as ProgressType,
-			};
-		}
-		return null;
-	}
-
-	if (obj.type === ServerProgressEventType.Complete) {
-		if (
-			typeof obj.pageId === "string" &&
-			typeof obj.notionUrl === "string" &&
-			obj.recipe &&
-			typeof obj.recipe === "object" &&
-			obj.tags &&
-			typeof obj.tags === "object" &&
-			"name" in obj.recipe &&
-			"ingredients" in obj.recipe &&
-			"instructions" in obj.recipe &&
-			"tags" in obj.tags &&
-			"mealType" in obj.tags &&
-			"healthiness" in obj.tags &&
-			"totalTimeMinutes" in obj.tags
-		) {
-			return {
-				type: ServerProgressEventType.Complete,
-				success: true,
-				pageId: obj.pageId,
-				notionUrl: obj.notionUrl,
-				recipe: {
-					name: String(obj.recipe.name),
-					author: "author" in obj.recipe && obj.recipe.author ? String(obj.recipe.author) : null,
-					ingredients: Array.isArray(obj.recipe.ingredients)
-						? obj.recipe.ingredients.map(String)
-						: [],
-					instructions: Array.isArray(obj.recipe.instructions)
-						? obj.recipe.instructions.map(String)
-						: [],
-				},
-				tags: {
-					tags: Array.isArray(obj.tags.tags) ? obj.tags.tags.map(String) : [],
-					mealType: Array.isArray(obj.tags.mealType) ? obj.tags.mealType.map(String) : [],
-					healthiness: typeof obj.tags.healthiness === "number" ? obj.tags.healthiness : 0,
-					totalTimeMinutes:
-						typeof obj.tags.totalTimeMinutes === "number" ? obj.tags.totalTimeMinutes : 0,
-				},
-			};
-		}
-		return null;
-	}
-
-	if (obj.type === ServerProgressEventType.Error) {
-		if (typeof obj.error === "string") {
-			return {
-				type: ServerProgressEventType.Error,
-				success: false,
-				error: obj.error,
-				notionUrl: typeof obj.notionUrl === "string" ? obj.notionUrl : undefined,
-			};
-		}
-		return null;
-	}
-
-	return null;
+	const result = serverProgressEventSchema.safeParse(data);
+	return result.success ? result.data : null;
 }
 
 /**

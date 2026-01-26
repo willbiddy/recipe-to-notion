@@ -17,7 +17,7 @@ import {
 	checkForDuplicateByUrl,
 	createRecipePage,
 	getNotionPageUrl,
-} from "./notion.js";
+} from "./notion/index.js";
 import { type Recipe, scrapeRecipe, scrapeRecipeFromHtml } from "./scraper.js";
 import { isValidHttpUrl } from "./shared/url-utils.js";
 import { type RecipeTags, tagRecipe } from "./tagger.js";

@@ -6,7 +6,7 @@ import {
 	checkForDuplicateByUrl,
 	createRecipePage,
 	getNotionPageUrl,
-} from "./notion.js";
+} from "./notion/index.js";
 import type { Recipe } from "./scraper.js";
 import { scrapeRecipe } from "./scraper.js";
 import type { RecipeTags } from "./tagger.js";

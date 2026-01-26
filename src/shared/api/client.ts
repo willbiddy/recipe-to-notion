@@ -1,10 +1,6 @@
-/**
- * Shared API and SSE handling logic for both web and extension.
- */
-
-import { z } from "zod";
-import type { ProgressType } from "../index.js";
-import type { StorageAdapter } from "./storage.js";
+import type { RecipeResponse, SaveRecipeOptions } from "./types.js";
+import { ServerProgressEventType } from "./types.js";
+import { validateServerProgressEvent } from "./validation.js";
 
 /**
  * SSE event data prefix pattern.
@@ -17,96 +13,22 @@ const SSE_DATA_PREFIX = "data: ";
 const SSE_DATA_PREFIX_LENGTH = 6;
 
 /**
- * Response format from the server API.
+ * Formats network errors into user-friendly messages.
+ *
+ * @param error - The error that occurred.
+ * @returns Formatted error message string.
  */
-export type RecipeResponse =
-	| {
-			success: true;
-			pageId: string;
-			notionUrl: string;
-	  }
-	| {
-			success: false;
-			error: string;
-			notionUrl?: string;
-	  };
+function formatNetworkError(error: unknown): string {
+	if (error instanceof TypeError && error.message.includes("fetch")) {
+		return "Cannot connect to server.\n\nMake sure the server is running.";
+	}
 
-/**
- * Server-Sent Event types for recipe processing progress.
- */
-export enum ServerProgressEventType {
-	Progress = "progress",
-	Complete = "complete",
-	Error = "error",
+	if (error instanceof TypeError) {
+		return `Connection error: ${error.message}`;
+	}
+
+	return error instanceof Error ? error.message : String(error);
 }
-
-/**
- * Progress event from server.
- */
-export type ServerProgressEvent =
-	| {
-			type: ServerProgressEventType.Progress;
-			message: string;
-			progressType: ProgressType;
-	  }
-	| {
-			type: ServerProgressEventType.Complete;
-			success: true;
-			pageId: string;
-			notionUrl: string;
-			recipe: {
-				name: string;
-				author: string | null;
-				ingredients: string[];
-				instructions: string[];
-			};
-			tags: {
-				tags: string[];
-				mealType: string[];
-				healthiness: number;
-				totalTimeMinutes: number;
-			};
-	  }
-	| {
-			type: ServerProgressEventType.Error;
-			success: false;
-			error: string;
-			notionUrl?: string;
-	  };
-
-/**
- * Callbacks for progress updates.
- */
-export type ProgressCallbacks = {
-	onProgress: (message: string) => void;
-	onComplete: (data: {
-		pageId: string;
-		notionUrl: string;
-		recipe: {
-			name: string;
-			author: string | null;
-			ingredients: string[];
-			instructions: string[];
-		};
-		tags: {
-			tags: string[];
-			mealType: string[];
-			healthiness: number;
-			totalTimeMinutes: number;
-		};
-	}) => void;
-	onError: (error: string, notionUrl?: string) => void;
-};
-
-/**
- * Options for saving a recipe.
- */
-export type SaveRecipeOptions = {
-	url: string;
-	apiUrl: string;
-	storage: StorageAdapter;
-	callbacks: ProgressCallbacks;
-};
 
 /**
  * Saves a recipe by sending the URL to the server with progress streaming.
@@ -262,83 +184,4 @@ export async function saveRecipe({
 			reject(error);
 		}
 	});
-}
-
-/**
- * Zod schema for Progress event.
- */
-const progressEventSchema = z.object({
-	type: z.literal(ServerProgressEventType.Progress),
-	message: z.string(),
-	progressType: z.string() as z.ZodType<ProgressType>,
-});
-
-/**
- * Zod schema for Complete event.
- */
-const completeEventSchema = z.object({
-	type: z.literal(ServerProgressEventType.Complete),
-	success: z.literal(true),
-	pageId: z.string(),
-	notionUrl: z.string(),
-	recipe: z.object({
-		name: z.string(),
-		author: z.string().nullable(),
-		ingredients: z.array(z.string()),
-		instructions: z.array(z.string()),
-	}),
-	tags: z.object({
-		tags: z.array(z.string()),
-		mealType: z.array(z.string()),
-		healthiness: z.number(),
-		totalTimeMinutes: z.number(),
-	}),
-});
-
-/**
- * Zod schema for Error event.
- */
-const errorEventSchema = z.object({
-	type: z.literal(ServerProgressEventType.Error),
-	success: z.literal(false),
-	error: z.string(),
-	notionUrl: z.string().optional(),
-});
-
-/**
- * Zod schema for ServerProgressEvent (discriminated union).
- */
-const serverProgressEventSchema = z.discriminatedUnion("type", [
-	progressEventSchema,
-	completeEventSchema,
-	errorEventSchema,
-]);
-
-/**
- * Validates that a parsed JSON object is a valid ServerProgressEvent using Zod.
- *
- * @param data - The parsed JSON data to validate.
- * @returns The validated ServerProgressEvent, or null if invalid.
- */
-function validateServerProgressEvent(data: unknown): ServerProgressEvent | null {
-	const result = serverProgressEventSchema.safeParse(data);
-	return result.success ? result.data : null;
-}
-
-/**
- * Formats network errors into user-friendly messages.
- *
- * @param error - The error that occurred.
- * @returns Formatted error message string.
- */
-function formatNetworkError(error: unknown): string {
-	if (error instanceof TypeError && error.message.includes("fetch")) {
-		return "Cannot connect to server.\n\nMake sure the server is running.";
-	}
-
-	if (error instanceof TypeError) {
-		return `Connection error: ${error.message}`;
-	}
-
-	return error instanceof Error ? error.message : String(error);
 }

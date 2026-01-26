@@ -27,8 +27,8 @@ import {
 	sanitizeError,
 	setCorsHeaders,
 	setSecurityHeaders,
-} from "../src/server-shared.js";
-import { type RecipeResponse, ServerProgressEventType } from "../src/shared/api.js";
+} from "../src/server-shared/index.js";
+import { type RecipeResponse, ServerProgressEventType } from "../src/shared/api/index.js";
 
 /**
  * Handles recipe processing requests with Server-Sent Events for progress.
@@ -63,7 +63,7 @@ function handleRecipeStream(url: string, requestId?: string): Response {
 
 				const { processRecipe } = await import("../src/index.js");
 				const { createConsoleLogger } = await import("../src/logger.js");
-				const { getNotionPageUrl } = await import("../src/notion.js");
+				const { getNotionPageUrl } = await import("../src/notion/index.js");
 
 				const logger = createConsoleLogger();
 
@@ -215,7 +215,7 @@ export default {
 
 			const { processRecipe } = await import("../src/index.js");
 			const { createConsoleLogger } = await import("../src/logger.js");
-			const { getNotionPageUrl } = await import("../src/notion.js");
+			const { getNotionPageUrl } = await import("../src/notion/index.js");
 
 			const logger = createConsoleLogger();
 			const result = await processRecipe(body.url, undefined, logger);

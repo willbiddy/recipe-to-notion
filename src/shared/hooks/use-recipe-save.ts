@@ -3,7 +3,7 @@
  */
 
 import { type Accessor, createSignal, type Setter } from "solid-js";
-import type { RecipeResponse } from "../api.js";
+import type { RecipeResponse } from "../api/index.js";
 import { StatusType } from "../components/status-message.js";
 import { ErrorMessageKey, getErrorMessage } from "../constants.js";
 import { isApiKeyError } from "../error-utils.js";
@@ -81,7 +81,7 @@ export function useRecipeSave(options: UseRecipeSaveOptions): UseRecipeSaveResul
 	const [isInvalidApiKey, setIsInvalidApiKey] = createSignal(false);
 
 	async function saveRecipeWithProgress(recipeUrl: string): Promise<RecipeResponse> {
-		const { saveRecipe } = await import("../api.js");
+		const { saveRecipe } = await import("../api/index.js");
 		const apiUrl = options.getApiUrl();
 
 		return saveRecipe({

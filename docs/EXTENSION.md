@@ -31,17 +31,20 @@ This bundles Solid.js components and compiles Tailwind CSS for the extension UI.
 
 ### Step 3: Configure the Extension
 
-1. Edit `extension/config.ts` and set `SERVER_URL` to your Vercel deployment URL:
-   ```typescript
-   export const SERVER_URL = "https://your-app.vercel.app";
+1. Set the server URL via environment variable when building:
+   ```bash
+   EXTENSION_SERVER_URL=https://your-app.vercel.app bun run build:extension
    ```
 
-2. Rebuild the extension:
+   Or set it permanently in your shell:
    ```bash
+   export EXTENSION_SERVER_URL=https://your-app.vercel.app
    bun run build:extension
    ```
 
-3. Load the extension in Chrome (see Step 4)
+   > **Note:** If `EXTENSION_SERVER_URL` is not set, it defaults to `https://recipe-to-notion-xi.vercel.app`. For local development, it defaults to `http://localhost:3000`.
+
+2. Load the extension in Chrome (see Step 4)
 
 4. **Configure API Key:**
    - Click the extension icon in your browser toolbar
@@ -88,7 +91,7 @@ This bundles Solid.js components and compiles Tailwind CSS for the extension UI.
 
 ### Connection Errors
 
-- Verify your Vercel deployment URL is correct in `extension/config.ts`
+- Verify your Vercel deployment URL is correct (check that you set `EXTENSION_SERVER_URL` when building)
 - **Check that your API key is configured** - Click the settings icon and verify the API key is set
 - Verify the API key matches your `API_SECRET` environment variable in Vercel
 - Check that environment variables are set in your Vercel deployment
@@ -114,15 +117,15 @@ This bundles Solid.js components and compiles Tailwind CSS for the extension UI.
 
 ### Server URL
 
-The extension server URL is configured in `extension/config.ts`:
+The extension server URL is configured at build time via the `EXTENSION_SERVER_URL` environment variable:
 
-```typescript
-export const SERVER_URL = "https://your-app.vercel.app";
+```bash
+EXTENSION_SERVER_URL=https://your-app.vercel.app bun run build:extension
 ```
 
-**After changing the config:**
+**After changing the server URL:**
 
-1. Rebuild the extension: `bun run build:extension`
+1. Rebuild the extension with the new URL: `EXTENSION_SERVER_URL=https://new-url.vercel.app bun run build:extension`
 2. Reload the extension in Chrome (click the reload icon on the extension card in `chrome://extensions/`)
 
 ### API Key
@@ -145,8 +148,11 @@ The API key is required for all API requests and prevents unauthorized usage of 
 For development and testing, you can use a local server instead of Vercel:
 
 1. Start the local server: `bun run server`
-2. Set `SERVER_URL` in `extension/config.ts` to `"http://localhost:3000"`
-3. Rebuild and reload the extension
+2. Build the extension without setting `EXTENSION_SERVER_URL` (it defaults to `http://localhost:3000`):
+   ```bash
+   bun run build:extension
+   ```
+3. Reload the extension in Chrome
 
-> **Note:** For production use, always use Vercel deployment.
+> **Note:** For production use, always use Vercel deployment and set `EXTENSION_SERVER_URL` to your production URL.
 

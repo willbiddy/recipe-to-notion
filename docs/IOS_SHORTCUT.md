@@ -24,86 +24,37 @@ iOS browsers (Safari, Chrome, Firefox, etc.) don't support Web Share Target API 
 
 ## Setup Steps
 
-### Quick Setup: Add the Shortcut Directly (Recommended)
+### Option 1: Quick Setup (Recommended)
 
-**Easiest method:** Click this link on your iPhone/iPad to add the shortcut directly:
+Click this link on your iPhone/iPad to add the shortcut directly:
 
 👉 **[Add Shortcut to Your Device](https://www.icloud.com/shortcuts/ce2efe6c91a7486896e1c864d9d4855b)**
 
 After adding:
 1. Open the shortcut in the Shortcuts app
-2. Edit the **"Text"** action (Action 2) and replace the URL with your Vercel deployment URL
-3. Follow **Step 4** below to enable Share Sheet
+2. Edit the **"Text"** action and replace the URL with your Vercel deployment URL (include `?url=` at the end)
+3. Follow **Step 3** below to enable Share Sheet
 
----
+### Option 2: Manual Setup
 
-### Manual Setup: Create the Shortcut Yourself
+1. **Action 1: "Get URLs from Input"** - Search and add (no configuration needed)
+2. **Action 2: "Text"** - Enter: `https://your-app.vercel.app/?url=` (replace with your Vercel URL)
+3. **Action 3: "Combine Text"** - First input: **"Text"** variable, Second input: **"URLs"** variable
+4. **Action 4: "Open URL"** - Search for `Open URLs`, select **"Combined Text"** variable, change to **"Open URL"** (singular)
 
-1. **Action 1: "Get URLs from Input"**
-   - Search for: `Get URLs from Input`
-   - Add it (no configuration needed)
+### Step 3: Enable Share Sheet (CRITICAL)
 
-2. **Action 2: "Text"**
-   - Search for: `Text`
-   - Enter: `https://recipe-to-notion-xi.vercel.app/?url=`
-   - (Replace with your actual Vercel deployment URL)
+**Without this, the shortcut won't appear in your Share Sheet.**
 
-3. **Action 3: "Combine Text"**
-   - Search for: `Combine Text`
-   - First input: Select **"Text"** variable (from Action 2)
-   - Second input: Select **"URLs"** variable (from Action 1)
+1. While editing your shortcut, tap the **"Share Sheet"** tab at the bottom (or tap **"..."** → **"Share Sheet"**)
+2. Toggle **"Show in Share Sheet"** to ON (green)
+3. Select **"URLs"** under "Accepted Types"
+4. Tap **"Done"** to save
 
-4. **Action 4: "Open URL"**
-   - Search for: `Open URLs`
-   - Input: Select **"Combined Text"** variable (from Action 3)
-   - Tap "Show More" → Change to **"Open URL"** (singular)
-
-### Step 2: Update Your Vercel URL (If Using Direct Link)
-
-If you added the shortcut using the direct link above:
-
-1. Open the Shortcuts app
-2. Find and open the **"Save Recipe with Recipe Clipper for Notion"** shortcut
-3. Tap on the **"Text"** action (Action 2)
-4. Replace `https://recipe-to-notion-xi.vercel.app/?url=` with your actual Vercel deployment URL
-5. Make sure to include `?url=` at the end
-
-### Step 3: Configure the Shortcut (Manual Setup Only)
-
-1. Tap the **"..."** button (three dots) in the top-right of the shortcut editor
-2. In the **"Details"** screen:
-   - Set the shortcut name to: **"Save Recipe with Recipe Clipper for Notion"**
-   - (Optional) Choose an icon and color
-   - (Optional) Tap **"Add to Home Screen"** if you want a home screen shortcut
-3. **IMPORTANT:** Before tapping "Done", make sure you complete Step 4 (Share Sheet) below
-4. Tap **"Done"** to save the shortcut
-
-### Step 4: Enable Share Sheet (CRITICAL - This makes it appear!)
-
-**This is the most important step! Without this, the shortcut won't appear in your Share Sheet.**
-
-**Method 1: From the shortcut editor**
-1. While editing your shortcut, look at the **bottom of the screen**
-2. You should see tabs like: **"Details"**, **"Share Sheet"**, **"Automation"**, etc.
-3. Tap the **"Share Sheet"** tab
-4. Toggle the switch **"Show in Share Sheet"** to ON (it should turn green)
-5. Under **"Accepted Types"**, tap to select **"URLs"** (should show a checkmark)
-6. Tap **"Done"** in the top-right to save
-
-**Method 2: From shortcut details (if you don't see the tab)**
-1. Tap the **"..."** button (three dots) in the top-right of the shortcut editor
-2. Scroll down or look for **"Share Sheet"** option
-3. Tap **"Share Sheet"**
-4. Toggle **"Show in Share Sheet"** to ON (green)
-5. Select **"URLs"** under "Accepted Types"
-6. Tap **"Done"** to save
-
-**After enabling:**
-- The shortcut should now appear in Share Sheets when you share a URL
-- If it doesn't appear immediately, try:
-  - Force closing the app you're sharing from (Safari, Chrome, etc.)
-  - Restarting your iPhone/iPad
-  - Sharing from a different app to test
+**If it doesn't appear immediately:**
+- Force close and reopen the app you're sharing from
+- Restart your iPhone/iPad
+- Try sharing from a different app
 
 ### Step 4: Allow Untrusted Shortcuts (if needed)
 
@@ -134,25 +85,19 @@ After setup:
 
 ### Shortcut Not Appearing in Share Sheet
 
-**Most Common Issues:**
+**Most common issue:** Share Sheet not enabled.
 
-1. **Share Sheet not enabled:**
-   - Open the shortcut in the Shortcuts app
-   - Tap the **"..."** button (three dots) in the top-right
-   - Tap **"Share Sheet"** tab at the bottom
-   - Make sure **"Show in Share Sheet"** is ON (green toggle)
-   - Verify **"URLs"** is checked under "Accepted Types"
+1. Open the shortcut in the Shortcuts app
+2. Tap **"..."** → **"Share Sheet"** (or the Share Sheet tab at the bottom)
+3. Make sure **"Show in Share Sheet"** is ON (green toggle)
+4. Verify **"URLs"** is checked under "Accepted Types"
 
-
-2. **Try these steps:**
-   - Force close and reopen the app you're sharing from (Safari, Chrome, etc.)
-   - Restart your iPhone/iPad
-   - Check Settings → Shortcuts → make sure the shortcut isn't disabled
-   - Try sharing from a different app to see if it appears
-
-3. **Still not working?**
-   - Delete the shortcut and recreate it, making sure to enable Share Sheet before saving
-   - Check that you're on iOS 12 or later (required for Share Sheet shortcuts)
+**If still not appearing:**
+- Force close and reopen the app you're sharing from
+- Restart your iPhone/iPad
+- Check Settings → Shortcuts → make sure the shortcut isn't disabled
+- Delete and recreate the shortcut, making sure to enable Share Sheet before saving
+- Verify you're on iOS 12 or later (required for Share Sheet shortcuts)
 
 ### Shortcut Opens but Recipe Doesn't Process
 
@@ -162,22 +107,17 @@ After setup:
 - Check browser console for errors (if using Safari/Chrome on Mac)
 - Try from a different browser to rule out browser-specific issues
 
-### URL Not Being Passed Correctly / "Make sure to pass a valid URL" Error
+### URL Not Being Passed Correctly
 
-This error means the URL variable isn't being passed to the "Open URL" action correctly.
+This error means the URL variable isn't being passed correctly.
 
 **Fix:**
 1. Make sure "Get URLs from Input" is the **first action**
-2. When building the final URL, you need to:
-   - Use a **Text** action with your base URL: `https://your-app.vercel.app/?url=`
-   - Use **Combine Text** to join the base URL with the URL from "Get URLs from Input"
-   - OR use the **URL** action and tap the "+" to add the variable
-3. Make sure the "Open URL" action receives the **combined/final URL**, not just the base URL
-4. Test by running the shortcut manually (tap it in Shortcuts app) - it should open a URL with `?url=something`
+2. Use **Combine Text** to join your base URL (`https://your-app.vercel.app/?url=`) with the **URLs** variable from "Get URLs from Input"
+3. Make sure "Open URL" receives the **combined/final URL**, not just the base URL
+4. Test by running the shortcut manually - it should open a URL with `?url=something`
 
-**Quick Fix:**
-- Delete the shortcut and recreate it following Step 1 above exactly
-- Make sure you're selecting the **URLs** variable (from "Get URLs from Input") when building the final URL
+**Quick Fix:** Delete and recreate the shortcut, following the manual setup steps exactly.
 
 ### "Allow Untrusted Shortcuts" Not Available
 
@@ -187,9 +127,8 @@ This error means the URL variable isn't being passed to the "Open URL" action co
 
 ### Shortcut Opens Wrong URL
 
-- Verify your Vercel deployment URL is correct
-- Check that the URL format is: `https://your-app.vercel.app/?url=[URL]`
-- Make sure you're using `[URL]` (with brackets) as the placeholder
+- Verify your Vercel deployment URL is correct in the "Text" action
+- Check that the URL format includes `?url=` at the end
 - Test by manually opening: `https://your-app.vercel.app/?url=https://example.com/recipe`
 
 ---

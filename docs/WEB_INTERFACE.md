@@ -38,7 +38,7 @@ This compiles TypeScript and Tailwind CSS for the web interface.
 
 ### Step 2: Deploy to Vercel
 
-The web interface is automatically served from the `public/` directory when deployed to Vercel. No additional configuration needed if you've already deployed the API.
+The web interface is automatically served when deployed to Vercel. No additional configuration needed if you've already deployed the API.
 
 ### Step 3: Configure Your API Key
 
@@ -155,32 +155,14 @@ On iOS and Android, you can add the web interface to your home screen for quick 
 
 ### API Key Storage
 
-- API keys are stored in browser localStorage (client-side only)
-- **Storage details:**
-  - Stored locally on your device (not synced to cloud)
-  - Only accessible by JavaScript from the same domain (same-origin policy)
-  - Not sent to any server except your own Vercel deployment (in Authorization header)
-  - Keys are never shared or exposed in URLs
-  - Each browser/device stores its own API key independently
-- **Security considerations:**
-  - **Not encrypted** - stored in plaintext (anyone with device access can view via DevTools)
-  - Vulnerable to XSS attacks if the site is compromised (low risk for a simple single-page app)
-  - More secure than `chrome.storage.sync` (which syncs to Google servers)
-  - For maximum security: use a strong, unique `API_SECRET` and don't share your device
+API keys are stored in browser localStorage (client-side only, not synced to cloud). They're only sent to your Vercel deployment for authentication and are never shared or exposed in URLs.
 
-### Authentication
-
-- All API requests use Bearer token authentication
-- The API key is validated server-side using constant-time comparison
-- Invalid API keys are rejected immediately
-- No API key means no access to your deployment
-
-### Best Practices
-
+**Security considerations:**
+- Keys are stored in plaintext (anyone with device access can view via DevTools)
 - Use a strong, unique `API_SECRET` in your Vercel environment variables
 - Don't share your API key with others
-- If your API key is compromised, regenerate it in Vercel and update it in the web interface
-- The web interface uses HTTPS (enforced by Vercel) for all connections
+- If compromised, regenerate it in Vercel and update it in the web interface
+- All connections use HTTPS (enforced by Vercel)
 
 ---
 
@@ -240,9 +222,7 @@ Build the web interface:
 bun run build:web
 ```
 
-This:
-- Bundles Solid.js components (`public/web.tsx` → `public/web.js`)
-- Compiles Tailwind CSS (`public/input.css` → `public/web.css`)
+This bundles Solid.js components and compiles Tailwind CSS for the web interface.
 
 ### Local Development
 
@@ -253,27 +233,6 @@ For local development:
 3. Open `http://localhost:3000/` in your browser
 
 The web interface will use `localhost:3000` as the server URL automatically.
-
-### File Structure
-
-```
-public/
-├── index.html          # Main web page
-├── manifest.json       # Web App Manifest (PWA + Share Target)
-├── web.tsx             # Web interface entry point (Solid.js)
-├── web.js              # Compiled JavaScript bundle (generated)
-├── input.css           # Tailwind CSS source
-├── web.css             # Compiled CSS (generated)
-└── tsconfig.json       # TypeScript configuration
-
-src/shared/components/  # Shared Solid.js components
-├── status-message.tsx   # Status message display
-├── progress-indicator.tsx # Progress spinner
-├── recipe-info.tsx      # Recipe details display
-├── settings-panel.tsx   # API key settings (shared)
-├── web-recipe-form.tsx   # Main web form component
-└── extension-recipe-form.tsx # Extension popup form
-```
 
 ---
 

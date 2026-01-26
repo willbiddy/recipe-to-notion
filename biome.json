@@ -8,18 +8,6 @@
 	"files": {
 		"ignoreUnknown": false
 	},
-	"overrides": [
-		{
-			"includes": ["src/notion/index.ts", "src/server-shared/index.ts", "src/shared/api/index.ts"],
-			"linter": {
-				"rules": {
-					"performance": {
-						"noBarrelFile": "off"
-					}
-				}
-			}
-		}
-	],
 	"css": {
 		"parser": {
 			"tailwindDirectives": true

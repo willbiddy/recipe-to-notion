@@ -10,7 +10,7 @@ import { consola } from "consola";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const publicDir = join(__dirname, "..", "public");
+const webDir = join(__dirname, "..", "web");
 
 /**
  * Asset route mappings to file paths and content types.
@@ -158,7 +158,7 @@ export default {
 		}
 
 		try {
-			const filePath = join(publicDir, asset.path);
+			const filePath = join(webDir, asset.path);
 			const content = asset.isText ? readFileSync(filePath, "utf-8") : readFileSync(filePath);
 
 			return new Response(content, {

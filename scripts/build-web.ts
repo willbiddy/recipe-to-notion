@@ -6,7 +6,7 @@ import { SolidPlugin } from "@dschz/bun-plugin-solid";
 
 // Build the web interface with Solid.js plugin
 const result = await Bun.build({
-	entrypoints: ["public/web.tsx"],
+	entrypoints: ["web/web.tsx"],
 	target: "browser",
 	minify: true,
 	sourcemap: "external",
@@ -27,8 +27,8 @@ if (!result.success) {
 // Write the output to the correct file
 const output = result.outputs[0];
 if (output) {
-	await Bun.write("public/web.js", output);
+	await Bun.write("web/web.js", output);
 	if (output.sourcemap) {
-		await Bun.write("public/web.js.map", output.sourcemap);
+		await Bun.write("web/web.js.map", output.sourcemap);
 	}
 }

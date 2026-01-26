@@ -4,9 +4,9 @@ module.exports = {
 		"./extension/popup.html",
 		"./extension/popup.tsx",
 		"./extension/popup.js",
-		"./public/index.html",
-		"./public/web.tsx",
-		"./public/web.js",
+		"./web/index.html",
+		"./web/web.tsx",
+		"./web/web.js",
 	],
 	theme: {
 		extend: {

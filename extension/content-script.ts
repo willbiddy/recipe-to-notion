@@ -3,9 +3,9 @@
  * Content scripts can import modules, so we can reuse the actual parser code.
  */
 
-import { findRecipeInLd } from "../src/parsers/json-ld.js";
-import { cleanRecipeName } from "../src/parsers/shared.js";
-import { hasProperty, isArray, isObject, isString } from "../src/shared/type-guards.js";
+import { findRecipeInLd } from "../backend/parsers/json-ld.js";
+import { cleanRecipeName } from "../backend/parsers/shared.js";
+import { hasProperty, isArray, isObject, isString } from "../shared/type-guards.js";
 
 /**
  * Browser-compatible HTML entity decoder using DOM API.

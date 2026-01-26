@@ -6,29 +6,30 @@
  */
 
 import { consola } from "consola";
-import { ProgressType } from "../src/index.js";
-import { checkRateLimit, getClientIdentifier } from "../src/rate-limit.js";
+import { ProgressType } from "../backend/process-recipe.js";
+import { checkRateLimit, getClientIdentifier } from "../backend/rate-limit.js";
 import {
 	MAX_REQUEST_BODY_SIZE,
 	type RecipeRequest,
 	validateApiKeyHeader,
 	validateRecipeRequest,
 	validateRequestSize,
-} from "../src/security.js";
+} from "../backend/security.js";
+import {
+	DEFAULT_RATE_LIMIT_VALUE,
+	HttpStatus,
+	RATE_LIMIT_HEADERS,
+} from "../backend/server-shared/constants.js";
 import {
 	createErrorResponse,
 	createRateLimitResponse,
-	DEFAULT_RATE_LIMIT_VALUE,
 	generateRequestId,
-	HttpStatus,
 	handleRecipeError,
 	logErrorDetails,
-	RATE_LIMIT_HEADERS,
 	sanitizeError,
-	setCorsHeaders,
-	setSecurityHeaders,
-} from "../src/server-shared/index.js";
-import { type RecipeResponse, ServerProgressEventType } from "../src/shared/api/index.js";
+} from "../backend/server-shared/errors.js";
+import { setCorsHeaders, setSecurityHeaders } from "../backend/server-shared/headers.js";
+import { type RecipeResponse, ServerProgressEventType } from "../shared/api/types.js";
 
 /**
  * Handles recipe processing requests with Server-Sent Events for progress.
@@ -61,9 +62,9 @@ function handleRecipeStream(url: string, requestId?: string): Response {
 					progressType: ProgressType.Starting,
 				});
 
-				const { processRecipe } = await import("../src/index.js");
-				const { createConsoleLogger } = await import("../src/logger.js");
-				const { getNotionPageUrl } = await import("../src/notion/index.js");
+				const { processRecipe } = await import("../backend/process-recipe.js");
+				const { createConsoleLogger } = await import("../backend/logger.js");
+				const { getNotionPageUrl } = await import("../backend/notion/client.js");
 
 				const logger = createConsoleLogger();
 
@@ -213,9 +214,9 @@ export default {
 				return handleRecipeStream(body.url, requestId);
 			}
 
-			const { processRecipe } = await import("../src/index.js");
-			const { createConsoleLogger } = await import("../src/logger.js");
-			const { getNotionPageUrl } = await import("../src/notion/index.js");
+			const { processRecipe } = await import("../backend/process-recipe.js");
+			const { createConsoleLogger } = await import("../backend/logger.js");
+			const { getNotionPageUrl } = await import("../backend/notion/client.js");
 
 			const logger = createConsoleLogger();
 			const result = await processRecipe(body.url, undefined, logger);

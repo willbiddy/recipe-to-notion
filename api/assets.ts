@@ -3,7 +3,7 @@
  * Handles favicons, icons, manifest, CSS, and JS files.
  */
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { consola } from "consola";
@@ -12,7 +12,25 @@ import { normalizeAssetPath } from "./asset-utils.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const webDir = join(__dirname, "..", "web");
+
+/**
+ * Resolves the path to the web directory, trying multiple possible locations.
+ */
+function resolveWebDir(): string | null {
+	const possiblePaths = [
+		join(__dirname, "..", "web"),
+		join(process.cwd(), "web"),
+		join(process.cwd(), "..", "web"),
+	];
+
+	for (const path of possiblePaths) {
+		if (existsSync(path)) {
+			return path;
+		}
+	}
+
+	return null;
+}
 
 export default {
 	/**
@@ -33,7 +51,28 @@ export default {
 		}
 
 		try {
+			const webDir = resolveWebDir();
+
+			if (!webDir) {
+				consola.error("Could not find web directory in any expected location");
+				consola.error("Current working directory:", process.cwd());
+				consola.error("__dirname:", __dirname);
+				return new Response("Not Found", {
+					status: 404,
+					headers: { "Content-Type": "text/plain; charset=utf-8" },
+				});
+			}
+
 			const filePath = join(webDir, asset.path);
+
+			if (!existsSync(filePath)) {
+				consola.error(`Asset file not found: ${filePath}`);
+				return new Response("Not Found", {
+					status: 404,
+					headers: { "Content-Type": "text/plain; charset=utf-8" },
+				});
+			}
+
 			const content = asset.isText ? readFileSync(filePath, "utf-8") : readFileSync(filePath);
 
 			return new Response(content, {

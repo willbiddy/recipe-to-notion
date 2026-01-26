@@ -3,7 +3,7 @@
  * This allows the root path (/) to serve the HTML file from public/.
  */
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { consola } from "consola";
@@ -12,7 +12,25 @@ import { createErrorResponse } from "../backend/server-shared/errors.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const indexPath = join(__dirname, "..", "web", "index.html");
+
+/**
+ * Resolves the path to index.html, trying multiple possible locations.
+ */
+function resolveIndexPath(): string | null {
+	const possiblePaths = [
+		join(__dirname, "..", "web", "index.html"),
+		join(process.cwd(), "web", "index.html"),
+		join(process.cwd(), "..", "web", "index.html"),
+	];
+
+	for (const path of possiblePaths) {
+		if (existsSync(path)) {
+			return path;
+		}
+	}
+
+	return null;
+}
 
 export default {
 	/**
@@ -22,6 +40,19 @@ export default {
 	 */
 	fetch(): Response {
 		try {
+			const indexPath = resolveIndexPath();
+
+			if (!indexPath) {
+				consola.error("Could not find index.html in any expected location");
+				consola.error("Current working directory:", process.cwd());
+				consola.error("__dirname:", __dirname);
+				return createErrorResponse(
+					"Failed to load the web interface. Please check the server logs.",
+					HttpStatus.InternalServerError,
+					true,
+				);
+			}
+
 			const html = readFileSync(indexPath, "utf-8");
 
 			return new Response(html, {
@@ -31,7 +62,6 @@ export default {
 			});
 		} catch (error) {
 			consola.error("Error serving index.html:", error);
-			consola.error("Tried to read from:", indexPath);
 			consola.error("Current working directory:", process.cwd());
 			consola.error("__dirname:", __dirname);
 

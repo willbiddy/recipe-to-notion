@@ -102,11 +102,6 @@ function parseRecipeFromHtml(html: string, sourceUrl: string): Recipe {
 /**
  * Fetches a recipe URL and extracts structured data.
  *
- * Attempts JSON-LD (schema.org/Recipe) parsing first, which works for most
- * recipe sites including paywalled ones like NYT Cooking that embed structured
- * data for SEO. Falls back to scraping microdata attributes and common CSS
- * class patterns if JSON-LD is unavailable.
- *
  * Sets up a timeout to prevent DoS attacks via slow responses or resource exhaustion.
  *
  * @param url - The recipe page URL to scrape.

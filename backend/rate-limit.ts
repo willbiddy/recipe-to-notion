@@ -3,7 +3,6 @@
  *
  * For production use, consider using a distributed rate limiting service
  * like @upstash/ratelimit or Vercel Edge Middleware with Redis.
- *
  * This implementation uses an in-memory Map and is suitable for single-instance
  * deployments. For serverless functions with multiple instances, use a
  * distributed solution.
@@ -56,10 +55,6 @@ import { CLEANUP_INTERVAL_MS } from "../shared/constants.js";
 
 /**
  * Cleans up expired rate limit entries to prevent memory leaks.
- *
- * Uses a cleanup threshold that matches the cleanup interval to ensure entries
- * are removed promptly. For custom configs with longer windows, entries will
- * be cleaned up on the next cleanup cycle after expiration.
  */
 function cleanupExpiredEntries(): void {
 	const now = Date.now();
@@ -132,7 +127,7 @@ export function checkRateLimit(
  * @param str - String to hash.
  * @returns 32-bit integer hash value.
  */
-function hashStringForRateLimit(str: string): number {
+function hashString(str: string): number {
 	let hash = 0;
 	for (let i = 0; i < str.length; i++) {
 		const char = str.charCodeAt(i);
@@ -155,7 +150,7 @@ export function getClientIdentifier(request: Request): string {
 
 	if (authHeader?.startsWith("Bearer ")) {
 		const apiKey = authHeader.slice(7).trim();
-		const hash = hashStringForRateLimit(apiKey);
+		const hash = hashString(apiKey);
 		return `api-key-${Math.abs(hash)}`;
 	}
 

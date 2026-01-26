@@ -1,9 +1,5 @@
 /**
  * Browser-like HTTP headers to avoid bot detection when scraping recipe pages.
- */
-
-/**
- * Browser-like HTTP headers to avoid bot detection.
  * These headers mimic a real browser request to reduce the chance of being blocked.
  */
 export const BROWSER_HEADERS = {

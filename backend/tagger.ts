@@ -5,10 +5,6 @@ import { z } from "zod";
 import { TaggingError, ValidationError } from "./errors.js";
 import type { Recipe } from "./scraper.js";
 
-// ============================================================================
-// Types & Enums
-// ============================================================================
-
 /**
  * Shopping categories for ingredient organization.
  * These categories must match exactly what Claude returns.
@@ -137,10 +133,6 @@ enum ErrorDisplay {
 	ValidationPreview = 300,
 }
 
-// ============================================================================
-// Validation Schemas
-// ============================================================================
-
 /**
  * Zod schema for validating Claude API responses.
  * Validates the structure of the JSON response from Claude, ensuring
@@ -161,10 +153,6 @@ const claudeResponseSchema = z.object({
 	description: z.string().min(1, "Description is required"),
 	ingredients: z.array(categorizedIngredientSchema).min(1, "At least one ingredient is required"),
 });
-
-// ============================================================================
-// System Prompt Loading
-// ============================================================================
 
 let systemPromptCache: string | null = null;
 
@@ -232,10 +220,6 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
 		ingredients: validated.ingredients,
 	};
 }
-
-// ============================================================================
-// API Helpers
-// ============================================================================
 
 /**
  * Calls the Claude API with the recipe prompt.
@@ -392,10 +376,6 @@ function buildHints(recipe: Recipe): string[] {
 
 	return hints;
 }
-
-// ============================================================================
-// Utility Functions
-// ============================================================================
 
 /**
  * Clamps a number to the range [min, max].

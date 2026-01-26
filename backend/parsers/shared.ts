@@ -1,36 +1,11 @@
 import * as cheerio from "cheerio";
+import { MAX_AUTHOR_SUFFIX_LENGTH } from "../../shared/constants.js";
 
-/**
- * ISO 8601 duration pattern (e.g., "PT1H30M", "PT45M").
- * Captures hours, minutes, and seconds groups.
- */
 const ISO_DURATION_PATTERN = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/i;
-
-/**
- * Pattern to match "Recipe" suffix at the end of recipe names.
- */
 const RECIPE_SUFFIX_PATTERN = /\s+Recipe$/i;
-
-/**
- * Pattern to match author name suffix (e.g., " - Author Name").
- * Captures the suffix text after " - ".
- */
 const AUTHOR_SUFFIX_PATTERN = /\s+-\s+(.+)$/m;
-
-/**
- * Pattern to match double parentheses with optional spaces.
- * Captures the inner content of double parentheses like "((text))" or "( (text) )".
- */
 const DOUBLE_PARENTHESES_PATTERN = /\(\s*\(([^)]+)\)\s*\)/g;
-
-/**
- * Pattern to match editor's note at the start of a line.
- */
 const EDITOR_NOTE_START_PATTERN = /^Editor'?s?\s+note:?/i;
-
-/**
- * Pattern to match editor's note at the end of text.
- */
 const EDITOR_NOTE_END_PATTERN = /\s*Editor'?s?\s+note:?.*$/i;
 
 /**
@@ -85,12 +60,6 @@ export function parseDuration(iso: string | undefined): number | null {
 }
 
 /**
- * Maximum length for author name suffixes (characters).
- * Used to distinguish author names from recipe name parts.
- */
-import { MAX_AUTHOR_SUFFIX_LENGTH } from "../../shared/constants.js";
-
-/**
  * Cleans recipe names by removing common suffixes and author patterns.
  *
  * Removes "Recipe" suffix if present. Removes " - Author Name" pattern, but only if
@@ -119,9 +88,6 @@ export function cleanRecipeName(name: string): string {
 	return cleaned.trim();
 }
 
-/**
- * Map of Unicode fraction characters to their ASCII equivalents.
- */
 const FRACTION_MAP = new Map([
 	["½", "1/2"],
 	["¼", "1/4"],

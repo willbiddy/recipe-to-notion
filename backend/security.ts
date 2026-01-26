@@ -4,20 +4,13 @@ import { z } from "zod";
 import { MAX_REQUEST_BODY_SIZE, MAX_URL_LENGTH } from "../shared/constants.js";
 import { isValidHttpUrl } from "../shared/url-utils.js";
 
-/**
- * HTTP status codes used for security-related responses.
- */
 export enum SecurityHttpStatus {
 	BadRequest = 400,
 	InternalServerError = 500,
 }
 
-// Re-export constants for backward compatibility
 export { MAX_REQUEST_BODY_SIZE, MAX_URL_LENGTH };
 
-/**
- * Bearer token prefix length.
- */
 const BEARER_PREFIX_LENGTH = "Bearer ".length;
 
 /**
@@ -124,7 +117,6 @@ export function validateRecipeUrl(
 		);
 	}
 
-	// Use shared URL validation for protocol check
 	if (!isValidHttpUrl(urlString)) {
 		return createErrorResponse(
 			"Invalid URL protocol. Only HTTP and HTTPS are allowed",

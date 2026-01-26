@@ -13,10 +13,6 @@ import { ValidationError } from "./errors.js";
 import { handleRequest } from "./server.js";
 import { HttpStatus } from "./server-shared/constants.js";
 
-/**
- * Validate environment variables are loaded.
- * This will throw if env vars are missing.
- */
 try {
 	const { loadConfig } = await import("./config.js");
 	loadConfig();

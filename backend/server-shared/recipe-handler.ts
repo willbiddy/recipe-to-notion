@@ -42,6 +42,10 @@ export type RecipeHandlerOptions = {
 	 * Function to create error responses (allows different response formats).
 	 */
 	createErrorResponse: (error: string, status: number) => Response;
+	/**
+	 * Whether to include full recipe and tags data in streaming responses (for Vercel API).
+	 */
+	includeFullDataInStream?: boolean;
 };
 
 /**
@@ -86,14 +90,6 @@ export function handleRecipeStream(options: RecipeStreamOptions): Response {
 			};
 
 			try {
-				if (includeFullData) {
-					sendEvent({
-						type: ServerProgressEventType.Progress,
-						message: "Starting...",
-						progressType: "starting" as ProgressEvent["type"],
-					});
-				}
-
 				const logger = createConsoleLogger();
 
 				const result = await processRecipe({
@@ -180,7 +176,7 @@ export function handleRecipeStream(options: RecipeStreamOptions): Response {
  * @returns Response with recipe processing result or error.
  */
 export async function handleRecipeRequest(options: RecipeHandlerOptions): Promise<Response> {
-	const { request, requestId, createErrorResponse } = options;
+	const { request, requestId, createErrorResponse, includeFullDataInStream = false } = options;
 
 	const config = loadConfig();
 
@@ -234,7 +230,7 @@ export async function handleRecipeRequest(options: RecipeHandlerOptions): Promis
 			return handleRecipeStream({
 				url: validatedBody.url,
 				requestId,
-				includeFullData: false,
+				includeFullData: includeFullDataInStream,
 			});
 		}
 

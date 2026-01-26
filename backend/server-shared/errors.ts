@@ -68,37 +68,11 @@ function handleScrapingError(error: ScrapingError): {
 }
 
 /**
- * Handles generic errors by checking message content for backward compatibility.
- *
- * Checks if the error message contains URL-related keywords to determine if it's
- * a validation error (BadRequest) or a generic server error (InternalServerError).
- *
- * @param errorMessage - The error message to analyze.
- * @returns Error response with appropriate status code and message.
- */
-function handleGenericError(errorMessage: string): {
-	message: string;
-	statusCode: number;
-} {
-	if (errorMessage.includes("Invalid URL") || errorMessage.includes("URL")) {
-		return {
-			statusCode: HttpStatus.BadRequest,
-			message: errorMessage,
-		};
-	}
-	return {
-		statusCode: HttpStatus.InternalServerError,
-		message: "An error occurred while processing the recipe. Please try again.",
-	};
-}
-
-/**
  * Sanitizes error messages for client responses.
  *
  * Logs detailed errors server-side with full stack traces and error details, but returns
  * generic messages to clients for security. Uses instanceof checks for type-safe error
- * handling with custom error classes. For generic errors, checks message content for
- * backward compatibility with legacy error formats.
+ * handling with custom error classes.
  *
  * @param error - The error that occurred.
  * @param logger - Logger instance for server-side error logging.
@@ -167,7 +141,10 @@ export function sanitizeError(
 		};
 	}
 
-	return handleGenericError(fullError.message);
+	return {
+		statusCode: HttpStatus.InternalServerError,
+		message: "An error occurred while processing the recipe. Please try again.",
+	};
 }
 
 /**

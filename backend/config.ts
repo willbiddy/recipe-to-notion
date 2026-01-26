@@ -29,7 +29,6 @@ export type Config = z.infer<typeof envSchema>;
 
 /**
  * Loads and validates required environment variables from the process environment.
- * Bun automatically loads `.env` files, so no dotenv import is needed.
  *
  * @returns Validated configuration object with API keys and database ID.
  * @throws {ValidationError} If any required environment variable is missing or empty.

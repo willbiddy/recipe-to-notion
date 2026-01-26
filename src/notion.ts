@@ -428,9 +428,7 @@ function buildIngredientBlocks(
 		}
 
 		blocks.push(heading3(category));
-		for (const ingredient of ingredients) {
-			blocks.push(bulletItem(ingredient.name));
-		}
+		blocks.push(...ingredients.map((ingredient) => bulletItem(ingredient.name)));
 	}
 
 	return blocks;
@@ -453,9 +451,7 @@ function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
 	if (tags.description) {
 		const descriptionText = normalizeDescriptionText(tags.description);
 		const paragraphs = descriptionText.split("\n\n").filter((paragraph) => paragraph.trim());
-		for (const paragraphText of paragraphs) {
-			blocks.push(paragraph(paragraphText));
-		}
+		blocks.push(...paragraphs.map((paragraphText) => paragraph(paragraphText)));
 	}
 
 	if (tags.ingredients && tags.ingredients.length > 0) {
@@ -471,16 +467,12 @@ function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
 		blocks.push(...buildIngredientBlocks(simplified));
 	} else if (recipe.ingredients.length > 0) {
 		blocks.push(heading1("Ingredients"));
-		for (const ingredient of recipe.ingredients) {
-			blocks.push(bulletItem(ingredient));
-		}
+		blocks.push(...recipe.ingredients.map((ingredient) => bulletItem(ingredient)));
 	}
 
 	if (recipe.instructions.length > 0) {
 		blocks.push(heading1("Preparation"));
-		for (const step of recipe.instructions) {
-			blocks.push(numberedItem(step));
-		}
+		blocks.push(...recipe.instructions.map((step) => numberedItem(step)));
 	}
 
 	return blocks.slice(0, MAX_NOTION_BLOCKS);

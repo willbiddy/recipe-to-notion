@@ -3,7 +3,7 @@
  */
 
 import { existsSync, statSync } from "node:fs";
-import type { BuildOutput } from "bun";
+import type { BuildArtifact } from "bun";
 
 /**
  * Options for writing build output.
@@ -12,7 +12,7 @@ export type WriteBuildOutputOptions = {
 	/**
 	 * The build output from Bun.build().
 	 */
-	output: BuildOutput;
+	output: BuildArtifact;
 	/**
 	 * The target file path to write the output to.
 	 */

@@ -5,28 +5,33 @@
 import { SolidPlugin } from "@dschz/bun-plugin-solid";
 import { handleBuildResult, validateBuildFiles, writeBuildOutput } from "./build-utils.js";
 
-const result = await Bun.build({
-	entrypoints: ["web/web.tsx"],
-	target: "browser",
-	minify: true,
-	sourcemap: "external",
-	plugins: [
-		SolidPlugin({
-			generate: "dom",
-			hydratable: false,
-			debug: false,
-		}),
-	],
-});
+try {
+	const result = await Bun.build({
+		entrypoints: ["web/web.tsx"],
+		target: "browser",
+		minify: true,
+		sourcemap: "external",
+		plugins: [
+			SolidPlugin({
+				generate: "dom",
+				hydratable: false,
+				debug: false,
+			}),
+		],
+	});
 
-handleBuildResult(result, "Web");
+	handleBuildResult(result, "Web");
 
-// Write the output to the correct file
-const output = result.outputs[0];
-await writeBuildOutput({
-	output,
-	targetPath: "web/web.js",
-	name: "web",
-});
+	// Write the output to the correct file
+	const output = result.outputs[0];
+	await writeBuildOutput({
+		output,
+		targetPath: "web/web.js",
+		name: "web",
+	});
 
-validateBuildFiles({ files: ["web/web.js"] });
+	validateBuildFiles({ files: ["web/web.js"] });
+} catch (error) {
+	console.error("Build failed:", error);
+	process.exit(1);
+}

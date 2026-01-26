@@ -52,8 +52,35 @@ When `stream: true`, returns Server-Sent Events (SSE) with the following event t
 ```json
 {
   "type": "progress",
+  "message": "Checking for duplicates...",
+  "progressType": "checking_duplicates"
+}
+```
+
+Or:
+```json
+{
+  "type": "progress",
   "message": "Scraping recipe...",
   "progressType": "scraping"
+}
+```
+
+Or:
+```json
+{
+  "type": "progress",
+  "message": "Generating AI tags and scores...",
+  "progressType": "tagging"
+}
+```
+
+Or:
+```json
+{
+  "type": "progress",
+  "message": "Saving to Notion...",
+  "progressType": "saving"
 }
 ```
 

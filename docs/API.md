@@ -57,32 +57,7 @@ When `stream: true`, returns Server-Sent Events (SSE) with the following event t
 }
 ```
 
-Or:
-```json
-{
-  "type": "progress",
-  "message": "Scraping recipe...",
-  "progressType": "scraping"
-}
-```
-
-Or:
-```json
-{
-  "type": "progress",
-  "message": "Generating tags...",
-  "progressType": "tagging"
-}
-```
-
-Or:
-```json
-{
-  "type": "progress",
-  "message": "Saving to Notion...",
-  "progressType": "saving"
-}
-```
+Progress events are sent during processing. The `progressType` can be: `"checking_duplicates"`, `"scraping"`, `"tagging"`, or `"saving"`.
 
 **Complete Event:**
 ```json
@@ -245,15 +220,14 @@ These should be configured in your Vercel deployment environment variables.
 
 The API includes several security measures:
 
-- **Constant-time API key comparison** - Prevents timing attacks on API key validation
-- **URL validation** - Only allows HTTP/HTTPS protocols (blocks file://, javascript:, data:, etc. to prevent SSRF and XSS)
-- **URL length validation** - Maximum URL length of 2048 characters to prevent DoS attacks
-- **Request size limits** - Maximum request body size of 10KB to prevent DoS attacks
-- **Request timeouts** - 30-second timeout on recipe scraping to prevent resource exhaustion
-- **Rate limiting** - 10 requests per minute per client to prevent abuse
-- **Security headers** - X-Content-Type-Options, X-Frame-Options, and Referrer-Policy headers
-- **Error message sanitization** - Detailed errors are logged server-side; generic messages are returned to clients
-- **Request correlation IDs** - All requests are assigned unique IDs for security incident response and debugging
+- **Constant-time API key comparison** - Prevents timing attacks
+- **URL validation** - Only allows HTTP/HTTPS protocols (prevents SSRF and XSS)
+- **Request size limits** - Maximum 10KB request body and 2048 character URLs
+- **Request timeouts** - 30-second timeout on recipe scraping
+- **Rate limiting** - 10 requests per minute per client
+- **Security headers** - X-Content-Type-Options, X-Frame-Options, and Referrer-Policy
+- **Error message sanitization** - Detailed errors logged server-side; generic messages returned to clients
+- **Request correlation IDs** - Unique IDs for debugging and security incident response
 
 ### Error Responses
 

@@ -15,16 +15,17 @@ extension/background.js
 extension/background.js.map
 extension/content-script.js
 extension/content-script.js.map
+extension/config.js
 extension/styles.css
 extension/shared/*.js
 extension/shared/*.js.map
 
 # web interface build output (built by Vercel/build process)
-public/web.js
-public/web.js.map
-public/web.css
-public/shared/*.js
-public/shared/*.js.map
+web/web.js
+web/web.js.map
+web/web.css
+web/shared/*.js
+web/shared/*.js.map
 
 # code coverage
 coverage

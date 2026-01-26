@@ -4,14 +4,14 @@
 	"description": "CLI tool that scrapes recipe URLs, generates AI scores/tags with Claude, and saves to Notion",
 	"type": "module",
 	"bin": {
-		"recipe-to-notion": "./src/cli.ts"
+		"recipe-to-notion": "./backend/cli.ts"
 	},
 	"scripts": {
-		"start": "bun src/cli.ts",
-		"server": "bun src/cli-server.ts",
-		"build": "bun build src/cli.ts --compile --outfile recipe-to-notion",
+		"start": "bun backend/cli.ts",
+		"server": "bun backend/cli-server.ts",
+		"build": "bun build backend/cli.ts --compile --outfile recipe-to-notion",
 		"build:extension": "bun scripts/build-extension.ts && bunx tailwindcss -i extension/input.css -o extension/styles.css --minify",
-		"build:web": "bun scripts/build-web.ts && bunx tailwindcss -i public/input.css -o public/web.css --minify",
+		"build:web": "bun scripts/build-web.ts && bunx tailwindcss -i web/input.css -o web/web.css --minify",
 		"typecheck": "tsc --noEmit",
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",

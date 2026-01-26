@@ -4,7 +4,7 @@
  */
 
 import { render } from "solid-js/web";
-import { ExtensionRecipeForm } from "../src/shared/components/extension-recipe-form.tsx";
+import { ExtensionRecipeForm } from "../shared/components/extension-recipe-form.js";
 import { getServerUrl } from "./config.js";
 
 /**

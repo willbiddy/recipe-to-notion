@@ -20,10 +20,10 @@ enum HttpStatus {
  */
 const HTML_CONTENT_TYPE = "text/html; charset=utf-8";
 
-// Get the correct path to public/index.html relative to this file
+// Get the correct path to web/index.html relative to this file
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const indexPath = join(__dirname, "..", "public", "index.html");
+const indexPath = join(__dirname, "..", "web", "index.html");
 
 export default {
 	/**

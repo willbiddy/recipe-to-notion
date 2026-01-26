@@ -172,7 +172,6 @@ export async function scrapeRecipe(url: string): Promise<Recipe> {
 		const html = await response.text();
 		return parseRecipeFromHtml(html, url);
 	} catch (error) {
-		clearTimeout(timeoutId);
 		if (error instanceof Error && error.name === "AbortError") {
 			throw new ScrapingError({
 				message: `Request timeout: Failed to fetch ${url} within ${REQUEST_TIMEOUT_MS / 1000} seconds. The server may be slow or unresponsive.`,
@@ -189,6 +188,8 @@ export async function scrapeRecipe(url: string): Promise<Recipe> {
 			originalUrl: url,
 			cause: error,
 		});
+	} finally {
+		clearTimeout(timeoutId);
 	}
 }
 

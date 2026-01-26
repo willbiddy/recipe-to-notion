@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { consola } from "consola";
+import { z } from "zod";
 import { MAX_REQUEST_BODY_SIZE, MAX_URL_LENGTH } from "../shared/constants.js";
 
 /**
@@ -14,18 +15,22 @@ export enum SecurityHttpStatus {
 export { MAX_REQUEST_BODY_SIZE, MAX_URL_LENGTH };
 
 /**
+ * Bearer token prefix length.
+ */
+const BEARER_PREFIX_LENGTH = "Bearer ".length;
+
+/**
+ * Zod schema for RecipeRequest validation.
+ */
+export const recipeRequestSchema = z.object({
+	url: z.string().min(1, "URL is required"),
+	stream: z.boolean().optional(),
+});
+
+/**
  * Request body format for recipe endpoints.
  */
-export type RecipeRequest = {
-	/**
-	 * Recipe URL to process.
-	 */
-	url: string;
-	/**
-	 * If true, use SSE for progress updates.
-	 */
-	stream?: boolean;
-};
+export type RecipeRequest = z.infer<typeof recipeRequestSchema>;
 
 /**
  * Constant-time string comparison to prevent timing attacks.
@@ -59,11 +64,13 @@ export function constantTimeEquals(a: string, b: string): boolean {
  * Uses constant-time comparison to prevent timing attacks.
  *
  * @param authHeader - The Authorization header value.
+ * @param expectedApiSecret - The expected API secret from validated config.
  * @param createErrorResponse - Function to create error responses (allows different response formats).
  * @returns Null if valid, or an error response if invalid.
  */
 export function validateApiKeyHeader(
 	authHeader: string | null,
+	expectedApiSecret: string,
 	createErrorResponse: (error: string, status: number) => Response,
 ): Response | null {
 	if (!authHeader) {
@@ -77,11 +84,11 @@ export function validateApiKeyHeader(
 		);
 	}
 
-	const providedKey = authHeader.slice(7).trim();
-	const expectedKey = process.env.API_SECRET?.trim();
+	const providedKey = authHeader.slice(BEARER_PREFIX_LENGTH).trim();
+	const expectedKey = expectedApiSecret.trim();
 
 	if (!expectedKey) {
-		consola.error("API_SECRET environment variable is not set");
+		consola.error("API_SECRET is empty or invalid");
 		return createErrorResponse(
 			"Server configuration error",
 			SecurityHttpStatus.InternalServerError,
@@ -134,28 +141,37 @@ export function validateRecipeUrl(
 /**
  * Validates the request body for recipe processing.
  *
+ * Uses Zod schema validation to ensure type safety and proper structure.
+ *
  * @param body - The request body to validate.
  * @param createErrorResponse - Function to create error responses.
- * @returns Null if valid, or an error response if invalid.
+ * @returns Validated RecipeRequest if valid, or an error response if invalid.
  */
 export function validateRecipeRequest(
 	body: unknown,
 	createErrorResponse: (error: string, status: number) => Response,
-): Response | null {
-	if (!body || typeof body !== "object") {
-		return createErrorResponse("Missing request body", SecurityHttpStatus.BadRequest);
+): { success: true; data: RecipeRequest } | { success: false; response: Response } {
+	const parseResult = recipeRequestSchema.safeParse(body);
+
+	if (!parseResult.success) {
+		const errorMessage = parseResult.error.issues
+			.map((issue) => `${issue.path.join(".")}: ${issue.message}`)
+			.join(", ");
+		return {
+			success: false,
+			response: createErrorResponse(
+				`Invalid request body: ${errorMessage}`,
+				SecurityHttpStatus.BadRequest,
+			),
+		};
 	}
 
-	const request = body as RecipeRequest;
-
-	if (!request.url || typeof request.url !== "string") {
-		return createErrorResponse(
-			"Missing or invalid 'url' field in request body",
-			SecurityHttpStatus.BadRequest,
-		);
+	const urlValidationError = validateRecipeUrl(parseResult.data.url, createErrorResponse);
+	if (urlValidationError) {
+		return { success: false, response: urlValidationError };
 	}
 
-	return validateRecipeUrl(request.url, createErrorResponse);
+	return { success: true, data: parseResult.data };
 }
 
 /**

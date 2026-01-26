@@ -39,7 +39,7 @@ export class ChromeStorageAdapter implements StorageAdapter {
 	async getApiKey(): Promise<string | null> {
 		const result = await chrome.storage.local.get(STORAGE_KEY);
 		const apiKey = result[STORAGE_KEY];
-		return typeof apiKey === "string" ? apiKey : null;
+		return typeof apiKey === "string" ? apiKey.trim() : null;
 	}
 
 	async saveApiKey(apiKey: string): Promise<void> {

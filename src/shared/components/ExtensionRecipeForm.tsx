@@ -81,13 +81,13 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 		if (!url) {
 			setStatus({
 				message: "No URL found. Please navigate to a recipe page.",
-				type: StatusType.ERROR,
+				type: StatusType.Error,
 			});
 			return;
 		}
 
 		if (!url.startsWith("http://") && !url.startsWith("https://")) {
-			setStatus({ message: "Not a valid web page URL.", type: StatusType.ERROR });
+			setStatus({ message: "Not a valid web page URL.", type: StatusType.Error });
 			return;
 		}
 
@@ -99,9 +99,9 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 			const result = await saveRecipeWithProgress(url);
 
 			if (result.success) {
-				setStatus({ message: "Recipe saved successfully!", type: StatusType.SUCCESS });
+				setStatus({ message: "Recipe saved successfully!", type: StatusType.Success });
 				setTimeout(() => {
-					setStatus({ message: "Opening...", type: StatusType.INFO });
+					setStatus({ message: "Opening...", type: StatusType.Info });
 					setTimeout(() => {
 						if (result.notionUrl) {
 							chrome.tabs.create({ url: result.notionUrl });
@@ -109,17 +109,17 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 					}, NOTION_OPEN_DELAY_MS);
 				}, NOTION_OPEN_DELAY_MS);
 			} else if (result.error?.includes("Duplicate recipe found") && result.notionUrl) {
-				setStatus({ message: "This recipe already exists. Opening...", type: StatusType.INFO });
+				setStatus({ message: "This recipe already exists. Opening...", type: StatusType.Info });
 				setTimeout(() => {
 					chrome.tabs.create({ url: result.notionUrl });
 				}, NOTION_OPEN_DELAY_MS);
 			} else {
-				setStatus({ message: result.error || "Failed to save recipe", type: StatusType.ERROR });
+				setStatus({ message: result.error || "Failed to save recipe", type: StatusType.Error });
 			}
 		} catch (error) {
 			setStatus({
 				message: error instanceof Error ? error.message : "An unexpected error occurred",
-				type: StatusType.ERROR,
+				type: StatusType.Error,
 			});
 		} finally {
 			setLoading(false);
@@ -134,6 +134,32 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 		setSettingsOpen(!settingsOpen());
 	};
 
+	/**
+	 * Checks if API key is configured and updates status accordingly.
+	 */
+	const checkApiKey = async () => {
+		const apiKey = await storage.getApiKey();
+		if (apiKey) {
+			// Clear the error status if API key exists
+			const currentStatus = status();
+			if (currentStatus?.message.includes("API secret not configured")) {
+				setStatus(null);
+			}
+		} else {
+			setStatus({
+				message: "⚠️ API secret not configured. Click the settings icon to set it up.",
+				type: StatusType.Error,
+			});
+		}
+	};
+
+	/**
+	 * Handles when API key is saved in settings.
+	 */
+	const handleApiKeySaved = () => {
+		checkApiKey();
+	};
+
 	// Initialize on mount
 	onMount(async () => {
 		const { url, title } = await getCurrentTab();
@@ -144,7 +170,7 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 		if (!apiKey) {
 			setStatus({
 				message: "⚠️ API secret not configured. Click the settings icon to set it up.",
-				type: StatusType.ERROR,
+				type: StatusType.Error,
 			});
 		}
 	});
@@ -152,26 +178,7 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 	return (
 		<div class="flex flex-col gap-3">
 			{/* URL Display */}
-			<div class="flex flex-col gap-3">
-				<div class="text-base font-semibold text-primary-900 flex items-center gap-2">
-					<svg
-						class="w-5 h-5 text-primary-700"
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-						aria-hidden="true"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-						/>
-					</svg>
-					Recipe URL
-				</div>
-				<UrlDisplay url={currentUrl()} title={currentTitle()} />
-			</div>
+			<UrlDisplay url={currentUrl()} title={currentTitle()} />
 
 			{/* Save Button */}
 			<button
@@ -213,11 +220,11 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 
 			{/* Status Message */}
 			<Show when={status()}>
-				{(s) => <StatusMessage message={s().message} type={s().type} textSize={TextSize.XS} />}
+				{(s) => <StatusMessage message={s().message} type={s().type} textSize={TextSize.Xs} />}
 			</Show>
 
 			{/* Settings Button */}
-			<div class="flex items-center justify-start pt-2">
+			<div class="flex items-center justify-start pt-2 border-t border-gray-200">
 				<button
 					id="settings-button"
 					type="button"
@@ -225,19 +232,18 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 					aria-label="Toggle settings panel"
 					aria-expanded={settingsOpen()}
 					aria-controls="settings-panel"
-					class="btn-secondary"
+					class="text-xs text-gray-600 hover:text-gray-900 transition-colors duration-200 flex items-center gap-2"
 					title="Settings"
 				>
 					<svg
-						width="18"
-						height="18"
+						width="14"
+						height="14"
 						viewBox="0 0 24 24"
 						fill="none"
 						stroke="currentColor"
 						stroke-width="2"
 						stroke-linecap="round"
 						stroke-linejoin="round"
-						class="settings-icon"
 						aria-hidden="true"
 					>
 						<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
@@ -245,7 +251,7 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 					</svg>
 					<span>Settings</span>
 					<svg
-						class={`w-4 h-4 transition-transform duration-200 settings-chevron ${settingsOpen() ? "rotate-180" : ""}`}
+						class={`w-3 h-3 transition-transform duration-200 ${settingsOpen() ? "rotate-180" : ""}`}
 						fill="none"
 						stroke="currentColor"
 						viewBox="0 0 24 24"
@@ -264,9 +270,11 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 			{/* Settings Panel */}
 			<Show when={settingsOpen()}>
 				<SettingsPanel
-					textSize={TextSize.XS}
-					panelClass="flex flex-col gap-4 pt-4"
-					helpTextClass="text-sm text-primary-900"
+					textSize={TextSize.Xs}
+					panelClass="flex flex-col gap-3 pt-3 border-t border-gray-200"
+					helpTextClass="text-xs text-gray-600"
+					onClose={toggleSettings}
+					onApiKeySaved={handleApiKeySaved}
 				/>
 			</Show>
 		</div>

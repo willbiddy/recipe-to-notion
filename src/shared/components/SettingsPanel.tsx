@@ -14,6 +14,10 @@ export type SettingsPanelProps = {
 	panelClass?: string;
 	/** Custom class for the help text. */
 	helpTextClass?: string;
+	/** Optional function to close the settings panel. */
+	onClose?: () => void;
+	/** Optional callback when API key is successfully saved. */
+	onApiKeySaved?: () => void;
 };
 
 /**
@@ -44,20 +48,24 @@ export function SettingsPanel(props: SettingsPanelProps) {
 	const saveApiKey = async () => {
 		const key = apiKey().trim();
 		if (!key) {
-			setApiKeyStatus({ message: "API secret cannot be empty", type: StatusType.ERROR });
+			setApiKeyStatus({ message: "API secret cannot be empty", type: StatusType.Error });
 			return;
 		}
 
 		try {
 			await storage.saveApiKey(key);
-			setApiKeyStatus({ message: "API secret saved successfully", type: StatusType.SUCCESS });
+			setApiKeyStatus({ message: "API secret saved successfully", type: StatusType.Success });
+			// Notify parent component that API key was saved
+			if (props.onApiKeySaved) {
+				props.onApiKeySaved();
+			}
 			setTimeout(() => {
 				setApiKeyStatus(null);
 			}, SUCCESS_STATUS_CLEAR_DELAY_MS);
 		} catch (error) {
 			setApiKeyStatus({
 				message: error instanceof Error ? error.message : "Failed to save API secret",
-				type: StatusType.ERROR,
+				type: StatusType.Error,
 			});
 		}
 	};
@@ -80,50 +88,34 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
 	return (
 		<div id="settings-panel" class={panelClass()}>
-			<div class="flex items-center gap-3 mb-2">
-				<svg
-					class="w-6 h-6 text-primary-700"
-					fill="none"
-					stroke="currentColor"
-					viewBox="0 0 24 24"
-					aria-hidden="true"
-				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-					/>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-					/>
-				</svg>
-				<h3 class="text-xl font-semibold text-primary-900">Settings</h3>
-			</div>
-			<div class="flex flex-col gap-4">
-				<label
-					for="api-key-input"
-					class="text-lg font-medium text-gray-900 flex items-center gap-3"
-				>
-					<svg
-						class="w-5 h-5 text-gray-700"
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-						aria-hidden="true"
+			<div class="flex items-center justify-between mb-3">
+				<h3 class="text-sm font-medium text-gray-900">API Secret</h3>
+				<Show when={props.onClose}>
+					<button
+						type="button"
+						onClick={props.onClose}
+						aria-label="Close settings panel"
+						class="text-gray-400 hover:text-gray-600 p-1 rounded transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+						title="Close settings"
 					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-						/>
-					</svg>
-					API Secret
-				</label>
+						<svg
+							class="w-4 h-4"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+							aria-hidden="true"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M6 18L18 6M6 6l12 12"
+							/>
+						</svg>
+					</button>
+				</Show>
+			</div>
+			<div class="flex flex-col gap-3">
 				<div class="relative">
 					<input
 						type={apiKeyVisible() ? "text" : "password"}
@@ -184,17 +176,17 @@ export function SettingsPanel(props: SettingsPanelProps) {
 				</div>
 				<p id="api-key-help" class={helpTextClass()}>
 					Get this from your Vercel deployment's{" "}
-					<code class="text-base bg-primary-100 px-2 py-1 rounded font-mono text-primary-900">
+					<code class="text-xs bg-gray-100 px-1.5 py-0.5 rounded font-mono text-gray-700">
 						API_SECRET
 					</code>{" "}
-					environment variable. This is stored locally in your browser and never shared.
+					environment variable. Stored locally and never shared.
 				</p>
 			</div>
 			<button
 				type="button"
 				onClick={saveApiKey}
 				aria-label="Save API secret"
-				class="btn-primary-sm"
+				class="w-full px-4 py-2.5 bg-primary-600 text-white border-none rounded-xl text-sm font-medium cursor-pointer transition-all duration-200 hover:bg-primary-700 active:bg-primary-800 flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:ring-offset-2"
 			>
 				<svg
 					class="w-4 h-4"
@@ -210,28 +202,17 @@ export function SettingsPanel(props: SettingsPanelProps) {
 						d="M5 13l4 4L19 7"
 					/>
 				</svg>
-				Save API Secret
+				Save
 			</button>
 			<Show when={apiKeyStatus()}>
 				{(status) => (
 					<StatusMessage
 						message={status().message}
 						type={status().type}
-						textSize={props.textSize || TextSize.SM}
+						textSize={props.textSize || TextSize.Sm}
 					/>
 				)}
 			</Show>
-			<p class="text-xs text-primary-800 pt-2 border-t border-primary-300">
-				<a
-					href="https://www.flaticon.com/free-icons/cutlery"
-					title="cutlery icons"
-					target="_blank"
-					rel="noopener noreferrer"
-					class="hover:underline focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded"
-				>
-					Cutlery icons created by Freepik - Flaticon
-				</a>
-			</p>
 		</div>
 	);
 }

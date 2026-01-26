@@ -9,18 +9,18 @@ import { Show } from "solid-js";
  * Status types for status messages.
  */
 export enum StatusType {
-	INFO = "info",
-	SUCCESS = "success",
-	ERROR = "error",
+	Info = "info",
+	Success = "success",
+	Error = "error",
 }
 
 /**
  * Text size options for status messages.
  */
 export enum TextSize {
-	XS = "xs",
-	SM = "sm",
-	BASE = "base",
+	Xs = "xs",
+	Sm = "sm",
+	Base = "base",
 }
 
 export type StatusMessageProps = {
@@ -38,7 +38,7 @@ export type StatusMessageProps = {
  * Gets the icon SVG for a status type.
  */
 function getStatusIcon(type: StatusType) {
-	if (type === StatusType.INFO) {
+	if (type === StatusType.Info) {
 		return (
 			<svg
 				class="w-5 h-5 flex-shrink-0"
@@ -56,7 +56,7 @@ function getStatusIcon(type: StatusType) {
 			</svg>
 		);
 	}
-	if (type === StatusType.SUCCESS) {
+	if (type === StatusType.Success) {
 		return (
 			<svg
 				class="w-5 h-5 flex-shrink-0"
@@ -96,20 +96,20 @@ function getStatusIcon(type: StatusType) {
  * StatusMessage component for displaying status messages.
  */
 export function StatusMessage(props: StatusMessageProps) {
-	const textSize = () => props.textSize ?? TextSize.SM;
-	const type = () => props.type ?? StatusType.INFO;
+	const textSize = () => props.textSize ?? TextSize.Sm;
+	const type = () => props.type ?? StatusType.Info;
 
 	const getTextSizeClass = () => {
 		const size = textSize();
-		if (size === TextSize.XS) return "text-xs";
-		if (size === TextSize.BASE) return "text-base";
+		if (size === TextSize.Xs) return "text-xs";
+		if (size === TextSize.Base) return "text-base";
 		return "text-sm";
 	};
 
 	const getTypeClass = () => {
 		const statusType = type();
-		if (statusType === StatusType.SUCCESS) return "status-success";
-		if (statusType === StatusType.ERROR) return "status-error";
+		if (statusType === StatusType.Success) return "status-success";
+		if (statusType === StatusType.Error) return "status-error";
 		return "status-info";
 	};
 

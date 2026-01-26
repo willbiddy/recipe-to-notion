@@ -6,18 +6,18 @@
  * Status types for updateStatus function.
  */
 export enum StatusType {
-	INFO = "info",
-	SUCCESS = "success",
-	ERROR = "error",
+	Info = "info",
+	Success = "success",
+	Error = "error",
 }
 
 /**
  * Text size options for status messages.
  */
 export enum TextSize {
-	XS = "xs",
-	SM = "sm",
-	BASE = "base",
+	Xs = "xs",
+	Sm = "sm",
+	Base = "base",
 }
 
 /**
@@ -26,9 +26,9 @@ export enum TextSize {
 const STATUS_CLASSES = {
 	BASE: "py-4 px-5 rounded-2xl leading-relaxed animate-[fadeIn_0.2s_ease-in] block shadow-sm",
 	TEXT_SIZES: {
-		[TextSize.XS]: "text-xs",
-		[TextSize.SM]: "text-sm",
-		[TextSize.BASE]: "text-base",
+		[TextSize.Xs]: "text-xs",
+		[TextSize.Sm]: "text-sm",
+		[TextSize.Base]: "text-base",
 	},
 	INFO: "status-info",
 	SUCCESS: "status-success",
@@ -43,13 +43,13 @@ const STATUS_CLASSES = {
  */
 function getStatusIcon(type: StatusType): string {
 	const icons = {
-		[StatusType.INFO]: `<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+		[StatusType.Info]: `<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
 		</svg>`,
-		[StatusType.SUCCESS]: `<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+		[StatusType.Success]: `<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
 		</svg>`,
-		[StatusType.ERROR]: `<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+		[StatusType.Error]: `<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
 		</svg>`,
 	};
@@ -65,7 +65,7 @@ function getStatusIcon(type: StatusType): string {
  */
 export function updateStatus(
 	message: string,
-	type: StatusType = StatusType.INFO,
+	type: StatusType = StatusType.Info,
 	options?: {
 		baseClasses?: string;
 		textSize?: TextSize;
@@ -77,14 +77,14 @@ export function updateStatus(
 		return;
 	}
 
-	const textSize = options?.textSize ?? TextSize.SM;
+	const textSize = options?.textSize ?? TextSize.Sm;
 	const textSizeClass = STATUS_CLASSES.TEXT_SIZES[textSize];
 
 	const baseClasses = options?.baseClasses || `${STATUS_CLASSES.BASE} ${textSizeClass}`;
 	const typeClasses = {
-		[StatusType.INFO]: STATUS_CLASSES.INFO,
-		[StatusType.SUCCESS]: STATUS_CLASSES.SUCCESS,
-		[StatusType.ERROR]: STATUS_CLASSES.ERROR,
+		[StatusType.Info]: STATUS_CLASSES.INFO,
+		[StatusType.Success]: STATUS_CLASSES.SUCCESS,
+		[StatusType.Error]: STATUS_CLASSES.ERROR,
 	};
 
 	const icon = getStatusIcon(type);

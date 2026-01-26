@@ -9,6 +9,6 @@
 		"outDir": ".",
 		"rootDir": "."
 	},
-	"include": ["*.ts", "*.tsx"],
+	"include": ["*.ts", "*.tsx", "../shared/**/*"],
 	"exclude": ["node_modules", "*.js", "*.js.map"]
 }

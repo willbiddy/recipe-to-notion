@@ -34,18 +34,12 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
 	const SUCCESS_STATUS_CLEAR_DELAY_MS = 2000;
 
-	/**
-	 * Loads API key from storage.
-	 */
-	const loadApiKey = async () => {
+	async function loadApiKey() {
 		const key = await storage.getApiKey();
 		setApiKey(key || "");
-	};
+	}
 
-	/**
-	 * Saves API key to storage.
-	 */
-	const saveApiKey = async () => {
+	async function saveApiKey() {
 		const key = apiKey().trim();
 		if (!key) {
 			setApiKeyStatus({ message: "API secret cannot be empty", type: StatusType.Error });
@@ -55,7 +49,6 @@ export function SettingsPanel(props: SettingsPanelProps) {
 		try {
 			await storage.saveApiKey(key);
 			setApiKeyStatus({ message: "API secret saved successfully", type: StatusType.Success });
-			// Notify parent component that API key was saved
 			if (props.onApiKeySaved) {
 				props.onApiKeySaved();
 			}
@@ -68,16 +61,12 @@ export function SettingsPanel(props: SettingsPanelProps) {
 				type: StatusType.Error,
 			});
 		}
-	};
+	}
 
-	/**
-	 * Toggles API key visibility.
-	 */
-	const toggleApiKeyVisibility = () => {
+	function toggleApiKeyVisibility() {
 		setApiKeyVisible(!apiKeyVisible());
-	};
+	}
 
-	// Load API key when component mounts
 	onMount(() => {
 		loadApiKey();
 	});

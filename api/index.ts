@@ -10,9 +10,9 @@ import { fileURLToPath } from "node:url";
 /**
  * HTTP status codes used in the index endpoint.
  */
-const HttpStatus = {
-	NotFound: 404,
-} as const;
+enum HttpStatus {
+	NotFound = 404,
+}
 
 /**
  * Content type for HTML responses.

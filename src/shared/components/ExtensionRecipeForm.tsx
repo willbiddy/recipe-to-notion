@@ -4,8 +4,9 @@
  */
 
 import { createSignal, onMount, Show } from "solid-js";
-import { type RecipeResponse, saveRecipe } from "../api.js";
+import { useRecipeSave } from "../hooks/useRecipeSave.js";
 import { createStorageAdapter } from "../storage.js";
+import { getWebsiteName, isValidHttpUrl } from "../url-utils.js";
 import { ApiSecretPrompt } from "./ApiSecretPrompt.js";
 import { ProgressIndicator } from "./ProgressIndicator.js";
 import { StatusMessage, StatusType, TextSize } from "./StatusMessage.js";
@@ -22,35 +23,9 @@ export type ExtensionRecipeFormProps = {
 const NOTION_OPEN_DELAY_MS = 500;
 
 /**
- * Extracts the website name from a URL (e.g., "bonappetit.com" -> "Bon Appétit").
- */
-function getWebsiteName(url: string): string | null {
-	try {
-		const urlObj = new URL(url);
-		const hostname = urlObj.hostname;
-
-		// Remove www. prefix if present
-		const cleanHostname = hostname.replace(/^www\./, "");
-
-		// Extract the main domain name (e.g., "bonappetit.com" -> "bonappetit")
-		const parts = cleanHostname.split(".");
-		if (parts.length >= 2) {
-			const domain = parts[parts.length - 2];
-			if (domain) {
-				// Convert to title case
-				return domain.charAt(0).toUpperCase() + domain.slice(1).replace(/([A-Z])/g, " $1");
-			}
-		}
-
-		return cleanHostname;
-	} catch {
-		return null;
-	}
-}
-
-/**
  * Gets the current active tab URL, title, recipe title, and author if available.
- * Uses the content script to extract recipe data, which can import the actual parser code.
+ *
+ * @returns Object containing URL, title, recipe title, author, and website name.
  */
 async function getCurrentTab(): Promise<{
 	url: string | null;
@@ -66,22 +41,19 @@ async function getCurrentTab(): Promise<{
 	let author: string | null = null;
 	let websiteName: string | null = null;
 
-	// Extract website name from URL
 	if (url) {
 		websiteName = getWebsiteName(url);
 	}
 
-	// Try to extract recipe data from JSON-LD using the content script
-	if (tab?.id && url && (url.startsWith("http://") || url.startsWith("https://"))) {
+	if (tab?.id && url && isValidHttpUrl(url)) {
 		try {
-			// Send message to content script to extract recipe data
 			const response = await chrome.tabs.sendMessage(tab.id, {
 				type: "extract-recipe-data",
 			});
 			recipeTitle = response?.title || null;
 			author = response?.author || null;
 		} catch {
-			// If messaging fails (e.g., content script not loaded, chrome:// pages), silently fail
+			// Content script not loaded or chrome:// page
 		}
 	}
 
@@ -109,146 +81,69 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 	const [progress, setProgress] = createSignal<string | null>(null);
 	const [showApiPrompt, setShowApiPrompt] = createSignal(false);
 	const [pendingSave, setPendingSave] = createSignal<(() => void) | null>(null);
-	const [isInvalidApiKey, setIsInvalidApiKey] = createSignal(false);
 
-	/**
-	 * Saves a recipe with progress streaming.
-	 */
-	const saveRecipeWithProgress = (recipeUrl: string): Promise<RecipeResponse> => {
-		const serverUrl = props.getServerUrl();
-		const apiUrl = `${serverUrl}/api/recipes`;
-
-		return saveRecipe({
-			url: recipeUrl,
-			apiUrl,
-			storage,
-			callbacks: {
-				onProgress: (message) => {
-					setProgress(message);
-					setLoading(true);
-				},
-				onComplete: () => {
-					setProgress(null);
-					setLoading(false);
-				},
-				onError: () => {
-					setProgress(null);
-					setLoading(false);
-				},
-			},
-		});
-	};
-
-	/**
-	 * Actually saves the recipe (called after API secret is confirmed).
-	 */
-	const performSave = async () => {
-		const url = currentUrl();
-
-		if (!url) {
-			setStatus({
-				message: "No URL found. Please navigate to a recipe page.",
-				type: StatusType.Error,
-			});
-			return;
-		}
-
-		if (!url.startsWith("http://") && !url.startsWith("https://")) {
-			setStatus({ message: "Not a valid web page URL.", type: StatusType.Error });
-			return;
-		}
-
-		setStatus(null);
-		setLoading(true);
-		setProgress("Starting...");
-
-		try {
-			const result = await saveRecipeWithProgress(url);
-
-			if (result.success) {
-				setStatus({ message: "Recipe saved successfully!", type: StatusType.Success });
+	const { performSave, isInvalidApiKey, setIsInvalidApiKey } = useRecipeSave({
+		storage,
+		getApiUrl: () => `${props.getServerUrl()}/api/recipes`,
+		getCurrentUrl: () => currentUrl(),
+		setStatus,
+		setLoading,
+		setProgress,
+		onSuccess: (result) => {
+			setStatus({ message: "Recipe saved successfully!", type: StatusType.Success });
+			setTimeout(() => {
+				setStatus({ message: "Opening...", type: StatusType.Info });
 				setTimeout(() => {
-					setStatus({ message: "Opening...", type: StatusType.Info });
-					setTimeout(() => {
-						if (result.notionUrl) {
-							chrome.tabs.create({ url: result.notionUrl });
-						}
-					}, NOTION_OPEN_DELAY_MS);
+					if (result.notionUrl) {
+						chrome.tabs.create({ url: result.notionUrl });
+					}
 				}, NOTION_OPEN_DELAY_MS);
-			} else if (result.error?.includes("Duplicate recipe found") && result.notionUrl) {
-				setStatus({ message: "This recipe already exists. Opening...", type: StatusType.Info });
-				setTimeout(() => {
-					chrome.tabs.create({ url: result.notionUrl });
-				}, NOTION_OPEN_DELAY_MS);
-			} else {
-				const errorMessage = result.error || "Failed to save recipe";
-				// Check if error is related to invalid API key
-				const isApiKeyError =
-					errorMessage.toLowerCase().includes("invalid api key") ||
-					errorMessage.toLowerCase().includes("missing authorization") ||
-					errorMessage.toLowerCase().includes("invalid authorization");
-
-				if (isApiKeyError) {
-					setIsInvalidApiKey(true);
-					setStatus({message: "Invalid API key. Please update your API secret.",
-						type: StatusType.Error,
-					});
-				} else {
-					setIsInvalidApiKey(false);
-					setStatus({ message: errorMessage, type: StatusType.Error });
-				}
-			}
-		} catch (error) {
-			setStatus({
-				message: error instanceof Error ? error.message : "An unexpected error occurred",
-				type: StatusType.Error,
-			});
-		} finally {
-			setLoading(false);
-			setProgress(null);
-		}
-	};
+			}, NOTION_OPEN_DELAY_MS);
+		},
+		onDuplicate: (notionUrl) => {
+			setStatus({ message: "This recipe already exists. Opening...", type: StatusType.Info });
+			setTimeout(() => {
+				chrome.tabs.create({ url: notionUrl });
+			}, NOTION_OPEN_DELAY_MS);
+			return undefined;
+		},
+	});
 
 	/**
 	 * Handles the save button click.
 	 */
-	const handleSave = async () => {
-		// Check if API secret is configured
+	async function handleSave() {
 		const apiKey = await storage.getApiKey();
 		if (!apiKey) {
-			// Show prompt and save the save action for later
 			setPendingSave(() => performSave);
 			setShowApiPrompt(true);
 			return;
 		}
 
-		// API secret exists, proceed with save
 		await performSave();
-	};
+	}
 
 	/**
 	 * Handles when API secret is saved in the prompt.
 	 */
-	const handleApiSecretSaved = () => {
+	function handleApiSecretSaved() {
 		setShowApiPrompt(false);
 		setIsInvalidApiKey(false);
-		// Execute the pending save if there was one
 		const save = pendingSave();
 		if (save) {
 			setPendingSave(null);
 			save();
 		}
-	};
+	}
 
 	/**
 	 * Handles updating the API key when it's invalid.
 	 */
-	const handleUpdateApiKey = () => {
+	function handleUpdateApiKey() {
 		setPendingSave(() => performSave);
 		setShowApiPrompt(true);
-	};
+	}
 
-	// Initialize on mount
 	onMount(async () => {
 		const { url, title, recipeTitle, author, websiteName } = await getCurrentTab();
 		setCurrentUrl(url);
@@ -260,14 +155,12 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 
 	return (
 		<div class="flex flex-col gap-3">
-			{/* URL Display */}
 			<UrlDisplay
 				url={currentUrl()}
 				title={recipeTitle() || currentTitle()}
 				source={recipeAuthor() || websiteName()}
 			/>
 
-			{/* Save Button */}
 			<button
 				id="save-button"
 				type="button"
@@ -302,10 +195,8 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 				<span class="button-text">{loading() ? "Processing..." : "Save Recipe"}</span>
 			</button>
 
-			{/* Progress Indicator */}
 			<Show when={progress()}>{(msg) => <ProgressIndicator message={msg()} />}</Show>
 
-			{/* Status Message */}
 			<Show when={status()}>
 				{(s) => (
 					<div class="flex flex-col gap-2">
@@ -323,7 +214,6 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 				)}
 			</Show>
 
-			{/* API Secret Prompt */}
 			<Show when={showApiPrompt()}>
 				<ApiSecretPrompt
 					onSecretSaved={handleApiSecretSaved}

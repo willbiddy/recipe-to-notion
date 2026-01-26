@@ -1,9 +1,5 @@
 import * as cheerio from "cheerio";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Regular Expression Patterns
-// ─────────────────────────────────────────────────────────────────────────────
-
 /**
  * ISO 8601 duration pattern (e.g., "PT1H30M", "PT45M").
  * Captures hours, minutes, and seconds groups.
@@ -47,10 +43,6 @@ export const INGREDIENT_HEADER_PATTERN = /^(INGREDIENTS|INGREDIENT LIST)$/i;
  */
 export const INSTRUCTION_HEADER_PATTERN = /^(INSTRUCTIONS|DIRECTIONS|STEPS)$/i;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// HTML entity decoding
-// ─────────────────────────────────────────────────────────────────────────────
-
 /**
  * Decodes HTML entities and normalizes Unicode fractions to ASCII.
  *
@@ -65,10 +57,6 @@ export function decodeHtmlEntities(str: string): string {
 	const decoded = cheerio.load(str, null, false).text();
 	return normalizeFractions(decoded);
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Utility functions
-// ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * Parses an ISO 8601 duration string (e.g. "PT1H30M") into total minutes.

@@ -3,10 +3,6 @@ import { ParseError, ScrapingError } from "./errors.js";
 import { extractAuthorFromHtml, parseHtml } from "./parsers/html.js";
 import { parseJsonLd } from "./parsers/json-ld.js";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Constants
-// ─────────────────────────────────────────────────────────────────────────────
-
 /**
  * Browser-like HTTP headers to avoid bot detection.
  */
@@ -30,10 +26,6 @@ const BROWSER_HEADERS = {
 	"Sec-Fetch-User": "?1",
 	"Upgrade-Insecure-Requests": "1",
 } as const;
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * Method used to extract recipe data from the page.
@@ -96,10 +88,6 @@ export type Recipe = {
 	 */
 	category: string | null;
 };
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Main functions
-// ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * Parses recipe data from HTML content.

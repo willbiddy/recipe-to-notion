@@ -5,6 +5,10 @@ import { z } from "zod";
 import { TaggingError, ValidationError } from "./errors.js";
 import type { Recipe } from "./scraper.js";
 
+// ============================================================================
+// Types & Enums
+// ============================================================================
+
 /**
  * Shopping categories for ingredient organization.
  * These categories must match exactly what Claude returns.
@@ -17,6 +21,14 @@ export enum IngredientCategory {
 	DairyEggs = "Dairy & eggs",
 	Frozen = "Frozen",
 	Other = "Other",
+}
+
+/**
+ * Healthiness score configuration.
+ */
+export enum HealthinessScore {
+	Min = 0,
+	Max = 10,
 }
 
 /**
@@ -67,44 +79,9 @@ export type RecipeTags = {
 	ingredients: CategorizedIngredient[];
 };
 
-/**
- * System prompt for Claude to analyze recipes and generate structured metadata.
- * Loaded from system-prompt.md file for easier editing.
- *
- * Uses Bun's native file API for optimal performance.
- */
-let systemPromptCache: string | null = null;
-
-/**
- * Loads the system prompt from the file system.
- *
- * Uses Bun's native file API for optimal performance.
- * Caches the result after first load.
- *
- * @returns The system prompt text.
- * @throws If the file cannot be read.
- */
-async function loadSystemPrompt(): Promise<string> {
-	if (systemPromptCache !== null) {
-		return systemPromptCache;
-	}
-
-	const __filename = fileURLToPath(import.meta.url);
-	const __dirname = join(__filename, "..");
-	const promptPath = join(__dirname, "system-prompt.md");
-
-	try {
-		const file = Bun.file(promptPath);
-		const text = await file.text();
-		systemPromptCache = text.trim();
-		return systemPromptCache;
-	} catch (error) {
-		throw new TaggingError(
-			`Failed to load system prompt from ${promptPath}: ${error instanceof Error ? error.message : String(error)}`,
-			error,
-		);
-	}
-}
+// ============================================================================
+// Configuration Constants
+// ============================================================================
 
 /**
  * Labels used when formatting recipe data into a user prompt for Claude.
@@ -144,16 +121,7 @@ enum ClaudeLimit {
 }
 
 /**
- * Healthiness score configuration.
- */
-export enum HealthinessScore {
-	Min = 0,
-	Max = 10,
-}
-
-/**
  * Recipe time configuration (in minutes).
- *
  * Allows for quick no-cook recipes (5 min) and slow-cooked dishes (8 hours).
  */
 enum RecipeTime {
@@ -169,9 +137,12 @@ enum ErrorDisplay {
 	ValidationPreview = 300,
 }
 
+// ============================================================================
+// Validation Schemas
+// ============================================================================
+
 /**
  * Zod schema for validating Claude API responses.
- *
  * Validates the structure of the JSON response from Claude, ensuring
  * all required fields are present and have the correct types.
  */
@@ -191,6 +162,46 @@ const claudeResponseSchema = z.object({
 	ingredients: z.array(categorizedIngredientSchema).min(1, "At least one ingredient is required"),
 });
 
+// ============================================================================
+// System Prompt Loading
+// ============================================================================
+
+let systemPromptCache: string | null = null;
+
+/**
+ * Loads the system prompt from the file system.
+ * Uses Bun's native file API for optimal performance.
+ * Caches the result after first load.
+ *
+ * @returns The system prompt text.
+ * @throws If the file cannot be read.
+ */
+async function loadSystemPrompt(): Promise<string> {
+	if (systemPromptCache !== null) {
+		return systemPromptCache;
+	}
+
+	const __filename = fileURLToPath(import.meta.url);
+	const __dirname = join(__filename, "..");
+	const promptPath = join(__dirname, "system-prompt.md");
+
+	try {
+		const file = Bun.file(promptPath);
+		const text = await file.text();
+		systemPromptCache = text.trim();
+		return systemPromptCache;
+	} catch (error) {
+		throw new TaggingError(
+			`Failed to load system prompt from ${promptPath}: ${error instanceof Error ? error.message : String(error)}`,
+			error,
+		);
+	}
+}
+
+// ============================================================================
+// Main API Function
+// ============================================================================
+
 /**
  * Sends recipe data to Claude and receives tags, meal-type classifications,
  * healthiness scores, and time estimates.
@@ -204,13 +215,38 @@ const claudeResponseSchema = z.object({
  */
 export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeTags> {
 	const client = new Anthropic({ apiKey });
-
 	const userMessage = buildPrompt(recipe);
 	const systemPrompt = await loadSystemPrompt();
 
-	let response: Anthropic.Messages.Message;
+	const response = await callClaudeAPI(client, userMessage, systemPrompt);
+	const toolUse = extractToolUse(response);
+	const validated = validateClaudeResponse(toolUse);
+	const finalTime = calculateFinalTime(recipe.totalTimeMinutes, validated.totalTimeMinutes);
+
+	return {
+		tags: validated.tags,
+		mealType: validated.mealType,
+		healthiness: clamp(validated.healthiness, HealthinessScore.Min, HealthinessScore.Max),
+		totalTimeMinutes: clamp(finalTime, RecipeTime.Min, RecipeTime.Max),
+		description: validated.description.trim(),
+		ingredients: validated.ingredients,
+	};
+}
+
+// ============================================================================
+// API Helpers
+// ============================================================================
+
+/**
+ * Calls the Claude API with the recipe prompt.
+ */
+async function callClaudeAPI(
+	client: Anthropic,
+	userMessage: string,
+	systemPrompt: string,
+): Promise<Anthropic.Messages.Message> {
 	try {
-		response = await client.messages.create({
+		return await client.messages.create({
 			model: ACTIVE_MODEL,
 			max_tokens: ClaudeLimit.MaxTokens,
 			system: systemPrompt,
@@ -244,7 +280,12 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
 		}
 		throw new TaggingError(`Failed to call Anthropic API: ${String(error)}`, error);
 	}
+}
 
+/**
+ * Extracts the tool_use block from Claude's response.
+ */
+function extractToolUse(response: Anthropic.Messages.Message): Anthropic.Messages.ToolUseBlock {
 	const toolUse = response.content.find(
 		(block): block is Anthropic.Messages.ToolUseBlock => block.type === "tool_use",
 	);
@@ -259,6 +300,15 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
 		);
 	}
 
+	return toolUse;
+}
+
+/**
+ * Validates Claude's tool response against the expected schema.
+ */
+function validateClaudeResponse(
+	toolUse: Anthropic.Messages.ToolUseBlock,
+): z.infer<typeof claudeResponseSchema> {
 	const validationResult = claudeResponseSchema.safeParse(toolUse.input);
 
 	if (!validationResult.success) {
@@ -275,10 +325,16 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
 		);
 	}
 
-	const validated = validationResult.data;
-	const scrapedTime = recipe.totalTimeMinutes;
-	const aiEstimatedTime = validated.totalTimeMinutes;
+	return validationResult.data;
+}
 
+/**
+ * Calculates the final recipe time, preferring scraped time over AI estimate.
+ */
+function calculateFinalTime(
+	scrapedTime: number | null | undefined,
+	aiEstimatedTime: number,
+): number {
 	const finalTime = scrapedTime ?? aiEstimatedTime;
 
 	if (finalTime === null || finalTime === undefined) {
@@ -287,25 +343,18 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
 		);
 	}
 
-	return {
-		tags: validated.tags,
-		mealType: validated.mealType,
-		healthiness: clamp(validated.healthiness, HealthinessScore.Min, HealthinessScore.Max),
-		totalTimeMinutes: clamp(finalTime, RecipeTime.Min, RecipeTime.Max),
-		description: validated.description.trim(),
-		ingredients: validated.ingredients,
-	};
+	return finalTime;
 }
+
+// ============================================================================
+// Prompt Building Helpers
+// ============================================================================
 
 /**
  * Formats recipe data into a structured prompt for Claude.
- *
  * Builds a text prompt containing the recipe name, source description,
  * hints (author, cuisine, category), ingredients list, instructions,
  * and optional time information for Claude to analyze.
- *
- * @param recipe - The recipe data to format into a prompt.
- * @returns A formatted string prompt for Claude.
  */
 function buildPrompt(recipe: Recipe): string {
 	const lines = [`${PromptLabel.Recipe}: ${recipe.name}`];
@@ -315,7 +364,6 @@ function buildPrompt(recipe: Recipe): string {
 	}
 
 	const hints = buildHints(recipe);
-
 	if (hints.length > 0) {
 		lines.push("", `${PromptLabel.Hints}:`, ...hints.map((h) => `- ${h}`));
 	}
@@ -340,35 +388,28 @@ function buildPrompt(recipe: Recipe): string {
 
 /**
  * Builds a list of hint strings from available recipe metadata.
- *
  * Collects author, cuisine, and category information to provide
  * Claude with additional context for tagging decisions.
- *
- * @param recipe - The recipe with potential hint data.
- * @returns Array of hint strings, empty if no hints available.
  */
 function buildHints(recipe: Recipe): string[] {
 	const hints: string[] = [];
 
 	if (recipe.author) hints.push(`Author: ${recipe.author}`);
-
 	if (recipe.cuisine) hints.push(`Cuisine: ${recipe.cuisine}`);
-
 	if (recipe.category) hints.push(`Category: ${recipe.category}`);
+
 	return hints;
 }
 
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
 /**
  * Clamps a number to the range [min, max].
- *
  * Ensures a numeric value stays within the specified bounds by
  * returning the minimum if value is too low, or the maximum if
  * value is too high.
- *
- * @param value - The number to clamp.
- * @param min - The minimum allowed value.
- * @param max - The maximum allowed value.
- * @returns The clamped value within [min, max].
  */
 function clamp(value: number, min: number, max: number): number {
 	return Math.max(min, Math.min(max, value));

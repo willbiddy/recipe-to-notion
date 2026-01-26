@@ -19,11 +19,8 @@ import {
 	getNotionPageUrl,
 } from "./notion.js";
 import { type Recipe, scrapeRecipe, scrapeRecipeFromHtml } from "./scraper.js";
+import { isValidHttpUrl } from "./shared/url-utils.js";
 import { type RecipeTags, tagRecipe } from "./tagger.js";
-
-// ─────────────────────────────────────────────────────────────────────────────
-// CLI Definition
-// ─────────────────────────────────────────────────────────────────────────────
 
 const main = defineCommand({
 	meta: {
@@ -74,10 +71,6 @@ const main = defineCommand({
 
 runMain(main);
 
-// ─────────────────────────────────────────────────────────────────────────────
-// URL Processing
-// ─────────────────────────────────────────────────────────────────────────────
-
 /**
  * Extracts valid HTTP/HTTPS URLs from CLI arguments.
  *
@@ -89,10 +82,7 @@ function parseUrls(args: string[] | undefined): string[] {
 		return [];
 	}
 
-	return args.filter(
-		(arg): arg is string =>
-			typeof arg === "string" && (arg.startsWith("http://") || arg.startsWith("https://")),
-	);
+	return args.filter((arg): arg is string => typeof arg === "string" && isValidHttpUrl(arg));
 }
 
 /**
@@ -128,17 +118,13 @@ async function processUrlsSequentially(
 			failed++;
 		}
 
-		if (urls.length > 1 && i < urls.length - 1) {
+		if (urls.length > 1) {
 			console.log();
 		}
 	}
 
 	return { succeeded, failed };
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Single Recipe Processing
-// ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * Handles a single recipe URL through the full pipeline with CLI logging.
@@ -275,10 +261,6 @@ async function saveToNotion(recipe: Recipe, tags: RecipeTags, config: Config): P
 	const notionUrl = getNotionPageUrl(pageId);
 	consola.success(`Saved to Notion: ${colors.underline(colors.blue(notionUrl))}`);
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Output
-// ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * Prints final summary when processing multiple recipes.

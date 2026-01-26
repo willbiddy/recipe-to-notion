@@ -20,10 +20,7 @@ export function ApiSecretPrompt(props: ApiSecretPromptProps) {
 	const [secret, setSecret] = createSignal("");
 	const [error, setError] = createSignal<string | null>(null);
 
-	/**
-	 * Saves the API secret.
-	 */
-	const saveSecret = async () => {
+	async function saveSecret() {
 		const key = secret().trim();
 		if (!key) {
 			setError("API secret cannot be empty");
@@ -37,12 +34,9 @@ export function ApiSecretPrompt(props: ApiSecretPromptProps) {
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Failed to save API secret");
 		}
-	};
+	}
 
-	/**
-	 * Handles Enter key press.
-	 */
-	const handleKeyDown = (e: KeyboardEvent) => {
+	function handleKeyDown(e: KeyboardEvent) {
 		if (e.key === "Enter") {
 			e.preventDefault();
 			saveSecret();
@@ -50,13 +44,13 @@ export function ApiSecretPrompt(props: ApiSecretPromptProps) {
 		if (e.key === "Escape" && props.onCancel) {
 			props.onCancel();
 		}
-	};
+	}
 
-	const handleBackdropKeyDown = (e: KeyboardEvent) => {
+	function handleBackdropKeyDown(e: KeyboardEvent) {
 		if (e.key === "Escape" && props.onCancel) {
 			props.onCancel();
 		}
-	};
+	}
 
 	return (
 		<div
@@ -76,13 +70,7 @@ export function ApiSecretPrompt(props: ApiSecretPromptProps) {
 				<h3 id="api-secret-title" class="text-lg font-semibold text-gray-900 mb-2">
 					API Secret Required
 				</h3>
-				<p class="text-sm text-gray-600 mb-4">
-					Enter your API secret to save recipes. Get this from your Vercel deployment's{" "}
-					<code class="text-xs bg-gray-100 px-1.5 py-0.5 rounded font-mono text-gray-700">
-						API_SECRET
-					</code>{" "}
-					environment variable.
-				</p>
+				<p class="text-sm text-gray-600 mb-4">Enter your API secret to save recipes.</p>
 				<div class="space-y-3">
 					<div class="relative">
 						<input

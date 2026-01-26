@@ -3,13 +3,15 @@
  * Handles recipe URL submission, progress updates, and settings management.
  */
 
-import { createSignal, onMount, Show } from "solid-js";
-import { type RecipeResponse, saveRecipe } from "../api.js";
+import { createMemo, createSignal, onMount, Show } from "solid-js";
+import { ErrorMessageKey } from "../constants.js";
+import { useRecipeSave } from "../hooks/useRecipeSave.js";
 import { createStorageAdapter } from "../storage.js";
+import { isValidHttpUrl } from "../url-utils.js";
 import { ApiSecretPrompt } from "./ApiSecretPrompt.js";
 import { ProgressIndicator } from "./ProgressIndicator.js";
 import { RecipeInfo, type RecipeInfoData } from "./RecipeInfo.js";
-import { StatusMessage, StatusType } from "./StatusMessage.js";
+import { StatusMessage, type StatusType } from "./StatusMessage.js";
 
 /**
  * Delay before auto-submitting URL from query parameters (milliseconds).
@@ -23,24 +25,11 @@ const CLEAR_URL_INPUT_DELAY_MS = 500;
 
 /**
  * Gets the server URL from the current origin.
+ *
+ * @returns The current window origin URL.
  */
 function getServerUrl(): string {
 	return window.location.origin;
-}
-
-/**
- * Validates a URL.
- */
-function validateUrl(url: string): boolean {
-	if (!url.trim()) {
-		return false;
-	}
-	try {
-		const urlObj = new URL(url);
-		return urlObj.protocol === "http:" || urlObj.protocol === "https:";
-	} catch {
-		return false;
-	}
 }
 
 /**
@@ -55,184 +44,103 @@ export function WebRecipeForm() {
 	const [recipeInfo, setRecipeInfo] = createSignal<RecipeInfoData | null>(null);
 	const [showApiPrompt, setShowApiPrompt] = createSignal(false);
 	const [pendingSave, setPendingSave] = createSignal<(() => void) | null>(null);
-	const [isInvalidApiKey, setIsInvalidApiKey] = createSignal(false);
 
-	function urlValid() {
-		const currentUrl = url();
-		return currentUrl.trim() === "" ? null : validateUrl(currentUrl);
-	}
-
-	function showClearButton() {
-		url().trim().length > 0;
-	}
-
-	/**
-	 * Saves a recipe with progress streaming.
-	 */
-	const saveRecipeWithProgress = (recipeUrl: string): Promise<RecipeResponse> => {
-		const serverUrl = getServerUrl();
-		const apiUrl = `${serverUrl}/api/recipes`;
-
-		return saveRecipe({
-			url: recipeUrl,
-			apiUrl,
-			storage,
-			callbacks: {
-				onProgress: (message) => {
-					setProgress(message);
-					setLoading(true);
-				},
-				onComplete: (data) => {
-					setProgress(null);
-					setLoading(false);
-					setRecipeInfo(data);
-					setStatus(null);
-				},
-				onError: () => {
-					setProgress(null);
-					setLoading(false);
-				},
-			},
-		});
-	};
-
-	/**
-	 * Actually saves the recipe (called after API secret is confirmed).
-	 */
-	const performSave = async () => {
+	const urlValid = createMemo(() => {
 		const currentUrl = url().trim();
+		if (currentUrl === "") return null;
+		return isValidHttpUrl(currentUrl);
+	});
 
-		if (!currentUrl) {
-			setStatus({ message: "Please enter a recipe URL", type: StatusType.Error });
-			return;
-		}
+	const showClearButton = createMemo(() => url().trim() !== "");
 
-		if (!currentUrl.startsWith("http://") && !currentUrl.startsWith("https://")) {
-			setStatus({
-				message: "Not a valid web page URL. Must start with http:// or https://",
-				type: StatusType.Error,
-			});
-			return;
-		}
-
-		setStatus(null);
-		setRecipeInfo(null);
-		setLoading(true);
-		setProgress("Starting...");
-
-		try {
-			const result = await saveRecipeWithProgress(currentUrl);
-
-			if (result.success) {
-				// Recipe info is displayed via recipeInfo signal
-				setTimeout(() => {
-					setUrl("");
-				}, CLEAR_URL_INPUT_DELAY_MS);
-			} else if (result.error?.includes("Duplicate recipe found") && result.notionUrl) {
-				setStatus({
-					message: `This recipe already exists. <a href="${result.notionUrl}" target="_blank" class="underline font-semibold">Open in Notion</a>`,
-					type: StatusType.Info,
-				});
-			} else {
-				const errorMessage = result.error || "Failed to save recipe";
-				// Check if error is related to invalid API key
-				const isApiKeyError =
-					errorMessage.toLowerCase().includes("invalid api key") ||
-					errorMessage.toLowerCase().includes("missing authorization") ||
-					errorMessage.toLowerCase().includes("invalid authorization");
-
-				if (isApiKeyError) {
-					setIsInvalidApiKey(true);
-					setStatus({
-						message: "Invalid API key. Please update your API secret.",
-						type: StatusType.Error,
-					});
-				} else {
-					setIsInvalidApiKey(false);
-					setStatus({ message: errorMessage, type: StatusType.Error });
-				}
-			}
-		} catch (error) {
-			setStatus({
-				message: error instanceof Error ? error.message : "An unexpected error occurred",
-				type: StatusType.Error,
-			});
-		} finally {
-			setLoading(false);
-			setProgress(null);
-		}
-	};
+	const { performSave, isInvalidApiKey, setIsInvalidApiKey } = useRecipeSave({
+		storage,
+		getApiUrl: () => `${getServerUrl()}/api/recipes`,
+		getCurrentUrl: () => url().trim() || null,
+		setStatus,
+		setLoading,
+		setProgress,
+		onSuccess: () => {
+			setTimeout(() => {
+				setUrl("");
+			}, CLEAR_URL_INPUT_DELAY_MS);
+		},
+		onComplete: (data) => {
+			setRecipeInfo(data);
+		},
+		noUrlErrorKey: ErrorMessageKey.PleaseEnterRecipeUrl,
+	});
 
 	/**
 	 * Handles the save button click.
 	 */
-	const handleSave = async () => {
-		// Check if API secret is configured
+	async function handleSave() {
 		const apiKey = await storage.getApiKey();
 		if (!apiKey) {
-			// Show prompt and save the save action for later
 			setPendingSave(() => performSave);
 			setShowApiPrompt(true);
 			return;
 		}
 
-		// API secret exists, proceed with save
 		await performSave();
-	};
+	}
 
 	/**
-	 * Clears the URL input.
+	 * Clears the URL input and resets status.
 	 */
-	const clearUrl = () => {
+	function clearUrl() {
 		setUrl("");
 		setStatus(null);
 		setRecipeInfo(null);
-	};
+	}
 
 	/**
 	 * Handles URL input changes.
+	 *
+	 * @param e - The input event.
 	 */
-	const handleUrlInput = (e: Event) => {
+	function handleUrlInput(e: Event) {
 		const value = (e.target as HTMLInputElement).value;
 		setUrl(value);
-	};
+	}
 
 	/**
-	 * Handles keyboard shortcuts.
+	 * Handles keyboard shortcuts for save action.
+	 *
+	 * @param e - The keyboard event.
 	 */
-	const handleKeyDown = (e: KeyboardEvent) => {
+	function handleKeyDown(e: KeyboardEvent) {
 		if (e.key === "Enter") {
 			e.preventDefault();
 			handleSave();
 		}
-	};
+	}
 
 	/**
 	 * Handles when API secret is saved in the prompt.
 	 */
-	const handleApiSecretSaved = () => {
+	function handleApiSecretSaved() {
 		setShowApiPrompt(false);
 		setIsInvalidApiKey(false);
-		// Execute the pending save if there was one
 		const save = pendingSave();
 		if (save) {
 			setPendingSave(null);
 			save();
 		}
-	};
+	}
 
 	/**
 	 * Handles updating the API key when it's invalid.
 	 */
-	const handleUpdateApiKey = () => {
+	function handleUpdateApiKey() {
 		setPendingSave(() => performSave);
 		setShowApiPrompt(true);
-	};
+	}
 
 	/**
-	 * Handles query parameters for auto-submit.
+	 * Handles query parameters for auto-submit functionality.
 	 */
-	const handleQueryParameters = () => {
+	function handleQueryParameters() {
 		const urlParams = new URLSearchParams(window.location.search);
 		const urlParam = urlParams.get("url");
 
@@ -246,7 +154,6 @@ export function WebRecipeForm() {
 							handleSave();
 						}, AUTO_SUBMIT_DELAY_MS);
 					} else {
-						// Show prompt if no API key
 						setPendingSave(() => performSave);
 						setShowApiPrompt(true);
 					}
@@ -255,16 +162,14 @@ export function WebRecipeForm() {
 				console.warn("Invalid URL in query parameters:", urlParam);
 			}
 		}
-	};
+	}
 
-	// Initialize on mount
 	onMount(() => {
 		handleQueryParameters();
 	});
 
 	return (
 		<div class="flex flex-col gap-3">
-			{/* URL Input */}
 			<div class="relative">
 				<input
 					type="url"
@@ -308,7 +213,6 @@ export function WebRecipeForm() {
 				</div>
 			</div>
 
-			{/* Save Button */}
 			<button
 				type="button"
 				onClick={handleSave}
@@ -343,10 +247,8 @@ export function WebRecipeForm() {
 				<span>{loading() ? "Processing..." : "Save Recipe"}</span>
 			</button>
 
-			{/* Progress Indicator */}
 			<Show when={progress()}>{(msg) => <ProgressIndicator message={msg()} />}</Show>
 
-			{/* Status Message */}
 			<Show when={status()}>
 				{(s) => (
 					<div class="flex flex-col gap-2">
@@ -364,10 +266,8 @@ export function WebRecipeForm() {
 				)}
 			</Show>
 
-			{/* Recipe Info */}
 			<Show when={recipeInfo()}>{(info) => <RecipeInfo data={info()} />}</Show>
 
-			{/* API Secret Prompt */}
 			<Show when={showApiPrompt()}>
 				<ApiSecretPrompt
 					onSecretSaved={handleApiSecretSaved}

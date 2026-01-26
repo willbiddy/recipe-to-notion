@@ -13,16 +13,16 @@ import {
 /**
  * HTTP status codes used throughout the server.
  */
-export const HttpStatus = {
-	OK: 200,
-	NoContent: 204,
-	BadRequest: 400,
-	NotFound: 404,
-	MethodNotAllowed: 405,
-	Conflict: 409,
-	InternalServerError: 500,
-	BadGateway: 502,
-} as const;
+export enum HttpStatus {
+	OK = 200,
+	NoContent = 204,
+	BadRequest = 400,
+	NotFound = 404,
+	MethodNotAllowed = 405,
+	Conflict = 409,
+	InternalServerError = 500,
+	BadGateway = 502,
+}
 
 /**
  * Response format for the /api/recipes endpoint.

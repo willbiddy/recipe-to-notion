@@ -166,7 +166,6 @@ export function handleRecipeStream(options: RecipeStreamOptions): Response {
 			Connection: "keep-alive",
 		},
 	});
-	// Note: request not available in stream handler, using default CORS
 	setCorsHeaders(response);
 	return response;
 }
@@ -183,7 +182,6 @@ export function handleRecipeStream(options: RecipeStreamOptions): Response {
 export async function handleRecipeRequest(options: RecipeHandlerOptions): Promise<Response> {
 	const { request, requestId, createErrorResponse } = options;
 
-	// Load config once for API secret validation
 	const config = loadConfig();
 
 	const clientId = getClientIdentifier(request);
@@ -214,10 +212,8 @@ export async function handleRecipeRequest(options: RecipeHandlerOptions): Promis
 	}
 
 	try {
-		// Use pre-parsed body if provided, otherwise parse from request
 		const body = options.parsedBody ?? ((await request.json()) as unknown);
 
-		// Validate actual body size after parsing (defense-in-depth)
 		const actualSizeError = validateActualBodySize(
 			body,
 			MAX_REQUEST_BODY_SIZE,

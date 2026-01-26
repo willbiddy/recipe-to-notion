@@ -129,21 +129,18 @@ async function processUrlsSequentially(
  * @param htmlPath - Optional path to saved HTML file (bypasses fetching).
  * @returns True if the recipe was saved successfully, false otherwise.
  */
-async function handleRecipe(url: string, config: Config, htmlPath?: string): Promise<boolean> {
+async function handleRecipe(url: string, _config: Config, htmlPath?: string): Promise<boolean> {
 	try {
 		const logger = createConsoleLogger();
 
 		if (htmlPath) {
-			// For HTML file mode, scrape first then use the shared pipeline
 			consola.start(`Parsing recipe from ${htmlPath}...`);
 			const recipe = await scrapeRecipeFromHtml(htmlPath, url);
 			const methodLabel = recipe.scrapeMethod === "json-ld" ? "(JSON-LD)" : "(HTML fallback)";
 			consola.success(`Scraped: ${recipe.name} ${methodLabel}`);
 
-			// Use shared pipeline with pre-scraped recipe
 			await processRecipe({ recipe, logger });
 		} else {
-			// Normal URL mode - use shared pipeline
 			await processRecipe({ url, logger });
 		}
 

@@ -50,7 +50,7 @@ async function getCurrentTab(): Promise<{
 			recipeTitle = response?.title || null;
 			author = response?.author || null;
 		} catch {
-			// Content script not loaded or chrome:// page
+			// Content script not available
 		}
 	}
 

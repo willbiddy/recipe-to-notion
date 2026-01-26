@@ -130,7 +130,6 @@ export default {
 		const url = new URL(req.url);
 		let pathname = url.pathname;
 
-		// If this is a rewrite from Vercel, get the original path from headers
 		const originalPath =
 			req.headers.get("x-vercel-original-path") ||
 			req.headers.get("x-invoke-path") ||
@@ -139,14 +138,10 @@ export default {
 		if (originalPath) {
 			pathname = originalPath;
 		} else if (pathname.startsWith("/api/")) {
-			// Handle /api/web.js, /api/web.css, /api/favicon-*, etc.
-			// Remove /api prefix to get the asset path
 			const assetPath = pathname.replace("/api/", "/");
-			// Check if it's a known asset route
 			if (ASSET_ROUTES[assetPath]) {
 				pathname = assetPath;
 			} else if (pathname.startsWith("/api/assets")) {
-				// Handle direct /api/assets/* routes
 				pathname = pathname.replace("/api/assets", "") || "/";
 			}
 		}

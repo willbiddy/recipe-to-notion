@@ -4,7 +4,6 @@
  */
 
 import { HttpStatus } from "../backend/server-shared/constants.js";
-
 import { setCorsHeaders, setSecurityHeaders } from "../backend/server-shared/headers.js";
 
 /**

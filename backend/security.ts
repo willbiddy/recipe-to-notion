@@ -132,7 +132,6 @@ export function validateRecipeUrl(
 		);
 	}
 
-	// Additional validation: ensure URL is properly formatted
 	try {
 		new URL(urlString);
 		return null;
@@ -235,8 +234,6 @@ export function validateActualBodySize(
 
 		return null;
 	} catch {
-		// If stringification fails, the body is likely invalid JSON anyway
-		// Let the JSON parsing error handle it
 		return null;
 	}
 }

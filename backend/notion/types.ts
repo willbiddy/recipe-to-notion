@@ -82,16 +82,6 @@ export type NotionApiErrorResponse = {
 };
 
 /**
- * Options for checking for duplicate recipes.
- */
-export type CheckForDuplicateOptions = {
-	recipe: Recipe;
-	notionApiKey: string;
-	databaseId: string;
-	skipUrlCheck?: boolean;
-};
-
-/**
  * Options for building page parameters.
  */
 export type BuildPageParamsOptions = {

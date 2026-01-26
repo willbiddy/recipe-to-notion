@@ -22,24 +22,17 @@ function detectTheme(): "light" | "dark" {
  */
 async function updateExtensionIcon() {
 	const theme = detectTheme();
-
-	// Store theme preference
 	await chrome.storage.local.set({ theme });
-
-	// Notify background script to update icon
 	chrome.runtime.sendMessage({ type: "theme-changed", theme });
 }
 
-// Update icon when popup opens
 updateExtensionIcon();
 
-// Listen for theme changes while popup is open
 if (window.matchMedia) {
 	const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 	mediaQuery.addEventListener("change", updateExtensionIcon);
 }
 
-// Mount the component to the card element
 const card = document.querySelector(".card");
 
 if (card) {

@@ -54,11 +54,8 @@ function extractRecipeDataFromJsonLd(): { title: string | null; author: string |
 				const data = JSON.parse(content);
 				const recipe = findRecipeInLd(data);
 				if (recipe?.name && isString(recipe.name)) {
-					// Decode HTML entities and clean the name using shared utilities
 					const decoded = decodeHtmlEntitiesBrowser(recipe.name);
 					const cleaned = cleanRecipeName(decoded);
-
-					// Extract author
 					const author = parseAuthor(recipe.author) ?? parseAuthor(recipe.publisher);
 
 					return {
@@ -69,7 +66,7 @@ function extractRecipeDataFromJsonLd(): { title: string | null; author: string |
 			} catch {}
 		}
 	} catch {
-		// If anything fails, return null
+		// Failed to extract recipe data
 	}
 	return { title: null, author: null };
 }

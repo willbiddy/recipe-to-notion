@@ -63,8 +63,6 @@ import { CLEANUP_INTERVAL_MS } from "../shared/constants.js";
  */
 function cleanupExpiredEntries(): void {
 	const now = Date.now();
-	// Use cleanup interval as threshold to ensure entries are removed promptly
-	// This means entries will be cleaned up within one cleanup cycle after expiration
 	const CLEANUP_THRESHOLD_MS = CLEANUP_INTERVAL_MS;
 	for (const [key, entry] of rateLimitStore.entries()) {
 		if (now - entry.windowStart > CLEANUP_THRESHOLD_MS) {
@@ -134,7 +132,7 @@ export function checkRateLimit(
  * @param str - String to hash.
  * @returns 32-bit integer hash value.
  */
-function hashString(str: string): number {
+function hashStringForRateLimit(str: string): number {
 	let hash = 0;
 	for (let i = 0; i < str.length; i++) {
 		const char = str.charCodeAt(i);
@@ -157,7 +155,7 @@ export function getClientIdentifier(request: Request): string {
 
 	if (authHeader?.startsWith("Bearer ")) {
 		const apiKey = authHeader.slice(7).trim();
-		const hash = hashString(apiKey);
+		const hash = hashStringForRateLimit(apiKey);
 		return `api-key-${Math.abs(hash)}`;
 	}
 

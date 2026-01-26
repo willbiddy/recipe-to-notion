@@ -93,21 +93,11 @@ export type ProcessRecipeOptions = {
  * 4. Check for duplicate title (after scraping to get accurate title)
  * 5. Save to Notion with recipe metadata, ingredients, and instructions
  *
- * @param urlOrOptions - Recipe page URL to process, or options object.
- * @param onProgress - Optional callback for progress updates (for SSE/streaming). Deprecated: use options object instead.
- * @param logger - Optional logger for detailed step-by-step logging. Deprecated: use options object instead.
+ * @param options - Options for processing the recipe.
  * @returns The scraped recipe, generated tags, and the Notion page ID.
  * @throws If a duplicate recipe (same title or URL) already exists.
  */
-export async function processRecipe(
-	urlOrOptions: string | ProcessRecipeOptions,
-	onProgress?: ProgressCallback,
-	logger?: RecipeLogger,
-): Promise<ProcessResult> {
-	// Support both old API (url, onProgress?, logger?) and new API (options object)
-	const options: ProcessRecipeOptions =
-		typeof urlOrOptions === "string" ? { url: urlOrOptions, onProgress, logger } : urlOrOptions;
-
+export async function processRecipe(options: ProcessRecipeOptions): Promise<ProcessResult> {
 	const {
 		url,
 		recipe: providedRecipe,
@@ -144,18 +134,18 @@ export async function processRecipe(
 
 	let recipe: Recipe;
 	if (providedRecipe) {
-		// Use provided recipe, skip scraping
 		recipe = providedRecipe;
 		recipeLogger?.onScraped?.(recipe);
-	} else {
-		// Scrape recipe from URL
+	} else if (url) {
 		progressCallback?.({
 			type: ProgressType.Scraping,
 			message: PROGRESS_MESSAGES[ProgressType.Scraping],
 		});
 		recipeLogger?.onScraping?.();
-		recipe = await scrapeRecipe(url!);
+		recipe = await scrapeRecipe(url);
 		recipeLogger?.onScraped?.(recipe);
+	} else {
+		throw new Error("Either url or recipe must be provided");
 	}
 
 	progressCallback?.({

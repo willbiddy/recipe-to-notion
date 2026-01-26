@@ -133,7 +133,6 @@ export function sanitizeError(
 	}
 
 	if (error instanceof NotionApiError) {
-		// Provide more specific error messages based on the error type
 		let message = "Failed to save recipe to Notion.";
 
 		if (error.propertyName && error.propertyType) {

@@ -153,7 +153,7 @@ export function WebRecipeForm() {
 					setShowApiPrompt(true);
 				}
 			} catch {
-				// Invalid URL format in query parameters, ignore
+				// Invalid URL in query parameters
 			}
 		}
 	}

@@ -1,46 +1,10 @@
 import type { Client } from "@notionhq/client";
 import { DuplicateRecipeError } from "../errors.js";
-import type { Recipe } from "../scraper.js";
 import { buildPageBody } from "./blocks.js";
 import { createNotionClient } from "./client.js";
 import { checkForDuplicateByTitle, checkForDuplicateByUrl } from "./duplicates.js";
 import { buildPageParams, buildPageProperties } from "./properties.js";
 import type { CreateRecipePageOptions } from "./types.js";
-
-/**
- * Checks if a recipe with the same title or URL already exists in the database.
- *
- * @param options - Options for checking duplicates.
- * @returns Information about the duplicate if found, null otherwise.
- */
-async function checkForDuplicate({
-	recipe,
-	notionApiKey,
-	databaseId,
-	skipUrlCheck = false,
-}: {
-	recipe: Recipe;
-	notionApiKey: string;
-	databaseId: string;
-	skipUrlCheck?: boolean;
-}): Promise<import("./types.js").DuplicateInfo | null> {
-	if (!skipUrlCheck) {
-		const urlDuplicate = await checkForDuplicateByUrl({
-			url: recipe.sourceUrl,
-			notionApiKey,
-			databaseId,
-		});
-		if (urlDuplicate) {
-			return urlDuplicate;
-		}
-	}
-
-	return await checkForDuplicateByTitle({
-		recipeName: recipe.name,
-		notionApiKey,
-		databaseId,
-	});
-}
 
 /**
  * Creates a new page in the Notion recipe database with the recipe's metadata,
@@ -60,14 +24,28 @@ export async function createRecipePage({
 	const notion = createNotionClient(notionApiKey);
 
 	if (!skipDuplicateCheck) {
-		const duplicate = await checkForDuplicate({
-			recipe,
+		const urlDuplicate = await checkForDuplicateByUrl({
+			url: recipe.sourceUrl,
 			notionApiKey,
 			databaseId,
 		});
 
-		if (duplicate) {
-			throw new DuplicateRecipeError(duplicate.title, duplicate.url, duplicate.notionUrl);
+		if (urlDuplicate) {
+			throw new DuplicateRecipeError(urlDuplicate.title, urlDuplicate.url, urlDuplicate.notionUrl);
+		}
+
+		const titleDuplicate = await checkForDuplicateByTitle({
+			recipeName: recipe.name,
+			notionApiKey,
+			databaseId,
+		});
+
+		if (titleDuplicate) {
+			throw new DuplicateRecipeError(
+				titleDuplicate.title,
+				titleDuplicate.url,
+				titleDuplicate.notionUrl,
+			);
 		}
 	}
 
@@ -80,11 +58,6 @@ export async function createRecipePage({
 		imageUrl: recipe.imageUrl,
 	});
 
-	// buildPageParams returns a valid Notion page creation parameters object.
-	// The type is Record<string, unknown> because properties are dynamically constructed,
-	// but the structure matches the SDK's expected type at runtime.
-	const page = await notion.pages.create(
-		pageParams as unknown as Parameters<Client["pages"]["create"]>[0],
-	);
+	const page = await notion.pages.create(pageParams as Parameters<Client["pages"]["create"]>[0]);
 	return page.id;
 }

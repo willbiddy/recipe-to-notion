@@ -110,7 +110,7 @@ if (chrome.contextMenus) {
 			try {
 				await chrome.action.openPopup();
 			} catch {
-				// Silently fail - popup must be opened by user clicking extension icon
+				// Popup cannot be opened programmatically
 			}
 		}
 	});

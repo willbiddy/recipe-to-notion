@@ -55,12 +55,14 @@ export function WebRecipeForm() {
 	const [recipeInfo, setRecipeInfo] = createSignal<RecipeInfoData | null>(null);
 	const [settingsOpen, setSettingsOpen] = createSignal(false);
 
-	// URL validation
-	const urlValid = () => {
+	function urlValid() {
 		const currentUrl = url();
 		return currentUrl.trim() === "" ? null : validateUrl(currentUrl);
-	};
-	const showClearButton = () => url().trim().length > 0;
+	}
+
+	function showClearButton() {
+		url().trim().length > 0;
+	}
 
 	/**
 	 * Saves a recipe with progress streaming.
@@ -207,7 +209,7 @@ export function WebRecipeForm() {
 		const key = await storage.getApiKey();
 		if (!key) {
 			setStatus({
-				message: "⚠️ API secret not configured. Click Settings to set it up.",
+				message: "API secret not configured",
 				type: StatusType.Error,
 			});
 		}
@@ -316,7 +318,7 @@ export function WebRecipeForm() {
 			<div class="flex-grow" />
 
 			{/* Settings Button */}
-			<div class="flex items-center justify-start pt-4 mt-4 border-t border-gray-200">
+			<div class="flex items-center justify-start pt-4 mt-4">
 				<button
 					type="button"
 					onClick={toggleSettings}
@@ -360,7 +362,7 @@ export function WebRecipeForm() {
 			{/* Settings Panel */}
 			<Show when={settingsOpen()}>
 				<SettingsPanel
-					panelClass="flex flex-col gap-4 pt-4 mt-4 border-t border-gray-200 transition-all duration-300 ease-in-out overflow-hidden animate-slide-down"
+					panelClass="flex flex-col gap-4 pt-4 mt-4 transition-all duration-300 ease-in-out overflow-hidden animate-slide-down"
 					onClose={toggleSettings}
 				/>
 			</Show>

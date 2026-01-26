@@ -47,11 +47,38 @@ async function getThemePreference(): Promise<"light" | "dark"> {
 }
 
 /**
- * Initializes the extension icon based on stored theme preference.
+ * Detects Chrome's system theme by injecting a script into a tab.
+ */
+async function detectSystemTheme(): Promise<"light" | "dark"> {
+	try {
+		// Try to get an active tab to detect theme
+		const tabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+		if (tabs[0]?.id) {
+			const results = await chrome.scripting.executeScript({
+				target: { tabId: tabs[0].id },
+				func: () => {
+					return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+				},
+			});
+			if (results[0]?.result) {
+				return results[0].result as "light" | "dark";
+			}
+		}
+	} catch {
+		// If we can't detect (e.g., no tabs, no permissions), fall back to stored preference
+	}
+	// Fall back to stored preference or default to light
+	return await getThemePreference();
+}
+
+/**
+ * Initializes the extension icon based on system theme or stored preference.
  */
 async function initializeIcon() {
-	const theme = await getThemePreference();
+	const theme = await detectSystemTheme();
 	await updateIcon(theme);
+	// Store the detected theme for consistency
+	await chrome.storage.local.set({ theme });
 }
 
 /**
@@ -78,6 +105,16 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 		sendResponse({ success: true });
 	}
 	return true; // Keep message channel open for async response
+});
+
+/**
+ * Listens for storage changes to update icon when theme is detected elsewhere.
+ */
+chrome.storage.onChanged.addListener((changes, areaName) => {
+	if (areaName === "local" && changes.theme) {
+		const newTheme = changes.theme.newValue as "light" | "dark";
+		updateIcon(newTheme);
+	}
 });
 
 /**

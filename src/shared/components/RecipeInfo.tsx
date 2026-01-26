@@ -65,7 +65,7 @@ export function RecipeInfo(props: RecipeInfoProps) {
 					<div innerHTML={line} />
 				))}
 			</div>
-			<div class="pt-3 border-t border-success-200">
+			<div class="pt-3">
 				<p class="text-sm text-success-900">
 					Recipe saved! Open in Notion:{" "}
 					<a

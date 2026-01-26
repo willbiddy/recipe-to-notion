@@ -82,39 +82,12 @@ export function SettingsPanel(props: SettingsPanelProps) {
 		loadApiKey();
 	});
 
-	const panelClass = () =>
-		props.panelClass || "flex flex-col gap-6 pt-6 mt-6 border-t-2 border-primary-200";
+	const panelClass = () => props.panelClass || "flex flex-col gap-6 pt-6 mt-6";
 	const helpTextClass = () => props.helpTextClass || "text-base text-primary-900 leading-relaxed";
 
 	return (
 		<div id="settings-panel" class={panelClass()}>
-			<div class="flex items-center justify-between mb-3">
-				<h3 class="text-sm font-medium text-gray-900">API Secret</h3>
-				<Show when={props.onClose}>
-					<button
-						type="button"
-						onClick={props.onClose}
-						aria-label="Close settings panel"
-						class="text-gray-400 hover:text-gray-600 p-1 rounded transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-						title="Close settings"
-					>
-						<svg
-							class="w-4 h-4"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-							aria-hidden="true"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M6 18L18 6M6 6l12 12"
-							/>
-						</svg>
-					</button>
-				</Show>
-			</div>
+			<h3 class="text-sm font-medium text-gray-900 mb-3">API Secret</h3>
 			<div class="flex flex-col gap-3">
 				<div class="relative">
 					<input

@@ -147,7 +147,7 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 			}
 		} else {
 			setStatus({
-				message: "⚠️ API secret not configured. Click the settings icon to set it up.",
+				message: "API secret not configured",
 				type: StatusType.Error,
 			});
 		}
@@ -169,7 +169,7 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 		const apiKey = await storage.getApiKey();
 		if (!apiKey) {
 			setStatus({
-				message: "⚠️ API secret not configured. Click the settings icon to set it up.",
+				message: "API secret not configured",
 				type: StatusType.Error,
 			});
 		}
@@ -224,7 +224,7 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 			</Show>
 
 			{/* Settings Button */}
-			<div class="flex items-center justify-start pt-2 border-t border-gray-200">
+			<div class="flex items-center justify-start pt-2">
 				<button
 					id="settings-button"
 					type="button"

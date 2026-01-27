@@ -9,7 +9,8 @@
 import { defineCommand, runMain } from "citty";
 import { consola } from "consola";
 import { colors } from "consola/utils";
-import { isValidHttpUrl } from "../shared/url-utils.js";
+import { isString } from "../shared/type-guards.js";
+import { isValidHttpUrl, stripQueryParams } from "../shared/url-utils.js";
 import { loadConfig } from "./config.js";
 import { createConsoleLogger } from "./logger.js";
 import { processRecipe } from "./process-recipe.js";
@@ -61,17 +62,19 @@ const main = defineCommand({
 runMain(main);
 
 /**
- * Extracts valid HTTP/HTTPS URLs from CLI arguments.
+ * Extracts valid HTTP/HTTPS URLs from CLI arguments and strips query parameters.
  *
  * @param args - Positional arguments from the CLI.
- * @returns Array of valid HTTP/HTTPS URLs.
+ * @returns Array of valid HTTP/HTTPS URLs with query parameters stripped.
  */
 function parseUrls(args: string[] | undefined): string[] {
 	if (!args) {
 		return [];
 	}
 
-	return args.filter((arg): arg is string => typeof arg === "string" && isValidHttpUrl(arg));
+	return args
+		.filter((arg): arg is string => isString(arg) && isValidHttpUrl(arg))
+		.map((url) => stripQueryParams(url));
 }
 
 /**

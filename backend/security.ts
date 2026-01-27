@@ -2,7 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import { consola } from "consola";
 import { z } from "zod";
 import { MAX_REQUEST_BODY_SIZE, MAX_URL_LENGTH } from "../shared/constants.js";
-import { isValidHttpUrl } from "../shared/url-utils.js";
+import { isValidHttpUrl, stripQueryParams } from "../shared/url-utils.js";
 
 export enum SecurityHttpStatus {
 	BadRequest = 400,
@@ -165,7 +165,12 @@ export function validateRecipeRequest(
 		return { success: false, response: urlValidationError };
 	}
 
-	return { success: true, data: parseResult.data };
+	const cleanedUrl = stripQueryParams(parseResult.data.url);
+
+	return {
+		success: true,
+		data: { ...parseResult.data, url: cleanedUrl },
+	};
 }
 
 /**

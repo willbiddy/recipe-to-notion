@@ -39,3 +39,18 @@ export function getWebsiteName(url: string): string | null {
 		return null;
 	}
 }
+
+/**
+ * Strips query parameters and hash fragments from a URL.
+ *
+ * @param url - The URL string to strip query parameters from.
+ * @returns The URL without query parameters and hash, or the original URL if parsing fails.
+ */
+export function stripQueryParams(url: string): string {
+	try {
+		const urlObj = new URL(url);
+		return `${urlObj.origin}${urlObj.pathname}`;
+	} catch {
+		return url;
+	}
+}

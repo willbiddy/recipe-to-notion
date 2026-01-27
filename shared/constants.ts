@@ -3,14 +3,6 @@
  */
 
 /**
- * URL protocols for HTTP/HTTPS validation.
- */
-export enum UrlProtocol {
-	HTTP = "http://",
-	HTTPS = "https://",
-}
-
-/**
  * Schema.org Recipe URLs for microdata parsing.
  */
 export enum SchemaOrgRecipeUrl {
@@ -142,6 +134,7 @@ export enum Theme {
  */
 export enum ExtensionMessageType {
 	ThemeChanged = "theme-changed",
+	ExtractRecipeData = "extract-recipe-data",
 }
 
 /**

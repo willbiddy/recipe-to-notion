@@ -2,16 +2,19 @@
  * URL validation and manipulation utilities.
  */
 
-import { UrlProtocol } from "./constants.js";
-
 /**
  * Validates if a URL is a valid HTTP or HTTPS URL.
  *
  * @param url - The URL string to validate.
- * @returns True if the URL starts with http:// or https://, false otherwise.
+ * @returns True if the URL is a valid HTTP or HTTPS URL, false otherwise.
  */
 export function isValidHttpUrl(url: string): boolean {
-	return url.startsWith(UrlProtocol.HTTP) || url.startsWith(UrlProtocol.HTTPS);
+	try {
+		const { protocol } = new URL(url);
+		return protocol === "http:" || protocol === "https:";
+	} catch {
+		return false;
+	}
 }
 
 /**

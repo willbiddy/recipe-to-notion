@@ -4,7 +4,7 @@
  */
 
 import { createSignal, onMount, Show } from "solid-js";
-import { NOTION_OPEN_DELAY_MS } from "../constants.js";
+import { ExtensionMessageType, NOTION_OPEN_DELAY_MS } from "../constants.js";
 import { useRecipeSave } from "../hooks/use-recipe-save.js";
 import { useTimeout } from "../hooks/use-timeout.js";
 import { createStorageAdapter } from "../storage.js";
@@ -45,7 +45,7 @@ async function getCurrentTab(): Promise<{
 	if (tab?.id && url && isValidHttpUrl(url)) {
 		try {
 			const response = await chrome.tabs.sendMessage(tab.id, {
-				type: "extract-recipe-data",
+				type: ExtensionMessageType.ExtractRecipeData,
 			});
 			recipeTitle = response?.title || null;
 			author = response?.author || null;

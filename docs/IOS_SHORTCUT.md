@@ -150,3 +150,23 @@ All shortcuts can use the same actions - just change the name and icon.
 - [Web Interface Guide](./WEB_INTERFACE.md) - Complete web interface documentation
 - [API Reference](./API.md) - REST API documentation
 - [Deployment Guide](./DEPLOYMENT.md) - Deploy to Vercel
+
+---
+
+## Scripts
+
+### Build Scripts
+
+- **`bun run build:web`** - Build the web interface (required for iOS Shortcut to work)
+- **`bun run watch:web`** - Watch web files and rebuild automatically on changes
+
+### Development Scripts
+
+- **`bun run server`** - Start local HTTP server for development
+- **`bun run check`** - Run all code quality checks (typecheck, lint:fix, and format)
+- **`bun run typecheck`** - Check TypeScript types for errors
+- **`bun run lint`** - Run linter to find code issues
+- **`bun run lint:fix`** - Run linter and automatically fix issues
+- **`bun run format`** - Auto-format code with Biome
+
+For a complete list of all available scripts, see the [main README](../README.md#scripts).

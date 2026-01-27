@@ -158,12 +158,29 @@ Use the REST API to integrate Recipe Clipper for Notion into your own applicatio
 
 ## Scripts
 
-- **`bun backend/cli.ts`** - Run the CLI tool to save recipes from the command line
+### Development Scripts
+
+- **`bun start`** - Run the CLI tool to save recipes from the command line
 - **`bun run server`** - Start local HTTP server for development (runs on `localhost:3000`)
+
+### Build Scripts
+
+- **`bun run build`** - Compile the CLI tool to a standalone binary (`recipe-to-notion`)
 - **`bun run build:extension`** - Compile TypeScript and Tailwind CSS for the browser extension
 - **`bun run build:web`** - Compile TypeScript and Tailwind CSS for the web interface
+
+### Watch Scripts (Auto-rebuild on file changes)
+
+- **`bun run watch`** - Watch all files (extension and web) and rebuild automatically on changes
+- **`bun run watch:extension`** - Watch extension files only and rebuild on changes
+- **`bun run watch:web`** - Watch web files only and rebuild on changes
+
+### Code Quality Scripts
+
+- **`bun run check`** - Run all code quality checks (typecheck, lint:fix, and format) - same as pre-commit hook
 - **`bun run typecheck`** - Check TypeScript types for errors
 - **`bun run lint`** - Run linter to find code issues
+- **`bun run lint:fix`** - Run linter and automatically fix issues
 - **`bun run format`** - Auto-format code with Biome
 
 ---

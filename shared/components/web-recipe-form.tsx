@@ -3,8 +3,9 @@
  * Handles recipe URL submission, progress updates, and settings management.
  */
 
+import type { JSX } from "solid-js";
 import { createMemo, createSignal, Show } from "solid-js";
-import { CLEAR_URL_INPUT_DELAY_MS, ErrorMessageKey } from "../constants.js";
+import { ErrorMessageKey } from "../constants.js";
 import { useQueryParams } from "../hooks/use-query-params.js";
 import { useRecipeSave } from "../hooks/use-recipe-save.js";
 import { useTimeout } from "../hooks/use-timeout.js";
@@ -13,7 +14,7 @@ import { isValidHttpUrl } from "../url-utils.js";
 import { ApiSecretPrompt } from "./api-secret-prompt.js";
 import { ProgressIndicator } from "./progress-indicator.js";
 import { RecipeInfo, type RecipeInfoData } from "./recipe-info.js";
-import { StatusMessage, type StatusType } from "./status-message.js";
+import { StatusMessage, StatusType } from "./status-message.js";
 
 /**
  * Gets the server URL from the current origin.
@@ -31,9 +32,14 @@ export function WebRecipeForm() {
 	const storage = createStorageAdapter();
 	const [url, setUrl] = createSignal("");
 	const [loading, setLoading] = createSignal(false);
-	const [status, setStatus] = createSignal<{ message: string; type: StatusType } | null>(null);
+	const [status, setStatus] = createSignal<{
+		message?: string;
+		children?: JSX.Element;
+		type: StatusType;
+	} | null>(null);
 	const [progress, setProgress] = createSignal<string | null>(null);
 	const [recipeInfo, setRecipeInfo] = createSignal<RecipeInfoData | null>(null);
+	const [savedRecipeName, setSavedRecipeName] = createSignal<string | null>(null);
 	const [showApiPrompt, setShowApiPrompt] = createSignal(false);
 	const [pendingSave, setPendingSave] = createSignal<(() => void) | null>(null);
 
@@ -59,13 +65,31 @@ export function WebRecipeForm() {
 		setStatus,
 		setLoading,
 		setProgress,
-		onSuccess: () => {
-			scheduleTimeout(() => {
-				setUrl("");
-			}, CLEAR_URL_INPUT_DELAY_MS);
+		onSuccess: (result) => {
+			// Set success message with recipe title and Notion link
+			const recipeName = savedRecipeName() || recipeInfo()?.recipe.name || "Recipe";
+			setStatus({
+				children: (
+					<>
+						Recipe "{recipeName}" saved successfully!{" "}
+						<a
+							href={result.notionUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="underline font-semibold"
+						>
+							Open in Notion
+						</a>
+					</>
+				),
+				type: StatusType.Success,
+			});
+			// Clear URL immediately after successful save
+			clearUrl();
 		},
 		onComplete: (data) => {
 			setRecipeInfo(data);
+			setSavedRecipeName(data.recipe.name);
 		},
 		noUrlErrorKey: ErrorMessageKey.PleaseEnterRecipeUrl,
 	});
@@ -78,13 +102,14 @@ export function WebRecipeForm() {
 			return;
 		}
 
+		setStatus(null);
+		setRecipeInfo(null);
+		setSavedRecipeName(null);
 		await performSave();
 	}
 
 	function clearUrl() {
 		setUrl("");
-		setStatus(null);
-		setRecipeInfo(null);
 	}
 
 	function handleUrlInput(e: Event) {
@@ -215,7 +240,9 @@ export function WebRecipeForm() {
 			<Show when={status()}>
 				{(s) => (
 					<div class="flex flex-col gap-2">
-						<StatusMessage message={s().message} type={s().type} />
+						<StatusMessage message={s().message} type={s().type}>
+							{s().children}
+						</StatusMessage>
 						<Show when={isInvalidApiKey()}>
 							<button
 								type="button"

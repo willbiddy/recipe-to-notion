@@ -117,3 +117,30 @@ After deploying to Vercel:
 2. **Test the API** - Use the health check and test recipe endpoints
 3. **Monitor usage** - Check Vercel dashboard for function invocations and execution times
 
+---
+
+## Scripts
+
+### Build Scripts
+
+- **`bun run build`** - Compile the CLI tool to a standalone binary
+- **`bun run build:extension`** - Build the browser extension
+- **`bun run build:web`** - Build the web interface
+
+### Watch Scripts (Auto-rebuild on file changes)
+
+- **`bun run watch`** - Watch all files and rebuild automatically on changes
+- **`bun run watch:extension`** - Watch extension files only
+- **`bun run watch:web`** - Watch web files only
+
+### Development Scripts
+
+- **`bun run server`** - Start local HTTP server for development
+- **`bun run check`** - Run all code quality checks (typecheck, lint:fix, and format)
+- **`bun run typecheck`** - Check TypeScript types for errors
+- **`bun run lint`** - Run linter to find code issues
+- **`bun run lint:fix`** - Run linter and automatically fix issues
+- **`bun run format`** - Auto-format code with Biome
+
+For a complete list of all available scripts, see the [main README](../README.md#scripts).
+

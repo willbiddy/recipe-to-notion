@@ -124,7 +124,7 @@ Two paragraphs:
 
 **Paragraph 1:** 2-3 sentences introducing what the dish is and what's notable about it.
 
-**Paragraph 2:** 1-2 sentences about what makes the recipe healthier or less healthy. For dishes rated 1-6 (optional for 7+), mention healthy modification or additions. Finally, mention 2-3 pairing options that pair well with the dish, are not boring, and are health affirming.
+**Paragraph 2:** 1-2 sentences about what makes the recipe healthier or less healthy. For dishes rated 1-6 (optional for 7+), mention healthy modification or additions. Finally, mention 2-3 pairing options that are relevant to the recipe, are intriguing, are delicious, and are health affirming.
 
 Skip paragraph 2 completely for desserts. Use complete sentences, not fragments. Casual tone, like telling a friend. No em-dashes. No AI-sounding phrases. Separate paragraphs with \n\n.
 

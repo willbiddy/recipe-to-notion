@@ -6,7 +6,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { consola } from "consola";
 import { ASSET_ROUTES } from "./asset-routes.js";
 import { normalizeAssetPath } from "./asset-utils.js";
 
@@ -86,8 +85,6 @@ export default {
 			if (!webDir) {
 				console.error("[api/assets] Could not find web directory in any expected location");
 				console.error("[api/assets] Current working directory:", process.cwd());
-				consola.error("Could not find web directory in any expected location");
-				consola.error("Current working directory:", process.cwd());
 				return new Response("Not Found", {
 					status: 404,
 					headers: { "Content-Type": "text/plain; charset=utf-8" },
@@ -99,7 +96,6 @@ export default {
 
 			if (!existsSync(filePath)) {
 				console.error("[api/assets] Asset file not found:", filePath);
-				consola.error(`Asset file not found: ${filePath}`);
 				return new Response("Not Found", {
 					status: 404,
 					headers: { "Content-Type": "text/plain; charset=utf-8" },
@@ -119,7 +115,6 @@ export default {
 		} catch (error) {
 			console.error("[api/assets] Error serving asset:", error);
 			console.error("[api/assets] Error stack:", error instanceof Error ? error.stack : "No stack");
-			consola.error(`Error serving asset:`, error);
 			return new Response("Not Found", {
 				status: 404,
 				headers: { "Content-Type": "text/plain; charset=utf-8" },

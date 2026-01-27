@@ -49,7 +49,7 @@ No markdown, no code fences, no explanation. Just the JSON object.
 
 ### healthScore (integer 1-10)
 
-Provide a 1-10 integer based on Harvard T.H. Chan School of Public Health's Healthy Eating Plate.
+Rate 1-10 using the criteria, examples, and key signals below. Judge by actual ingredients, not recipe name.
 
 **1 — Processed/Fried:** Deep fried. Ultra-processed components. No vegetables. Sugar is primary ingredient. No meaningful protein. Trans fats or extremely high sodium.
 

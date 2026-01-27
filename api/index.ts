@@ -6,9 +6,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { consola } from "consola";
 import { HttpStatus } from "../backend/server-shared/constants.js";
-import { createErrorResponse } from "../backend/server-shared/errors.js";
 
 /**
  * Resolves the path to index.html, trying multiple possible locations.
@@ -73,12 +71,12 @@ export default {
 			if (!indexPath) {
 				console.error("[api/index] Could not find index.html in any expected location");
 				console.error("[api/index] Current working directory:", process.cwd());
-				consola.error("Could not find index.html in any expected location");
-				consola.error("Current working directory:", process.cwd());
-				return createErrorResponse(
-					"Failed to load the web interface. Please check the server logs.",
-					HttpStatus.InternalServerError,
-					true,
+				return Response.json(
+					{
+						success: false,
+						error: "Failed to load the web interface. Please check the server logs.",
+					},
+					{ status: HttpStatus.InternalServerError },
 				);
 			}
 
@@ -95,14 +93,14 @@ export default {
 			console.error("[api/index] Error serving index.html:", error);
 			console.error("[api/index] Error stack:", error instanceof Error ? error.stack : "No stack");
 			console.error("[api/index] Current working directory:", process.cwd());
-			consola.error("Error serving index.html:", error);
-			consola.error("Current working directory:", process.cwd());
 
 			// Return a more user-friendly error without exposing internal paths
-			return createErrorResponse(
-				"Failed to load the web interface. Please check the server logs.",
-				HttpStatus.InternalServerError,
-				true,
+			return Response.json(
+				{
+					success: false,
+					error: "Failed to load the web interface. Please check the server logs.",
+				},
+				{ status: HttpStatus.InternalServerError },
 			);
 		}
 	},

@@ -5,6 +5,7 @@
 
 import { findRecipeInLd } from "../backend/parsers/json-ld.js";
 import { cleanRecipeName } from "../backend/parsers/shared.js";
+import { ExtensionMessageType } from "../shared/constants.js";
 import { hasProperty, isArray, isObject, isString } from "../shared/type-guards.js";
 
 /**
@@ -46,7 +47,7 @@ function parseAuthor(author: unknown): string | null {
 function extractRecipeDataFromJsonLd(): { title: string | null; author: string | null } {
 	try {
 		const scripts = document.querySelectorAll('script[type="application/ld+json"]');
-		for (const script of scripts) {
+		for (const script of Array.from(scripts)) {
 			try {
 				const content = script.textContent;
 				if (!content) continue;
@@ -77,7 +78,7 @@ function extractRecipeDataFromJsonLd(): { title: string | null; author: string |
  * Listens for messages from the popup to extract recipe data.
  */
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-	if (message.type === "extract-recipe-data") {
+	if (message.type === ExtensionMessageType.ExtractRecipeData) {
 		const { title, author } = extractRecipeDataFromJsonLd();
 		sendResponse({ title, author });
 		return true; // Keep message channel open for async response

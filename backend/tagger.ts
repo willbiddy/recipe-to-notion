@@ -20,10 +20,10 @@ export enum IngredientCategory {
 }
 
 /**
- * Healthiness score configuration.
+ * Health score configuration.
  */
-export enum HealthinessScore {
-	Min = 0,
+export enum HealthScore {
+	Min = 1,
 	Max = 10,
 }
 
@@ -57,9 +57,9 @@ export type RecipeTags = {
 	 */
 	mealType: string[];
 	/**
-	 * Healthiness score from 0 (junk food) to 10 (balanced whole-food meal).
+	 * Health score from 1 (junk food) to 10 (balanced whole-food meal).
 	 */
-	healthiness: number;
+	healthScore: number;
 	/**
 	 * Total preparation + cooking time in minutes. Estimated by AI if not provided.
 	 */
@@ -80,8 +80,8 @@ export type RecipeTags = {
  */
 enum PromptLabel {
 	Recipe = "Recipe",
-	Description = "Source description",
-	Hints = "Source hints",
+	Description = "Description",
+	Hints = "Hints",
 	Ingredients = "Ingredients",
 	Instructions = "Instructions",
 	Minutes = "Minutes",
@@ -165,7 +165,7 @@ const categorizedIngredientSchema = z.object({
 const claudeResponseSchema = z.object({
 	tags: z.array(z.string()).min(1, "At least one tag is required"),
 	mealType: z.array(z.string()).min(1, "At least one meal type is required"),
-	healthiness: z.number().int().min(HealthinessScore.Min).max(HealthinessScore.Max),
+	healthScore: z.number().int().min(HealthScore.Min).max(HealthScore.Max),
 	totalTimeMinutes: z.number().int().positive(),
 	description: z.string().min(1, "Description is required"),
 	ingredients: z.array(categorizedIngredientSchema).min(1, "At least one ingredient is required"),
@@ -205,7 +205,7 @@ async function loadSystemPrompt(): Promise<string> {
 
 /**
  * Sends recipe data to Claude and receives tags, meal-type classifications,
- * healthiness scores, and time estimates.
+ * health scores, and time estimates.
  *
  * Uses Claude's tool_use API to ensure structured, validated responses.
  *
@@ -222,13 +222,13 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
 	const response = await callClaudeAPI(client, userMessage, systemPrompt);
 	const toolUse = extractToolUse(response);
 	const validated = validateClaudeResponse(toolUse);
-	const finalTime = calculateFinalTime(recipe.totalTimeMinutes, validated.totalTimeMinutes);
+	const totalTime = recipe.totalTimeMinutes ?? validated.totalTimeMinutes;
 
 	return {
 		tags: validated.tags,
 		mealType: validated.mealType,
-		healthiness: clamp(validated.healthiness, HealthinessScore.Min, HealthinessScore.Max),
-		totalTimeMinutes: clamp(finalTime, RecipeTime.Min, RecipeTime.Max),
+		healthScore: clamp(validated.healthScore, HealthScore.Min, HealthScore.Max),
+		totalTimeMinutes: clamp(totalTime, RecipeTime.Min, RecipeTime.Max),
 		description: validated.description.trim(),
 		ingredients: validated.ingredients,
 	};
@@ -327,16 +327,6 @@ function validateClaudeResponse(
 	}
 
 	return validationResult.data;
-}
-
-/**
- * Calculates the final recipe time, preferring scraped time over AI estimate.
- */
-function calculateFinalTime(
-	scrapedTime: number | null | undefined,
-	aiEstimatedTime: number,
-): number {
-	return scrapedTime ?? aiEstimatedTime;
 }
 
 /**

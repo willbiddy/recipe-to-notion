@@ -16,7 +16,7 @@ export type RecipeInfoData = {
 	tags: {
 		tags: string[];
 		mealType: string[];
-		healthiness: number;
+		healthScore: number;
 		totalTimeMinutes: number;
 	};
 };
@@ -35,7 +35,8 @@ export function RecipeInfo(props: RecipeInfoProps) {
 		{ label: "Author", value: recipe.author },
 		{ label: "Tags", value: tags.tags.join(", ") },
 		{ label: "Meal type", value: tags.mealType.join(", ") },
-		{ label: "Healthiness", value: `${tags.healthiness}/10` },
+		{ label: "Health score", value: `${tags.healthScore}/10` },
+		// TODO: format minutes whenever used
 		{ label: "Minutes", value: String(tags.totalTimeMinutes) },
 		{ label: "Ingredients", value: `${recipe.ingredients.length} items` },
 		{ label: "Steps", value: `${recipe.instructions.length} steps` },

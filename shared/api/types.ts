@@ -47,7 +47,7 @@ export type ServerProgressEvent =
 			tags?: {
 				tags: string[];
 				mealType: string[];
-				healthiness: number;
+				healthScore: number;
 				totalTimeMinutes: number;
 			};
 	  }
@@ -75,7 +75,7 @@ export type ProgressCallbacks = {
 		tags: {
 			tags: string[];
 			mealType: string[];
-			healthiness: number;
+			healthScore: number;
 			totalTimeMinutes: number;
 		};
 	}) => void;

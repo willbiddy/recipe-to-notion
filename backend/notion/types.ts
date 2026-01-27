@@ -12,7 +12,7 @@ export const PropertyNames = {
 	MINUTES: "Minutes",
 	TAGS: "Tags",
 	MEAL_TYPE: "Meal type",
-	HEALTHINESS: "Healthiness",
+	HEALTH_SCORE: "Health score",
 } as const;
 
 /**

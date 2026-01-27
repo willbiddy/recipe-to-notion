@@ -36,15 +36,8 @@ function resolveWebDir(): string | null {
 		join(__dirname, "web"),
 	];
 
-	console.log("[api/assets] Attempting to resolve web directory path...");
-	console.log("[api/assets] __dirname:", __dirname);
-	console.log("[api/assets] process.cwd():", process.cwd());
-	console.log("[api/assets] Trying", possiblePaths.length, "possible paths");
-
 	for (const path of possiblePaths) {
-		console.log("[api/assets] Checking path:", path);
 		if (existsSync(path)) {
-			console.log("[api/assets] Found web directory at:", path);
 			return path;
 		}
 	}
@@ -66,20 +59,16 @@ export default {
 	 */
 	fetch(req: Request): Response {
 		try {
-			console.log("[api/assets] fetch() called, method:", req.method, "url:", req.url);
 			const pathname = normalizeAssetPath(req);
-			console.log("[api/assets] Normalized pathname:", pathname);
 			const asset = ASSET_ROUTES[pathname];
 
 			if (!asset) {
-				console.log("[api/assets] No asset route found for:", pathname);
 				return new Response("Not Found", {
 					status: 404,
 					headers: { "Content-Type": "text/plain; charset=utf-8" },
 				});
 			}
 
-			console.log("[api/assets] Asset route found:", asset.path);
 			const webDir = resolveWebDir();
 
 			if (!webDir) {
@@ -92,7 +81,6 @@ export default {
 			}
 
 			const filePath = join(webDir, asset.path);
-			console.log("[api/assets] Resolved file path:", filePath);
 
 			if (!existsSync(filePath)) {
 				console.error("[api/assets] Asset file not found:", filePath);
@@ -102,9 +90,7 @@ export default {
 				});
 			}
 
-			console.log("[api/assets] Reading asset file:", filePath);
 			const content = asset.isText ? readFileSync(filePath, "utf-8") : readFileSync(filePath);
-			console.log("[api/assets] Successfully read asset, size:", content.length, "bytes");
 
 			return new Response(content, {
 				headers: {

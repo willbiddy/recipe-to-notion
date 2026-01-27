@@ -35,15 +35,8 @@ function resolveIndexPath(): string | null {
 		join(__dirname, "web", "index.html"),
 	];
 
-	console.log("[api/index] Attempting to resolve index.html path...");
-	console.log("[api/index] __dirname:", __dirname);
-	console.log("[api/index] process.cwd():", process.cwd());
-	console.log("[api/index] Trying", possiblePaths.length, "possible paths");
-
 	for (const path of possiblePaths) {
-		console.log("[api/index] Checking path:", path);
 		if (existsSync(path)) {
-			console.log("[api/index] Found index.html at:", path);
 			return path;
 		}
 	}
@@ -63,9 +56,8 @@ export default {
 	 * @param req - The incoming request (for Vercel compatibility).
 	 * @returns Response with HTML content or 404 error.
 	 */
-	fetch(req: Request): Response {
+	fetch(_req: Request): Response {
 		try {
-			console.log("[api/index] fetch() called, method:", req.method);
 			const indexPath = resolveIndexPath();
 
 			if (!indexPath) {
@@ -80,9 +72,7 @@ export default {
 				);
 			}
 
-			console.log("[api/index] Reading index.html from:", indexPath);
 			const html = readFileSync(indexPath, "utf-8");
-			console.log("[api/index] Successfully read index.html, size:", html.length, "bytes");
 
 			return new Response(html, {
 				headers: {
@@ -92,7 +82,6 @@ export default {
 		} catch (error) {
 			console.error("[api/index] Error serving index.html:", error);
 			console.error("[api/index] Error stack:", error instanceof Error ? error.stack : "No stack");
-			console.error("[api/index] Current working directory:", process.cwd());
 
 			// Return a more user-friendly error without exposing internal paths
 			return Response.json(

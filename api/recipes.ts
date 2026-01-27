@@ -1,10 +1,3 @@
-/**
- * Recipe processing endpoint for Vercel serverless function.
- * Maps to POST /api/recipes
- *
- * Supports both streaming (SSE) and non-streaming responses.
- */
-
 import { consola } from "consola";
 import { HttpStatus } from "../backend/server-shared/constants.js";
 import { createErrorResponse, generateRequestId } from "../backend/server-shared/errors.js";

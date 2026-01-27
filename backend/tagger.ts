@@ -80,8 +80,8 @@ export type RecipeTags = {
  */
 enum PromptLabel {
 	Recipe = "Recipe",
-	Description = "Source Description",
-	Hints = "Source Hints (use as context, not authoritative)",
+	Description = "Source description",
+	Hints = "Source hints",
 	Ingredients = "Ingredients",
 	Instructions = "Instructions",
 	Minutes = "Minutes",
@@ -368,8 +368,6 @@ function buildPrompt(recipe: Recipe): string {
 
 	if (recipe.totalTimeMinutes) {
 		lines.push("", `${PromptLabel.Minutes}: ${recipe.totalTimeMinutes} minutes`);
-	} else {
-		lines.push("", `${PromptLabel.Minutes}: not provided (please estimate)`);
 	}
 
 	return lines.join("\n");

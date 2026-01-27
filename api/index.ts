@@ -1,8 +1,3 @@
-/**
- * Serves the web interface index page.
- * This allows the root path (/) to serve the HTML file from public/.
- */
-
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -14,6 +9,7 @@ import { HttpStatus } from "../backend/server-shared/constants.js";
  */
 function resolveIndexPath(): string | null {
 	let __dirname: string;
+
 	try {
 		const __filename = fileURLToPath(import.meta.url);
 		__dirname = dirname(__filename);
@@ -63,6 +59,7 @@ export default {
 			if (!indexPath) {
 				console.error("[api/index] Could not find index.html in any expected location");
 				console.error("[api/index] Current working directory:", process.cwd());
+
 				return Response.json(
 					{
 						success: false,
@@ -74,22 +71,19 @@ export default {
 
 			const html = readFileSync(indexPath, "utf-8");
 
-			return new Response(html, {
-				headers: {
-					"Content-Type": "text/html; charset=utf-8",
-				},
-			});
+			return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
 		} catch (error) {
 			console.error("[api/index] Error serving index.html:", error);
 			console.error("[api/index] Error stack:", error instanceof Error ? error.stack : "No stack");
 
-			// Return a more user-friendly error without exposing internal paths
 			return Response.json(
 				{
 					success: false,
 					error: "Failed to load the web interface. Please check the server logs.",
 				},
-				{ status: HttpStatus.InternalServerError },
+				{
+					status: HttpStatus.InternalServerError,
+				},
 			);
 		}
 	},

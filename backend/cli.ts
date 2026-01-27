@@ -3,8 +3,8 @@
  * CLI entry point for recipe-to-notion.
  *
  * Usage:
- *   bun backend/cli.ts <url> [urls...]
- *   bun backend/cli.ts --html <path> <url>
+ *   bun start <url> [urls...]
+ *   bun start--html <path> <url>
  */
 import { defineCommand, runMain } from "citty";
 import { consola } from "consola";
@@ -85,9 +85,7 @@ async function processUrlsSequentially(
 	urls: string[],
 ): Promise<{ succeeded: number; failed: number }> {
 	if (urls.length > 1) {
-		consola.ready(`Processing ${urls.length} recipes sequentially`);
-	} else {
-		consola.ready("Processing recipe");
+		consola.ready(`Processing ${urls.length} recipes`);
 	}
 
 	let succeeded = 0;
@@ -131,7 +129,7 @@ async function handleRecipe(url: string, htmlPath?: string): Promise<boolean> {
 			const recipe = await scrapeRecipeFromHtml(htmlPath, url);
 			const methodLabel =
 				recipe.scrapeMethod === ScrapeMethod.JsonLd ? "(JSON-LD)" : "(HTML fallback)";
-			consola.success(`Scraped: ${recipe.name} ${methodLabel}`);
+			consola.success(`Scraped ${methodLabel}: ${recipe.name}`);
 
 			await processRecipe({ recipe, logger });
 		} else {
@@ -154,10 +152,11 @@ async function handleRecipe(url: string, htmlPath?: string): Promise<boolean> {
 function printSummary(results: { succeeded: number; failed: number }): void {
 	const total = results.succeeded + results.failed;
 
+	const passed = results.succeeded && `${colors.green(`${results.succeeded} succeeded`)}`;
+	const failed = results.failed && `${colors.red(`${results.failed} failed`)}`;
+	const status = [passed, failed].filter(Boolean).join(" / ");
+
 	if (total > 1) {
-		consola.log("");
-		consola.info(
-			`Processed ${total} recipes: ${colors.green(`${results.succeeded} succeeded`)}, ${colors.red(`${results.failed} failed`)}`,
-		);
+		consola.info(`Processed ${total} recipes: ${status}`);
 	}
 }

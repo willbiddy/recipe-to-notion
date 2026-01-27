@@ -115,7 +115,7 @@ export function createConsoleLogger(): RecipeLogger {
 		onScraped(recipe: Recipe) {
 			const methodLabel =
 				recipe.scrapeMethod === ScrapeMethod.JsonLd ? "(JSON-LD)" : "(HTML fallback)";
-			consola.success(`Scraped: ${recipe.name} ${methodLabel}`);
+			consola.success(`Scraped ${methodLabel}: ${recipe.name}`);
 		},
 		onTagging() {
 			consola.start("Generating tags...");

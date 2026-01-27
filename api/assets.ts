@@ -1,8 +1,3 @@
-/**
- * Consolidated handler for all static assets.
- * Handles favicons, icons, manifest, CSS, and JS files.
- */
-
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -15,6 +10,7 @@ import { normalizeAssetPath } from "./asset-utils.js";
  */
 function resolveWebDir(): string | null {
 	let __dirname: string;
+
 	try {
 		const __filename = fileURLToPath(import.meta.url);
 		__dirname = dirname(__filename);

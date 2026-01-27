@@ -24,10 +24,9 @@ export default {
 
 		const response = Response.json(
 			{ status: "ok", service: "recipe-to-notion" },
-			{
-				status: HttpStatus.OK,
-			},
+			{ status: HttpStatus.OK },
 		);
+
 		setSecurityHeaders(response);
 		setCorsHeaders(response, req);
 		return response;

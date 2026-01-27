@@ -5,9 +5,17 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="description" content="Save recipes to Notion from your phone. Paste a recipe URL and get a beautifully formatted Notion page with AI-generated tags." />
 		<title>Recipe Clipper for Notion</title>
+		<script>
+			// Apply theme immediately to prevent flash
+			const theme = localStorage.getItem('theme');
+			const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+			const isDark = theme === 'dark' || (!theme && systemDark);
+			if (isDark) document.documentElement.classList.add('dark');
+		</script>
 		<link rel="stylesheet" href="/api/web.css" />
 		<link rel="manifest" href="/api/manifest.json" />
 		<meta name="theme-color" content="#f97316" />
+		<meta name="theme-color" content="#111827" media="(prefers-color-scheme: dark)" />
 		<meta name="mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -20,12 +28,12 @@
 		<link rel="shortcut icon" href="/api/favicon" />
 		<link rel="shortcut icon" href="/api/favicon-white" media="(prefers-color-scheme: dark)" />
 	</head>
-	<body class="min-h-screen bg-white text-gray-900 text-base font-sans">
+	<body class="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-base font-sans">
 		<div class="max-w-4xl px-4 sm:px-6 py-6 sm:py-8">
 			<!-- Hero Section: Minimal -->
 			<header class="mb-6 sm:mb-8">
-				<h1 class="text-2xl sm:text-3xl font-bold text-primary-600 mb-1 leading-tight font-sans">Recipe Clipper for Notion</h1>
-				<p class="text-sm text-gray-500">Save recipes to Notion</p>
+				<h1 class="text-2xl sm:text-3xl font-bold text-primary-600 dark:text-primary-400 mb-1 leading-tight font-sans">Recipe Clipper for Notion</h1>
+				<p class="text-sm text-gray-500 dark:text-gray-400">Save recipes to Notion</p>
 			</header>
 
 			<!-- Form: Left-aligned, no card -->
@@ -35,12 +43,12 @@
 
 			<!-- Footer with GitHub link -->
 			<footer class="mt-8">
-				<p class="text-xs text-gray-500">
+				<p class="text-xs text-gray-500 dark:text-gray-400">
 					<a
 						href="https://github.com/willbiddy/recipe-to-notion"
 						target="_blank"
 						rel="noopener noreferrer"
-						class="text-primary-600 hover:text-primary-700 underline focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded"
+						class="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 underline focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded"
 					>
 						Learn how to set up Recipe Clipper for Notion
 					</a>

@@ -46,7 +46,7 @@ export function UrlDisplay(props: UrlDisplayProps) {
 		});
 		return (
 			<div
-				class="text-sm text-error-600 p-3.5 bg-error-50 border-2 border-error-200 rounded-2xl break-words leading-relaxed transition-all duration-200 text-left min-h-[3rem] flex items-center"
+				class="text-sm text-error-600 p-3.5 bg-error-50 border-2 border-error-200 rounded-2xl break-words leading-relaxed transition-all duration-200 text-left min-h-[3rem] flex items-center dark:bg-error-900/20 dark:text-error-400 dark:border-error-800"
 				title={props.url || undefined}
 			>
 				{props.url ? "Not a valid web page" : "No URL found"}
@@ -57,11 +57,11 @@ export function UrlDisplay(props: UrlDisplayProps) {
 	if (hasTitle && hasSource) {
 		return (
 			<div
-				class="p-3.5 bg-white border-2 border-primary-200 rounded-2xl break-words leading-relaxed transition-all duration-200 text-left hover:border-primary-300 min-h-[3rem]"
+				class="p-3.5 bg-white border-2 border-primary-200 rounded-2xl break-words leading-relaxed transition-all duration-200 text-left hover:border-primary-300 min-h-[3rem] dark:bg-gray-800 dark:border-primary-800"
 				title={props.url || undefined}
 			>
-				<div class="text-sm font-semibold text-gray-900 mb-1">{props.title}</div>
-				<div class="text-xs text-gray-500">{props.source}</div>
+				<div class="text-sm font-semibold text-gray-900 mb-1 dark:text-gray-100">{props.title}</div>
+				<div class="text-xs text-gray-500 dark:text-gray-400">{props.source}</div>
 			</div>
 		);
 	}
@@ -69,7 +69,7 @@ export function UrlDisplay(props: UrlDisplayProps) {
 	if (hasTitle) {
 		return (
 			<div
-				class="text-sm text-gray-700 p-3.5 bg-white border-2 border-primary-200 rounded-2xl break-words leading-relaxed transition-all duration-200 text-left hover:border-primary-300 min-h-[3rem] flex items-center"
+				class="text-sm text-gray-700 p-3.5 bg-white border-2 border-primary-200 rounded-2xl break-words leading-relaxed transition-all duration-200 text-left hover:border-primary-300 min-h-[3rem] flex items-center dark:bg-gray-800 dark:text-gray-300"
 				title={props.url || undefined}
 			>
 				{props.title}
@@ -82,7 +82,7 @@ export function UrlDisplay(props: UrlDisplayProps) {
 		const displayUrl = `${urlObj.hostname}${urlObj.pathname}`;
 		return (
 			<div
-				class="text-[14px] text-gray-700 p-3.5 bg-accent-50/60 border-2 border-primary-200 rounded-2xl break-words leading-relaxed transition-all duration-200 font-medium text-left hover:bg-accent-50 hover:border-primary-300 shadow-sm min-h-[3rem] flex items-center"
+				class="text-[14px] text-gray-700 p-3.5 bg-accent-50/60 border-2 border-primary-200 rounded-2xl break-words leading-relaxed transition-all duration-200 font-medium text-left hover:bg-accent-50 hover:border-primary-300 shadow-sm min-h-[3rem] flex items-center dark:bg-accent-900/20 dark:text-gray-300"
 				title={props.url || undefined}
 			>
 				{displayUrl}
@@ -91,7 +91,7 @@ export function UrlDisplay(props: UrlDisplayProps) {
 	} catch {
 		return (
 			<div
-				class="text-sm text-gray-600 p-3.5 bg-accent-50/60 border-2 border-primary-200 rounded-2xl break-words leading-relaxed transition-all duration-200 text-left min-h-[3rem] flex items-center"
+				class="text-sm text-gray-600 p-3.5 bg-accent-50/60 border-2 border-primary-200 rounded-2xl break-words leading-relaxed transition-all duration-200 text-left min-h-[3rem] flex items-center dark:bg-gray-800 dark:text-gray-400"
 				title={props.url || undefined}
 			>
 				{props.url}

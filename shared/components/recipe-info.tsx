@@ -43,10 +43,10 @@ export function RecipeInfo(props: RecipeInfoProps) {
 	];
 
 	return (
-		<div class="py-3 space-y-2 border-t border-gray-200">
+		<div class="py-3 space-y-2 border-t border-gray-200 dark:border-gray-700">
 			<div class="flex items-center gap-2">
 				<svg
-					class="w-4 h-4 text-green-600 animate-checkmark flex-shrink-0"
+					class="w-4 h-4 text-green-600 dark:text-green-400 animate-checkmark flex-shrink-0"
 					fill="none"
 					stroke="currentColor"
 					viewBox="0 0 24 24"
@@ -59,9 +59,9 @@ export function RecipeInfo(props: RecipeInfoProps) {
 						d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
 					/>
 				</svg>
-				<h3 class="text-sm font-semibold text-gray-900">{recipe.name}</h3>
+				<h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">{recipe.name}</h3>
 			</div>
-			<div class="space-y-1 text-xs text-gray-600">
+			<div class="space-y-1 text-xs text-gray-600 dark:text-gray-400">
 				<For each={infoItems}>
 					{(item) => (
 						<div>
@@ -71,11 +71,11 @@ export function RecipeInfo(props: RecipeInfoProps) {
 				</For>
 			</div>
 			<div class="pt-2">
-				<p class="text-xs text-gray-700">
+				<p class="text-xs text-gray-700 dark:text-gray-300">
 					<a
 						href={props.data.notionUrl}
 						target="_blank"
-						class="text-primary-600 hover:text-primary-700 font-medium underline transition-colors"
+						class="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium underline transition-colors"
 					>
 						Open in Notion →
 					</a>

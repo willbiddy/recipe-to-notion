@@ -75,7 +75,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
 	return (
 		<div id="settings-panel" class={panelClass()}>
-			<h3 class="text-sm font-medium text-gray-900 mb-3">API Secret</h3>
+			<h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">API Secret</h3>
 			<div class="flex flex-col gap-3">
 				<div class="relative">
 					<input
@@ -94,7 +94,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
 						type="button"
 						onClick={toggleApiKeyVisibility}
 						aria-label="Toggle API secret visibility"
-						class="absolute right-2 top-1/2 -translate-y-1/2 text-primary-700 hover:text-primary-900 p-1.5 rounded-lg hover:bg-primary-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
+						class="absolute right-2 top-1/2 -translate-y-1/2 text-primary-700 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300 p-1.5 rounded-lg hover:bg-primary-100 dark:hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
 						title="Show/Hide API secret"
 					>
 						<Show
@@ -137,7 +137,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
 				</div>
 				<p id="api-key-help" class={helpTextClass()}>
 					Get this from your Vercel deployment's{" "}
-					<code class="text-xs bg-gray-100 px-1.5 py-0.5 rounded font-mono text-gray-700">
+					<code class="text-xs bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded font-mono text-gray-700 dark:text-gray-300">
 						API_SECRET
 					</code>{" "}
 					environment variable. Stored locally and never shared.
@@ -147,7 +147,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
 				type="button"
 				onClick={saveApiKey}
 				aria-label="Save API secret"
-				class="w-full px-4 py-2.5 bg-primary-600 text-white border-none rounded-xl text-sm font-medium cursor-pointer transition-all duration-200 hover:bg-primary-700 active:bg-primary-800 flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:ring-offset-2"
+				class="w-full px-4 py-2.5 bg-primary-600 text-white border-none rounded-xl text-sm font-medium cursor-pointer transition-all duration-200 hover:bg-primary-700 active:bg-primary-800 dark:bg-primary-500 dark:hover:bg-primary-600 dark:active:bg-primary-700 flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:ring-offset-2"
 			>
 				<svg
 					class="w-4 h-4"

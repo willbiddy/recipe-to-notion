@@ -176,7 +176,7 @@ export function WebRecipeForm() {
 					<button
 						type="button"
 						onClick={clearUrl}
-						class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 rounded transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+						class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 p-1 rounded transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
 						aria-label="Clear URL"
 						title="Clear URL"
 					>
@@ -247,7 +247,7 @@ export function WebRecipeForm() {
 							<button
 								type="button"
 								onClick={handleUpdateApiKey}
-								class="w-full px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors duration-200"
+								class="w-full px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 transition-colors duration-200"
 							>
 								Update API Secret
 							</button>

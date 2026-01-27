@@ -43,6 +43,12 @@ async function getCurrentTab(): Promise<{
 
 	const url = tab?.url || null;
 	const title = tab?.title || null;
+
+	// Log if we got a tab but no URL (permission issue)
+	if (tab && !url) {
+		console.warn("[getCurrentTab] Tab found but URL is undefined - check extension permissions");
+	}
+
 	let recipeTitle: string | null = null;
 	let author: string | null = null;
 	let websiteName: string | null = null;

@@ -159,6 +159,12 @@ export function WebRecipeForm() {
 	return (
 		<div class="flex flex-col gap-3">
 			<div class="relative">
+				<label
+					for="url-input"
+					class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+				>
+					Recipe URL
+				</label>
 				<input
 					type="url"
 					id="url-input"
@@ -166,9 +172,7 @@ export function WebRecipeForm() {
 					value={url()}
 					onInput={handleUrlInput}
 					onKeyDown={handleKeyDown}
-					placeholder="Paste recipe URL..."
 					autocomplete="url"
-					aria-label="Recipe URL"
 					aria-invalid={urlValid() === false ? "true" : "false"}
 					class="input-field-minimal"
 				/>

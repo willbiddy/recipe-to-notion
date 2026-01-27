@@ -54,3 +54,34 @@ export function stripQueryParams(url: string): string {
 		return url;
 	}
 }
+
+/**
+ * Gets a user-friendly error message for unsupported URLs.
+ *
+ * @param url - The URL to check.
+ * @returns A user-friendly error message explaining why the URL is unsupported.
+ */
+export function getUnsupportedUrlMessage(url: string | null): string {
+	if (!url) {
+		return "No webpage detected";
+	}
+
+	try {
+		const { protocol } = new URL(url);
+		if (protocol === "chrome:") {
+			return "Cannot save from browser pages";
+		}
+		if (protocol === "chrome-extension:") {
+			return "Cannot save from extension pages";
+		}
+		if (protocol === "about:") {
+			return "Cannot save from this page";
+		}
+		if (protocol === "file:") {
+			return "Cannot save from local files";
+		}
+		return "Not a valid web page";
+	} catch {
+		return "Not a valid web page";
+	}
+}

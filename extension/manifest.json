@@ -3,7 +3,7 @@
 	"name": "Recipe Clipper for Notion",
 	"version": "1.0.0",
 	"description": "One-click save recipes to Notion with AI-generated tags",
-	"permissions": ["activeTab", "contextMenus", "storage", "scripting"],
+	"permissions": ["activeTab", "tabs", "contextMenus", "storage", "scripting"],
 	"host_permissions": ["http://localhost/*", "http://127.0.0.1/*", "https://*.vercel.app/*"],
 	"action": {
 		"default_popup": "popup.html",

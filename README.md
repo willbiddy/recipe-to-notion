@@ -104,16 +104,16 @@ The simplest way to get started. Save recipes from the terminal:
 
 ```bash
 # Single recipe
-bun backend/cli.ts https://cooking.nytimes.com/recipes/1023430-pasta-with-pumpkin-seed-pesto
+bun run start https://cooking.nytimes.com/recipes/1023430-pasta-with-pumpkin-seed-pesto
 
 # Multiple recipes
-bun backend/cli.ts \
+bun run start \
   https://www.bonappetit.com/recipe/ditalini-and-peas-in-parmesan-broth \
   https://cooking.nytimes.com/recipes/768413295-chickpeas-al-limone-with-burrata \
   https://www.seriouseats.com/tacos-gobernador-sinaloan-shrimp-tacos-recipe-8676611
 
 # If a site blocks requests (403 error), save the page source and use --html
-bun backend/cli.ts --html ~/Downloads/baked-oatmeal-recipe.html "https://cookieandkate.com/baked-oatmeal-recipe/"
+bun run start --html ~/Downloads/baked-oatmeal-recipe.html "https://cookieandkate.com/baked-oatmeal-recipe/"
 ```
 
 ### 2. Browser Extension

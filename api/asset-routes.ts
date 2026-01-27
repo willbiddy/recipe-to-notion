@@ -1,8 +1,4 @@
 /**
- * Asset route configuration mapping request paths to file paths and content types.
- */
-
-/**
  * Asset route configuration type.
  */
 export type AssetRoute = {

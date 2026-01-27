@@ -49,6 +49,7 @@ export function buildPageProperties(recipe: Recipe, tags: RecipeTags): Record<st
  */
 export function buildPageParams(options: BuildPageParamsOptions): Record<string, unknown> {
 	const { databaseId, properties, children, imageUrl } = options;
+
 	const pageParams: Record<string, unknown> = {
 		parent: { database_id: databaseId },
 		properties,

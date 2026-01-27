@@ -51,65 +51,64 @@ No markdown, no code fences, no explanation. Just the JSON object.
 
 Rate 1-10 using the criteria, examples, and key signals below. Judge by actual ingredients, not recipe name.
 
-**1 — Processed/Fried:** Deep fried. Ultra-processed components. No vegetables. Sugar is primary ingredient. No meaningful protein. Trans fats or extremely high sodium.
+**1 — Processed/Fried:** Deep fried or ultra-processed components. No vegetables. Sugar is primary ingredient. No meaningful protein. Trans fats or extremely high sodium.
 
-*Deep-Fried Corn Dogs*
-*Funnel Cake with Powdered Sugar*
-*Deep-Fried Mozzarella Sticks with Ranch (side)*
+*Frozen Fish Sticks with Tartar Sauce*
+*Store-Bought Cinnamon Rolls with Icing*
+*French Fries (side)*
 
-**2 — Poor:** No vegetables. All refined carbohydrates. Processed meats as primary protein. Deep fried or contains trans fats. High added sugar or very high sodium.
+**2 — Poor:** No vegetables. All refined carbohydrates. Processed meats as primary protein. High added sugar or very high sodium.
 
 *Hot Dogs on White Buns*
-*Fried Chicken Sandwich on White Bun*
-*French Fries with Cheese Sauce (side)*
+*Instant Ramen with No Vegetables*
+*White Bread with Butter (side)*
 
 **3 — Heavy:** Minimal vegetables (potatoes don't count). All refined grains. High saturated fat from cheese, butter, red meat, or processed meat. High sodium. Fried components may be present.
 
-*Sausage Pappardelle*
-*Pepperoni Pizza with Extra Cheese*
+*Bacon Cheeseburger on White Bun*
+*Sausage Pasta on White Pasta*
 *Loaded Potato Skins with Bacon and Sour Cream (side)*
 
-**4 — Below average:** Few vegetables. Mostly refined grains. Cheese or red meat heavy (exceeds 1-2 dairy servings). Higher sodium. Low fiber.
+**4 — Below average:** Few vegetables. All refined grains. Cheese or red meat heavy (exceeds 1-2 dairy servings). Higher sodium. No fiber.
 
-*Creamy Chicken Pasta on White Pasta*
-*Beef Tacos with Cheese and Sour Cream on Flour Tortillas*
+*Fettuccine Alfredo*
+*Grilled Cheese on White Bread*
 *Buttered White Rice (side)*
 
-**5 — Moderate:** Limited vegetables. Primarily refined grains. Protein quality varies. Cheese or modest dairy present. Low fiber. Some processed components.
+**5 — Moderate:** Limited vegetables. Primarily refined grains. Protein quality varies. Moderate dairy. Low fiber. Some processed components.
 
-*Rigatoni with Vodka Sauce*
-*Grilled Cheese on White Bread*
+*Spaghetti with Meat Sauce on White Pasta*
+*Chicken Parmesan with White Pasta*
 *Mashed Potatoes with Butter (side)*
 
 **6 — Fair:** Some vegetables present. Mix of whole and refined grains. Decent protein but may include modest red meat or cheese. Moderate fiber. Moderate sodium.
 
-*Chicken Caesar Salad with Croutons*
+*Chicken Stir-Fry with Vegetables over White Rice*
 *Bean and Cheese Burrito on Flour Tortilla*
-*Roasted Potatoes with Olive Oil (side)*
+*Steamed Green Beans with Butter (side)*
 
 **7 — Good:** Decent vegetable content. Some whole grains. Healthy protein (poultry, fish, beans, eggs). Good fiber from legumes or whole grains. Limited processed ingredients. Healthy fats present.
 
-*Chicken Enchiladas with Corn Tortillas and Vegetables*
-*Weeknight Pumpkin Chili with Beans*
+*Chicken Fajitas with Peppers and Onions on Corn Tortillas*
+*Mujadara (Lentils and Rice with Caramelized Onions)*
 *Roasted Sweet Potato Wedges (side)*
 
 **8 — Great:** Good vegetable representation. Mostly whole grains. Fish, poultry, beans, or eggs as protein. Healthy fats (olive oil). High fiber. Minimal added sugar. Dairy within 1-2 servings.
 
-*Sheet-Pan Chicken Tikka with Vegetables*
-*Mujadara (Lentils and Rice with Caramelized Onions)*
+*Vegetable Stir-Fry with Tofu over Brown Rice*
+*Lentil Soup with Vegetables and Whole Grain Bread*
 *Steamed Broccoli with Olive Oil and Garlic (side)*
 
-**9 — Excellent:** High vegetable content (near half plate). Whole grains present. Fish (omega-3s), legumes, or poultry as protein. Healthy unsaturated fats. High fiber. Low sodium. No added sugar.
+**9 — Excellent:** High vegetable content (near half plate). Whole grains present. Fish (omega-3s), legumes, or poultry as protein. Healthy unsaturated fats. High fiber. Low sodium. No added sugar. Maximum score for sides.
 
-*Lemony Salmon and Spiced Chickpeas with Greens*
-*Chickpea Curry with Spinach over Whole Grains*
-*Quinoa Salad with Cucumbers, Tomatoes, and Fresh Herbs (side)*
+*Grilled Salmon with Roasted Brussels Sprouts and Quinoa*
+*Chickpea and Spinach Curry over Brown Rice*
+*Sautéed Kale with Garlic and Olive Oil (side)*
 
-**10 — Optimal:** Half plate vegetables. Whole intact grains. Plant protein or fish (omega-3s). Healthy oils (olive, canola). High fiber. No added sugar. Minimal sodium. Minimally processed whole foods.
+**10 — Optimal:** Half plate vegetables. Whole intact grains. Plant protein or fish (omega-3s). Healthy oils (olive, canola). High fiber. No added sugar. Minimal sodium. Minimally processed whole foods. Complete meals only.
 
 *Mediterranean Lentil Salad with Leafy Greens, Tomatoes, Cucumbers, and Olive Oil*
 *Grilled Salmon over Quinoa with Roasted Broccoli and Kale*
-*Sautéed Kale with Garlic and Olive Oil (side)*
 
 **Key signals**
 
@@ -117,7 +116,7 @@ Rate 1-10 using the criteria, examples, and key signals below. Judge by actual i
 
 **Less healthy:** Few or no vegetables. Potatoes (count as starch, not vegetables). Refined grains (white bread, white rice, white pasta). Processed meats (bacon, sausage, hot dogs, cold cuts). Trans fats or partially hydrogenated oils (worst type of fat). Heavy dairy beyond 1-2 servings. Fruit juice or added sugars. High glycemic load foods (potatoes, French fries, refined cereals). Highly processed prepared foods. Monotone, limited vegetable types. High saturated fat (red meat, cheese, butter).
 
-**Side dishes:** Rate based on contribution potential. Does this side help or hurt the overall health score of a meal? A vegetable side with olive oil contributes toward the "half plate vegetables" and "healthy fats" goals (9-10). Roasted sweet potatoes offer fiber and nutrients (7-8). A buttered white dinner roll adds refined grains and saturated fat with minimal nutritional benefit (3-4). French fries contribute fried refined carbs (2-3).
+**Side dishes:** Rate based on contribution potential. Does this side help or hurt the overall health of a meal? Sides max out at 9 (only complete meals can score 10). A vegetable side with olive oil contributes toward "half plate vegetables" and "healthy fats" (8-9). Roasted sweet potatoes offer fiber and nutrients (7). Steamed vegetables with butter (6). A buttered white dinner roll adds refined grains and saturated fat (4). French fries are deep fried refined carbs (1).
 
 ### totalTimeMinutes (integer)
 

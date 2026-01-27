@@ -62,7 +62,7 @@ export function ApiSecretPrompt(props: ApiSecretPromptProps) {
 			onKeyDown={handleBackdropKeyDown}
 		>
 			<div
-				class="bg-white rounded-2xl shadow-xl p-6 w-full"
+				class="bg-white rounded-2xl shadow-xl p-6 w-[360px]"
 				role="document"
 				onClick={(e) => e.stopPropagation()}
 				onKeyDown={(e) => e.stopPropagation()}
@@ -90,23 +90,23 @@ export function ApiSecretPrompt(props: ApiSecretPromptProps) {
 					<Show when={error()}>
 						<p class="text-sm text-red-600">{error()}</p>
 					</Show>
-					<div class="flex gap-3">
+					<div class="flex flex-col gap-3" style="flex-direction: column;">
+						<button
+							type="button"
+							onClick={saveSecret}
+							class="w-full px-4 py-2.5 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors duration-200"
+						>
+							Save
+						</button>
 						<Show when={props.onCancel}>
 							<button
 								type="button"
 								onClick={props.onCancel}
-								class="flex-1 px-4 py-2.5 border-2 border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors duration-200"
+								class="w-full px-4 py-2.5 border-2 border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors duration-200"
 							>
 								Cancel
 							</button>
 						</Show>
-						<button
-							type="button"
-							onClick={saveSecret}
-							class="flex-1 px-4 py-2.5 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors duration-200"
-						>
-							Save
-						</button>
 					</div>
 				</div>
 			</div>

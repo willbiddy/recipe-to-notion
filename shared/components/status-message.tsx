@@ -3,6 +3,7 @@
  * Replaces the updateStatus/clearStatus utility functions.
  */
 
+import type { JSX } from "solid-js";
 import { Show } from "solid-js";
 
 /**
@@ -24,8 +25,10 @@ export enum TextSize {
 }
 
 export type StatusMessageProps = {
-	/** The status message to display. Can contain HTML. */
-	message: string;
+	/** The status message to display. Can contain HTML. If children are provided, message is ignored. */
+	message?: string;
+	/** JSX children to display instead of message. */
+	children?: JSX.Element;
 	/** The type of status (info, success, or error). */
 	type?: StatusType;
 	/** Optional text size. */
@@ -117,22 +120,36 @@ export function StatusMessage(props: StatusMessageProps) {
 		props.baseClasses ||
 		`py-2 leading-relaxed animate-[fadeIn_0.2s_ease-in] block ${getTextSizeClass()}`;
 
-	const isHTML = () => props.message.includes("<") && props.message.includes(">");
+	const isHTML = () => (props.message?.includes("<") && props.message?.includes(">")) ?? false;
+	const hasChildren = () => props.children !== undefined;
+	const hasMessage = () => props.message !== undefined;
 
 	const isError = () => type() === StatusType.Error;
 	const iconColorClass = () => (isError() ? "text-red-600" : "");
 	const textColorClass = () => (isError() ? "text-red-600" : "");
-	const alignmentClass = () => (isError() ? "items-center justify-center" : "items-start");
-
 	return (
 		<output class={`${baseClasses()} ${getTypeClass()}`} aria-live="polite" aria-atomic="true">
-			<div class={`flex ${alignmentClass()} gap-2`}>
-				<div class={`flex-shrink-0 ${isError() ? "" : "mt-0.5"}`}>
+			<div class="flex items-start gap-2">
+				<div class="flex-shrink-0 mt-0.5">
 					<div class={iconColorClass()}>{getStatusIcon(type())}</div>
 				</div>
-				<div class={isError() ? "" : "flex-1"}>
-					<Show when={isHTML()} fallback={<span class={textColorClass()}>{props.message}</span>}>
-						<span class={textColorClass()} innerHTML={props.message} />
+				<div class="flex-1">
+					<Show
+						when={hasChildren()}
+						fallback={
+							<Show
+								when={hasMessage() && isHTML()}
+								fallback={
+									<Show when={hasMessage()}>
+										<span class={textColorClass()}>{props.message}</span>
+									</Show>
+								}
+							>
+								<span class={textColorClass()} innerHTML={props.message} />
+							</Show>
+						}
+					>
+						<span class={textColorClass()}>{props.children}</span>
 					</Show>
 				</div>
 			</div>

@@ -12,8 +12,9 @@ import { HealthinessScore } from "./tagger.js";
 export type RecipeLogger = {
 	/**
 	 * Called when processing starts.
+	 * @param url - The recipe URL being processed.
 	 */
-	onStart?(): void;
+	onStart?(url: string): void;
 	/**
 	 * Called when checking for duplicates.
 	 */
@@ -96,8 +97,8 @@ export function createConsoleLogger(): RecipeLogger {
 	};
 
 	return {
-		onStart() {
-			consola.ready("Processing recipe");
+		onStart(url: string) {
+			consola.ready(`Processing recipe: ${colors.underline(colors.blue(url))}`);
 		},
 		onCheckingDuplicates() {
 			consola.start("Checking for duplicates...");

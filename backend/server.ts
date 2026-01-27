@@ -1,8 +1,112 @@
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { consola } from "consola";
+import { ASSET_ROUTES } from "../api/asset-routes.js";
 import { HttpStatus } from "./server-shared/constants.js";
 import { createErrorResponse, generateRequestId } from "./server-shared/errors.js";
 import { handleOptionsRequest, setCorsHeaders } from "./server-shared/headers.js";
 import { handleRecipeRequest } from "./server-shared/recipe-handler.js";
+
+/**
+ * Resolves the path to the web directory.
+ */
+function resolveWebDir(): string | null {
+	let __dirname: string;
+	try {
+		const __filename = fileURLToPath(import.meta.url);
+		__dirname = dirname(__filename);
+	} catch {
+		__dirname = "";
+	}
+
+	const possiblePaths = [
+		join(__dirname, "..", "web"),
+		join(process.cwd(), "web"),
+		join(process.cwd(), "..", "web"),
+	];
+
+	for (const path of possiblePaths) {
+		if (existsSync(path)) {
+			return path;
+		}
+	}
+
+	return null;
+}
+
+/**
+ * Resolves the path to index.html.
+ */
+function resolveIndexPath(): string | null {
+	const webDir = resolveWebDir();
+	if (!webDir) return null;
+	return join(webDir, "index.html");
+}
+
+/**
+ * Serves static assets from the web directory.
+ */
+function handleAsset(request: Request): Response {
+	const url = new URL(request.url);
+	const pathname = url.pathname.replace(/^\/api\//, "/");
+	const asset = ASSET_ROUTES[pathname];
+
+	if (!asset) {
+		return createErrorResponse("Not found", HttpStatus.NotFound, true);
+	}
+
+	const webDir = resolveWebDir();
+	if (!webDir) {
+		return createErrorResponse("Web directory not found", HttpStatus.InternalServerError, true);
+	}
+
+	const filePath = join(webDir, asset.path);
+
+	if (!existsSync(filePath)) {
+		return createErrorResponse("Asset not found", HttpStatus.NotFound, true);
+	}
+
+	const content = asset.isText ? readFileSync(filePath, "utf-8") : readFileSync(filePath);
+
+	const response = new Response(content, {
+		headers: {
+			"Content-Type": asset.contentType,
+			"Cache-Control": "public, max-age=31536000, immutable",
+		},
+	});
+	setCorsHeaders(response, request);
+	return response;
+}
+
+/**
+ * Serves the web interface index page.
+ */
+function handleIndex(request: Request): Response {
+	const indexPath = resolveIndexPath();
+	console.log("[handleIndex] Resolved index path:", indexPath);
+	console.log("[handleIndex] File exists:", indexPath ? existsSync(indexPath) : false);
+
+	if (!indexPath || !existsSync(indexPath)) {
+		console.error("[handleIndex] Index file not found!");
+		console.error("[handleIndex] Current working directory:", process.cwd());
+		console.error("[handleIndex] Web directory:", resolveWebDir());
+		return createErrorResponse(
+			"Web interface not found. Please run 'bun run build:web' first.",
+			HttpStatus.InternalServerError,
+			true,
+		);
+	}
+
+	const html = readFileSync(indexPath, "utf-8");
+	const response = new Response(html, {
+		headers: {
+			"Content-Type": "text/html; charset=utf-8",
+		},
+	});
+	setCorsHeaders(response, request);
+	return response;
+}
 
 /**
  * Handles health check requests.
@@ -48,6 +152,12 @@ export async function handleRequest(request: Request): Promise<Response> {
 
 	logRequest(request, requestId);
 
+	console.log("[handleRequest] Request details:", {
+		method: request.method,
+		pathname: url.pathname,
+		url: request.url,
+	});
+
 	if (request.method === "OPTIONS") {
 		return handleOptionsRequest(request);
 	}
@@ -65,5 +175,20 @@ export async function handleRequest(request: Request): Promise<Response> {
 		});
 	}
 
+	// Serve web interface assets
+	if (url.pathname.startsWith("/api/") && request.method === "GET") {
+		console.log("[handleRequest] Routing to handleAsset");
+		return handleAsset(request);
+	}
+
+	// Serve web interface index page
+	if (url.pathname === "/" && request.method === "GET") {
+		console.log("[handleRequest] Routing to handleIndex");
+		const indexPath = resolveIndexPath();
+		console.log("[handleRequest] Index path resolved:", indexPath);
+		return handleIndex(request);
+	}
+
+	console.log("[handleRequest] No route matched, returning 404");
 	return createErrorResponse("Not found", HttpStatus.NotFound, true);
 }

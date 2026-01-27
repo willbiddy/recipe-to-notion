@@ -101,12 +101,14 @@ export async function processRecipe(options: ProcessRecipeOptions): Promise<Proc
 	}
 
 	const config = loadConfig();
-	recipeLogger?.onStart?.();
 
+	// Determine recipe URL early for logging
 	const recipeUrl = url || (preScrapedRecipe ? preScrapedRecipe.sourceUrl : undefined);
 	if (!recipeUrl) {
 		throw new Error("Recipe URL is required for duplicate checking");
 	}
+
+	recipeLogger?.onStart?.(recipeUrl);
 
 	progressCallback?.({
 		type: ProgressType.CheckingDuplicates,

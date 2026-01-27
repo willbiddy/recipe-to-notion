@@ -3,6 +3,7 @@
  * Handles recipe URL submission from current tab, progress updates, and settings management.
  */
 
+import type { JSX } from "solid-js";
 import { createSignal, onMount, Show } from "solid-js";
 import { ExtensionMessageType, NOTION_OPEN_DELAY_MS } from "../constants.js";
 import { useRecipeSave } from "../hooks/use-recipe-save.js";
@@ -94,7 +95,11 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 	const [recipeAuthor, setRecipeAuthor] = createSignal<string | null>(null);
 	const [websiteName, setWebsiteName] = createSignal<string | null>(null);
 	const [loading, setLoading] = createSignal(false);
-	const [status, setStatus] = createSignal<{ message: string; type: StatusType } | null>(null);
+	const [status, setStatus] = createSignal<{
+		message?: string;
+		children?: JSX.Element;
+		type: StatusType;
+	} | null>(null);
 	const [progress, setProgress] = createSignal<string | null>(null);
 	const [showApiPrompt, setShowApiPrompt] = createSignal(false);
 	const [pendingSave, setPendingSave] = createSignal<(() => void) | null>(null);
@@ -227,7 +232,9 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 			<Show when={status()}>
 				{(s) => (
 					<div class="flex flex-col gap-2">
-						<StatusMessage message={s().message} type={s().type} textSize={TextSize.Xs} />
+						<StatusMessage message={s().message} type={s().type} textSize={TextSize.Xs}>
+							{s().children}
+						</StatusMessage>
 						<Show when={isInvalidApiKey()}>
 							<button
 								type="button"

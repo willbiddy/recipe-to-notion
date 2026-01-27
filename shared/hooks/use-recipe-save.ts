@@ -2,6 +2,7 @@
  * Shared hook for recipe saving logic used by both ExtensionRecipeForm and WebRecipeForm.
  */
 
+import type { JSX } from "solid-js";
 import { type Accessor, createSignal, type Setter } from "solid-js";
 import type { RecipeResponse } from "../api/types.js";
 import { StatusType } from "../components/status-message.js";
@@ -27,7 +28,7 @@ export type UseRecipeSaveOptions = {
 	storage: StorageAdapter;
 	getApiUrl: () => string;
 	getCurrentUrl: () => string | null;
-	setStatus: Setter<{ message: string; type: StatusType } | null>;
+	setStatus: Setter<{ message?: string; children?: JSX.Element; type: StatusType } | null>;
 	setLoading: Setter<boolean>;
 	setProgress: Setter<string | null>;
 	onSuccess?: (result: RecipeResponse) => void;

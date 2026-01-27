@@ -38,13 +38,13 @@ export type ServerProgressEvent =
 			success: true;
 			pageId: string;
 			notionUrl: string;
-			recipe: {
+			recipe?: {
 				name: string;
 				author: string | null;
 				ingredients: string[];
 				instructions: string[];
 			};
-			tags: {
+			tags?: {
 				tags: string[];
 				mealType: string[];
 				healthiness: number;

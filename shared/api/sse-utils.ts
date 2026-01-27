@@ -74,7 +74,12 @@ export async function parseSseStream(options: ParseSseStreamOptions): Promise<vo
 				if (isTerminal) {
 					return;
 				}
-			} catch {}
+			} catch (error) {
+				// Skip malformed SSE lines, but log for debugging in development
+				if (process.env.NODE_ENV === "development") {
+					console.warn("Failed to parse SSE event:", error, "Line:", line);
+				}
+			}
 		}
 	}
 
@@ -106,22 +111,25 @@ export function handleSseEvent(
 	}
 
 	if (data.type === ServerProgressEventType.Complete) {
-		callbacks.onComplete({
-			pageId: data.pageId,
-			notionUrl: data.notionUrl,
-			recipe: {
-				name: data.recipe.name,
-				author: data.recipe.author,
-				ingredients: data.recipe.ingredients,
-				instructions: data.recipe.instructions,
-			},
-			tags: {
-				tags: data.tags.tags,
-				mealType: data.tags.mealType,
-				healthiness: data.tags.healthiness,
-				totalTimeMinutes: data.tags.totalTimeMinutes,
-			},
-		});
+		// Only call onComplete if recipe and tags are present
+		if (data.recipe && data.tags) {
+			callbacks.onComplete({
+				pageId: data.pageId,
+				notionUrl: data.notionUrl,
+				recipe: {
+					name: data.recipe.name,
+					author: data.recipe.author,
+					ingredients: data.recipe.ingredients,
+					instructions: data.recipe.instructions,
+				},
+				tags: {
+					tags: data.tags.tags,
+					mealType: data.tags.mealType,
+					healthiness: data.tags.healthiness,
+					totalTimeMinutes: data.tags.totalTimeMinutes,
+				},
+			});
+		}
 		resolve({
 			success: true,
 			pageId: data.pageId,

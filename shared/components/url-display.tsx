@@ -5,7 +5,7 @@
  * Used in the browser extension popup.
  */
 
-import { isValidHttpUrl } from "../url-utils.js";
+import { getUnsupportedUrlMessage, isValidHttpUrl } from "../url-utils.js";
 
 export type UrlDisplayProps = {
 	/** The URL to display. */
@@ -40,16 +40,18 @@ export function UrlDisplay(props: UrlDisplayProps) {
 	});
 
 	if (!props.url || !hasValidUrl) {
+		const errorMessage = getUnsupportedUrlMessage(props.url);
 		console.log("[UrlDisplay] Showing error - URL invalid or missing", {
 			hasUrl: !!props.url,
 			hasValidUrl,
+			errorMessage,
 		});
 		return (
 			<div
 				class="text-sm text-error-600 p-3.5 bg-error-50 border-2 border-error-200 rounded-2xl break-words leading-relaxed transition-all duration-200 text-left min-h-[3rem] flex items-center dark:bg-error-900/20 dark:text-error-400 dark:border-error-800"
 				title={props.url || undefined}
 			>
-				{props.url ? "Not a valid web page" : "No URL found"}
+				{errorMessage}
 			</div>
 		);
 	}

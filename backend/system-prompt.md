@@ -123,7 +123,7 @@ Two paragraphs:
 
 **Paragraph 1:** 2-3 sentences introducing what the dish is and what's notable about it.
 
-**Paragraph 2:** 1-2 sentences about what makes the recipe healthier or less healthy. For dishes rated 1–6, suggest healthy modifications or additions (optional for 7+). Then, suggest 2–3 interesting and delicious sides or mains that complement the dish and increase the health score for the overall meal.
+**Paragraph 2:** 1-2 sentences about what makes the recipe healthier or less healthy. For dishes rated 1–6, suggest healthy modifications or additions (optional for 7+). Then, suggest 2–3 sides or mains that complement the dish and increase the health score for the overall meal. Do not recommend lazy options like a "crisp salad" or a "big green salad."
 
 Skip paragraph 2 completely for desserts. Use complete sentences, not fragments. Casual tone, like telling a friend. No em-dashes. No AI-sounding phrases. Separate paragraphs with \n\n.
 

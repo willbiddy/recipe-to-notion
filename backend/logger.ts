@@ -81,20 +81,23 @@ export function createConsoleLogger(): RecipeLogger {
 			return colors.bold(colors.cyan(label));
 		}
 
+		const INDENT = "  ";
+
 		const message = [
-			recipe.author ? `${formatLabel("Author:")}      ${recipe.author}` : null,
-			`${formatLabel("Tags:")}		 ${tags.tags.join(", ")}`,
-			`${formatLabel("Meal type:")}    ${tags.mealType.join(", ")}`,
+			recipe.author ? `${formatLabel("Author:")} ${recipe.author}` : null,
+			`${formatLabel("Tags:")} ${tags.tags.join(", ")}`,
+			`${formatLabel("Meal type:")} ${tags.mealType.join(", ")}`,
 			`${formatLabel("Health score:")} ${String(tags.healthScore)}/${HealthScore.Max}`,
-			`${formatLabel("Total time:")}   ${colors.bold(formatTimeMinutes(tags.totalTimeMinutes))}`,
-			`${formatLabel("Ingredients:")}  ${colors.bold(String(recipe.ingredients.length))} items`,
-			`${formatLabel("Steps:")}        ${colors.bold(String(recipe.instructions.length))} steps`,
+			`${formatLabel("Total time:")} ${formatTimeMinutes(tags.totalTimeMinutes)}`,
+			`${formatLabel("Ingredients:")} ${String(recipe.ingredients.length)} items`,
+			`${formatLabel("Steps:")} ${String(recipe.instructions.length)} steps`,
 		]
 			.filter((line) => line !== null)
-			.join("\n");
+			.map((line, i) => (i === 0 ? line : `${INDENT}${line}`));
 
 		const formattedTitle = colors.bold(colors.green(recipe.name));
-		consola.box({ title: formattedTitle, message });
+		consola.log("");
+		consola.success({ title: formattedTitle, message });
 	};
 
 	return {

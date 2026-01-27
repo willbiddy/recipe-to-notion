@@ -78,15 +78,21 @@ export function ApiSecretPrompt(props: ApiSecretPromptProps) {
 				</p>
 				<div class="space-y-3">
 					<div class="relative">
+						<label
+							for="api-secret-input"
+							class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+						>
+							API Secret
+						</label>
 						<input
 							type="password"
+							id="api-secret-input"
 							value={secret()}
 							onInput={(e) => {
 								setSecret((e.target as HTMLInputElement).value);
 								setError(null);
 							}}
 							onKeyDown={handleKeyDown}
-							placeholder="Enter your API secret"
 							autocomplete="off"
 							class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 dark:bg-gray-900 dark:border-gray-600 dark:text-gray-100 dark:placeholder:text-gray-500"
 							autofocus

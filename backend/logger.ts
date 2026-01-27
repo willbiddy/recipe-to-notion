@@ -1,5 +1,6 @@
 import { consola } from "consola";
 import { colors } from "consola/utils";
+import { formatTimeMinutes } from "../shared/format-utils.js";
 import type { Recipe } from "./scraper.js";
 import { ScrapeMethod } from "./scraper.js";
 import type { RecipeTags } from "./tagger.js";
@@ -82,13 +83,12 @@ export function createConsoleLogger(): RecipeLogger {
 
 		const message = [
 			recipe.author ? `${formatLabel("Author:")}      ${recipe.author}` : null,
-			`${formatLabel("Tags:")}        ${tags.tags.join(", ")}`,
-			`${formatLabel("Meal type:")}   ${tags.mealType.join(", ")}`,
-			`${formatLabel("Health score:")} ${colors.bold(String(tags.healthScore))}/${HealthScore.Max}`,
-			// TODO: format minutes whenever used
-			`${formatLabel("Total time:")}     ${colors.bold(String(tags.totalTimeMinutes))}`,
-			`${formatLabel("Ingredients:")} ${colors.bold(String(recipe.ingredients.length))} items`,
-			`${formatLabel("Steps:")}       ${colors.bold(String(recipe.instructions.length))} steps`,
+			`${formatLabel("Tags:")}		 ${tags.tags.join(", ")}`,
+			`${formatLabel("Meal type:")}    ${tags.mealType.join(", ")}`,
+			`${formatLabel("Health score:")} ${String(tags.healthScore)}/${HealthScore.Max}`,
+			`${formatLabel("Total time:")}   ${colors.bold(formatTimeMinutes(tags.totalTimeMinutes))}`,
+			`${formatLabel("Ingredients:")}  ${colors.bold(String(recipe.ingredients.length))} items`,
+			`${formatLabel("Steps:")}        ${colors.bold(String(recipe.instructions.length))} steps`,
 		]
 			.filter((line) => line !== null)
 			.join("\n");

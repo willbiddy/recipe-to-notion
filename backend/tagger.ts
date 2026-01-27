@@ -109,7 +109,7 @@ enum ClaudeModel {
  *
  * @returns The Claude model identifier to use.
  */
-function getClaudeModel(): string {
+function getClaudeModel(): ClaudeModel {
 	const envModel = process.env.CLAUDE_MODEL?.toLowerCase();
 
 	switch (envModel) {

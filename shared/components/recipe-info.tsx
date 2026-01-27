@@ -3,6 +3,7 @@
  */
 
 import { For } from "solid-js";
+import { formatTimeMinutes } from "../format-utils";
 
 export type RecipeInfoData = {
 	pageId: string;
@@ -36,8 +37,7 @@ export function RecipeInfo(props: RecipeInfoProps) {
 		{ label: "Tags", value: tags.tags.join(", ") },
 		{ label: "Meal type", value: tags.mealType.join(", ") },
 		{ label: "Health score", value: `${tags.healthScore}/10` },
-		// TODO: format minutes whenever used
-		{ label: "Minutes", value: String(tags.totalTimeMinutes) },
+		{ label: "Time", value: formatTimeMinutes(tags.totalTimeMinutes) },
 		{ label: "Ingredients", value: `${recipe.ingredients.length} items` },
 		{ label: "Steps", value: `${recipe.instructions.length} steps` },
 	];

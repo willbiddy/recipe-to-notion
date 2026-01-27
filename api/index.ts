@@ -43,6 +43,9 @@ export default {
 			const indexPath = resolveIndexPath();
 
 			if (!indexPath) {
+				console.error("Could not find index.html in any expected location");
+				console.error("Current working directory:", process.cwd());
+				console.error("__dirname:", __dirname);
 				consola.error("Could not find index.html in any expected location");
 				consola.error("Current working directory:", process.cwd());
 				consola.error("__dirname:", __dirname);
@@ -61,6 +64,9 @@ export default {
 				},
 			});
 		} catch (error) {
+			console.error("Error serving index.html:", error);
+			console.error("Current working directory:", process.cwd());
+			console.error("__dirname:", __dirname);
 			consola.error("Error serving index.html:", error);
 			consola.error("Current working directory:", process.cwd());
 			consola.error("__dirname:", __dirname);

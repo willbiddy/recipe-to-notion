@@ -32,6 +32,14 @@ async function getCurrentTab(): Promise<{
 	websiteName: string | null;
 }> {
 	const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+	console.log("[getCurrentTab] Tab data:", {
+		tab,
+		url: tab?.url,
+		title: tab?.title,
+		id: tab?.id,
+		urlType: typeof tab?.url,
+	});
+
 	const url = tab?.url || null;
 	const title = tab?.title || null;
 	let recipeTitle: string | null = null;
@@ -40,27 +48,39 @@ async function getCurrentTab(): Promise<{
 
 	if (url) {
 		websiteName = getWebsiteName(url);
+		console.log("[getCurrentTab] Website name:", websiteName);
 	}
 
 	if (tab?.id && url && isValidHttpUrl(url)) {
+		console.log("[getCurrentTab] Attempting to extract recipe data from content script");
 		try {
 			const response = await chrome.tabs.sendMessage(tab.id, {
 				type: ExtensionMessageType.ExtractRecipeData,
 			});
 			recipeTitle = response?.title || null;
 			author = response?.author || null;
-		} catch {
+			console.log("[getCurrentTab] Recipe data extracted:", { recipeTitle, author });
+		} catch (error) {
+			console.log("[getCurrentTab] Content script unavailable:", error);
 			// Content script unavailable
 		}
+	} else {
+		console.log("[getCurrentTab] Skipping content script:", {
+			hasTabId: !!tab?.id,
+			hasUrl: !!url,
+			isValidUrl: url ? isValidHttpUrl(url) : false,
+		});
 	}
 
-	return {
+	const result = {
 		url,
 		title,
 		recipeTitle,
 		author,
 		websiteName,
 	};
+	console.log("[getCurrentTab] Returning:", result);
+	return result;
 }
 
 /**
@@ -143,12 +163,21 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 	}
 
 	onMount(async () => {
+		console.log("[ExtensionRecipeForm] onMount: Getting current tab");
 		const { url, title, recipeTitle, author, websiteName } = await getCurrentTab();
+		console.log("[ExtensionRecipeForm] onMount: Setting state", {
+			url,
+			title,
+			recipeTitle,
+			author,
+			websiteName,
+		});
 		setCurrentUrl(url);
 		setCurrentTitle(title);
 		setRecipeTitle(recipeTitle);
 		setRecipeAuthor(author);
 		setWebsiteName(websiteName);
+		console.log("[ExtensionRecipeForm] onMount: State set, currentUrl signal:", currentUrl());
 	});
 
 	return (

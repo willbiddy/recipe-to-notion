@@ -19,18 +19,22 @@ const completeEventSchema = z.object({
 	success: z.literal(true),
 	pageId: z.string(),
 	notionUrl: z.string(),
-	recipe: z.object({
-		name: z.string(),
-		author: z.string().nullable(),
-		ingredients: z.array(z.string()),
-		instructions: z.array(z.string()),
-	}),
-	tags: z.object({
-		tags: z.array(z.string()),
-		mealType: z.array(z.string()),
-		healthiness: z.number(),
-		totalTimeMinutes: z.number(),
-	}),
+	recipe: z
+		.object({
+			name: z.string(),
+			author: z.string().nullable(),
+			ingredients: z.array(z.string()),
+			instructions: z.array(z.string()),
+		})
+		.optional(),
+	tags: z
+		.object({
+			tags: z.array(z.string()),
+			mealType: z.array(z.string()),
+			healthiness: z.number(),
+			totalTimeMinutes: z.number(),
+		})
+		.optional(),
 });
 
 /**

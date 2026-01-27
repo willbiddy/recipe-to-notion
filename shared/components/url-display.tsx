@@ -22,11 +22,28 @@ export type UrlDisplayProps = {
  * @param props - Component props containing URL, title, and source.
  */
 export function UrlDisplay(props: UrlDisplayProps) {
+	console.log("[UrlDisplay] Props received:", {
+		url: props.url,
+		urlType: typeof props.url,
+		title: props.title,
+		source: props.source,
+	});
+
 	const hasValidUrl = props.url && isValidHttpUrl(props.url);
 	const hasTitle = props.title?.trim();
 	const hasSource = props.source?.trim();
 
+	console.log("[UrlDisplay] Validation results:", {
+		hasValidUrl,
+		hasTitle: !!hasTitle,
+		hasSource: !!hasSource,
+	});
+
 	if (!props.url || !hasValidUrl) {
+		console.log("[UrlDisplay] Showing error - URL invalid or missing", {
+			hasUrl: !!props.url,
+			hasValidUrl,
+		});
 		return (
 			<div
 				class="text-sm text-error-600 p-3.5 bg-error-50 border-2 border-error-200 rounded-2xl break-words leading-relaxed transition-all duration-200 text-left min-h-[3rem] flex items-center"

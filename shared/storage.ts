@@ -1,7 +1,9 @@
 /**
- * Storage abstraction for API key management.
+ * Storage abstraction for API key management and theme preferences.
  * Supports both localStorage (web) and chrome.storage.local (extension).
  */
+
+import { Theme } from "./constants";
 
 /**
  * Storage key for API secret in both localStorage and chrome.storage.
@@ -9,7 +11,12 @@
 const STORAGE_KEY = "apiKey";
 
 /**
- * Storage interface for API key operations.
+ * Storage key for theme preference in both localStorage and chrome.storage.
+ */
+const THEME_STORAGE_KEY = "theme";
+
+/**
+ * Storage interface for API key operations and theme preferences.
  *
  * Methods are async to support both synchronous (localStorage) and asynchronous
  * (chrome.storage.local) storage backends through a unified interface.
@@ -27,6 +34,18 @@ export type StorageAdapter = {
 	 * @param apiKey - The API key to store.
 	 */
 	saveApiKey(apiKey: string): Promise<void>;
+	/**
+	 * Retrieves the stored theme preference.
+	 *
+	 * @returns The Theme value if found, or null to use system preference.
+	 */
+	getTheme(): Promise<Theme | null>;
+	/**
+	 * Saves the theme preference to storage.
+	 *
+	 * @param theme - The theme to store, or null to use system preference.
+	 */
+	saveTheme(theme: Theme | null): Promise<void>;
 };
 
 /**
@@ -57,6 +76,34 @@ export class LocalStorageAdapter implements StorageAdapter {
 	async saveApiKey(apiKey: string): Promise<void> {
 		localStorage.setItem(STORAGE_KEY, apiKey);
 	}
+
+	/**
+	 * Retrieves the theme preference from localStorage.
+	 *
+	 * @returns The Theme value if found, or null to use system preference.
+	 */
+	// biome-ignore lint/suspicious/useAwait: Methods are async to match StorageAdapter interface, even though localStorage is synchronous
+	async getTheme(): Promise<Theme | null> {
+		const theme = localStorage.getItem(THEME_STORAGE_KEY);
+		if (theme === Theme.Light || theme === Theme.Dark) {
+			return theme;
+		}
+		return null;
+	}
+
+	/**
+	 * Saves the theme preference to localStorage.
+	 *
+	 * @param theme - The theme to store, or null to use system preference.
+	 */
+	// biome-ignore lint/suspicious/useAwait: Methods are async to match StorageAdapter interface, even though localStorage is synchronous
+	async saveTheme(theme: Theme | null): Promise<void> {
+		if (theme === null) {
+			localStorage.removeItem(THEME_STORAGE_KEY);
+		} else {
+			localStorage.setItem(THEME_STORAGE_KEY, theme);
+		}
+	}
 }
 
 /**
@@ -84,6 +131,33 @@ export class ChromeStorageAdapter implements StorageAdapter {
 	 */
 	async saveApiKey(apiKey: string): Promise<void> {
 		await chrome.storage.local.set({ [STORAGE_KEY]: apiKey });
+	}
+
+	/**
+	 * Retrieves the theme preference from chrome.storage.local.
+	 *
+	 * @returns The Theme value if found, or null to use system preference.
+	 */
+	async getTheme(): Promise<Theme | null> {
+		const result = await chrome.storage.local.get(THEME_STORAGE_KEY);
+		const theme = result[THEME_STORAGE_KEY];
+		if (theme === Theme.Light || theme === Theme.Dark) {
+			return theme;
+		}
+		return null;
+	}
+
+	/**
+	 * Saves the theme preference to chrome.storage.local.
+	 *
+	 * @param theme - The theme to store, or null to use system preference.
+	 */
+	async saveTheme(theme: Theme | null): Promise<void> {
+		if (theme === null) {
+			await chrome.storage.local.remove(THEME_STORAGE_KEY);
+		} else {
+			await chrome.storage.local.set({ [THEME_STORAGE_KEY]: theme });
+		}
 	}
 }
 

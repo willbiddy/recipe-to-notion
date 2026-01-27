@@ -5,27 +5,16 @@
 
 import { render } from "solid-js/web";
 import { ExtensionRecipeForm } from "../shared/components/extension-recipe-form.js";
-import { ExtensionMessageType, Theme } from "../shared/constants.js";
+import { ExtensionMessageType } from "../shared/constants.js";
+import { ThemeProvider } from "../shared/contexts/theme-context.js";
+import { detectSystemTheme } from "../shared/utils/theme-utils.js";
 import { getServerUrl } from "./config.js";
-
-/**
- * Detects the current system theme preference.
- *
- * @returns The detected theme (light or dark).
- */
-function detectTheme(): Theme {
-	if (window.matchMedia?.("(prefers-color-scheme: dark)").matches) {
-		return Theme.Dark;
-	}
-	return Theme.Light;
-}
 
 /**
  * Updates the extension icon based on the current theme.
  */
-async function updateExtensionIcon(): Promise<void> {
-	const theme = detectTheme();
-	await chrome.storage.local.set({ theme });
+function updateExtensionIcon(): void {
+	const theme = detectSystemTheme();
 	chrome.runtime.sendMessage({ type: ExtensionMessageType.ThemeChanged, theme });
 }
 
@@ -39,7 +28,14 @@ if (window.matchMedia) {
 const card = document.querySelector(".card");
 
 if (card) {
-	render(() => <ExtensionRecipeForm getServerUrl={getServerUrl} />, card);
+	render(
+		() => (
+			<ThemeProvider>
+				<ExtensionRecipeForm getServerUrl={getServerUrl} />
+			</ThemeProvider>
+		),
+		card,
+	);
 } else {
 	console.error("Card element not found");
 }

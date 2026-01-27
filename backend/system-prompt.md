@@ -18,9 +18,9 @@ Return ONLY valid JSON with these exact keys:
   "tags": [...],
   "mealType": [...],
   "healthScore": N,
-  "totalTimeMinutes": N,
   "description": "...",
   "ingredients": [...]
+  "totalTimeMinutes": N,
 }
 
 No markdown, no code fences, no explanation. Just the JSON object.
@@ -29,23 +29,23 @@ No markdown, no code fences, no explanation. Just the JSON object.
 
 ### tags (array of 1-4 strings)
 
-**Cuisine (0-1):** American, Caribbean, Chinese, Indian, Italian, Mediterranean, Mexican, Middle Eastern, Persian, Spanish, Thai, West African
+**Cuisine (usually 0 or 1):** American, Caribbean, Chinese, Indian, Italian, Mediterranean, Mexican, Middle Eastern, Persian, Spanish, Thai, West African
 
-**Dish type (0-1):** Bowl, Curry, Dip, Enchiladas, Meatballs, Noodles, Pancakes, Pasta, Salad, Sandwich, Sauce, Soup, Stew, Stir-Fry, Tacos
+**Dish type (usually 1):** Bowl, Curry, Dip, Enchiladas, Meatballs, Noodles, Pancakes, Pasta, Salad, Sandwich, Sauce, Soup, Stew, Stir-Fry, Tacos, Brownies
 
-**Main ingredient (0-2):** Beans, Beef, Chicken, Chickpeas, Eggs, Fish, Lamb, Lentils, Pork, Seafood, Tofu, Turkey, Vegetables
+**Main ingredient (usually 1 or 2):** Beans, Beef, Chicken, Lamb, Lentils, Pork, Seafood, Tofu, Turkey, Vegetables
 
 **Guidelines:**
-- 1-4 tags total; strongly prefer tags from the lists above
+- Prefer tags from the lists above
 - Skip cuisine if the dish is generic (e.g., plain grilled chicken)
-- Use broad categories (e.g., "Nuts" not "Walnuts", "Fruit" not "Blueberries")
+- Use broad categories for main ingredient (e.g., "Seafood" not "Shrimp", "Vegetables" not "Broccoli")
 - NEVER use meal types as tags (no "Breakfast", "Lunch", "Dinner", "Dessert")
 
 ### mealType (array of 1-2 strings)
 
 **Choose from:** Breakfast, Lunch, Dinner, Side, Snack, Dessert, Other
 - Most dishes are single-type. Use multiple only when genuinely versatile (e.g., Shakshuka = Breakfast + Lunch).
-- Always use "Other" category if no meal type category makes sense.
+- ALWAYS use "Other" category if no meal type category makes sense.
 
 ### healthScore (integer 1-10)
 
@@ -118,28 +118,15 @@ Rate 1-10 using the criteria, examples, and key signals below. Judge by actual i
 
 **Side dishes:** Rate based on contribution potential. Does this side help or hurt the overall health of a meal? Sides max out at 9 (only complete meals can score 10). A vegetable side with olive oil contributes toward "half plate vegetables" and "healthy fats" (8-9). Roasted sweet potatoes offer fiber and nutrients (7). Steamed vegetables with butter (6). A buttered white dinner roll adds refined grains and saturated fat (4). French fries are deep fried refined carbs (1).
 
-### totalTimeMinutes (integer)
-
-Use provided time if available. Otherwise estimate:
-
-- **5-15 min:** No-cook, assembly, salads, dips
-- **15-30 min:** Stir-fry, pasta, eggs, sautés, sandwiches
-- **30-45 min:** Sheet pan meals, roasted vegetables, pan-seared fish
-- **45-75 min:** Braises, enchiladas, casseroles, curries
-- **75-150 min:** Stews, slow-roasted meats, dried beans from scratch
-- **150+ min:** Slow cooker meals, stock, bread
-
-Never return 0 or null.
-
 ### description (string)
 
 Two paragraphs:
 
-**Paragraph 1:** 2-3 sentences describing what the dish is and what's notable about it.
+**Paragraph 1:** 2-3 sentences introducing what the dish is and what's notable about it.
 
-**Paragraph 2:** [Skip this paragraph for desserts] 1-2 sentences about what makes the recipe healthier or less healthy. For dishes rated 1-6, mention healthy modification or additions. Finally, mention 2-3 complementary, creative, interesting, and healthy pairing options. Reference the information in the "### healthScore" section above as needed.
+**Paragraph 2:** 1-2 sentences about what makes the recipe healthier or less healthy. For dishes rated 1-6 (optional for 7+), mention healthy modification or additions. Finally, mention 2-3 pairing options that pair well with the dish, are not boring, and are health affirming.
 
-Use complete sentences, not fragments. Casual tone, like telling a friend. No em-dashes. No AI-sounding phrases. Separate paragraphs with \n\n.
+Skip paragraph 2 completely for desserts. Use complete sentences, not fragments. Casual tone, like telling a friend. No em-dashes. No AI-sounding phrases. Separate paragraphs with \n\n.
 
 ### ingredients (array of objects)
 
@@ -157,3 +144,7 @@ If an ingredient appears multiple times in the recipe with different contexts (e
 **Important:**
 - Preserve the ingredient text exactly as provided
 - Don't modify quantities or descriptions
+
+### totalTimeMinutes (integer)
+
+Use provided time if available. Otherwise read through all instructions and sum up prep time plus cooking time for each step. Account for oven preheating, marinating, resting, and chilling.

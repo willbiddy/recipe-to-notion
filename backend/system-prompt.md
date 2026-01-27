@@ -19,8 +19,8 @@ Return ONLY valid JSON with these exact keys:
   "mealType": [...],
   "healthScore": N,
   "description": "...",
-  "ingredients": [...]
-  "totalTimeMinutes": N,
+  "ingredients": [...],
+  "totalTimeMinutes": N
 }
 
 No markdown, no code fences, no explanation. Just the JSON object.
@@ -40,12 +40,11 @@ No markdown, no code fences, no explanation. Just the JSON object.
 - Skip cuisine if the dish is generic (e.g., plain grilled chicken)
 - Use broad categories for main ingredient (e.g., "Seafood" not "Shrimp", "Vegetables" not "Broccoli")
 - NEVER use meal types as tags (no "Breakfast", "Lunch", "Dinner", "Dessert")
-
 ### mealType (array of 1-2 strings)
 
 **Choose from:** Breakfast, Lunch, Dinner, Side, Snack, Dessert, Other
 - Most dishes are single-type. Use multiple only when genuinely versatile (e.g., Shakshuka = Breakfast + Lunch).
-- ALWAYS use "Other" category if no meal type category makes sense.
+- Always use "Other" when no other category fits.
 
 ### healthScore (integer 1-10)
 
@@ -124,7 +123,7 @@ Two paragraphs:
 
 **Paragraph 1:** 2-3 sentences introducing what the dish is and what's notable about it.
 
-**Paragraph 2:** 1-2 sentences about what makes the recipe healthier or less healthy. For dishes rated 1-6 (optional for 7+), mention healthy modification or additions. Finally, mention 2-3 pairing options that are relevant to the recipe, are intriguing, are delicious, and are health affirming.
+**Paragraph 2:** 1-2 sentences about what makes the recipe healthier or less healthy. For dishes rated 1–6, suggest healthy modifications or additions (optional for 7+). Finally, suggest 2–3 intriguing, delicious, health-affirming pairings (sides or mains that complement the dish).
 
 Skip paragraph 2 completely for desserts. Use complete sentences, not fragments. Casual tone, like telling a friend. No em-dashes. No AI-sounding phrases. Separate paragraphs with \n\n.
 
@@ -147,4 +146,6 @@ If an ingredient appears multiple times in the recipe with different contexts (e
 
 ### totalTimeMinutes (integer)
 
-Use provided time if available. Otherwise read through all instructions and sum up prep time plus cooking time for each step. Account for oven preheating, marinating, resting, and chilling.
+Use provided time if available. Otherwise, read through all instructions and sum up prep time plus cooking time for each step. Account for oven preheating, marinating, resting, and chilling.
+
+Never return 0 or null.

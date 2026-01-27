@@ -24,8 +24,8 @@ export function buildPageProperties(recipe: Recipe, tags: RecipeTags): Record<st
 		[PropertyNames.MEAL_TYPE]: {
 			multi_select: tags.mealType.map((m) => ({ name: m })),
 		},
-		[PropertyNames.HEALTHINESS]: {
-			number: tags.healthiness,
+		[PropertyNames.HEALTH_SCORE]: {
+			number: tags.healthScore,
 		},
 		[PropertyNames.MINUTES]: {
 			number: tags.totalTimeMinutes,

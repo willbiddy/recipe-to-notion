@@ -44,7 +44,7 @@ export type UseRecipeSaveOptions = {
 		tags: {
 			tags: string[];
 			mealType: string[];
-			healthiness: number;
+			healthScore: number;
 			totalTimeMinutes: number;
 		};
 	}) => void;

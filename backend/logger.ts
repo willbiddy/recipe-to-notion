@@ -3,7 +3,7 @@ import { colors } from "consola/utils";
 import type { Recipe } from "./scraper.js";
 import { ScrapeMethod } from "./scraper.js";
 import type { RecipeTags } from "./tagger.js";
-import { HealthinessScore } from "./tagger.js";
+import { HealthScore } from "./tagger.js";
 
 /**
  * Logger type for recipe processing steps.
@@ -70,7 +70,7 @@ export function createConsoleLogger(): RecipeLogger {
 	 * Formats and displays a recipe summary with tags and metadata.
 	 *
 	 * Creates a formatted box display showing recipe name, author (if available),
-	 * tags, meal type, healthiness score, time, ingredient count, and step count.
+	 * tags, meal type, health score, time, ingredient count, and step count.
 	 *
 	 * @param recipe - The recipe data to display.
 	 * @param tags - The AI-generated tags and metadata.
@@ -84,8 +84,9 @@ export function createConsoleLogger(): RecipeLogger {
 			recipe.author ? `${formatLabel("Author:")}      ${recipe.author}` : null,
 			`${formatLabel("Tags:")}        ${tags.tags.join(", ")}`,
 			`${formatLabel("Meal type:")}   ${tags.mealType.join(", ")}`,
-			`${formatLabel("Healthiness:")} ${colors.bold(String(tags.healthiness))}/${HealthinessScore.Max}`,
-			`${formatLabel("Minutes:")}     ${colors.bold(String(tags.totalTimeMinutes))}`,
+			`${formatLabel("Health score:")} ${colors.bold(String(tags.healthScore))}/${HealthScore.Max}`,
+			// TODO: format minutes whenever used
+			`${formatLabel("Total time:")}     ${colors.bold(String(tags.totalTimeMinutes))}`,
 			`${formatLabel("Ingredients:")} ${colors.bold(String(recipe.ingredients.length))} items`,
 			`${formatLabel("Steps:")}       ${colors.bold(String(recipe.instructions.length))} steps`,
 		]

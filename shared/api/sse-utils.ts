@@ -125,7 +125,7 @@ export function handleSseEvent(
 				tags: {
 					tags: data.tags.tags,
 					mealType: data.tags.mealType,
-					healthiness: data.tags.healthiness,
+					healthScore: data.tags.healthScore,
 					totalTimeMinutes: data.tags.totalTimeMinutes,
 				},
 			});

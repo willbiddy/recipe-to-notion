@@ -31,7 +31,7 @@ const completeEventSchema = z.object({
 		.object({
 			tags: z.array(z.string()),
 			mealType: z.array(z.string()),
-			healthiness: z.number(),
+			healthScore: z.number(),
 			totalTimeMinutes: z.number(),
 		})
 		.optional(),

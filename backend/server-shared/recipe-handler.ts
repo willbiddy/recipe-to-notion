@@ -124,7 +124,7 @@ export function handleRecipeStream(options: HandleRecipeStreamOptions): Response
 					completeEvent.tags = {
 						tags: result.tags.tags,
 						mealType: result.tags.mealType,
-						healthiness: result.tags.healthiness,
+						healthScore: result.tags.healthScore,
 						totalTimeMinutes: result.tags.totalTimeMinutes,
 					};
 				}

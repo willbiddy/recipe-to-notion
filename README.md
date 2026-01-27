@@ -1,6 +1,6 @@
 # Recipe Clipper for Notion
 
-Save recipes to Notion without copying and pasting. Paste a URL from almost any recipe site and get a Notion page with the cover photo, ingredients grouped by shopping aisle, instructions, and AI-generated tags. Claude automatically analyzes each recipe to add cuisine tags, meal types, healthiness scores, ingredient categories, and a short description, so you can filter and search your collection later.
+Save recipes to Notion without copying and pasting. Paste a URL from almost any recipe site and get a Notion page with the cover photo, ingredients grouped by shopping aisle, instructions, and AI-generated tags. Claude automatically analyzes each recipe to add cuisine tags, meal types, health scores, ingredient categories, and a short description, so you can filter and search your collection later.
 
 ## How It Works
 
@@ -14,7 +14,7 @@ CLI/Extension/Web/API → Check duplicates → Scrape recipe → Claude scores/t
 
 3. **Scrape recipe** — Fetches the page HTML and extracts structured recipe data from [JSON-LD](https://json-ld.org/) (`schema.org/Recipe`). Most recipe sites embed this for SEO, including paywalled sites like NYT Cooking. If JSON-LD isn't available, falls back to microdata attributes and common CSS class patterns.
 
-4. **Claude scores/tags** — Sends the recipe to Claude, which returns tags, meal type, healthiness score (0-10), time estimate, description, and ingredient categories grouped by shopping aisle.
+4. **Claude scores/tags** — Sends the recipe to Claude, which returns tags, meal type, health score (1-10), time estimate, description, and ingredient categories grouped by shopping aisle.
 
 5. **Notion page** — Creates a Notion page with all properties, cover image, AI description, ingredients grouped by shopping category, and numbered instructions.
 
@@ -54,7 +54,7 @@ bun install
    - **"Minutes"** - Type: Number
    - **"Tags"** - Type: Multi-select
    - **"Meal type"** - Type: Multi-select
-   - **"Healthiness"** - Type: Number
+   - **"Health score"** - Type: Number
 3. Connect your integration to the database:
    - Click the `...` menu in the top-right of the database
    - Select **Connections**

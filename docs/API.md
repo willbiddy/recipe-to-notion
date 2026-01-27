@@ -75,7 +75,7 @@ Progress events are sent during processing. The `progressType` can be: `"checkin
   "tags": {
     "tags": ["tag1", "tag2"],
     "mealType": ["breakfast", "lunch"],
-    "healthiness": 7,
+    "healthScore": 7,
     "totalTimeMinutes": 30
   }
 }

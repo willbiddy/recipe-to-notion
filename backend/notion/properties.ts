@@ -30,13 +30,10 @@ export function buildPageProperties(recipe: Recipe, tags: RecipeTags): Record<st
 		[PropertyNames.MINUTES]: {
 			number: tags.totalTimeMinutes,
 		},
-	};
-
-	if (recipe.author) {
-		properties[PropertyNames.AUTHOR] = {
+		[PropertyNames.AUTHOR]: {
 			rich_text: [{ text: { content: recipe.author } }],
-		};
-	}
+		},
+	};
 
 	return properties;
 }

@@ -1,7 +1,7 @@
 import type * as cheerio from "cheerio";
 import type { Element } from "domhandler";
 import { MAX_SITE_NAME_LENGTH, SchemaOrgRecipeUrl } from "../../shared/constants.js";
-import type { Recipe } from "../scraper.js";
+import type { ParsedRecipe } from "../scraper.js";
 import { ScrapeMethod } from "../scraper.js";
 import {
 	cleanRecipeName,
@@ -62,7 +62,7 @@ export function extractAuthorFromHtml($: cheerio.CheerioAPI): string | null {
  * @param sourceUrl - Original URL of the recipe page.
  * @returns Parsed recipe data if found, null otherwise.
  */
-export function parseHtml($: cheerio.CheerioAPI, sourceUrl: string): Recipe | null {
+export function parseHtml($: cheerio.CheerioAPI, sourceUrl: string): ParsedRecipe | null {
 	const container = findRecipeContainer($);
 
 	const name = extractRecipeName($, container);

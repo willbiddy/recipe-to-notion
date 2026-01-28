@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import * as cheerio from "cheerio";
 import { REQUEST_TIMEOUT_MS } from "../shared/constants.js";
+import { getWebsiteName } from "../shared/url-utils.js";
 import { ParseError, ScrapingError } from "./errors.js";
 import { BROWSER_HEADERS } from "./parsers/headers.js";
 import { extractAuthorFromHtml, parseHtml } from "./parsers/html.js";
@@ -31,9 +32,10 @@ export type Recipe = {
 	 */
 	scrapeMethod: ScrapeMethod;
 	/**
-	 * Recipe author or source attribution, if available.
+	 * Recipe author or source attribution.
+	 * Falls back to website domain if not explicitly provided.
 	 */
-	author: string | null;
+	author: string;
 	/**
 	 * Total preparation + cooking time in minutes, if available.
 	 */
@@ -72,6 +74,14 @@ export type Recipe = {
 };
 
 /**
+ * Internal type for recipe data directly from parsers (before fallback logic).
+ * Author may be null at this stage and will be filled in by fallback logic.
+ */
+export type ParsedRecipe = Omit<Recipe, "author"> & {
+	author: string | null;
+};
+
+/**
  * Parses recipe data from HTML content.
  *
  * Attempts JSON-LD (schema.org/Recipe) parsing first, which works for most
@@ -87,7 +97,7 @@ export type Recipe = {
  */
 function parseRecipeFromHtml(html: string, sourceUrl: string): Recipe {
 	const $ = cheerio.load(html);
-	const recipe = parseJsonLd($, sourceUrl) ?? parseHtml($, sourceUrl);
+	const recipe: ParsedRecipe | null = parseJsonLd($, sourceUrl) ?? parseHtml($, sourceUrl);
 
 	if (!recipe) {
 		throw new ParseError(
@@ -96,11 +106,22 @@ function parseRecipeFromHtml(html: string, sourceUrl: string): Recipe {
 		);
 	}
 
-	if (!recipe.author) {
-		recipe.author = extractAuthorFromHtml($);
+	// Apply fallbacks to ensure author is always populated
+	let finalAuthor = recipe.author;
+
+	if (!finalAuthor) {
+		finalAuthor = extractAuthorFromHtml($);
 	}
 
-	return recipe;
+	if (!finalAuthor) {
+		finalAuthor = getWebsiteName(sourceUrl) ?? sourceUrl;
+	}
+
+	// Return recipe with guaranteed non-null author
+	return {
+		...recipe,
+		author: finalAuthor,
+	};
 }
 
 /**

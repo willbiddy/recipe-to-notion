@@ -1,7 +1,7 @@
 import type * as cheerio from "cheerio";
 import { hasProperty, isArray, isObject, isString } from "../../shared/type-guards.js";
 import { ParseError } from "../errors.js";
-import type { Recipe } from "../scraper.js";
+import type { ParsedRecipe } from "../scraper.js";
 import { ScrapeMethod } from "../scraper.js";
 import {
 	cleanRecipeName,
@@ -22,7 +22,7 @@ import {
  * @param sourceUrl - Original URL of the recipe page.
  * @returns Parsed recipe data if found, null otherwise.
  */
-export function parseJsonLd($: cheerio.CheerioAPI, sourceUrl: string): Recipe | null {
+export function parseJsonLd($: cheerio.CheerioAPI, sourceUrl: string): ParsedRecipe | null {
 	const scripts = $('script[type="application/ld+json"]');
 	for (let i = 0; i < scripts.length; i++) {
 		try {
@@ -146,7 +146,7 @@ export function findRecipeInLd(
 }
 
 /**
- * Maps a JSON-LD Recipe object to our internal {@link Recipe} type.
+ * Maps a JSON-LD Recipe object to our internal ParsedRecipe type.
  *
  * Extracts and normalizes recipe data from a JSON-LD Recipe object,
  * handling various formats for time, servings, images, ingredients,
@@ -154,9 +154,9 @@ export function findRecipeInLd(
  *
  * @param data - The JSON-LD Recipe object.
  * @param sourceUrl - Original URL of the recipe page.
- * @returns A normalized Recipe object.
+ * @returns A normalized ParsedRecipe object.
  */
-function extractFromJsonLd(data: Record<string, unknown>, sourceUrl: string): Recipe {
+function extractFromJsonLd(data: Record<string, unknown>, sourceUrl: string): ParsedRecipe {
 	if (!data.name || typeof data.name !== "string") {
 		throw new ParseError(
 			`Recipe name is required but was missing or invalid in JSON-LD data from ${sourceUrl}`,

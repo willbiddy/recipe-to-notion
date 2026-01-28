@@ -1,7 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { consola } from "consola";
 import { ASSET_ROUTES } from "../api/asset-routes.js";
 import { HttpStatus } from "./server-shared/constants.js";
 import { createErrorResponse, generateRequestId } from "./server-shared/errors.js";
@@ -133,7 +132,7 @@ function logRequest(request: Request, requestId?: string): void {
 
 	if (url.pathname !== "/health") {
 		const idPrefix = requestId ? `[${requestId}]` : "";
-		consola.info(`${idPrefix} ${request.method} ${url.pathname}`);
+		console.log(`${idPrefix} ${request.method} ${url.pathname}`);
 	}
 }
 

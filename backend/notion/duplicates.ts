@@ -1,4 +1,5 @@
 import type { Client } from "@notionhq/client";
+import type { QueryDataSourceParameters } from "@notionhq/client/build/src/api-endpoints";
 import { hasProperty, isArray, isObject } from "../../shared/type-guards.js";
 import { createNotionClient, getNotionPageUrl } from "./client.js";
 import type {
@@ -9,71 +10,63 @@ import type {
 import { PropertyNames } from "./types.js";
 
 /**
- * Options for searching pages in a database.
+ * Options for querying pages in a database.
  */
-type SearchPagesOptions = {
+type QueryPagesOptions = {
 	notion: Client;
 	databaseId: string;
-	query: string;
-	propertyMatcher: (properties: Record<string, unknown>) => boolean;
+	filter: NonNullable<QueryDataSourceParameters["filter"]>;
 	resultBuilder: (properties: Record<string, unknown>, pageId: string) => DuplicateInfo;
 };
 
 /**
- * Searches for pages in a Notion database matching a query and property condition.
+ * Queries for pages in a Notion database matching a filter condition.
  *
- * Uses the search API to find pages, then filters by database and property matcher.
- * This works around the API v2025-09-03 deprecation of databases.query.
+ * Uses the dataSources.query API (2025-09-03) to find pages by property values.
+ * First retrieves the database to get its default data source ID.
  *
- * @param options - Search options including Notion client, database ID, query, matcher, and builder.
+ * @param options - Query options including Notion client, database ID, filter, and result builder.
  * @returns Information about the matching page if found, null otherwise.
  */
-async function searchPagesInDatabase(options: SearchPagesOptions): Promise<DuplicateInfo | null> {
-	const { notion, databaseId, query, propertyMatcher, resultBuilder } = options;
-	const searchResults = await notion.search({
-		filter: {
-			value: "page",
-			property: "object",
-		},
-		query,
-	});
+async function queryPagesInDatabase(options: QueryPagesOptions): Promise<DuplicateInfo | null> {
+	const { notion, databaseId, filter, resultBuilder } = options;
 
-	for (const result of searchResults.results) {
-		if (result.object !== "page") continue;
+	// Get the database to retrieve its default data source ID
+	const database = await notion.databases.retrieve({ database_id: databaseId });
 
-		// Retrieve full page to check parent and properties
-		// Search results may be PartialPageObjectResponse without parent info
-		const fullPage = await notion.pages.retrieve({ page_id: result.id });
-
-		if (
-			!("properties" in fullPage) ||
-			typeof fullPage.properties !== "object" ||
-			fullPage.properties === null
-		) {
-			continue;
-		}
-
-		// Check if page belongs to the correct database
-		if (
-			!("parent" in fullPage) ||
-			typeof fullPage.parent !== "object" ||
-			fullPage.parent === null
-		) {
-			continue;
-		}
-
-		const parent = fullPage.parent as { type?: string; database_id?: string };
-		if (parent.type !== "database_id" || parent.database_id !== databaseId) {
-			continue;
-		}
-
-		const properties = fullPage.properties as Record<string, unknown>;
-		if (propertyMatcher(properties)) {
-			return resultBuilder(properties, result.id);
-		}
+	// Extract the default data source ID from the database
+	if (!("data_sources" in database) || !Array.isArray(database.data_sources)) {
+		throw new Error("Database does not have data sources");
 	}
 
-	return null;
+	if (database.data_sources.length === 0) {
+		throw new Error("Database has no data sources");
+	}
+
+	// Use the first (default) data source
+	const dataSource = database.data_sources[0];
+	if (!dataSource?.id) {
+		throw new Error("Data source does not have an ID");
+	}
+
+	// Query using the new dataSources.query API
+	const response = await notion.dataSources.query({
+		data_source_id: dataSource.id,
+		filter,
+		page_size: 1, // We only need to know if one exists
+	});
+
+	if (response.results.length === 0) {
+		return null;
+	}
+
+	const page = response.results[0];
+	if (!page || page.object !== "page" || !("properties" in page)) {
+		return null;
+	}
+
+	const properties = page.properties as Record<string, unknown>;
+	return resultBuilder(properties, page.id);
 }
 
 /**
@@ -142,16 +135,14 @@ export async function checkForDuplicateByUrl(
 	const notion = createNotionClient(notionApiKey);
 
 	try {
-		return await searchPagesInDatabase({
+		return await queryPagesInDatabase({
 			notion,
 			databaseId,
-			query: url,
-			propertyMatcher: (properties) => {
-				if (PropertyNames.SOURCE in properties) {
-					const sourceUrl = extractUrl(properties[PropertyNames.SOURCE]);
-					return sourceUrl === url;
-				}
-				return false;
+			filter: {
+				property: PropertyNames.SOURCE,
+				url: {
+					equals: url,
+				},
 			},
 			resultBuilder: (properties, pageId) => {
 				const title =
@@ -195,16 +186,14 @@ export async function checkForDuplicateByTitle(
 	const notion = createNotionClient(notionApiKey);
 
 	try {
-		return await searchPagesInDatabase({
+		return await queryPagesInDatabase({
 			notion,
 			databaseId,
-			query: recipeName,
-			propertyMatcher: (properties) => {
-				if (PropertyNames.NAME in properties) {
-					const pageTitle = extractTitle(properties[PropertyNames.NAME]);
-					return pageTitle === recipeName;
-				}
-				return false;
+			filter: {
+				property: PropertyNames.NAME,
+				title: {
+					equals: recipeName,
+				},
 			},
 			resultBuilder: (properties, pageId) => {
 				const pageTitle = extractTitle(properties[PropertyNames.NAME]);

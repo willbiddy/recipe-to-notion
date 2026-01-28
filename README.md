@@ -104,16 +104,16 @@ The simplest way to get started. Save recipes from the terminal:
 
 ```bash
 # Single recipe
-bun run start https://cooking.nytimes.com/recipes/1023430-pasta-with-pumpkin-seed-pesto
+bun add https://cooking.nytimes.com/recipes/1023430-pasta-with-pumpkin-seed-pesto
 
 # Multiple recipes
-bun run start \
+bun add \
   https://www.bonappetit.com/recipe/ditalini-and-peas-in-parmesan-broth \
   https://cooking.nytimes.com/recipes/768413295-chickpeas-al-limone-with-burrata \
   https://www.seriouseats.com/tacos-gobernador-sinaloan-shrimp-tacos-recipe-8676611
 
 # If a site blocks requests (403 error), save the page source and use --html
-bun run start --html ~/Downloads/baked-oatmeal-recipe.html "https://cookieandkate.com/baked-oatmeal-recipe/"
+bun add --html ~/Downloads/baked-oatmeal-recipe.html "https://cookieandkate.com/baked-oatmeal-recipe/"
 ```
 
 ### 2. Browser Extension
@@ -160,7 +160,7 @@ Use the REST API to integrate Recipe Clipper for Notion into your own applicatio
 
 ### Development Scripts
 
-- **`bun start`** - Run the CLI tool to save recipes from the command line
+- **`bun add`** - Run the CLI tool to save recipes from the command line
 - **`bun run server`** - Start local HTTP server for development (runs on `localhost:3000`)
 
 ### Build Scripts

@@ -145,10 +145,6 @@ Return 1-4 tags that identify **what the dish is**, not its characteristics.
 * Time-based tags (no "30-Minute", "Quick", "Make-Ahead", etc.)
 * Specific ingredient varieties when a broader category exists (no "Shrimp" when "Seafood" exists, no "Broccoli" when "Vegetables" exists)
 
-**Examples:**
-* Black Bean Tacos → `["Mexican", "Tacos", "Beans"]`
-* Roasted Vegetable Medley → `["Vegetables"]`
-
 ### 3. healthScore: HealthScore;
 
 Rate 1-10 using the criteria, examples, and key signals below. Judge by actual ingredients, not recipe name.

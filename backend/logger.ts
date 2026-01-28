@@ -1,7 +1,6 @@
 import { colors } from "../shared/colors.js";
 import { formatTimeMinutes } from "../shared/format-utils.js";
 import type { Recipe } from "./scraper.js";
-import { ScrapeMethod } from "./scraper.js";
 import type { RecipeTags } from "./tagger.js";
 import { HealthScore } from "./tagger.js";
 
@@ -135,11 +134,7 @@ export function createConsoleLogger(): RecipeLogger {
 			console.log("Scraping recipe data...");
 		},
 		onScraped(recipe: Recipe) {
-			const methodLabel =
-				recipe.scrapeMethod === ScrapeMethod.JsonLd
-					? colors.green("JSON-LD")
-					: colors.yellow("HTML");
-			console.log(colors.green(`Scraped via ${methodLabel}: ${colors.bold(recipe.name)}`));
+			console.log(colors.green(`Scraped: ${colors.bold(recipe.name)}`));
 		},
 		onTagging() {
 			console.log("Generating AI tags and scores...");

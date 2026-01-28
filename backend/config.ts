@@ -20,6 +20,7 @@ const envSchema = z.object({
 		}),
 	NOTION_DATABASE_ID: z.string().min(1, "NOTION_DATABASE_ID is required"),
 	API_SECRET: z.string().min(1, "API_SECRET is required"),
+	PYTHON_SCRAPER_URL: z.string().url().optional(),
 });
 
 /**

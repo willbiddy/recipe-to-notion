@@ -5,9 +5,8 @@
 
 import type { JSX } from "solid-js";
 import { createSignal, onMount, Show } from "solid-js";
-import { ExtensionMessageType, NOTION_OPEN_DELAY_MS } from "../constants.js";
+import { ExtensionMessageType } from "../constants.js";
 import { useRecipeSave } from "../hooks/use-recipe-save.js";
-import { useTimeout } from "../hooks/use-timeout.js";
 import { createStorageAdapter } from "../storage.js";
 import { getWebsiteName, isValidHttpUrl } from "../url-utils.js";
 import { ApiSecretPrompt } from "./api-secret-prompt.js";
@@ -152,8 +151,6 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 	const [showApiPrompt, setShowApiPrompt] = createSignal(false);
 	const [pendingSave, setPendingSave] = createSignal<(() => void) | null>(null);
 
-	const scheduleTimeout = useTimeout();
-
 	const {
 		performSave,
 		isInvalidApiKey,
@@ -167,21 +164,44 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 		setLoading,
 		setProgress,
 		onSuccess: (result) => {
-			setStatus({ message: "Recipe saved successfully!", type: StatusType.Success });
-			scheduleTimeout(() => {
-				setStatus({ message: "Opening...", type: StatusType.Info });
-			}, NOTION_OPEN_DELAY_MS);
-			scheduleTimeout(() => {
-				if (result.notionUrl) {
-					chrome.tabs.create({ url: result.notionUrl });
-				}
-			}, NOTION_OPEN_DELAY_MS * 2);
+			setStatus({
+				children: (
+					<>
+						Recipe saved successfully!{" "}
+						<button
+							type="button"
+							onClick={() => {
+								if (result.notionUrl) {
+									chrome.tabs.create({ url: result.notionUrl });
+								}
+							}}
+							class="underline font-semibold bg-transparent border-none p-0 cursor-pointer text-inherit hover:opacity-80"
+						>
+							Open in Notion
+						</button>
+					</>
+				),
+				type: StatusType.Success,
+			});
 		},
 		onDuplicate: (notionUrl) => {
-			setStatus({ message: "This recipe already exists. Opening...", type: StatusType.Info });
-			scheduleTimeout(() => {
-				chrome.tabs.create({ url: notionUrl });
-			}, NOTION_OPEN_DELAY_MS);
+			setStatus({
+				children: (
+					<>
+						This recipe already exists.{" "}
+						<button
+							type="button"
+							onClick={() => {
+								chrome.tabs.create({ url: notionUrl });
+							}}
+							class="underline font-semibold bg-transparent border-none p-0 cursor-pointer text-inherit hover:opacity-80"
+						>
+							Open in Notion
+						</button>
+					</>
+				),
+				type: StatusType.Info,
+			});
 			return undefined;
 		},
 	});

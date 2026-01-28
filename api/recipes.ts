@@ -1,56 +1,48 @@
+import { HttpStatus } from "../backend/server-shared/constants.js";
+import { createErrorResponse, generateRequestId } from "../backend/server-shared/errors.js";
+import { handleOptionsRequest } from "../backend/server-shared/headers.js";
+import { handleRecipeRequest } from "../backend/server-shared/recipe-handler.js";
+
 /**
- * Diagnostic version to identify failing imports
+ * Main handler for the /api/recipes endpoint.
  */
-let loadError: { message: string; stack?: string; loaded: string[] } | null = null;
-const loaded: string[] = [];
-
-try {
-	await import("../backend/server-shared/constants.js");
-	loaded.push("constants");
-
-	await import("../backend/server-shared/errors.js");
-	loaded.push("errors");
-
-	await import("../backend/server-shared/headers.js");
-	loaded.push("headers");
-
-	await import("../backend/config.js");
-	loaded.push("config");
-
-	await import("../backend/logger.js");
-	loaded.push("logger");
-
-	await import("../backend/rate-limit.js");
-	loaded.push("rate-limit");
-
-	await import("../backend/process-recipe.js");
-	loaded.push("process-recipe");
-
-	await import("../backend/server-shared/recipe-handler.js");
-	loaded.push("recipe-handler");
-} catch (error) {
-	loadError = {
-		message: error instanceof Error ? error.message : String(error),
-		stack: error instanceof Error ? error.stack : undefined,
-		loaded,
-	};
-}
-
 export default {
-	fetch(_req: Request): Response {
-		if (loadError) {
-			return new Response(JSON.stringify(loadError, null, 2), {
-				status: 500,
-				headers: { "Content-Type": "application/json" },
-			});
+	/**
+	 * Vercel serverless function handler.
+	 *
+	 * @param req - The incoming request.
+	 * @returns Response with recipe processing result or error.
+	 */
+	async fetch(req: Request): Promise<Response> {
+		const requestId = generateRequestId();
+
+		if (req.method === "OPTIONS") {
+			return handleOptionsRequest(req);
 		}
 
-		return new Response(
-			JSON.stringify({ success: true, message: "All modules loaded!", loaded }, null, 2),
-			{
-				status: 200,
-				headers: { "Content-Type": "application/json" },
-			},
-		);
+		if (req.method !== "POST") {
+			return createErrorResponse("Method not allowed", HttpStatus.MethodNotAllowed, true);
+		}
+
+		function createLoggedErrorResponse(error: string, status: number): Response {
+			console.error(`[${requestId}] Request error: ${error}`);
+			return createErrorResponse(error, status, true);
+		}
+
+		try {
+			return await handleRecipeRequest({
+				request: req,
+				requestId,
+				createErrorResponse: createLoggedErrorResponse,
+				includeFullDataInStream: true,
+			});
+		} catch (error) {
+			console.error(`[${requestId}] Recipe processing error:`, error);
+			const { handleRecipeError, logErrorDetails } = await import(
+				"../backend/server-shared/errors.js"
+			);
+			logErrorDetails(error, { error: console.error }, requestId);
+			return handleRecipeError(error, { error: console.error }, requestId);
+		}
 	},
 };

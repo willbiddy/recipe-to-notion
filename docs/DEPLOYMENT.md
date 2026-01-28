@@ -32,7 +32,21 @@ bunx vercel --prod
 
 > **Security Note:** The `API_SECRET` prevents unauthorized access to your API. Use a strong, random value (e.g., generate with `openssl rand -hex 32`). You'll need to configure this in the browser extension.
 
-### Step 4: Get Your Deployment URL
+### Step 4: Configure Deployment Protection (If Enabled)
+
+If you have Vercel Deployment Protection enabled (requires authentication to access your deployments):
+
+1. Go to your project settings → **Deployment Protection**
+2. Scroll to **"Protection Bypass for Automation"**
+3. Click **"Add a secret"** — Vercel will generate a bypass secret automatically
+4. The secret is automatically available as `VERCEL_AUTOMATION_BYPASS_SECRET` (no manual configuration needed)
+5. Redeploy your project
+
+> **Why this is needed:** Deployment Protection blocks all requests, including internal function-to-function calls. The bypass secret allows your TypeScript backend to call the Python scraper while keeping your deployment protected from unauthorized access.
+
+> **Note:** If you don't have Deployment Protection enabled, you can skip this step.
+
+### Step 5: Get Your Deployment URL
 
 - Vercel will provide a URL like `https://recipe-to-notion-xi.vercel.app`
 - Copy this URL - you'll need it to configure the browser extension
@@ -106,6 +120,16 @@ Vercel automatically deploys on every push to your connected Git repository. Aft
 - Check Vercel function logs for detailed error messages
 - Ensure your Notion integration has access to the database
 - Verify your Anthropic API key has sufficient credits
+
+### Python Scraper Authentication Error
+
+If you see errors like "Authentication Required" or 401 errors when scraping recipes:
+
+- This means Vercel Deployment Protection is blocking the Python scraper
+- Go to **Project Settings → Deployment Protection**
+- Create a **Protection Bypass for Automation** secret
+- Redeploy your project (or wait for automatic deployment)
+- The backend will automatically use `VERCEL_AUTOMATION_BYPASS_SECRET` to bypass protection
 
 ---
 

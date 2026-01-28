@@ -146,6 +146,18 @@ When you push to your connected Git repository, **Vercel automatically redeploys
 
 The Python scraper runs as a Vercel serverless function at `/api/scrape` — the TypeScript backend automatically detects the Vercel environment and calls it at the correct URL.
 
+### Vercel Deployment Protection Setup
+
+If you have Vercel Deployment Protection enabled, you need to create a **Protection Bypass for Automation** secret to allow your TypeScript backend to call the Python scraper:
+
+1. Go to your Vercel project settings → **Deployment Protection**
+2. Scroll to **"Protection Bypass for Automation"**
+3. Click **"Add a secret"** — Vercel will generate a bypass secret automatically
+4. The secret is automatically available as `VERCEL_AUTOMATION_BYPASS_SECRET` (no manual configuration needed)
+5. Redeploy your project — the backend will automatically use this secret to bypass protection when calling the scraper
+
+> 💡 **Why this is needed:** Vercel's Deployment Protection blocks external requests, including internal function-to-function calls. The bypass secret allows your TypeScript functions to call the Python scraper while keeping your deployment protected from unauthorized access.
+
 > 📖 See [Deployment Guide](docs/DEPLOYMENT.md) for initial Vercel setup and environment variable configuration.
 
 ## Documentation

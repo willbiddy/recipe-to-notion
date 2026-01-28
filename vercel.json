@@ -148,7 +148,6 @@
 			"maxDuration": 60
 		},
 		"api/scrape.py": {
-			"runtime": "python3.11",
 			"maxDuration": 60
 		}
 	}

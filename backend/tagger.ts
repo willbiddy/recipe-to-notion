@@ -1,4 +1,4 @@
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
@@ -187,7 +187,7 @@ async function loadSystemPrompt(): Promise<string> {
 	}
 
 	const __filename = fileURLToPath(import.meta.url);
-	const __dirname = join(__filename, "..");
+	const __dirname = dirname(__filename);
 	const promptPath = join(__dirname, "system-prompt.md");
 
 	try {

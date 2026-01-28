@@ -118,6 +118,38 @@ function numberedItem(text: string): unknown {
 }
 
 /**
+ * Creates a column block with children.
+ *
+ * @param children - Array of Notion blocks to include in this column.
+ * @returns A Notion column block object.
+ */
+function column(children: unknown[]): unknown {
+	return {
+		object: "block",
+		type: "column",
+		column: {
+			children,
+		},
+	};
+}
+
+/**
+ * Creates a column_list block containing multiple columns.
+ *
+ * @param columns - Array of column blocks to include in the column list.
+ * @returns A Notion column_list block object.
+ */
+function columnList(columns: unknown[]): unknown {
+	return {
+		object: "block",
+		type: "column_list",
+		column_list: {
+			children: columns,
+		},
+	};
+}
+
+/**
  * Builds ingredient blocks grouped by category.
  *
  * @param grouped - Map of category names to arrays of categorized ingredients.
@@ -149,38 +181,58 @@ function buildIngredientBlocks(
 }
 
 /**
- * Builds the main body content for a Notion recipe page.
+ * Builds the main body content for a Notion recipe page in a two-column layout.
  *
- * Creates blocks in order: description (if available), ingredients (grouped by category if AI-tagged,
- * otherwise as simple list), and instructions. Limits output to MAX_NOTION_BLOCKS to comply with
- * Notion's 100 block per page limit.
+ * Creates a two-column structure:
+ * - Left column: "Intro" heading, description (if available), and ingredients section
+ * - Right column: "Preparation" heading and instruction steps
+ *
+ * Falls back to linear layout if either column would be empty. Limits output to MAX_NOTION_BLOCKS
+ * to comply with Notion's 100 block per page limit.
  *
  * @param recipe - The recipe data to build the page body from.
  * @param tags - AI-generated tags including description.
  * @returns An array of Notion block objects (limited to MAX_NOTION_BLOCKS).
  */
 export function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
-	const blocks: unknown[] = [];
+	const leftColumnBlocks: unknown[] = [];
+	const rightColumnBlocks: unknown[] = [];
 
+	// Left column: Intro heading and description
+	leftColumnBlocks.push(heading1("Intro"));
 	if (tags.description) {
 		const descriptionText = normalizeDescriptionText(tags.description);
 		const paragraphs = descriptionText.split("\n\n").filter((paragraph) => paragraph.trim());
-		blocks.push(...paragraphs.map((paragraphText) => paragraph(paragraphText)));
+		leftColumnBlocks.push(...paragraphs.map((paragraphText) => paragraph(paragraphText)));
 	}
 
+	// Left column: Ingredients section
 	if (tags.ingredients && tags.ingredients.length > 0) {
-		blocks.push(heading1("Ingredients"));
+		leftColumnBlocks.push(heading1("Ingredients"));
 		const grouped = groupIngredientsByCategory(tags.ingredients);
-		blocks.push(...buildIngredientBlocks(grouped));
+		leftColumnBlocks.push(...buildIngredientBlocks(grouped));
 	} else if (recipe.ingredients.length > 0) {
-		blocks.push(heading1("Ingredients"));
-		blocks.push(...recipe.ingredients.map((ingredient) => bulletItem(ingredient)));
+		leftColumnBlocks.push(heading1("Ingredients"));
+		leftColumnBlocks.push(...recipe.ingredients.map((ingredient) => bulletItem(ingredient)));
 	}
 
+	// Right column: Preparation section
 	if (recipe.instructions.length > 0) {
-		blocks.push(heading1("Preparation"));
-		blocks.push(...recipe.instructions.map((step) => numberedItem(step)));
+		rightColumnBlocks.push(heading1("Preparation"));
+		rightColumnBlocks.push(...recipe.instructions.map((step) => numberedItem(step)));
 	}
 
-	return blocks.slice(0, MAX_NOTION_BLOCKS);
+	// Fallback to linear layout if either column is empty
+	// (This handles edge cases where ingredients or instructions are missing)
+	if (leftColumnBlocks.length === 0 || rightColumnBlocks.length === 0) {
+		return [...leftColumnBlocks, ...rightColumnBlocks].slice(0, MAX_NOTION_BLOCKS);
+	}
+
+	// Create two-column layout
+	// The column_list contains two columns with equal width (50/50 split by default)
+	const leftCol = column(leftColumnBlocks);
+	const rightCol = column(rightColumnBlocks);
+	const layout = columnList([leftCol, rightCol]);
+
+	return [layout];
 }

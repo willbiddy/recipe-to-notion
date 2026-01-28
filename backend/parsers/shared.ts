@@ -159,21 +159,30 @@ export function normalizeFractions(text: string): string {
 }
 
 /**
- * Normalizes parentheses in ingredient strings by removing double parentheses.
+ * Pattern to match trailing markdown asterisks (bold/italic markers).
+ *
+ * Used to remove markdown formatting that sometimes appears in ingredient text.
+ */
+const TRAILING_ASTERISKS_PATTERN = /\*+\s*$/;
+
+/**
+ * Normalizes and cleans ingredient text.
  *
  * Some recipe sources include double parentheses like "((julienned))" which should
  * be normalized to single parentheses "(julienned)" for cleaner display.
  * Also handles cases with spaces like ( (text) ) or (( text )).
  * Trims spaces inside the parentheses for cleaner output.
+ * Removes trailing markdown asterisks (* or **) that sometimes appear in ingredients.
  *
  * @param ingredient - The raw ingredient string.
- * @returns The ingredient string with normalized parentheses.
+ * @returns The cleaned ingredient string.
  */
-export function normalizeIngredientParentheses(ingredient: string): string {
+export function normalizeIngredient(ingredient: string): string {
 	return ingredient
 		.replace(DOUBLE_PARENTHESES_PATTERN, (_, content) => {
 			return `(${content.trim()})`;
 		})
+		.replace(TRAILING_ASTERISKS_PATTERN, "")
 		.trim();
 }
 

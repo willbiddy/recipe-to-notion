@@ -25,13 +25,38 @@ export type ExtensionRecipeFormProps = {
  *
  * @returns Object containing URL, title, recipe title, author, and website name.
  */
-async function getCurrentTab(): Promise<{
+async function getCurrentTab(setPermissionIssue?: (value: boolean) => void): Promise<{
 	url: string | null;
 	title: string | null;
 	recipeTitle: string | null;
 	author: string | null;
 	websiteName: string | null;
 }> {
+	// Check if tabs permission is actually granted
+	const hasTabsPermission = await chrome.permissions.contains({
+		permissions: ["tabs"],
+	});
+	console.log("[getCurrentTab] Has tabs permission:", hasTabsPermission);
+
+	if (!hasTabsPermission) {
+		console.error("[getCurrentTab] MISSING TABS PERMISSION - Requesting it now");
+		if (setPermissionIssue) {
+			setPermissionIssue(true);
+		}
+		// Attempt to request permission at runtime
+		try {
+			const granted = await chrome.permissions.request({
+				permissions: ["tabs"],
+			});
+			console.log("[getCurrentTab] Permission request result:", granted);
+			if (granted && setPermissionIssue) {
+				setPermissionIssue(false);
+			}
+		} catch (err) {
+			console.error("[getCurrentTab] Permission request failed:", err);
+		}
+	}
+
 	const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 	console.log("[getCurrentTab] Tab data:", {
 		tab,
@@ -39,10 +64,26 @@ async function getCurrentTab(): Promise<{
 		title: tab?.title,
 		id: tab?.id,
 		urlType: typeof tab?.url,
+		hasTabsPermission,
 	});
 
-	const url = tab?.url || null;
-	const title = tab?.title || null;
+	let url = tab?.url || null;
+	let title = tab?.title || null;
+
+	// If tab.url is undefined, try content script fallback
+	if (tab && !url && tab.id) {
+		console.log("[getCurrentTab] tab.url is undefined, trying content script fallback");
+		try {
+			const response = await chrome.tabs.sendMessage(tab.id, {
+				type: ExtensionMessageType.GetPageUrl,
+			});
+			url = response?.url || null;
+			title = response?.title || title;
+			console.log("[getCurrentTab] Content script fallback result:", { url, title });
+		} catch (error) {
+			console.error("[getCurrentTab] Content script fallback failed:", error);
+		}
+	}
 
 	// Log if we got a tab but no URL (permission issue)
 	if (tab && !url) {
@@ -100,6 +141,7 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 	const [recipeTitle, setRecipeTitle] = createSignal<string | null>(null);
 	const [recipeAuthor, setRecipeAuthor] = createSignal<string | null>(null);
 	const [websiteName, setWebsiteName] = createSignal<string | null>(null);
+	const [permissionIssue, setPermissionIssue] = createSignal(false);
 	const [loading, setLoading] = createSignal(false);
 	const [status, setStatus] = createSignal<{
 		message?: string;
@@ -175,7 +217,8 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 
 	onMount(async () => {
 		console.log("[ExtensionRecipeForm] onMount: Getting current tab");
-		const { url, title, recipeTitle, author, websiteName } = await getCurrentTab();
+		const { url, title, recipeTitle, author, websiteName } =
+			await getCurrentTab(setPermissionIssue);
 		console.log("[ExtensionRecipeForm] onMount: Setting state", {
 			url,
 			title,
@@ -197,6 +240,7 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 				url={currentUrl()}
 				title={recipeTitle() || currentTitle()}
 				source={recipeAuthor() || websiteName()}
+				permissionIssue={permissionIssue()}
 			/>
 
 			<button

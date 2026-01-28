@@ -83,5 +83,15 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 		sendResponse({ title, author });
 		return true; // Keep message channel open for async response
 	}
+
+	// Fallback handler to get page URL when tabs API fails
+	if (message.type === ExtensionMessageType.GetPageUrl) {
+		sendResponse({
+			url: window.location.href,
+			title: document.title,
+		});
+		return true;
+	}
+
 	return false;
 });

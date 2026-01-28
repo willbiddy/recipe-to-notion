@@ -135,6 +135,7 @@ export enum Theme {
 export enum ExtensionMessageType {
 	ThemeChanged = "theme-changed",
 	ExtractRecipeData = "extract-recipe-data",
+	GetPageUrl = "get-page-url",
 }
 
 /**

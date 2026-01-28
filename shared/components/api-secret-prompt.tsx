@@ -54,7 +54,7 @@ export function ApiSecretPrompt(props: ApiSecretPromptProps) {
 
 	return (
 		<div
-			class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4"
+			class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50"
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby="api-secret-title"
@@ -62,7 +62,7 @@ export function ApiSecretPrompt(props: ApiSecretPromptProps) {
 			onKeyDown={handleBackdropKeyDown}
 		>
 			<div
-				class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 w-[360px]"
+				class="bg-white dark:bg-gray-800 shadow-xl p-6 w-full h-full flex flex-col"
 				role="document"
 				onClick={(e) => e.stopPropagation()}
 				onKeyDown={(e) => e.stopPropagation()}
@@ -76,7 +76,7 @@ export function ApiSecretPrompt(props: ApiSecretPromptProps) {
 				<p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
 					Enter your API secret to save recipes.
 				</p>
-				<div class="space-y-3">
+				<div class="space-y-3 flex-1 flex flex-col justify-center">
 					<div class="relative">
 						<label
 							for="api-secret-input"

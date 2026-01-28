@@ -7,7 +7,7 @@ import {
 	cleanRecipeName,
 	decodeHtmlEntities,
 	filterEditorNotes,
-	normalizeIngredientParentheses,
+	normalizeIngredient,
 	parseDuration,
 } from "./shared.js";
 
@@ -300,11 +300,11 @@ function parseStringArray(data: unknown): string[] {
 	if (!data) return [];
 
 	if (isArray(data)) {
-		return data.map((item) => normalizeIngredientParentheses(decodeHtmlEntities(String(item))));
+		return data.map((item) => normalizeIngredient(decodeHtmlEntities(String(item))));
 	}
 
 	if (isString(data)) {
-		return [normalizeIngredientParentheses(decodeHtmlEntities(data))];
+		return [normalizeIngredient(decodeHtmlEntities(data))];
 	}
 	return [];
 }

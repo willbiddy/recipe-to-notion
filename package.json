@@ -9,6 +9,8 @@
 	"scripts": {
 		"save": "bun backend/cli.ts",
 		"server": "bun backend/cli-server.ts",
+		"scraper": "source .venv/bin/activate && python scripts/scraper-dev.py",
+		"dev": "source .venv/bin/activate && python scripts/scraper-dev.py --no-reload & bun backend/cli-server.ts",
 		"build": "bun build backend/cli.ts --compile --outfile recipe-to-notion",
 		"build:extension": "bun scripts/build-extension.ts && bunx tailwindcss -i extension/input.css -o extension/styles.css --minify",
 		"build:web": "bun scripts/build-web.ts && bunx tailwindcss -i web/input.css -o web/web.css --minify",

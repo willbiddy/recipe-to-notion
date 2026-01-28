@@ -1,12 +1,4 @@
-import * as cheerio from "cheerio";
 import { MAX_AUTHOR_SUFFIX_LENGTH } from "../../shared/constants.js";
-
-/**
- * Pattern to match ISO 8601 duration strings (e.g., "PT1H30M", "PT45M").
- *
- * Matches hours (H), minutes (M), and seconds (S) components of ISO 8601 duration format.
- */
-const ISO_DURATION_PATTERN = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/i;
 
 /**
  * Pattern to match "Recipe" suffix at the end of recipe names.
@@ -42,57 +34,6 @@ const EDITOR_NOTE_START_PATTERN = /^Editor'?s?\s+note:?/i;
  * Used to remove editor's note text that appears within instruction steps.
  */
 const EDITOR_NOTE_END_PATTERN = /\s*Editor'?s?\s+note:?.*$/i;
-
-/**
- * Pattern to match ingredient list headers (should be filtered out).
- */
-export const INGREDIENT_HEADER_PATTERN = /^(INGREDIENTS|INGREDIENT LIST)$/i;
-
-/**
- * Pattern to match instruction section headers (should be filtered out).
- */
-export const INSTRUCTION_HEADER_PATTERN = /^(INSTRUCTIONS|DIRECTIONS|STEPS)$/i;
-
-/**
- * Decodes HTML entities and normalizes Unicode fractions to ASCII.
- *
- * Uses cheerio's built-in HTML parser to decode all entity types:
- * named entities (e.g., &frac34;), decimal (&#8532;), and hex (&#x2154;).
- * Also converts Unicode fraction characters to ASCII equivalents.
- *
- * @param str - String potentially containing HTML entities and Unicode fractions.
- * @returns String with HTML entities decoded and fractions normalized.
- */
-export function decodeHtmlEntities(str: string): string {
-	const decoded = cheerio.load(str, null, false).text();
-	return normalizeFractions(decoded);
-}
-
-/**
- * Parses an ISO 8601 duration string (e.g. "PT1H30M") into total minutes.
- *
- * Converts duration strings like "PT1H30M" (1 hour 30 minutes) or
- * "PT45M" (45 minutes) into a total number of minutes.
- *
- * @param iso - ISO 8601 duration string to parse.
- * @returns Total minutes as a number (including 0 for valid zero durations), or null if parsing fails.
- */
-export function parseDuration(iso: string | undefined): number | null {
-	if (!iso || typeof iso !== "string") {
-		return null;
-	}
-
-	const match = iso.match(ISO_DURATION_PATTERN);
-
-	if (!match) {
-		return null;
-	}
-
-	const hours = parseInt(match[1] || "0", 10);
-	const minutes = parseInt(match[2] || "0", 10);
-	const totalMinutes = hours * 60 + minutes;
-	return totalMinutes;
-}
 
 /**
  * Cleans recipe names by removing common suffixes and author patterns.

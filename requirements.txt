@@ -1,0 +1,2 @@
+# Python dependencies for Vercel serverless functions
+recipe-scrapers>=15.0.0

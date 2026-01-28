@@ -1,6 +1,63 @@
 import type { ProgressType } from "../constants.js";
 
 /**
+ * Method used to extract recipe data from the page.
+ */
+export enum ScrapeMethod {
+	PythonScraper = "python-scrapers",
+}
+
+/**
+ * Structured recipe data extracted from a web page.
+ */
+export type Recipe = {
+	/** Display name of the recipe */
+	name: string;
+	/** Original URL the recipe was scraped from */
+	sourceUrl: string;
+	/** Method used to extract recipe data */
+	scrapeMethod: ScrapeMethod;
+	/** Recipe author or source attribution */
+	author: string;
+	/** Total preparation + cooking time in minutes, if available */
+	totalTimeMinutes: number | null;
+	/** Serving size description (e.g. "4 servings"), if available */
+	servings: string | null;
+	/** URL to the recipe's hero/header image for Notion cover */
+	imageUrl: string | null;
+	/** List of ingredient strings (e.g. "2 cups flour") */
+	ingredients: string[];
+	/** Ordered list of instruction steps */
+	instructions: string[];
+	/** Source description from the recipe page, if available */
+	description: string | null;
+	/** Cuisine type from the source (e.g., "Italian", "Mexican") */
+	cuisine: string | null;
+	/** Recipe category from the source (e.g., "appetizer", "main course") */
+	category: string | null;
+	/** Preparation time in minutes, if available */
+	prepTimeMinutes: number | null;
+	/** Cooking time in minutes, if available */
+	cookTimeMinutes: number | null;
+	/** User rating (float, e.g., 4.5), if available */
+	rating: number | null;
+	/** Number of ratings, if available */
+	ratingsCount: number | null;
+	/** Required kitchen equipment, if available */
+	equipment: string[] | null;
+	/** Nutritional information (e.g., {"calories": "250 kcal"}), if available */
+	nutrients: Record<string, string> | null;
+	/** Dietary restrictions (e.g., ["vegetarian", "gluten-free"]), if available */
+	dietaryRestrictions: string[] | null;
+	/** Keywords/tags from the source, if available */
+	keywords: string[] | null;
+	/** Cooking method (e.g., "baking", "grilling"), if available */
+	cookingMethod: string | null;
+	/** Language code (e.g., "en"), if available */
+	language: string | null;
+};
+
+/**
  * Response format from the server API.
  */
 export type RecipeResponse =

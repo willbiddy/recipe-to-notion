@@ -3,7 +3,6 @@
  * Content scripts can import modules, so we can reuse the actual parser code.
  */
 
-import { findRecipeInLd } from "../backend/parsers/json-ld.js";
 import { cleanRecipeName } from "../backend/parsers/shared.js";
 import { ExtensionMessageType } from "../shared/constants.js";
 import { hasProperty, isArray, isObject, isString } from "../shared/type-guards.js";
@@ -16,6 +15,71 @@ function decodeHtmlEntitiesBrowser(str: string): string {
 	const tempDiv = document.createElement("div");
 	tempDiv.innerHTML = str;
 	return tempDiv.textContent || tempDiv.innerText || str;
+}
+
+/**
+ * Schema.org Recipe type URL patterns to check.
+ */
+const RECIPE_TYPES = ["Recipe", "http://schema.org/Recipe", "https://schema.org/Recipe"];
+
+/**
+ * Checks if an object is a Recipe type in JSON-LD format.
+ */
+function isRecipeType(data: Record<string, unknown>): boolean {
+	const type = data["@type"];
+	if (isString(type)) {
+		return RECIPE_TYPES.includes(type);
+	}
+	if (isArray(type)) {
+		return type.some((t) => isString(t) && RECIPE_TYPES.includes(t));
+	}
+	return false;
+}
+
+/**
+ * Recursively searches JSON-LD structure for @type: "Recipe".
+ * Handles @graph arrays, mainEntity, mainEntityOfPage, itemListElement.
+ */
+function findRecipeInLd(
+	data: unknown,
+	visited: WeakSet<object> = new WeakSet(),
+): Record<string, unknown> | null {
+	if (!isObject(data)) return null;
+	if (visited.has(data)) return null;
+	visited.add(data);
+
+	// Direct Recipe type
+	if (isRecipeType(data)) {
+		return data;
+	}
+
+	// Check @graph array
+	if (hasProperty(data, "@graph") && isArray(data["@graph"])) {
+		for (const item of data["@graph"]) {
+			const result = findRecipeInLd(item, visited);
+			if (result) return result;
+		}
+	}
+
+	// Check mainEntity/mainEntityOfPage
+	if (hasProperty(data, "mainEntity")) {
+		const result = findRecipeInLd(data.mainEntity, visited);
+		if (result) return result;
+	}
+	if (hasProperty(data, "mainEntityOfPage")) {
+		const result = findRecipeInLd(data.mainEntityOfPage, visited);
+		if (result) return result;
+	}
+
+	// Check itemListElement for recipe lists
+	if (hasProperty(data, "itemListElement") && isArray(data.itemListElement)) {
+		for (const item of data.itemListElement) {
+			const result = findRecipeInLd(item, visited);
+			if (result) return result;
+		}
+	}
+
+	return null;
 }
 
 /**

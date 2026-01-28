@@ -48,8 +48,20 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .cache
 *.tsbuildinfo
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.Python
+*.egg-info/
+
 # IntelliJ based IDEs
 .idea
+
+# VS Code settings
+.vscode
 
 # Finder (MacOS) folder config
 .DS_Store

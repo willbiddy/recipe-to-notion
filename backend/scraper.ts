@@ -1,127 +1,234 @@
 import { readFile } from "node:fs/promises";
-import * as cheerio from "cheerio";
+import { type Recipe, ScrapeMethod } from "../shared/api/types.js";
 import { REQUEST_TIMEOUT_MS } from "../shared/constants.js";
 import { getWebsiteName } from "../shared/url-utils.js";
 import { ParseError, ScrapingError } from "./errors.js";
 import { BROWSER_HEADERS } from "./parsers/headers.js";
-import { extractAuthorFromHtml, parseHtml } from "./parsers/html.js";
-import { parseJsonLd } from "./parsers/json-ld.js";
+import {
+	cleanRecipeName,
+	filterEditorNotes,
+	normalizeFractions,
+	normalizeIngredient,
+} from "./parsers/shared.js";
+
+// Re-export Recipe type for convenience (used by logger, tagger, process-recipe)
+export type { Recipe } from "../shared/api/types.js";
 
 /**
- * Method used to extract recipe data from the page.
+ * Response type from the Python scraper endpoint.
  */
-export enum ScrapeMethod {
-	JsonLd = "json-ld",
-	HtmlFallback = "html-fallback",
+type PythonScraperResponse = {
+	title: string;
+	author: string | null;
+	description: string | null;
+	image: string | null;
+	ingredients: string[];
+	instructions: string[];
+	yields: string | null;
+	totalTime: number | null;
+	canonicalUrl: string | null;
+	prepTime: number | null;
+	cookTime: number | null;
+	cuisine: string | null;
+	category: string | null;
+	ratings: number | null;
+	ratingsCount: number | null;
+	equipment: string[] | null;
+	nutrients: Record<string, string> | null;
+	dietaryRestrictions: string | string[] | null;
+	keywords: string | string[] | null;
+	cookingMethod: string | null;
+	siteName: string | null;
+	host: string | null;
+	language: string | null;
+	error?: string;
+	errorType?: string;
+};
+
+/**
+ * Gets the Python scraper URL based on environment.
+ *
+ * In production (Vercel), uses the same origin.
+ * In development, uses PYTHON_SCRAPER_URL env var or defaults to localhost:5001.
+ */
+function getPythonScraperUrl(): string {
+	// Check for explicit override
+	if (process.env.PYTHON_SCRAPER_URL) {
+		return process.env.PYTHON_SCRAPER_URL;
+	}
+
+	// In Vercel production/preview, use the same origin
+	if (process.env.VERCEL_URL) {
+		const protocol = process.env.VERCEL_ENV === "development" ? "http" : "https";
+		return `${protocol}://${process.env.VERCEL_URL}/api/scrape`;
+	}
+
+	// Local development default
+	return "http://localhost:5001/scrape";
 }
 
 /**
- * Structured recipe data extracted from a web page.
- */
-export type Recipe = {
-	/**
-	 * Display name of the recipe.
-	 */
-	name: string;
-	/**
-	 * Original URL the recipe was scraped from.
-	 */
-	sourceUrl: string;
-	/**
-	 * Method used to extract recipe data.
-	 */
-	scrapeMethod: ScrapeMethod;
-	/**
-	 * Recipe author or source attribution.
-	 * Falls back to website domain if not explicitly provided.
-	 */
-	author: string;
-	/**
-	 * Total preparation + cooking time in minutes, if available.
-	 */
-	totalTimeMinutes: number | null;
-	/**
-	 * Serving size description (e.g. "4 servings"), if available.
-	 */
-	servings: string | null;
-	/**
-	 * URL to the recipe's hero/header image for use as a Notion cover.
-	 */
-	imageUrl: string | null;
-	/**
-	 * List of ingredient strings (e.g. "2 cups flour").
-	 */
-	ingredients: string[];
-	/**
-	 * Ordered list of instruction steps.
-	 */
-	instructions: string[];
-	/**
-	 * Source description from the recipe page, if available.
-	 * Used to provide AI with additional context for tagging.
-	 */
-	description: string | null;
-	/**
-	 * Cuisine type from the source (e.g., "Italian", "Mexican").
-	 * Used as a hint for AI tagging, not authoritative.
-	 */
-	cuisine: string | null;
-	/**
-	 * Recipe category from the source (e.g., "appetizer", "main course").
-	 * Used as a hint for AI tagging, not authoritative.
-	 */
-	category: string | null;
-};
-
-/**
- * Internal type for recipe data directly from parsers (before fallback logic).
- * Author may be null at this stage and will be filled in by fallback logic.
- */
-export type ParsedRecipe = Omit<Recipe, "author"> & {
-	author: string | null;
-};
-
-/**
- * Parses recipe data from HTML content.
+ * Transforms Python scraper response to Recipe type.
  *
- * Attempts JSON-LD (schema.org/Recipe) parsing first, which works for most
- * recipe sites including paywalled ones like NYT Cooking that embed structured
- * data for SEO. Falls back to scraping microdata attributes and common CSS
- * class patterns if JSON-LD is unavailable. If author wasn't found in JSON-LD,
- * attempts HTML fallback extraction.
+ * Applies text normalization (fractions, ingredient cleanup) and
+ * author fallback chain to ensure consistent output format.
+ */
+function transformPythonResponse(data: PythonScraperResponse, sourceUrl: string): Recipe {
+	// Apply author fallback chain: author → siteName → website name → URL
+	let author = data.author;
+	if (!author) {
+		author = data.siteName;
+	}
+	if (!author) {
+		author = getWebsiteName(sourceUrl) ?? sourceUrl;
+	}
+
+	// Normalize ingredients (fractions, double parens, etc.)
+	const ingredients = data.ingredients.map((ing) => normalizeFractions(normalizeIngredient(ing)));
+
+	// Filter editor notes from instructions
+	const instructions = filterEditorNotes(data.instructions);
+
+	// Normalize keywords to array if it's a string
+	let keywords: string[] | null = null;
+	if (data.keywords) {
+		if (typeof data.keywords === "string") {
+			keywords = data.keywords
+				.split(",")
+				.map((k) => k.trim())
+				.filter(Boolean);
+		} else {
+			keywords = data.keywords;
+		}
+	}
+
+	// Normalize dietary restrictions to array if it's a string
+	let dietaryRestrictions: string[] | null = null;
+	if (data.dietaryRestrictions) {
+		if (typeof data.dietaryRestrictions === "string") {
+			dietaryRestrictions = [data.dietaryRestrictions];
+		} else {
+			dietaryRestrictions = data.dietaryRestrictions;
+		}
+	}
+
+	return {
+		name: cleanRecipeName(data.title),
+		sourceUrl: data.canonicalUrl ?? sourceUrl,
+		scrapeMethod: ScrapeMethod.PythonScraper,
+		author,
+		totalTimeMinutes: data.totalTime ?? null,
+		servings: data.yields ?? null,
+		imageUrl: data.image ?? null,
+		ingredients,
+		instructions,
+		description: data.description ?? null,
+		cuisine: data.cuisine ?? null,
+		category: data.category ?? null,
+		prepTimeMinutes: data.prepTime ?? null,
+		cookTimeMinutes: data.cookTime ?? null,
+		rating: data.ratings ?? null,
+		ratingsCount: data.ratingsCount ?? null,
+		equipment: data.equipment ?? null,
+		nutrients: data.nutrients ?? null,
+		dietaryRestrictions,
+		keywords,
+		cookingMethod: data.cookingMethod ?? null,
+		language: data.language ?? null,
+	};
+}
+
+/**
+ * Parses recipe data from HTML content using Python scraper.
+ *
+ * Sends HTML to the Python recipe-scrapers endpoint which supports 600+ recipe sites.
+ * Falls back gracefully with appropriate error messages.
  *
  * @param html - The HTML content to parse.
  * @param sourceUrl - The original URL of the recipe (for reference).
  * @returns Parsed recipe data.
- * @throws If no recipe data is found.
+ * @throws ParseError if no recipe data is found.
+ * @throws ScrapingError if Python scraper is unavailable.
  */
-function parseRecipeFromHtml(html: string, sourceUrl: string): Recipe {
-	const $ = cheerio.load(html);
-	const recipe: ParsedRecipe | null = parseJsonLd($, sourceUrl) ?? parseHtml($, sourceUrl);
+async function parseRecipeFromHtml(html: string, sourceUrl: string): Promise<Recipe> {
+	const pythonUrl = getPythonScraperUrl();
+	const controller = new AbortController();
+	const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
-	if (!recipe) {
-		throw new ParseError(
-			`Could not extract recipe data from ${sourceUrl}. The page may be fully paywalled or not contain a recipe.`,
-			sourceUrl,
-		);
+	try {
+		const response = await fetch(pythonUrl, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ url: sourceUrl, html }),
+			signal: controller.signal,
+		});
+
+		if (!response.ok) {
+			const errorText = await response.text();
+			let errorData: { error?: string; errorType?: string } = {};
+			try {
+				errorData = JSON.parse(errorText);
+			} catch {
+				// Not JSON, use raw text
+			}
+
+			if (errorData.errorType === "NoSchemaFoundInWildMode") {
+				throw new ParseError(
+					`Could not extract recipe data from ${sourceUrl}. The page may not contain a recipe or uses an unsupported format.`,
+					sourceUrl,
+				);
+			}
+
+			throw new ScrapingError({
+				message: `Python scraper error: ${errorData.error ?? errorText}`,
+				originalUrl: sourceUrl,
+				statusCode: response.status,
+			});
+		}
+
+		const data: PythonScraperResponse = await response.json();
+
+		if (data.error) {
+			if (data.errorType === "NoSchemaFoundInWildMode") {
+				throw new ParseError(
+					`Could not extract recipe data from ${sourceUrl}. The page may not contain a recipe or uses an unsupported format.`,
+					sourceUrl,
+				);
+			}
+			throw new ScrapingError({
+				message: `Python scraper error: ${data.error}`,
+				originalUrl: sourceUrl,
+			});
+		}
+
+		return transformPythonResponse(data, sourceUrl);
+	} catch (error) {
+		if (error instanceof ParseError || error instanceof ScrapingError) {
+			throw error;
+		}
+
+		// Handle timeout
+		if (error instanceof Error && error.name === "AbortError") {
+			throw new ScrapingError({
+				message: `Python scraper timeout: Failed to parse recipe within ${REQUEST_TIMEOUT_MS / 1000} seconds.`,
+				originalUrl: sourceUrl,
+				cause: error,
+			});
+		}
+
+		// Connection error to Python scraper
+		throw new ScrapingError({
+			message:
+				`Failed to connect to recipe scraper at ${pythonUrl}. ` +
+				`Make sure the Python scraper is running (python scripts/scraper-dev.py).`,
+			originalUrl: sourceUrl,
+			cause: error,
+		});
+	} finally {
+		clearTimeout(timeoutId);
 	}
-
-	// Apply fallbacks to ensure author is always populated
-	let finalAuthor = recipe.author;
-
-	if (!finalAuthor) {
-		finalAuthor = extractAuthorFromHtml($);
-	}
-
-	if (!finalAuthor) {
-		finalAuthor = getWebsiteName(sourceUrl) ?? sourceUrl;
-	}
-
-	// Return recipe with guaranteed non-null author
-	return {
-		...recipe,
-		author: finalAuthor,
-	};
 }
 
 /**
@@ -164,7 +271,7 @@ export async function scrapeRecipe(url: string): Promise<Recipe> {
 		}
 
 		const html = await response.text();
-		return parseRecipeFromHtml(html, url);
+		return await parseRecipeFromHtml(html, url);
 	} catch (error) {
 		if (error instanceof ScrapingError || error instanceof ParseError) {
 			throw error;
@@ -203,7 +310,7 @@ export async function scrapeRecipeFromHtml(htmlPath: string, sourceUrl: string):
 	const html = await readFile(htmlPath, "utf-8");
 
 	try {
-		return parseRecipeFromHtml(html, sourceUrl);
+		return await parseRecipeFromHtml(html, sourceUrl);
 	} catch (error) {
 		if (error instanceof ParseError) {
 			throw new ParseError(

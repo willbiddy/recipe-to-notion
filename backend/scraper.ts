@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import * as cheerio from "cheerio";
 import { REQUEST_TIMEOUT_MS } from "../shared/constants.js";
 import { ParseError, ScrapingError } from "./errors.js";
@@ -178,8 +179,7 @@ export async function scrapeRecipe(url: string): Promise<Recipe> {
  * @throws If the file cannot be read or no recipe data is found.
  */
 export async function scrapeRecipeFromHtml(htmlPath: string, sourceUrl: string): Promise<Recipe> {
-	const file = Bun.file(htmlPath);
-	const html = await file.text();
+	const html = await readFile(htmlPath, "utf-8");
 
 	try {
 		return parseRecipeFromHtml(html, sourceUrl);

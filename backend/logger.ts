@@ -68,7 +68,7 @@ export function createConsoleLogger(): RecipeLogger {
 	/**
 	 * Formats and displays a recipe summary with tags and metadata.
 	 *
-	 * Creates a formatted display showing recipe name, author (if available),
+	 * Creates a formatted display showing recipe name, author,
 	 * tags, meal type, health score, time, ingredient count, and step count.
 	 *
 	 * @param recipe - The recipe data to display.
@@ -79,14 +79,14 @@ export function createConsoleLogger(): RecipeLogger {
 
 		const lines = [
 			`✓ ${recipe.name}`,
-			recipe.author ? `${INDENT}Author: ${recipe.author}` : null,
+			`${INDENT}Author: ${recipe.author}`,
 			`${INDENT}Tags: ${tags.tags.join(", ")}`,
 			`${INDENT}Meal type: ${tags.mealType.join(", ")}`,
 			`${INDENT}Health score: ${tags.healthScore}/${HealthScore.Max}`,
 			`${INDENT}Total time: ${formatTimeMinutes(tags.totalTimeMinutes)}`,
 			`${INDENT}Ingredients: ${recipe.ingredients.length} items`,
 			`${INDENT}Steps: ${recipe.instructions.length} steps`,
-		].filter((line) => line !== null);
+		];
 
 		console.log("");
 		console.log(lines.join("\n"));

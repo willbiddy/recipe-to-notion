@@ -10,7 +10,7 @@ export type RecipeInfoData = {
 	notionUrl: string;
 	recipe: {
 		name: string;
-		author: string | null;
+		author: string;
 		ingredients: string[];
 		instructions: string[];
 	};

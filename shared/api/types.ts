@@ -40,7 +40,7 @@ export type ServerProgressEvent =
 			notionUrl: string;
 			recipe?: {
 				name: string;
-				author: string | null;
+				author: string;
 				ingredients: string[];
 				instructions: string[];
 			};
@@ -68,7 +68,7 @@ export type ProgressCallbacks = {
 		notionUrl: string;
 		recipe: {
 			name: string;
-			author: string | null;
+			author: string;
 			ingredients: string[];
 			instructions: string[];
 		};

@@ -22,7 +22,7 @@ const completeEventSchema = z.object({
 	recipe: z
 		.object({
 			name: z.string(),
-			author: z.string().nullable(),
+			author: z.string(),
 			ingredients: z.array(z.string()),
 			instructions: z.array(z.string()),
 		})

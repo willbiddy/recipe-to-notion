@@ -116,7 +116,7 @@ export const MAX_SITE_NAME_LENGTH = 50;
  * API error message patterns for detecting authentication errors.
  */
 export enum ApiErrorPattern {
-	InvalidApiKey = "invalid api key",
+	InvalidApiSecret = "invalid api secret",
 	MissingAuthorization = "missing authorization",
 	InvalidAuthorization = "invalid authorization",
 }
@@ -169,7 +169,7 @@ export enum ErrorMessageKey {
  */
 export function getErrorMessage(key: ErrorMessageKey): string {
 	const messages: Record<ErrorMessageKey, string> = {
-		[ErrorMessageKey.InvalidApiKey]: "Invalid API key. Please update your API secret.",
+		[ErrorMessageKey.InvalidApiKey]: "Invalid API secret. Please update your API secret.",
 		[ErrorMessageKey.NotValidWebPageUrl]: "Not a valid web page URL.",
 		[ErrorMessageKey.NoUrlFound]: "No URL found. Please navigate to a recipe page.",
 		[ErrorMessageKey.DuplicateRecipeFound]: "This recipe already exists.",

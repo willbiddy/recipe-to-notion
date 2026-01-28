@@ -15,47 +15,114 @@ You'll receive recipe data in this structure:
 
 ## Output Format
 
-Return **ONLY** valid JSON with these exact keys. No markdown, no code fences, no explanation. Just the JSON object.
+Return only a valid RecipeOutput JSON object with the correct keys and values. No markdown, no code fences, no explanation.
 
-```json
-{
-  "tags": [...],
-  "mealType": [...],
-  "healthScore": N,
-  "description": "...",
-  "ingredients": [...],
-  "totalTimeMinutes": N
-}
+```ts
+type MealType =
+  | "Breakfast"
+  | "Lunch"
+  | "Dinner"
+  | "Snack"
+  | "Side"
+  | "Dessert"
+  | "Other";
 
+type IngredientCategory =
+  | "Produce"
+  | "Meat & seafood"
+  | "Dairy & eggs"
+  | "Bakery"
+  | "Pantry"
+  | "Frozen"
+  | "Other";
+
+type CuisineTag =
+  | "African"
+  | "Caribbean"
+  | "Chinese"
+  | "Indian"
+  | "Italian"
+  | "Mediterranean"
+  | "Mexican"
+  | "Middle Eastern"
+  | "Persian"
+  | "Spanish";
+
+type DishTypeTag =
+  | "Bowl"
+  | "Brownies"
+  | "Cookies"
+  | "Dip"
+  | "Enchiladas"
+  | "Meatballs"
+  | "Muffins"
+  | "Noodles"
+  | "Pancakes"
+  | "Pasta"
+  | "Pie"
+  | "Salad"
+  | "Sandwich"
+  | "Sauce"
+  | "Soup"
+  | "Stew"
+  | "Stir-Fry"
+  | "Tacos";
+
+type MainIngredientTag =
+  | "Beans"
+  | "Beef"
+  | "Chicken"
+  | "Lamb"
+  | "Lentils"
+  | "Pork"
+  | "Seafood"
+  | "Tofu"
+  | "Turkey"
+  | "Vegetables";
+
+type PreferredTag =
+  | CuisineTag
+  | DishTypeTag
+  | MainIngredientTag
+  | string;
+
+type HealthScore =
+  | 1 | 2 | 3 | 4 | 5
+  | 6 | 7 | 8 | 9 | 10;
+
+type Ingredient = {
+  name: string;
+  category: IngredientCategory;
+};
+
+type RecipeOutput = {
+  mealType: MealType;
+  tags: PreferredTag[];
+  healthScore: HealthScore;
+  description: string;
+  ingredients: Ingredient[];
+  totalTimeMinutes: number;
+};
 ```
 
 ## Field Definitions
 
-### 1. tags (array of 1-4 strings)
+### 1. mealType: MealType;
 
-Select tags from the following lists:
+* Each recipe must return exactly one MealType.
+* If a recipe reasonably fits multiple categories, choose the most common use.
+* Always use "Other" when no category fits.
 
-* **Cuisine (usually 0 or 1):** American, Caribbean, Chinese, Indian, Italian, Mediterranean, Mexican, Middle Eastern, Persian, Spanish, Thai, West African
-* **Dish type (usually 1):** Bowl, Curry, Dip, Enchiladas, Meatballs, Noodles, Pancakes, Pasta, Salad, Sandwich, Sauce, Soup, Stew, Stir-Fry, Tacos, Brownies
-* **Main ingredient (usually 1 or 2):** Beans, Beef, Chicken, Lamb, Lentils, Pork, Seafood, Tofu, Turkey, Vegetables
+### 2. tags: PreferredTag[];
 
-**Guidelines:**
-
-* **Prefer tags from the lists above.**
+* Prefer tags from the lists above, but use your own tags if the tags above don't fit.
 * Skip cuisine if the dish is generic (e.g., plain grilled chicken).
 * Use broad categories for main ingredient (e.g., "Seafood" not "Shrimp", "Vegetables" not "Broccoli").
-* **NEVER** use meal types as tags (no "Breakfast", "Lunch", "Dinner", "Dessert").
+* **NEVER** use a mealType as a tag (no "Dessert", "Snack", etc.).
 
-### 2. mealType (array of 1-2 strings)
+### 3. healthScore: HealthScore;
 
-**Choose from:** `Breakfast`, `Lunch`, `Dinner`, `Side`, `Snack`, `Dessert`, `Other`
-
-* Most dishes are single-type. Use multiple only when genuinely versatile (e.g., Shakshuka = Breakfast + Lunch).
-* Always use "Other" when no other category fits.
-
-### 3. healthScore (integer 1-10)
-
-Rate 1-10 using the criteria, examples, and key signals below. **Judge by actual ingredients, not recipe name.**
+Rate 1-10 using the criteria, examples, and key signals below. Judge by actual ingredients, not recipe name.
 
 #### Scoring Criteria
 
@@ -95,34 +162,32 @@ Rate 1-10 using the criteria, examples, and key signals below. **Judge by actual
 * **Less healthy:** Few or no vegetables. Potatoes (count as starch, not vegetables). Refined grains (white bread, white rice, white pasta). Processed meats (bacon, sausage, hot dogs, cold cuts). Trans fats or partially hydrogenated oils (worst type of fat). Heavy dairy beyond 1-2 servings. Fruit juice or added sugars. High glycemic load foods. Highly processed prepared foods. Monotone, limited vegetable types. High saturated fat.
 * **Side dishes:** Rate based on contribution potential. Does this side help or hurt the overall health of a meal? Sides max out at 9 (only complete meals can score 10).
 
-### 4. description (string)
+### 4. description: string;
 
 Two paragraphs separated by `\n\n`.
 
 * **Paragraph 1:** 2-3 sentences introducing what the dish is and what's notable about it.
 * **Paragraph 2:** 1-2 sentences about what makes the recipe healthier or less healthy.
-* For dishes rated **1–6**: Suggest healthy modifications or additions.
-* For dishes rated **7+**: Modifications are optional.
-* **Recommendation:** Suggest 2–3 sides or mains that complement the dish and increase the health score for the overall meal. Do not recommend lazy options like a simple/crisp/leafy salad.
-* **Exceptions:** Skip paragraph 2 completely for desserts.
+  * For dishes rated **1–6**: Suggest healthy modifications or additions.
+  * For dishes rated **7+**: Modifications are optional.
+  * Suggest 2–3 sides or mains that complement the dish and increase the health score for the overall meal.
+  * Do not recommend your first lazy suggestion ideas like a simple/crisp/leafy salad.
+  * Skip paragraph 2 completely for desserts.
 
 *Tone Guidelines:* Use complete sentences, not fragments. Casual tone, like telling a friend. No em-dashes. No AI-sounding phrases.
 
-### 5. ingredients (array of objects)
+### 5. Ingredient[];
 
-Categorize each ingredient for grocery shopping. Return the same number of ingredients as provided, preserving the original text exactly.
-
-**Use exactly one category (case-sensitive):**
-`Produce` | `Meat & seafood` | `Dairy & eggs` | `Bakery` | `Pantry` | `Frozen` | `Other`
+Categorize each ingredient for grocery shopping in exactly one IngredientCategory. Return the same number of ingredients as provided, preserving the original text exactly.
 
 **Handling duplicate ingredients:**
-If an ingredient appears multiple times in the recipe with different contexts (e.g., "Fine sea salt and black pepper" in both marinade and main sections), include a brief usage note in parentheses to distinguish them:
+If an ingredient appears multiple times in the recipe with different contexts, include a brief usage note in parentheses to distinguish them:
 
 * Append short phrases like " (for marinade)" or " (for salmon)"
 * Only add usage context if the ingredient appears multiple times and has distinct usage.
 * **Important:** Otherwise, preserve the ingredient text, quantities, and descriptions exactly as provided.
 
-### 6. totalTimeMinutes (integer)
+### 6. totalTimeMinutes: number;
 
 Use provided time if available. Otherwise, read through all instructions and sum up prep time plus cooking time for each step. Account for oven preheating, marinating, resting, and chilling.
 

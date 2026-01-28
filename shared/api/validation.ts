@@ -8,7 +8,7 @@ import { type ServerProgressEvent, ServerProgressEventType } from "./types.js";
 const progressEventSchema = z.object({
 	type: z.literal(ServerProgressEventType.Progress),
 	message: z.string(),
-	progressType: z.nativeEnum(ProgressType),
+	progressType: z.enum(ProgressType),
 });
 
 /**
@@ -30,7 +30,7 @@ const completeEventSchema = z.object({
 	tags: z
 		.object({
 			tags: z.array(z.string()),
-			mealType: z.array(z.string()),
+			mealType: z.string(),
 			healthScore: z.number(),
 			totalTimeMinutes: z.number(),
 		})

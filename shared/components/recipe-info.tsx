@@ -16,7 +16,7 @@ export type RecipeInfoData = {
 	};
 	tags: {
 		tags: string[];
-		mealType: string[];
+		mealType: string;
 		healthScore: number;
 		totalTimeMinutes: number;
 	};
@@ -32,14 +32,19 @@ export type RecipeInfoProps = {
 export function RecipeInfo(props: RecipeInfoProps) {
 	const { recipe, tags } = props.data;
 
+	const stepCount = recipe.instructions.length;
+	const ingredientCount = recipe.ingredients.length;
 	const infoItems: { label: string; value: string | null }[] = [
 		{ label: "Author", value: recipe.author },
 		{ label: "Tags", value: tags.tags.join(", ") },
-		{ label: "Meal type", value: tags.mealType.join(", ") },
+		{ label: "Meal type", value: tags.mealType },
 		{ label: "Health score", value: `${tags.healthScore}/10` },
 		{ label: "Time", value: formatTimeMinutes(tags.totalTimeMinutes) },
-		{ label: "Ingredients", value: `${recipe.ingredients.length} items` },
-		{ label: "Steps", value: `${recipe.instructions.length} steps` },
+		{
+			label: "Ingredients",
+			value: `${ingredientCount} ${ingredientCount === 1 ? "item" : "items"}`,
+		},
+		{ label: "Steps", value: `${stepCount} ${stepCount === 1 ? "step" : "steps"}` },
 	];
 
 	return (

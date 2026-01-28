@@ -22,7 +22,7 @@ export function buildPageProperties(recipe: Recipe, tags: RecipeTags): Record<st
 			multi_select: tags.tags.map((t) => ({ name: t })),
 		},
 		[PropertyNames.MEAL_TYPE]: {
-			multi_select: tags.mealType.map((m) => ({ name: m })),
+			select: { name: tags.mealType },
 		},
 		[PropertyNames.HEALTH_SCORE]: {
 			number: tags.healthScore,

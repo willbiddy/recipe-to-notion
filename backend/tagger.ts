@@ -21,6 +21,19 @@ export enum IngredientCategory {
 }
 
 /**
+ * Meal type categories for recipe classification.
+ */
+export enum MealType {
+	Breakfast = "Breakfast",
+	Lunch = "Lunch",
+	Dinner = "Dinner",
+	Snack = "Snack",
+	Side = "Side",
+	Dessert = "Dessert",
+	Other = "Other",
+}
+
+/**
  * Health score configuration.
  */
 export enum HealthScore {
@@ -54,9 +67,9 @@ export type RecipeTags = {
 	 */
 	tags: string[];
 	/**
-	 * Applicable meal types (e.g. "Dinner", "Snack", "Dessert").
+	 * Applicable meal type (e.g. "Dinner", "Snack", "Dessert").
 	 */
-	mealType: string[];
+	mealType: MealType;
 	/**
 	 * Health score from 1 (junk food) to 10 (balanced whole-food meal).
 	 */
@@ -158,19 +171,36 @@ enum ErrorDisplay {
  */
 const categorizedIngredientSchema = z.object({
 	name: z.string().min(1, "Ingredient name is required"),
-	category: z.nativeEnum(IngredientCategory, {
+	category: z.enum(IngredientCategory, {
 		message: `Category must be one of: ${Object.values(IngredientCategory).join(", ")}`,
 	}),
 });
 
 const claudeResponseSchema = z.object({
 	tags: z.array(z.string()).min(1, "At least one tag is required"),
-	mealType: z.array(z.string()).min(1, "At least one meal type is required"),
+	mealType: z.enum(MealType, {
+		message: `Meal type must be one of: ${Object.values(MealType).join(", ")}`,
+	}),
 	healthScore: z.number().int().min(HealthScore.Min).max(HealthScore.Max),
 	totalTimeMinutes: z.number().int().positive(),
 	description: z.string().min(1, "Description is required"),
 	ingredients: z.array(categorizedIngredientSchema).min(1, "At least one ingredient is required"),
 });
+
+/**
+ * Enhanced schema with cross-field validation to prevent mealType values in tags.
+ */
+const claudeResponseSchemaWithCrossValidation = claudeResponseSchema.refine(
+	(data) => {
+		const mealTypeValues = Object.values(MealType);
+		const hasConflict = data.tags.some((tag) => mealTypeValues.includes(tag as MealType));
+		return !hasConflict;
+	},
+	{
+		message: `Tags array must not contain meal type values (${Object.values(MealType).join(", ")}). Use the mealType field instead.`,
+		path: ["tags"],
+	},
+);
 
 let systemPromptCache: string | null = null;
 
@@ -310,7 +340,7 @@ function extractToolUse(response: Anthropic.Messages.Message): Anthropic.Message
 function validateClaudeResponse(
 	toolUse: Anthropic.Messages.ToolUseBlock,
 ): z.infer<typeof claudeResponseSchema> {
-	const validationResult = claudeResponseSchema.safeParse(toolUse.input);
+	const validationResult = claudeResponseSchemaWithCrossValidation.safeParse(toolUse.input);
 
 	if (!validationResult.success) {
 		const issues = validationResult.error.issues

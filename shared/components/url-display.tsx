@@ -27,12 +27,7 @@ export type UrlDisplayProps = {
 export function UrlDisplay(props: UrlDisplayProps) {
 	// Use createMemo for reactive derived values
 	const hasValidUrl = createMemo(() => {
-		const isValid = props.url && isValidHttpUrl(props.url);
-		console.log("[UrlDisplay] hasValidUrl computed:", {
-			url: props.url,
-			isValid,
-		});
-		return isValid;
+		return props.url && isValidHttpUrl(props.url);
 	});
 
 	const hasTitle = createMemo(() => props.title?.trim());

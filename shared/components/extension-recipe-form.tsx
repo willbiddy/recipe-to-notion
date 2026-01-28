@@ -35,7 +35,6 @@ async function getCurrentTab(setPermissionIssue?: (value: boolean) => void): Pro
 	const hasTabsPermission = await chrome.permissions.contains({
 		permissions: ["tabs"],
 	});
-	console.log("[getCurrentTab] Has tabs permission:", hasTabsPermission);
 
 	if (!hasTabsPermission) {
 		console.error("[getCurrentTab] MISSING TABS PERMISSION - Requesting it now");
@@ -47,7 +46,6 @@ async function getCurrentTab(setPermissionIssue?: (value: boolean) => void): Pro
 			const granted = await chrome.permissions.request({
 				permissions: ["tabs"],
 			});
-			console.log("[getCurrentTab] Permission request result:", granted);
 			if (granted && setPermissionIssue) {
 				setPermissionIssue(false);
 			}
@@ -57,36 +55,21 @@ async function getCurrentTab(setPermissionIssue?: (value: boolean) => void): Pro
 	}
 
 	const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-	console.log("[getCurrentTab] Tab data:", {
-		tab,
-		url: tab?.url,
-		title: tab?.title,
-		id: tab?.id,
-		urlType: typeof tab?.url,
-		hasTabsPermission,
-	});
 
 	let url = tab?.url || null;
 	let title = tab?.title || null;
 
 	// If tab.url is undefined, try content script fallback
 	if (tab && !url && tab.id) {
-		console.log("[getCurrentTab] tab.url is undefined, trying content script fallback");
 		try {
 			const response = await chrome.tabs.sendMessage(tab.id, {
 				type: ExtensionMessageType.GetPageUrl,
 			});
 			url = response?.url || null;
 			title = response?.title || title;
-			console.log("[getCurrentTab] Content script fallback result:", { url, title });
 		} catch (error) {
 			console.error("[getCurrentTab] Content script fallback failed:", error);
 		}
-	}
-
-	// Log if we got a tab but no URL (permission issue)
-	if (tab && !url) {
-		console.warn("[getCurrentTab] Tab found but URL is undefined - check extension permissions");
 	}
 
 	let recipeTitle: string | null = null;
@@ -95,39 +78,27 @@ async function getCurrentTab(setPermissionIssue?: (value: boolean) => void): Pro
 
 	if (url) {
 		websiteName = getWebsiteName(url);
-		console.log("[getCurrentTab] Website name:", websiteName);
 	}
 
 	if (tab?.id && url && isValidHttpUrl(url)) {
-		console.log("[getCurrentTab] Attempting to extract recipe data from content script");
 		try {
 			const response = await chrome.tabs.sendMessage(tab.id, {
 				type: ExtensionMessageType.ExtractRecipeData,
 			});
 			recipeTitle = response?.title || null;
 			author = response?.author || null;
-			console.log("[getCurrentTab] Recipe data extracted:", { recipeTitle, author });
-		} catch (error) {
-			console.log("[getCurrentTab] Content script unavailable:", error);
+		} catch {
 			// Content script unavailable
 		}
-	} else {
-		console.log("[getCurrentTab] Skipping content script:", {
-			hasTabId: !!tab?.id,
-			hasUrl: !!url,
-			isValidUrl: url ? isValidHttpUrl(url) : false,
-		});
 	}
 
-	const result = {
+	return {
 		url,
 		title,
 		recipeTitle,
 		author,
 		websiteName,
 	};
-	console.log("[getCurrentTab] Returning:", result);
-	return result;
 }
 
 /**
@@ -236,22 +207,13 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 	}
 
 	onMount(async () => {
-		console.log("[ExtensionRecipeForm] onMount: Getting current tab");
 		const { url, title, recipeTitle, author, websiteName } =
 			await getCurrentTab(setPermissionIssue);
-		console.log("[ExtensionRecipeForm] onMount: Setting state", {
-			url,
-			title,
-			recipeTitle,
-			author,
-			websiteName,
-		});
 		setCurrentUrl(url);
 		setCurrentTitle(title);
 		setRecipeTitle(recipeTitle);
 		setRecipeAuthor(author);
 		setWebsiteName(websiteName);
-		console.log("[ExtensionRecipeForm] onMount: State set, currentUrl signal:", currentUrl());
 	});
 
 	return (

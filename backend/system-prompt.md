@@ -115,10 +115,39 @@ type RecipeOutput = {
 
 ### 2. tags: PreferredTag[];
 
-* Prefer tags from the lists above, but use your own tags if the tags above don't fit.
-* Skip cuisine if the dish is generic (e.g., plain grilled chicken).
-* Use broad categories for main ingredient (e.g., "Seafood" not "Shrimp", "Vegetables" not "Broccoli").
-* **NEVER** use a mealType as a tag (no "Dessert", "Snack", etc.).
+Return 1-4 tags that identify **what the dish is**, not its characteristics.
+
+**Tag Structure: 0-1 cuisine + 0-1 dish type + 0-2 main ingredients = 1-4 total tags**
+
+* **Cuisine tags (0-1):**
+  * Use predefined CuisineTag when applicable (Italian, Mexican, Chinese, etc.)
+  * Skip for generic/American dishes
+  * Use custom cuisines when important (Korean, Thai, Vietnamese, etc.)
+
+* **Dish type tags (0-1):**
+  * Use predefined DishTypeTag when applicable (Pasta, Soup, Salad, Stir-Fry, etc.)
+  * Use custom dish types when important (Granola, Smoothie, etc.)
+
+* **Main ingredient tags (0-2):**
+  * Use predefined MainIngredientTag for star ingredients (Chicken, Beef, Tofu, Seafood, Vegetables, Beans, Lentils, etc.)
+  * **Always use broad categories:** "Seafood" not "Shrimp", "Vegetables" not "Broccoli", "Beans" not "Black Beans"
+  * **"Vegetables" is ONLY for vegetable-forward dishes** where vegetables are the star (roasted vegetables, ratatouille, etc.)
+  * Use custom ingredient tags when predefined tags don't fit.
+
+* **General rules:**
+  * **Prefer predefined tags** from the lists above when they accurately describe the dish
+  * It's okay to have minimal tags (1-2 total) for simple/generic recipes
+
+**NEVER include:**
+* MealType values (no "Dessert", "Snack", "Breakfast", etc.)
+* Characteristic/descriptive tags (no "High-Protein", "Make-Ahead", "Meal Prep", "Quick", "Easy", "Healthy", "Vegan", "Gluten-Free", etc.)
+* Cooking method tags (no "Baked", "Grilled", "Slow-Cooker", etc.)
+* Time-based tags (no "30-Minute", "Quick", "Make-Ahead", etc.)
+* Specific ingredient varieties when a broader category exists (no "Shrimp" when "Seafood" exists, no "Broccoli" when "Vegetables" exists)
+
+**Examples:**
+* Black Bean Tacos → `["Mexican", "Tacos", "Beans"]`
+* Roasted Vegetable Medley → `["Vegetables"]`
 
 ### 3. healthScore: HealthScore;
 

@@ -231,7 +231,7 @@ The API includes several security measures:
 
 ### Error Responses
 
-- **400 Bad Request** - Missing or invalid `Authorization` header, invalid API key, invalid URL format/protocol, URL too long, or request body too large
+- **400 Bad Request** - Missing or invalid `Authorization` header, invalid API secret, invalid URL format/protocol, URL too long, or request body too large
 - **429 Too Many Requests** - Rate limit exceeded
 
 ---

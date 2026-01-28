@@ -13,7 +13,7 @@ import { ApiErrorPattern } from "./constants.js";
 export function isApiKeyError(errorMessage: string): boolean {
 	const lowerMessage = errorMessage.toLowerCase();
 	return (
-		lowerMessage.includes(ApiErrorPattern.InvalidApiKey) ||
+		lowerMessage.includes(ApiErrorPattern.InvalidApiSecret) ||
 		lowerMessage.includes(ApiErrorPattern.MissingAuthorization) ||
 		lowerMessage.includes(ApiErrorPattern.InvalidAuthorization)
 	);

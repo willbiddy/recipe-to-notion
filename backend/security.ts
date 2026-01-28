@@ -89,7 +89,7 @@ export function validateApiKeyHeader(
 	}
 
 	if (!constantTimeEquals(providedKey, expectedKey)) {
-		return createErrorResponse("Invalid API key", SecurityHttpStatus.BadRequest);
+		return createErrorResponse("Invalid API secret", SecurityHttpStatus.BadRequest);
 	}
 
 	return null;

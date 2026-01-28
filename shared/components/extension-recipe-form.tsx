@@ -270,31 +270,21 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 				disabled={loading() || isInvalidApiKey()}
 				class="btn-primary group"
 			>
-				<Show
-					when={loading()}
-					fallback={
-						<svg
-							class="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-							aria-hidden="true"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M5 13l4 4L19 7"
-							/>
-						</svg>
-					}
+				<svg
+					class="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200"
+					fill="none"
+					stroke="currentColor"
+					viewBox="0 0 24 24"
+					aria-hidden="true"
 				>
-					<div
-						class="button-spinner w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin flex-shrink-0"
-						aria-hidden="true"
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M5 13l4 4L19 7"
 					/>
-				</Show>
-				<span class="button-text">{loading() ? "Processing..." : "Save Recipe"}</span>
+				</svg>
+				<span class="button-text">Save Recipe</span>
 			</button>
 
 			<Show when={progress()}>{(msg) => <ProgressIndicator message={msg()} />}</Show>

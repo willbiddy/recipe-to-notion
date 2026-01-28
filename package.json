@@ -7,7 +7,7 @@
 		"recipe-to-notion": "./backend/cli.ts"
 	},
 	"scripts": {
-		"add": "bun backend/cli.ts",
+		"save": "bun backend/cli.ts",
 		"server": "bun backend/cli-server.ts",
 		"build": "bun build backend/cli.ts --compile --outfile recipe-to-notion",
 		"build:extension": "bun scripts/build-extension.ts && bunx tailwindcss -i extension/input.css -o extension/styles.css --minify",

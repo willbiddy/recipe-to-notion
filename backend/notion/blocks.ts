@@ -184,7 +184,7 @@ function buildIngredientBlocks(
  * Builds the main body content for a Notion recipe page in a two-column layout.
  *
  * Creates a two-column structure:
- * - Left column: "Intro" heading, description (if available), and ingredients section
+ * - Left column: "About" heading, description (if available), and ingredients section
  * - Right column: "Preparation" heading and instruction steps
  *
  * Falls back to linear layout if either column would be empty. Limits output to MAX_NOTION_BLOCKS
@@ -198,8 +198,8 @@ export function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
 	const leftColumnBlocks: unknown[] = [];
 	const rightColumnBlocks: unknown[] = [];
 
-	// Left column: Intro heading and description
-	leftColumnBlocks.push(heading1("Intro"));
+	// Left column: About heading and description
+	leftColumnBlocks.push(heading1("About"));
 	if (tags.description) {
 		const descriptionText = normalizeDescriptionText(tags.description);
 		const paragraphs = descriptionText.split("\n\n").filter((paragraph) => paragraph.trim());

@@ -3,7 +3,6 @@
  * Reduces code duplication and ensures consistent behavior.
  */
 
-import { consola } from "consola";
 import { type RecipeResponse, ServerProgressEventType } from "../../shared/api/types.js";
 import { type Config, loadConfig } from "../config.js";
 import { ValidationError } from "../errors.js";
@@ -86,7 +85,7 @@ export function handleRecipeStream(options: HandleRecipeStreamOptions): Response
 					const message = `data: ${JSON.stringify(data)}\n\n`;
 					controller.enqueue(encoder.encode(message));
 				} catch (e) {
-					consola.error("Error sending SSE event:", e);
+					console.error("Error sending SSE event:", e);
 				}
 			}
 
@@ -131,12 +130,12 @@ export function handleRecipeStream(options: HandleRecipeStreamOptions): Response
 
 				sendEvent(completeEvent);
 			} catch (error) {
-				consola.error("Recipe processing error in stream:", error);
+				console.error("Recipe processing error in stream:", error);
 
 				const { logErrorDetails } = await import("./errors.js");
-				logErrorDetails(error, { error: consola.error }, requestId);
+				logErrorDetails(error, { error: console.error }, requestId);
 
-				const { message, notionUrl } = sanitizeError(error, { error: consola.error }, requestId);
+				const { message, notionUrl } = sanitizeError(error, { error: console.error }, requestId);
 
 				try {
 					sendEvent({
@@ -146,13 +145,13 @@ export function handleRecipeStream(options: HandleRecipeStreamOptions): Response
 						...(notionUrl && { notionUrl }),
 					});
 				} catch (e) {
-					consola.error("Error sending error event:", e);
+					console.error("Error sending error event:", e);
 				}
 			} finally {
 				try {
 					controller.close();
 				} catch (e) {
-					consola.error("Error closing stream:", e);
+					console.error("Error closing stream:", e);
 				}
 			}
 		},
@@ -185,7 +184,7 @@ export async function handleRecipeRequest(options: RecipeHandlerOptions): Promis
 	try {
 		config = loadConfig();
 	} catch (error) {
-		consola.error(`[${requestId}] Configuration error:`, error);
+		console.error(`[${requestId}] Configuration error:`, error);
 		if (error instanceof ValidationError) {
 			const response = createErrorResponse(
 				"Server configuration error: Missing or invalid environment variables. Please check your Vercel environment variables.",
@@ -274,6 +273,6 @@ export async function handleRecipeRequest(options: RecipeHandlerOptions): Promis
 		setCorsHeaders(response, request);
 		return response;
 	} catch (error) {
-		return handleRecipeError(error, { error: consola.error }, requestId);
+		return handleRecipeError(error, { error: console.error }, requestId);
 	}
 }

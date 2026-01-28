@@ -1,53 +1,19 @@
+import { HttpStatus } from "../backend/server-shared/constants.js";
+import { createErrorResponse, generateRequestId } from "../backend/server-shared/errors.js";
+import { handleOptionsRequest } from "../backend/server-shared/headers.js";
+import { handleRecipeRequest } from "../backend/server-shared/recipe-handler.js";
+
 /**
- * Main handler for the /api/recipes endpoint with detailed error diagnostics.
+ * Main handler for the /api/recipes endpoint.
  */
-
-let moduleLoadError: { message: string; stack?: string } | null = null;
-const modules: any = {};
-
-// Try to load each module individually to identify which one fails
-try {
-	modules.HttpStatus = await import("../backend/server-shared/constants.js").then((m) => ({
-		HttpStatus: m.HttpStatus,
-	}));
-	modules.errors = await import("../backend/server-shared/errors.js");
-	modules.headers = await import("../backend/server-shared/headers.js");
-	// This is likely where it fails - recipe-handler imports many backend modules
-	modules.recipeHandler = await import("../backend/server-shared/recipe-handler.js");
-} catch (error) {
-	moduleLoadError = {
-		message: error instanceof Error ? error.message : String(error),
-		stack: error instanceof Error ? error.stack : undefined,
-	};
-}
-
-const { HttpStatus } = modules.HttpStatus || {};
-const { createErrorResponse, generateRequestId } = modules.errors || {};
-const { handleOptionsRequest } = modules.headers || {};
-const { handleRecipeRequest } = modules.recipeHandler || {};
-
 export default {
+	/**
+	 * Vercel serverless function handler.
+	 *
+	 * @param req - The incoming request.
+	 * @returns Response with recipe processing result or error.
+	 */
 	async fetch(req: Request): Promise<Response> {
-		// Return detailed error if module loading failed
-		if (moduleLoadError) {
-			return new Response(
-				JSON.stringify(
-					{
-						error: "Module loading failed",
-						message: moduleLoadError.message,
-						stack: moduleLoadError.stack,
-						loadedModules: Object.keys(modules),
-					},
-					null,
-					2,
-				),
-				{
-					status: 500,
-					headers: { "Content-Type": "application/json" },
-				},
-			);
-		}
-
 		const requestId = generateRequestId();
 
 		if (req.method === "OPTIONS") {

@@ -1,5 +1,3 @@
-import { consola } from "consola";
-import { colors } from "consola/utils";
 import { formatTimeMinutes } from "../shared/format-utils.js";
 import type { Recipe } from "./scraper.js";
 import { ScrapeMethod } from "./scraper.js";
@@ -63,81 +61,75 @@ export type RecipeLogger = {
 };
 
 /**
- * Creates a console logger that uses consola for all output.
- * Suitable for both CLI and server contexts where console output is desired.
+ * Creates a console logger using native console methods.
+ * Suitable for both CLI and serverless contexts where console output is desired.
  */
 export function createConsoleLogger(): RecipeLogger {
 	/**
 	 * Formats and displays a recipe summary with tags and metadata.
 	 *
-	 * Creates a formatted box display showing recipe name, author (if available),
+	 * Creates a formatted display showing recipe name, author (if available),
 	 * tags, meal type, health score, time, ingredient count, and step count.
 	 *
 	 * @param recipe - The recipe data to display.
 	 * @param tags - The AI-generated tags and metadata.
 	 */
 	const formatSummary = (recipe: Recipe, tags: RecipeTags): void => {
-		function formatLabel(label: string) {
-			return colors.bold(colors.cyan(label));
-		}
-
 		const INDENT = "  ";
 
-		const message = [
-			recipe.author ? `${formatLabel("Author:")} ${recipe.author}` : null,
-			`${formatLabel("Tags:")} ${tags.tags.join(", ")}`,
-			`${formatLabel("Meal type:")} ${tags.mealType.join(", ")}`,
-			`${formatLabel("Health score:")} ${String(tags.healthScore)}/${HealthScore.Max}`,
-			`${formatLabel("Total time:")} ${formatTimeMinutes(tags.totalTimeMinutes)}`,
-			`${formatLabel("Ingredients:")} ${String(recipe.ingredients.length)} items`,
-			`${formatLabel("Steps:")} ${String(recipe.instructions.length)} steps`,
-		]
-			.filter((line) => line !== null)
-			.map((line, i) => (i === 0 ? line : `${INDENT}${line}`));
+		const lines = [
+			`✓ ${recipe.name}`,
+			recipe.author ? `${INDENT}Author: ${recipe.author}` : null,
+			`${INDENT}Tags: ${tags.tags.join(", ")}`,
+			`${INDENT}Meal type: ${tags.mealType.join(", ")}`,
+			`${INDENT}Health score: ${tags.healthScore}/${HealthScore.Max}`,
+			`${INDENT}Total time: ${formatTimeMinutes(tags.totalTimeMinutes)}`,
+			`${INDENT}Ingredients: ${recipe.ingredients.length} items`,
+			`${INDENT}Steps: ${recipe.instructions.length} steps`,
+		].filter((line) => line !== null);
 
-		const formattedTitle = colors.bold(colors.green(recipe.name));
-		consola.log("");
-		consola.success({ title: formattedTitle, message });
+		console.log("");
+		console.log(lines.join("\n"));
 	};
 
 	return {
 		onStart(url: string) {
-			consola.ready(`Processing recipe: ${colors.underline(colors.blue(url))}`);
+			console.log(`→ Processing recipe: ${url}`);
 		},
 		onCheckingDuplicates() {
-			consola.start("Checking for duplicates...");
+			console.log("  Checking for duplicates...");
 		},
 		onNoDuplicateFound() {
-			consola.success("No duplicates");
+			console.log("  ✓ No duplicates");
 		},
 		onDuplicateFound(title: string, notionUrl: string) {
-			consola.warn(`Duplicate: "${title}" already exists at ${notionUrl}`);
+			console.warn(`  ⚠ Duplicate: "${title}" already exists at ${notionUrl}`);
 		},
 		onScraping() {
-			consola.start("Scraping recipe...");
+			console.log("  Scraping recipe...");
 		},
 		onScraped(recipe: Recipe) {
 			const methodLabel =
 				recipe.scrapeMethod === ScrapeMethod.JsonLd ? "(JSON-LD)" : "(HTML fallback)";
-			consola.success(`Scraped ${methodLabel}: ${recipe.name}`);
+			console.log(`  ✓ Scraped ${methodLabel}: ${recipe.name}`);
 		},
 		onTagging() {
-			consola.start("Generating tags...");
+			console.log("  Generating tags...");
 		},
 		onTagged() {
-			consola.success("Tags generated");
+			console.log("  ✓ Tags generated");
 		},
 		onSaving() {
-			consola.start("Saving to Notion...");
+			console.log("  Saving to Notion...");
 		},
 		onSaved(notionUrl: string) {
-			consola.success(`Saved to Notion: ${colors.underline(colors.blue(notionUrl))}`);
+			console.log(`  ✓ Saved to Notion: ${notionUrl}`);
 		},
 		onSummary(recipe: Recipe, tags: RecipeTags) {
 			formatSummary(recipe, tags);
 		},
 		onError(message: string) {
-			consola.error(`Failed: ${message}`);
+			console.error(`  ✗ Failed: ${message}`);
 		},
 	};
 }

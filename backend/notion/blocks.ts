@@ -181,11 +181,13 @@ function buildIngredientBlocks(
 }
 
 /**
- * Builds the main body content for a Notion recipe page in a two-column layout.
+ * Builds the main body content for a Notion recipe page.
  *
- * Creates a two-column structure:
- * - Left column: "About" heading, description (if available), and ingredients section
- * - Right column: "Preparation" heading and instruction steps
+ * Creates a layout with:
+ * - Full-width description at the top (no heading)
+ * - Two-column layout below:
+ *   - Left column: Ingredients section
+ *   - Right column: Preparation section
  *
  * Falls back to linear layout if either column would be empty. Limits output to MAX_NOTION_BLOCKS
  * to comply with Notion's 100 block per page limit.
@@ -195,15 +197,15 @@ function buildIngredientBlocks(
  * @returns An array of Notion block objects (limited to MAX_NOTION_BLOCKS).
  */
 export function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
+	const fullWidthBlocks: unknown[] = [];
 	const leftColumnBlocks: unknown[] = [];
 	const rightColumnBlocks: unknown[] = [];
 
-	// Left column: About heading and description
-	leftColumnBlocks.push(heading1("About"));
+	// Full-width description at the top (no heading)
 	if (tags.description) {
 		const descriptionText = normalizeDescriptionText(tags.description);
 		const paragraphs = descriptionText.split("\n\n").filter((paragraph) => paragraph.trim());
-		leftColumnBlocks.push(...paragraphs.map((paragraphText) => paragraph(paragraphText)));
+		fullWidthBlocks.push(...paragraphs.map((paragraphText) => paragraph(paragraphText)));
 	}
 
 	// Left column: Ingredients section
@@ -225,7 +227,10 @@ export function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
 	// Fallback to linear layout if either column is empty
 	// (This handles edge cases where ingredients or instructions are missing)
 	if (leftColumnBlocks.length === 0 || rightColumnBlocks.length === 0) {
-		return [...leftColumnBlocks, ...rightColumnBlocks].slice(0, MAX_NOTION_BLOCKS);
+		return [...fullWidthBlocks, ...leftColumnBlocks, ...rightColumnBlocks].slice(
+			0,
+			MAX_NOTION_BLOCKS,
+		);
 	}
 
 	// Create two-column layout
@@ -234,5 +239,5 @@ export function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
 	const rightCol = column(rightColumnBlocks);
 	const layout = columnList([leftCol, rightCol]);
 
-	return [layout];
+	return [...fullWidthBlocks, layout];
 }

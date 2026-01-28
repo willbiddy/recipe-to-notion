@@ -1,3 +1,4 @@
+import { colors } from "../shared/colors.js";
 import { formatTimeMinutes } from "../shared/format-utils.js";
 import type { Recipe } from "./scraper.js";
 import { ScrapeMethod } from "./scraper.js";
@@ -61,7 +62,7 @@ export type RecipeLogger = {
 };
 
 /**
- * Creates a console logger using native console methods.
+ * Creates a fancy console logger with colors and formatting.
  * Suitable for both CLI and serverless contexts where console output is desired.
  */
 export function createConsoleLogger(): RecipeLogger {
@@ -75,61 +76,84 @@ export function createConsoleLogger(): RecipeLogger {
 	 * @param tags - The AI-generated tags and metadata.
 	 */
 	const formatSummary = (recipe: Recipe, tags: RecipeTags): void => {
-		const INDENT = "  ";
-
-		const lines = [
-			`✓ ${recipe.name}`,
-			`${INDENT}Author: ${recipe.author}`,
-			`${INDENT}Tags: ${tags.tags.join(", ")}`,
-			`${INDENT}Meal type: ${tags.mealType.join(", ")}`,
-			`${INDENT}Health score: ${tags.healthScore}/${HealthScore.Max}`,
-			`${INDENT}Total time: ${formatTimeMinutes(tags.totalTimeMinutes)}`,
-			`${INDENT}Ingredients: ${recipe.ingredients.length} items`,
-			`${INDENT}Steps: ${recipe.instructions.length} steps`,
-		];
+		const boxWidth = 60;
+		const border = "─".repeat(boxWidth);
 
 		console.log("");
-		console.log(lines.join("\n"));
+		console.log(border);
+		console.log(colors.bold(colors.green(recipe.name)));
+
+		// Author
+		console.log(`${colors.bold("Author:")} ${recipe.author}`);
+
+		// Tags
+		const tagsFormatted = tags.tags.map((tag) => colors.magenta(tag)).join(" · ");
+		console.log(`${colors.bold("Tags:")} ${tagsFormatted}`);
+
+		// Meal type
+		const mealTypeFormatted = tags.mealType.map((type) => colors.yellow(type)).join(" · ");
+		console.log(`${colors.bold("Meal:")} ${mealTypeFormatted}`);
+
+		// Health score with color based on score
+		const healthColor =
+			tags.healthScore >= 8 ? colors.green : tags.healthScore >= 6 ? colors.yellow : colors.red;
+		console.log(
+			`${colors.bold("Health:")} ${healthColor(`${tags.healthScore}/${HealthScore.Max}`)}`,
+		);
+
+		// Time
+		console.log(`${colors.bold("Time:")} ${formatTimeMinutes(tags.totalTimeMinutes)}`);
+
+		// Ingredients count
+		console.log(`${colors.bold("Ingredients:")} ${`${recipe.ingredients.length} items`}`);
+
+		// Steps count
+		console.log(`${colors.bold("Steps:")} ${`${recipe.instructions.length} steps`}`);
+
+		console.log(border);
 	};
 
 	return {
 		onStart(url: string) {
-			console.log(`→ Processing recipe: ${url}`);
+			console.log(`Processing recipe from ${colors.cyan(url)}`);
 		},
 		onCheckingDuplicates() {
-			console.log("  Checking for duplicates...");
+			console.log("Checking for duplicates...");
 		},
 		onNoDuplicateFound() {
-			console.log("  ✓ No duplicates");
+			console.log(colors.green("No duplicates found"));
 		},
 		onDuplicateFound(title: string, notionUrl: string) {
-			console.warn(`  ⚠ Duplicate: "${title}" already exists at ${notionUrl}`);
+			console.log(colors.yellow(`Duplicate: "${title}" already exists`));
+			console.log(colors.blue(notionUrl));
 		},
 		onScraping() {
-			console.log("  Scraping recipe...");
+			console.log("Scraping recipe data...");
 		},
 		onScraped(recipe: Recipe) {
 			const methodLabel =
-				recipe.scrapeMethod === ScrapeMethod.JsonLd ? "(JSON-LD)" : "(HTML fallback)";
-			console.log(`  ✓ Scraped ${methodLabel}: ${recipe.name}`);
+				recipe.scrapeMethod === ScrapeMethod.JsonLd
+					? colors.green("JSON-LD")
+					: colors.yellow("HTML");
+			console.log(colors.green(`Scraped via ${methodLabel}: ${colors.bold(recipe.name)}`));
 		},
 		onTagging() {
-			console.log("  Generating tags...");
+			console.log("Generating AI tags and scores...");
 		},
 		onTagged() {
-			console.log("  ✓ Tags generated");
+			console.log(colors.green("Tags generated"));
 		},
 		onSaving() {
-			console.log("  Saving to Notion...");
+			console.log("Saving to Notion database...");
 		},
 		onSaved(notionUrl: string) {
-			console.log(`  ✓ Saved to Notion: ${notionUrl}`);
+			console.log(colors.green(`Saved to Notion: ${colors.blue(notionUrl)}`));
 		},
 		onSummary(recipe: Recipe, tags: RecipeTags) {
 			formatSummary(recipe, tags);
 		},
 		onError(message: string) {
-			console.error(`  ✗ Failed: ${message}`);
+			console.log(colors.red(`Failed: ${message}`));
 		},
 	};
 }

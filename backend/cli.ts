@@ -7,8 +7,7 @@
  *   bun add --html <path> <url>
  */
 import { defineCommand, runMain } from "citty";
-import { consola } from "consola";
-import { colors } from "consola/utils";
+import { colors } from "../shared/colors.js";
 import { isString } from "../shared/type-guards.js";
 import { isValidHttpUrl, stripQueryParams } from "../shared/url-utils.js";
 import { loadConfig } from "./config.js";
@@ -33,13 +32,13 @@ const main = defineCommand({
 		const firstUrl = urls[0];
 
 		if (!firstUrl) {
-			consola.error("Please provide at least one recipe URL");
+			console.log(colors.red("Please provide at least one recipe URL"));
 			process.exit(1);
 		}
 
 		if (args.html) {
 			if (urls.length > 1) {
-				consola.warn("--html option only supports one URL at a time");
+				console.log(colors.yellow("--html option only supports one URL at a time"));
 			}
 			const success = await handleRecipe(firstUrl, args.html);
 			process.exit(success ? 0 : 1);
@@ -48,7 +47,7 @@ const main = defineCommand({
 		try {
 			loadConfig();
 		} catch (err) {
-			consola.fatal(err instanceof Error ? err.message : String(err));
+			console.log(colors.red(err instanceof Error ? err.message : String(err)));
 			process.exit(1);
 		}
 
@@ -88,7 +87,8 @@ async function processUrlsSequentially(
 	urls: string[],
 ): Promise<{ succeeded: number; failed: number }> {
 	if (urls.length > 1) {
-		consola.ready(`Processing ${urls.length} recipes`);
+		console.log(`Processing ${urls.length} recipes`);
+		console.log("");
 	}
 
 	let succeeded = 0;
@@ -96,7 +96,7 @@ async function processUrlsSequentially(
 
 	for (const [i, url] of urls.entries()) {
 		if (urls.length > 1) {
-			consola.info(`${colors.cyan(`[${i + 1}/${urls.length}]`)} ${colors.dim(url)}`);
+			console.log(`${colors.cyan(`[${i + 1}/${urls.length}]`)} ${url}`);
 		}
 
 		const success = await handleRecipe(url);
@@ -107,7 +107,7 @@ async function processUrlsSequentially(
 		}
 
 		if (urls.length > 1) {
-			consola.log("");
+			console.log("");
 		}
 	}
 
@@ -128,11 +128,13 @@ async function handleRecipe(url: string, htmlPath?: string): Promise<boolean> {
 		const logger = createConsoleLogger();
 
 		if (htmlPath) {
-			consola.start(`Parsing recipe from ${htmlPath}...`);
+			console.log(`Parsing recipe from ${htmlPath}...`);
 			const recipe = await scrapeRecipeFromHtml(htmlPath, url);
 			const methodLabel =
-				recipe.scrapeMethod === ScrapeMethod.JsonLd ? "(JSON-LD)" : "(HTML fallback)";
-			consola.success(`Scraped ${methodLabel}: ${recipe.name}`);
+				recipe.scrapeMethod === ScrapeMethod.JsonLd
+					? colors.green("JSON-LD")
+					: colors.yellow("HTML");
+			console.log(colors.green(`Scraped via ${methodLabel}: ${colors.bold(recipe.name)}`));
 
 			await processRecipe({ recipe, logger });
 		} else {
@@ -142,7 +144,7 @@ async function handleRecipe(url: string, htmlPath?: string): Promise<boolean> {
 		return true;
 	} catch (err) {
 		const message = err instanceof Error ? err.message : String(err);
-		consola.error(`Failed: ${message}`);
+		console.log(colors.red(`Failed: ${message}`));
 		return false;
 	}
 }
@@ -160,6 +162,6 @@ function printSummary(results: { succeeded: number; failed: number }): void {
 	const status = [passed, failed].filter(Boolean).join(" / ");
 
 	if (total > 1) {
-		consola.info(`Processed ${total} recipes: ${status}`);
+		console.log(`Processed ${total} recipes: ${status}`);
 	}
 }

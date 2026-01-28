@@ -58,7 +58,6 @@
 		"caniuse-lite": "^1.0.30001766",
 		"cheerio": "^1.2.0",
 		"citty": "^0.2.0",
-		"consola": "^3.4.2",
 		"get-port": "^7.1.0",
 		"nanoid": "^5.1.6",
 		"solid-js": "^1.9.11",

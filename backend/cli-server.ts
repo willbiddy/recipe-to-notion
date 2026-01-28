@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+import getPort from "get-port";
 /**
  * CLI entry point for starting the recipe-to-notion HTTP server.
  *
@@ -6,8 +7,7 @@
  *   bun backend/cli-server.ts
  *   SERVER_PORT=8080 bun backend/cli-server.ts
  */
-import { consola } from "consola";
-import getPort from "get-port";
+import { colors } from "../shared/colors.js";
 import { DEFAULT_PORT, IDLE_TIMEOUT_SECONDS, MAX_PORT, MIN_PORT } from "../shared/constants.js";
 import { ValidationError } from "./errors.js";
 import { handleRequest } from "./server.js";
@@ -17,9 +17,10 @@ try {
 	const { loadConfig } = await import("./config.js");
 	loadConfig();
 } catch (error) {
-	consola.fatal(
-		error instanceof Error ? error.message : String(error),
-		"\nMake sure your .env file is configured with ANTHROPIC_API_KEY, NOTION_API_KEY, NOTION_DATABASE_ID, and API_SECRET",
+	console.log(
+		colors.red(
+			`${error instanceof Error ? error.message : String(error)}\nMake sure your .env file is configured with ANTHROPIC_API_KEY, NOTION_API_KEY, NOTION_DATABASE_ID, and API_SECRET`,
+		),
 	);
 	process.exit(1);
 }
@@ -57,9 +58,10 @@ async function getAvailablePort(requestedPort: number): Promise<number> {
 	const port = await getPort({ port: requestedPort });
 
 	if (port !== requestedPort) {
-		consola.warn(
-			`Port ${requestedPort} is in use. Using next available port: ${port}\n` +
-				`  To use a specific port, stop the process using it first.`,
+		console.log(
+			colors.yellow(
+				`Port ${requestedPort} is in use. Using next available port: ${port}\nTo use a specific port, stop the process using it first.`,
+			),
 		);
 	}
 
@@ -73,7 +75,7 @@ async function getAvailablePort(requestedPort: number): Promise<number> {
  * @param signal - The signal that triggered the shutdown.
  */
 function handleShutdown(server: ReturnType<typeof Bun.serve>, signal: string): void {
-	consola.info(`\nReceived ${signal}, shutting down server...`);
+	console.log(`\nReceived ${signal}, shutting down server...`);
 	server.stop();
 	process.exit(0);
 }
@@ -82,7 +84,7 @@ let requestedPort: number;
 try {
 	requestedPort = parsePort(process.env.SERVER_PORT);
 } catch (error) {
-	consola.fatal(error instanceof Error ? error.message : String(error));
+	console.log(colors.red(error instanceof Error ? error.message : String(error)));
 	process.exit(1);
 }
 
@@ -101,15 +103,15 @@ function startServer(port: number): ReturnType<typeof Bun.serve> {
 		fetch: handleRequest,
 		idleTimeout: IDLE_TIMEOUT_SECONDS,
 		error(error) {
-			consola.error(`Server error: ${error.message}`);
+			console.log(colors.red(`Server error: ${error.message}`));
 			return new Response("Internal Server Error", { status: HttpStatus.InternalServerError });
 		},
 	});
 
-	consola.ready(`recipe-to-notion server running on http://localhost:${port}`);
-	consola.info("Endpoints:");
-	consola.info(`POST http://localhost:${port}/api/recipes`);
-	consola.info(`GET http://localhost:${port}/health`);
+	console.log(colors.green(`recipe-to-notion server running on http://localhost:${port}`));
+	console.log("Endpoints:");
+	console.log(`POST http://localhost:${port}/api/recipes`);
+	console.log(`GET http://localhost:${port}/health`);
 
 	return server;
 }
@@ -119,7 +121,7 @@ try {
 	server = startServer(port);
 } catch (error) {
 	const errorMessage = error instanceof Error ? error.message : String(error);
-	consola.fatal(`Failed to start server: ${errorMessage}`);
+	console.log(colors.red(`Failed to start server: ${errorMessage}`));
 	process.exit(1);
 }
 

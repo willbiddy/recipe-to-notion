@@ -151,7 +151,6 @@ Use the REST API to integrate Recipe Clipper for Notion into your own applicatio
 - [Vercel](https://vercel.com/) - Serverless hosting
 - [Tailwind CSS](https://tailwindcss.com/) - CSS framework
 - [Citty](https://github.com/unjs/citty) - CLI argument parsing
-- [Consola](https://github.com/unjs/consola) - Logging
 - [Biome](https://biomejs.dev/) - Linting & formatting
 
 ---

@@ -41,12 +41,10 @@ async function searchPagesInDatabase(options: SearchPagesOptions): Promise<Dupli
 	for (const result of searchResults.results) {
 		if (result.object !== "page") continue;
 
-		const page = result as { id: string; parent?: { type?: string; database_id?: string } };
-		if (page.parent?.type !== "database_id" || page.parent?.database_id !== databaseId) {
-			continue;
-		}
+		// Retrieve full page to check parent and properties
+		// Search results may be PartialPageObjectResponse without parent info
+		const fullPage = await notion.pages.retrieve({ page_id: result.id });
 
-		const fullPage = await notion.pages.retrieve({ page_id: page.id });
 		if (
 			!("properties" in fullPage) ||
 			typeof fullPage.properties !== "object" ||
@@ -55,9 +53,23 @@ async function searchPagesInDatabase(options: SearchPagesOptions): Promise<Dupli
 			continue;
 		}
 
+		// Check if page belongs to the correct database
+		if (
+			!("parent" in fullPage) ||
+			typeof fullPage.parent !== "object" ||
+			fullPage.parent === null
+		) {
+			continue;
+		}
+
+		const parent = fullPage.parent as { type?: string; database_id?: string };
+		if (parent.type !== "database_id" || parent.database_id !== databaseId) {
+			continue;
+		}
+
 		const properties = fullPage.properties as Record<string, unknown>;
 		if (propertyMatcher(properties)) {
-			return resultBuilder(properties, page.id);
+			return resultBuilder(properties, result.id);
 		}
 	}
 

@@ -59,11 +59,16 @@ export function stripQueryParams(url: string): string {
  * Gets a user-friendly error message for unsupported URLs.
  *
  * @param url - The URL to check.
+ * @param permissionIssue - Whether the issue is due to missing permissions.
  * @returns A user-friendly error message explaining why the URL is unsupported.
  */
-export function getUnsupportedUrlMessage(url: string | null): string {
+export function getUnsupportedUrlMessage(url: string | null, permissionIssue?: boolean): string {
+	if (permissionIssue) {
+		return "Permission denied. Please remove and re-add the extension from chrome://extensions/ to grant required permissions.";
+	}
+
 	if (!url) {
-		return "No webpage detected";
+		return "No webpage detected. Try refreshing the page and reopening the extension.";
 	}
 
 	try {

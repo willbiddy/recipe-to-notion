@@ -9,7 +9,7 @@ import {
 	filterEditorNotes,
 	INGREDIENT_HEADER_PATTERN,
 	INSTRUCTION_HEADER_PATTERN,
-	normalizeIngredientParentheses,
+	normalizeIngredient,
 	parseDuration,
 } from "./shared.js";
 
@@ -302,7 +302,7 @@ function extractMicrodataTextArray(
 		if (text) {
 			const normalized =
 				itemprop === "recipeIngredient"
-					? normalizeIngredientParentheses(decodeHtmlEntities(text))
+					? normalizeIngredient(decodeHtmlEntities(text))
 					: decodeHtmlEntities(text);
 			items.push(normalized);
 		}
@@ -363,7 +363,7 @@ function extractTextArray($: cheerio.CheerioAPI, ...selectors: string[]): string
 			const text = $(el).text().trim();
 			if (text) {
 				const normalized = isIngredientExtraction
-					? normalizeIngredientParentheses(decodeHtmlEntities(text))
+					? normalizeIngredient(decodeHtmlEntities(text))
 					: decodeHtmlEntities(text);
 				items.push(normalized);
 			}

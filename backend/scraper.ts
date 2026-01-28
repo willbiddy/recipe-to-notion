@@ -156,11 +156,19 @@ async function parseRecipeFromHtml(html: string, sourceUrl: string): Promise<Rec
 	const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
 	try {
+		// Build headers, including Vercel bypass secret if available
+		const headers: Record<string, string> = {
+			"Content-Type": "application/json",
+		};
+
+		// Add Vercel deployment protection bypass header if secret is available
+		if (process.env.VERCEL_AUTOMATION_BYPASS_SECRET) {
+			headers["x-vercel-protection-bypass"] = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+		}
+
 		const response = await fetch(pythonUrl, {
 			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
+			headers,
 			body: JSON.stringify({ url: sourceUrl, html }),
 			signal: controller.signal,
 		});

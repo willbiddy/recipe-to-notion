@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import Anthropic from "@anthropic-ai/sdk";
@@ -191,8 +192,7 @@ async function loadSystemPrompt(): Promise<string> {
 	const promptPath = join(__dirname, "system-prompt.md");
 
 	try {
-		const file = Bun.file(promptPath);
-		const text = await file.text();
+		const text = await readFile(promptPath, "utf-8");
 		systemPromptCache = text.trim();
 		return systemPromptCache;
 	} catch (error) {

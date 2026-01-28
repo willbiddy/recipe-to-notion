@@ -335,19 +335,30 @@ function parseFirstString(data: unknown): string | null {
  * extracting text from nested structures and flattening the result.
  * Decodes HTML entities in all instruction text.
  *
+ * When instructions are provided as a single string with line breaks,
+ * splits them into separate steps.
+ *
  * @param data - The instruction data in various formats.
  * @returns An array of instruction step strings.
  */
 function parseInstructions(data: unknown): string[] {
 	if (!data) return [];
 
-	if (isString(data)) return filterEditorNotes([decodeHtmlEntities(data)]);
+	if (isString(data)) {
+		const decoded = decodeHtmlEntities(data);
+		// Split by line breaks if the string contains multiple steps
+		const steps = decoded
+			.split(/\n+/)
+			.map((step) => step.trim())
+			.filter((step) => step.length > 0);
+		return filterEditorNotes(steps);
+	}
 	if (!isArray(data)) return [];
 
 	const instructions = data.flatMap((item) => {
 		if (isString(item)) return [decodeHtmlEntities(item)];
 		if (isObject(item)) {
-			if (item.text) return [decodeHtmlEntities(String(item.text))];
+			// Check for itemListElement FIRST (HowToSection) before falling back to .text (HowToStep)
 			if (isArray(item.itemListElement)) {
 				return item.itemListElement.map((sub) => {
 					if (isString(sub)) {
@@ -358,6 +369,10 @@ function parseInstructions(data: unknown): string[] {
 					}
 					return decodeHtmlEntities(String(sub));
 				});
+			}
+			// Only use .text if there's no itemListElement (simple HowToStep)
+			if (item.text) {
+				return [decodeHtmlEntities(String(item.text))];
 			}
 		}
 		return [];

@@ -3,11 +3,6 @@
  * Mounts the Solid.js ExtensionRecipeForm component.
  */
 
-console.log("============================================");
-console.log("[POPUP] Extension popup loaded at:", new Date().toISOString());
-console.log("[POPUP] Chrome version:", navigator.userAgent);
-console.log("============================================");
-
 import { render } from "solid-js/web";
 import { ExtensionRecipeForm } from "../shared/components/extension-recipe-form.js";
 import { ExtensionMessageType } from "../shared/constants.js";

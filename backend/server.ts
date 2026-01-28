@@ -83,8 +83,6 @@ function handleAsset(request: Request): Response {
  */
 function handleIndex(request: Request): Response {
 	const indexPath = resolveIndexPath();
-	console.log("[handleIndex] Resolved index path:", indexPath);
-	console.log("[handleIndex] File exists:", indexPath ? existsSync(indexPath) : false);
 
 	if (!indexPath || !existsSync(indexPath)) {
 		console.error("[handleIndex] Index file not found!");
@@ -151,12 +149,6 @@ export async function handleRequest(request: Request): Promise<Response> {
 
 	logRequest(request, requestId);
 
-	console.log("[handleRequest] Request details:", {
-		method: request.method,
-		pathname: url.pathname,
-		url: request.url,
-	});
-
 	if (request.method === "OPTIONS") {
 		return handleOptionsRequest(request);
 	}
@@ -176,18 +168,13 @@ export async function handleRequest(request: Request): Promise<Response> {
 
 	// Serve web interface assets
 	if (url.pathname.startsWith("/api/") && request.method === "GET") {
-		console.log("[handleRequest] Routing to handleAsset");
 		return handleAsset(request);
 	}
 
 	// Serve web interface index page
 	if (url.pathname === "/" && request.method === "GET") {
-		console.log("[handleRequest] Routing to handleIndex");
-		const indexPath = resolveIndexPath();
-		console.log("[handleRequest] Index path resolved:", indexPath);
 		return handleIndex(request);
 	}
 
-	console.log("[handleRequest] No route matched, returning 404");
 	return createErrorResponse("Not found", HttpStatus.NotFound, true);
 }

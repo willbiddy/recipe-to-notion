@@ -43,7 +43,7 @@ export type UseRecipeSaveOptions = {
 		};
 		tags: {
 			tags: string[];
-			mealType: string[];
+			mealType: string;
 			healthScore: number;
 			totalTimeMinutes: number;
 		};

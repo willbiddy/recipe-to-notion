@@ -91,7 +91,7 @@ export function createConsoleLogger(): RecipeLogger {
 		console.log(`${colors.bold("Tags:")} ${tagsFormatted}`);
 
 		// Meal type
-		const mealTypeFormatted = tags.mealType.map((type) => colors.yellow(type)).join(" · ");
+		const mealTypeFormatted = colors.yellow(tags.mealType);
 		console.log(`${colors.bold("Meal:")} ${mealTypeFormatted}`);
 
 		// Health score with color based on score
@@ -105,10 +105,14 @@ export function createConsoleLogger(): RecipeLogger {
 		console.log(`${colors.bold("Time:")} ${formatTimeMinutes(tags.totalTimeMinutes)}`);
 
 		// Ingredients count
-		console.log(`${colors.bold("Ingredients:")} ${`${recipe.ingredients.length} items`}`);
+		const ingredientCount = recipe.ingredients.length;
+		console.log(
+			`${colors.bold("Ingredients:")} ${ingredientCount} ${ingredientCount === 1 ? "item" : "items"}`,
+		);
 
 		// Steps count
-		console.log(`${colors.bold("Steps:")} ${`${recipe.instructions.length} steps`}`);
+		const stepCount = recipe.instructions.length;
+		console.log(`${colors.bold("Steps:")} ${stepCount} ${stepCount === 1 ? "step" : "steps"}`);
 
 		console.log(border);
 	};

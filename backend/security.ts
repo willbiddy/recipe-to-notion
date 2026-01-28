@@ -1,5 +1,4 @@
 import { timingSafeEqual } from "node:crypto";
-import { consola } from "consola";
 import { z } from "zod";
 import { MAX_REQUEST_BODY_SIZE, MAX_URL_LENGTH } from "../shared/constants.js";
 import { isValidHttpUrl, stripQueryParams } from "../shared/url-utils.js";
@@ -82,7 +81,7 @@ export function validateApiKeyHeader(
 	const expectedKey = expectedApiSecret.trim();
 
 	if (!expectedKey) {
-		consola.error("API_SECRET is empty or invalid");
+		console.error("API_SECRET is empty or invalid");
 		return createErrorResponse(
 			"Server configuration error",
 			SecurityHttpStatus.InternalServerError,

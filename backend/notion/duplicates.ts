@@ -1,5 +1,4 @@
 import type { Client } from "@notionhq/client";
-import { consola } from "consola";
 import { hasProperty, isArray, isObject } from "../../shared/type-guards.js";
 import { createNotionClient, getNotionPageUrl } from "./client.js";
 import type {
@@ -157,7 +156,7 @@ export async function checkForDuplicateByUrl(
 			},
 		});
 	} catch (error) {
-		consola.warn(
+		console.warn(
 			`Failed to check for duplicate by URL: ${error instanceof Error ? error.message : String(error)}. Continuing without duplicate check.`,
 		);
 		return null;
@@ -208,7 +207,7 @@ export async function checkForDuplicateByTitle(
 			},
 		});
 	} catch (error) {
-		consola.warn(
+		console.warn(
 			`Failed to check for duplicate by title: ${error instanceof Error ? error.message : String(error)}. Continuing without duplicate check.`,
 		);
 		return null;

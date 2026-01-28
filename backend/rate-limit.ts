@@ -54,6 +54,14 @@ type RateLimitEntry = {
 const rateLimitStore = new Map<string, RateLimitEntry>();
 
 /**
+ * Track last cleanup time for lazy cleanup (serverless-friendly).
+ * Instead of using setInterval() which creates persistent timers that
+ * accumulate across serverless function instances, we perform cleanup
+ * on-demand when checkRateLimit() is called.
+ */
+let lastCleanupTime = Date.now();
+
+/**
  * Cleans up expired rate limit entries to prevent memory leaks.
  */
 function cleanupExpiredEntries(): void {
@@ -64,8 +72,6 @@ function cleanupExpiredEntries(): void {
 		}
 	}
 }
-
-setInterval(cleanupExpiredEntries, CLEANUP_INTERVAL_MS);
 
 /**
  * Checks if a request should be rate limited.
@@ -83,6 +89,14 @@ export function checkRateLimit(
 	config: RateLimitConfig = DEFAULT_RATE_LIMIT,
 ): { allowed: boolean; remaining: number; resetAt: number } {
 	const now = Date.now();
+
+	// Perform lazy cleanup if enough time has passed
+	// This replaces the setInterval() approach which is incompatible with serverless
+	if (now - lastCleanupTime > CLEANUP_INTERVAL_MS) {
+		cleanupExpiredEntries();
+		lastCleanupTime = now;
+	}
+
 	const entry = rateLimitStore.get(identifier);
 	const isWindowExpired = !entry || now - entry.windowStart >= config.windowMs;
 

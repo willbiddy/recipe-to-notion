@@ -1,19 +1,55 @@
 /**
- * Simple prompt component for entering API secret when needed.
+ * ApiSecretPrompt - Modal dialog for collecting API secret when needed.
+ *
+ * Displays a modal dialog prompting the user to enter their API secret.
+ * Includes input validation, keyboard shortcuts, and accessible dialog semantics.
+ * Used when attempting to save a recipe without a stored API key.
+ *
+ * Features:
+ * - Modal overlay with backdrop click to cancel
+ * - Password input field (hidden characters)
+ * - Validation (non-empty check)
+ * - Keyboard shortcuts: Enter to save, Escape to cancel
+ * - Saves to storage adapter on submit
+ * - Accessible dialog with proper ARIA attributes
+ *
+ * @example
+ * ```tsx
+ * <ApiSecretPrompt
+ *   onSecretSaved={() => {
+ *     console.log('API key saved, proceeding with save...');
+ *     performSave();
+ *   }}
+ *   onCancel={() => {
+ *     console.log('Cancelled API key entry');
+ *   }}
+ * />
+ * ```
  */
 
 import { createSignal, Show } from "solid-js";
 import { createStorageAdapter } from "../storage.js";
 
+/**
+ * Props for ApiSecretPrompt component.
+ */
 export type ApiSecretPromptProps = {
-	/** Callback when secret is saved */
+	/**
+	 * Callback invoked when API secret is successfully saved to storage.
+	 */
 	onSecretSaved: () => void;
-	/** Callback to cancel */
+	/**
+	 * Callback invoked when user cancels the prompt (via Cancel button, Escape key, or backdrop click).
+	 */
 	onCancel: () => void;
 };
 
 /**
  * ApiSecretPrompt component for collecting API secret.
+ *
+ * @param props - Component props.
+ * @param props.onSecretSaved - Callback when secret is saved.
+ * @param props.onCancel - Callback when prompt is cancelled.
  */
 export function ApiSecretPrompt(props: ApiSecretPromptProps) {
 	const storage = createStorageAdapter();

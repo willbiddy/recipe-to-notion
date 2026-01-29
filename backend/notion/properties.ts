@@ -1,6 +1,6 @@
 import type { Recipe } from "../scraper.js";
 import type { RecipeTags } from "../tagger.js";
-import type { BuildPageParamsOptions } from "./types.js";
+import type { BuildPageParamsOptions, NotionProperties } from "./types.js";
 import { PropertyNames } from "./types.js";
 
 /**
@@ -10,8 +10,8 @@ import { PropertyNames } from "./types.js";
  * @param tags - AI-generated tags.
  * @returns Record of Notion page properties.
  */
-export function buildPageProperties(recipe: Recipe, tags: RecipeTags): Record<string, unknown> {
-	const properties: Record<string, unknown> = {
+export function buildPageProperties(recipe: Recipe, tags: RecipeTags): NotionProperties {
+	const properties: NotionProperties = {
 		[PropertyNames.NAME]: {
 			title: [{ text: { content: recipe.name } }],
 		},

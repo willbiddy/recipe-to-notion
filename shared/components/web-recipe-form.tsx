@@ -1,6 +1,28 @@
 /**
- * WebRecipeForm component for the web interface.
- * Handles recipe URL submission, progress updates, and settings management.
+ * WebRecipeForm - Main form component for the web interface.
+ *
+ * Provides a URL input field for users to manually enter recipe URLs, handles
+ * recipe saving with real-time progress updates, and displays success/error messages.
+ * Supports URL query parameter auto-submission and API key management.
+ *
+ * Features:
+ * - Manual URL input with validation and clear button
+ * - Keyboard shortcuts (Enter to save, Escape in prompts)
+ * - Real-time progress indicator during save
+ * - Success message with "Open in Notion" link
+ * - Duplicate recipe detection
+ * - API key prompt when needed
+ * - Query parameter support (?url=... for bookmarklet integration)
+ * - Auto-clears URL after successful save
+ *
+ * @example
+ * ```tsx
+ * <WebRecipeForm />
+ * ```
+ *
+ * @example
+ * // With query parameters (auto-submits):
+ * // https://example.com?url=https://recipe-site.com/recipe
  */
 
 import type { JSX } from "solid-js";
@@ -18,7 +40,9 @@ import { StatusMessage, StatusType } from "./status-message.js";
 /**
  * Gets the server URL from the current origin.
  *
- * @returns The current window origin URL.
+ * Uses window.location.origin to automatically determine the base URL.
+ *
+ * @returns The current window origin URL (e.g., "https://example.com").
  */
 function getServerUrl(): string {
 	return window.location.origin;
@@ -26,6 +50,9 @@ function getServerUrl(): string {
 
 /**
  * WebRecipeForm component.
+ *
+ * Renders a form with URL input, validation, save button, progress indicator,
+ * and status messages. Integrates with useQueryParams hook for auto-submission.
  */
 export function WebRecipeForm() {
 	const storage = createStorageAdapter();

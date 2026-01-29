@@ -75,10 +75,9 @@ export async function parseSseStream(options: ParseSseStreamOptions): Promise<vo
 					return;
 				}
 			} catch (error) {
-				// Skip malformed SSE lines, but log for debugging in development
-				if (process.env.NODE_ENV === "development") {
-					console.warn("Failed to parse SSE event:", error, "Line:", line);
-				}
+				// Skip malformed SSE lines, but log for debugging
+				// Always log these as they may indicate protocol issues
+				console.warn("Failed to parse SSE event:", error, "Line:", line);
 			}
 		}
 	}

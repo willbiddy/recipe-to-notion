@@ -1,33 +1,96 @@
 /**
- * RecipeInfo component for displaying recipe information after successful save.
+ * RecipeInfo - Component for displaying recipe metadata after successful save.
+ *
+ * Shows a summary of the saved recipe including name, author, AI-generated tags,
+ * meal type, health score, prep time, ingredient count, and step count.
+ * Includes a link to open the recipe in Notion.
+ *
+ * Used in the extension popup to provide visual confirmation and quick access
+ * to the saved recipe page.
+ *
+ * Features:
+ * - Animated checkmark icon
+ * - Compact metadata display (author, tags, meal type, etc.)
+ * - Pluralization for items/steps
+ * - Formatted time display (e.g., "1h 30m")
+ * - Direct Notion link
+ * - Dark mode support
+ *
+ * @example
+ * ```tsx
+ * <RecipeInfo
+ *   data={{
+ *     pageId: "abc123",
+ *     notionUrl: "https://notion.so/...",
+ *     recipe: {
+ *       name: "Chocolate Chip Cookies",
+ *       author: "Sally Baker",
+ *       ingredients: ["flour", "sugar", "..."],
+ *       instructions: ["Mix ingredients", "Bake", "..."]
+ *     },
+ *     tags: {
+ *       tags: ["dessert", "baking", "cookies"],
+ *       mealType: "Dessert",
+ *       healthScore: 6,
+ *       totalTimeMinutes: 45
+ *     }
+ *   }}
+ * />
+ * ```
  */
 
 import { For } from "solid-js";
 import { formatTimeMinutes } from "../format-utils";
 
+/**
+ * Recipe data structure passed to RecipeInfo.
+ */
 export type RecipeInfoData = {
+	/** Notion page ID. */
 	pageId: string;
+	/** Full Notion page URL. */
 	notionUrl: string;
+	/** Recipe details from scraper. */
 	recipe: {
+		/** Recipe name/title. */
 		name: string;
+		/** Recipe author. */
 		author: string;
+		/** List of ingredient lines. */
 		ingredients: string[];
+		/** List of instruction steps. */
 		instructions: string[];
 	};
+	/** AI-generated metadata and tags. */
 	tags: {
+		/** Array of relevant tags (e.g., ["dessert", "baking"]). */
 		tags: string[];
+		/** Meal type (e.g., "Main", "Dessert"). */
 		mealType: string;
+		/** Health score from 0-10 (higher is healthier). */
 		healthScore: number;
+		/** Total recipe time in minutes (prep + cook). */
 		totalTimeMinutes: number;
 	};
 };
 
+/**
+ * Props for RecipeInfo component.
+ */
 export type RecipeInfoProps = {
+	/**
+	 * Recipe data including metadata, tags, and Notion URL.
+	 */
 	data: RecipeInfoData;
 };
 
 /**
  * RecipeInfo component displays recipe details after successful save.
+ *
+ * Formats and displays all recipe metadata in a compact, scannable format.
+ *
+ * @param props - Component props.
+ * @param props.data - Recipe data including metadata and tags.
  */
 export function RecipeInfo(props: RecipeInfoProps) {
 	const { recipe, tags } = props.data;

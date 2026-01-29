@@ -1,6 +1,24 @@
 /**
- * ExtensionRecipeForm component for the browser extension popup.
- * Handles recipe URL submission from current tab, progress updates, and settings management.
+ * ExtensionRecipeForm - Main form component for the browser extension popup.
+ *
+ * Displays the current tab's URL/title, handles recipe saving with progress updates,
+ * manages API key prompts, and shows success/error status messages. Automatically
+ * detects recipe metadata (title, author) from the current page using content scripts.
+ *
+ * Features:
+ * - Auto-fetches current tab URL and extracts recipe data
+ * - Handles tab permissions (requests if missing)
+ * - Shows real-time progress during save operation
+ * - Displays success with "Open in Notion" button
+ * - Handles duplicate detection
+ * - Manages API key prompts when needed
+ *
+ * @example
+ * ```tsx
+ * <ExtensionRecipeForm
+ *   getServerUrl={() => "http://localhost:3000"}
+ * />
+ * ```
  */
 
 import type { JSX } from "solid-js";
@@ -14,14 +32,25 @@ import { ProgressIndicator } from "./progress-indicator.js";
 import { StatusMessage, StatusType, TextSize } from "./status-message.js";
 import { UrlDisplay } from "./url-display.js";
 
+/**
+ * Props for ExtensionRecipeForm component.
+ */
 export type ExtensionRecipeFormProps = {
-	/** Function to get the server URL. */
+	/**
+	 * Function to get the server URL.
+	 * Should return the base URL (e.g., "http://localhost:3000") without trailing slash.
+	 */
 	getServerUrl: () => string;
 };
 
 /**
  * Gets the current active tab URL, title, recipe title, and author if available.
  *
+ * Queries the active tab using chrome.tabs API, handles permission checks/requests,
+ * and falls back to content script communication if tab.url is restricted.
+ * Attempts to extract recipe metadata (title, author) via content script.
+ *
+ * @param setPermissionIssue - Optional setter to update permission issue state.
  * @returns Object containing URL, title, recipe title, author, and website name.
  */
 async function getCurrentTab(setPermissionIssue?: (value: boolean) => void): Promise<{
@@ -103,6 +132,9 @@ async function getCurrentTab(setPermissionIssue?: (value: boolean) => void): Pro
 
 /**
  * ExtensionRecipeForm component.
+ *
+ * @param props - Component props.
+ * @param props.getServerUrl - Function returning the server base URL.
  */
 export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 	const storage = createStorageAdapter();

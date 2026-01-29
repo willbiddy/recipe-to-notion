@@ -1,28 +1,71 @@
 /**
- * UrlDisplay component for showing the current page URL/title.
+ * UrlDisplay - Component for displaying the current page URL/title in extension.
  *
- * Displays recipe title prominently with source (author or website) as secondary text.
- * Used in the browser extension popup.
+ * Shows the current page information in the extension popup with smart fallback logic:
+ * 1. Best: Recipe title + author (e.g., "Chocolate Chip Cookies" by "Sally's Baking")
+ * 2. Good: Recipe title only (e.g., "Chocolate Chip Cookies")
+ * 3. Fallback: Hostname + pathname (e.g., "allrecipes.com/recipe/10813/...")
+ * 4. Error: Invalid/unsupported URL with helpful message
+ *
+ * Features:
+ * - Smart display priority (title+author > title > hostname+path > URL)
+ * - Error state for invalid URLs (chrome://, file://, etc.)
+ * - Permission issue detection and messaging
+ * - URL tooltip on hover (shows full URL)
+ * - Responsive styling with hover effects
+ * - Dark mode support
+ *
+ * @example
+ * ```tsx
+ * <UrlDisplay
+ *   url="https://allrecipes.com/recipe/12345"
+ *   title="Best Chocolate Chip Cookies"
+ *   source="Sally Baker"
+ *   permissionIssue={false}
+ * />
+ * ```
  */
 
 import { createMemo, Show } from "solid-js";
 import { getUnsupportedUrlMessage, isValidHttpUrl } from "../url-utils.js";
 
+/**
+ * Props for UrlDisplay component.
+ */
 export type UrlDisplayProps = {
-	/** The URL to display. */
+	/**
+	 * The URL to display. Should be a valid HTTP(S) URL.
+	 * Null or invalid URLs will show error state.
+	 */
 	url: string | null;
-	/** The page title or recipe title (optional). */
+	/**
+	 * The page title or recipe title (optional).
+	 * When present, displays prominently instead of URL.
+	 */
 	title: string | null;
-	/** The source (author or website name) to display as secondary text (optional). */
+	/**
+	 * The source (author or website name) to display as secondary text (optional).
+	 * Shows below title when both title and source are present.
+	 */
 	source: string | null;
-	/** Whether the issue is due to missing permissions (optional). */
+	/**
+	 * Whether the issue is due to missing permissions (optional).
+	 * Customizes error message to guide user on fixing permission issues.
+	 */
 	permissionIssue?: boolean;
 };
 
 /**
  * Displays the recipe title with source, or falls back to URL/title.
  *
- * @param props - Component props containing URL, title, and source.
+ * Uses createMemo for reactive derived values and implements smart display
+ * priority based on available data (title+source > title > hostname+path > raw URL).
+ *
+ * @param props - Component props.
+ * @param props.url - The URL to display.
+ * @param props.title - Optional page/recipe title.
+ * @param props.source - Optional source (author/website).
+ * @param props.permissionIssue - Whether error is permission-related.
  */
 export function UrlDisplay(props: UrlDisplayProps) {
 	// Use createMemo for reactive derived values

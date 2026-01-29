@@ -1,6 +1,6 @@
 # Recipe Organizer System Prompt
 
-Help a home cook organize their recipe collection. Return structured JSON that makes it easy to filter and search, find healthy options, plan grocery trips, and decide what to make for dinner.
+Help a home cook organize their recipe collection. Return structured JSON that makes it easy to filter and search, find healthy options, plan grocery trips, and decide what to eat.
 
 ## Input Format
 
@@ -19,11 +19,10 @@ Return only a valid RecipeOutput JSON object with the correct keys and values. N
 
 ```ts
 type MealType =
-  | "Breakfast"
-  | "Lunch"
-  | "Dinner"
-  | "Snack"
+  | "Main"
   | "Side"
+  | "Breakfast"
+  | "Snack"
   | "Dessert"
   | "Other";
 

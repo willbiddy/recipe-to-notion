@@ -1,5 +1,35 @@
 /**
- * Hook for handling URL query parameters with auto-submit functionality.
+ * useQueryParams - Hook for handling URL query parameters with auto-submit.
+ *
+ * Checks for a "url" query parameter on component mount and automatically
+ * populates the URL input field. If an API key is available, automatically
+ * submits the recipe after a short delay. If no API key is found, shows
+ * the API secret prompt first.
+ *
+ * This enables bookmarklet and browser extension integrations that can
+ * pass recipe URLs via query parameters for seamless one-click saving.
+ *
+ * Usage pattern: `https://your-app.com?url=https://recipe-site.com/recipe`
+ *
+ * @example
+ * ```tsx
+ * function WebRecipeForm() {
+ *   const scheduleTimeout = useTimeout();
+ *
+ *   // Hook automatically handles query params on mount
+ *   useQueryParams({
+ *     storage,
+ *     setUrl,
+ *     performSave,
+ *     setPendingSave,
+ *     setShowApiPrompt,
+ *     scheduleTimeout
+ *   });
+ *
+ *   // If ?url=... is present, URL input is auto-filled and save triggered
+ *   return <input value={url()} />;
+ * }
+ * ```
  */
 
 import { onMount } from "solid-js";
@@ -40,9 +70,18 @@ export type UseQueryParamsOptions = {
  * Hook for handling URL query parameters with auto-submit functionality.
  *
  * Checks for a "url" query parameter and automatically sets it in the input.
- * If an API key is available, automatically submits after a delay.
+ * If an API key is available, automatically submits after a delay (500ms).
+ * If no API key, shows the API secret prompt and queues the save operation.
+ *
+ * Validates the URL parameter before processing (must be a valid URL).
  *
  * @param options - Configuration options for the hook.
+ * @param options.storage - Storage adapter for checking API key.
+ * @param options.setUrl - Function to set URL input value.
+ * @param options.performSave - Function to trigger save operation.
+ * @param options.setPendingSave - Function to queue pending save callback.
+ * @param options.setShowApiPrompt - Function to show/hide API prompt.
+ * @param options.scheduleTimeout - Function to schedule timeout with cleanup.
  */
 export function useQueryParams(options: UseQueryParamsOptions): void {
 	const { storage, setUrl, performSave, setPendingSave, setShowApiPrompt, scheduleTimeout } =

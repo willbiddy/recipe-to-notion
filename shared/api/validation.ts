@@ -1,3 +1,16 @@
+/**
+ * Zod schemas for validating Server-Sent Event (SSE) messages.
+ *
+ * Validates incoming SSE events from the recipe save endpoint to ensure
+ * type safety and catch malformed messages. Uses Zod's discriminated union
+ * for efficient type checking based on the event type.
+ *
+ * Event types:
+ * - Progress: Status updates during recipe processing (scraping, AI tagging, Notion save)
+ * - Complete: Successful save with recipe data and Notion URL
+ * - Error: Save failure with error message and optional Notion URL (for duplicates)
+ */
+
 import { z } from "zod";
 import { ProgressType } from "../constants.js";
 import { type ServerProgressEvent, ServerProgressEventType } from "./types.js";
@@ -59,8 +72,27 @@ const serverProgressEventSchema = z.discriminatedUnion("type", [
 /**
  * Validates that a parsed JSON object is a valid ServerProgressEvent using Zod.
  *
+ * Uses Zod's safeParse to validate without throwing errors.
+ * Returns null for invalid data, allowing the SSE parser to skip malformed events.
+ *
  * @param data - The parsed JSON data to validate.
  * @returns The validated ServerProgressEvent, or null if invalid.
+ *
+ * @example
+ * ```ts
+ * const parsed = JSON.parse(sseData);
+ * const event = validateServerProgressEvent(parsed);
+ *
+ * if (event) {
+ *   if (event.type === ServerProgressEventType.Progress) {
+ *     console.log(event.message);
+ *   } else if (event.type === ServerProgressEventType.Complete) {
+ *     console.log("Saved:", event.notionUrl);
+ *   }
+ * } else {
+ *   console.warn("Invalid SSE event:", parsed);
+ * }
+ * ```
  */
 export function validateServerProgressEvent(data: unknown): ServerProgressEvent | null {
 	const result = serverProgressEventSchema.safeParse(data);

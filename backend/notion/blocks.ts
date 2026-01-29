@@ -2,6 +2,16 @@ import { MAX_NOTION_BLOCKS, MAX_TEXT_LENGTH } from "../../shared/constants.js";
 import type { Recipe } from "../scraper.js";
 import type { CategorizedIngredient, RecipeTags } from "../tagger.js";
 import { IngredientCategory } from "../tagger.js";
+import type {
+	NotionBlock,
+	NotionBulletedListItemBlock,
+	NotionColumnBlock,
+	NotionColumnListBlock,
+	NotionHeading1Block,
+	NotionHeading3Block,
+	NotionNumberedListItemBlock,
+	NotionParagraphBlock,
+} from "./types.js";
 import { normalizeDescriptionText, truncate } from "./utils.js";
 
 const CATEGORY_ORDER: IngredientCategory[] = [
@@ -43,7 +53,7 @@ function groupIngredientsByCategory(
  * @param text - The paragraph text content (truncated to 2000 chars).
  * @returns A Notion paragraph block object.
  */
-function paragraph(text: string): unknown {
+function paragraph(text: string): NotionParagraphBlock {
 	return {
 		object: "block",
 		type: "paragraph",
@@ -59,7 +69,7 @@ function paragraph(text: string): unknown {
  * @param text - The heading text content.
  * @returns A Notion heading_1 block object.
  */
-function heading1(text: string): unknown {
+function heading1(text: string): NotionHeading1Block {
 	return {
 		object: "block",
 		type: "heading_1",
@@ -75,7 +85,7 @@ function heading1(text: string): unknown {
  * @param text - The heading text content.
  * @returns A Notion heading_3 block object.
  */
-function heading3(text: string): unknown {
+function heading3(text: string): NotionHeading3Block {
 	return {
 		object: "block",
 		type: "heading_3",
@@ -91,7 +101,7 @@ function heading3(text: string): unknown {
  * @param text - The list item text content (truncated to 2000 chars).
  * @returns A Notion bulleted_list_item block object.
  */
-function bulletItem(text: string): unknown {
+function bulletItem(text: string): NotionBulletedListItemBlock {
 	return {
 		object: "block",
 		type: "bulleted_list_item",
@@ -107,7 +117,7 @@ function bulletItem(text: string): unknown {
  * @param text - The list item text content (truncated to 2000 chars).
  * @returns A Notion numbered_list_item block object.
  */
-function numberedItem(text: string): unknown {
+function numberedItem(text: string): NotionNumberedListItemBlock {
 	return {
 		object: "block",
 		type: "numbered_list_item",
@@ -123,7 +133,7 @@ function numberedItem(text: string): unknown {
  * @param children - Array of Notion blocks to include in this column.
  * @returns A Notion column block object.
  */
-function column(children: unknown[]): unknown {
+function column(children: NotionBlock[]): NotionColumnBlock {
 	return {
 		object: "block",
 		type: "column",
@@ -139,7 +149,7 @@ function column(children: unknown[]): unknown {
  * @param columns - Array of column blocks to include in the column list.
  * @returns A Notion column_list block object.
  */
-function columnList(columns: unknown[]): unknown {
+function columnList(columns: NotionColumnBlock[]): NotionColumnListBlock {
 	return {
 		object: "block",
 		type: "column_list",
@@ -157,8 +167,8 @@ function columnList(columns: unknown[]): unknown {
  */
 function buildIngredientBlocks(
 	grouped: Map<IngredientCategory, CategorizedIngredient[]>,
-): unknown[] {
-	const blocks: unknown[] = [];
+): NotionBlock[] {
+	const blocks: NotionBlock[] = [];
 
 	const otherCategories = Array.from(grouped.keys())
 		.filter((category) => !CATEGORY_ORDER.includes(category))
@@ -196,10 +206,10 @@ function buildIngredientBlocks(
  * @param tags - AI-generated tags including description.
  * @returns An array of Notion block objects (limited to MAX_NOTION_BLOCKS).
  */
-export function buildPageBody(recipe: Recipe, tags: RecipeTags): unknown[] {
-	const fullWidthBlocks: unknown[] = [];
-	const leftColumnBlocks: unknown[] = [];
-	const rightColumnBlocks: unknown[] = [];
+export function buildPageBody(recipe: Recipe, tags: RecipeTags): NotionBlock[] {
+	const fullWidthBlocks: NotionBlock[] = [];
+	const leftColumnBlocks: NotionBlock[] = [];
+	const rightColumnBlocks: NotionBlock[] = [];
 
 	// Full-width description at the top (no heading)
 	if (tags.description) {

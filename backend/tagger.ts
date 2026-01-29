@@ -24,9 +24,8 @@ export enum IngredientCategory {
  * Meal type categories for recipe classification.
  */
 export enum MealType {
+	Main = "Main",
 	Breakfast = "Breakfast",
-	Lunch = "Lunch",
-	Dinner = "Dinner",
 	Snack = "Snack",
 	Side = "Side",
 	Dessert = "Dessert",
@@ -67,7 +66,7 @@ export type RecipeTags = {
 	 */
 	tags: string[];
 	/**
-	 * Applicable meal type (e.g. "Dinner", "Snack", "Dessert").
+	 * Applicable meal type (e.g. "Main", "Snack", "Dessert").
 	 */
 	mealType: MealType;
 	/**

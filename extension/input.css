@@ -83,12 +83,24 @@
 		@apply bg-primary-50 text-primary-800 border-2 border-primary-200 dark:bg-primary-900/20 dark:text-primary-400 dark:border-primary-800;
 	}
 
+	.status-info-minimal {
+		@apply text-primary-600 dark:text-primary-400;
+	}
+
 	.status-success {
 		@apply bg-success-50 text-success-800 border-2 border-success-300 dark:bg-success-900/20 dark:text-success-400 dark:border-success-800;
 	}
 
+	.status-success-minimal {
+		@apply text-green-600 dark:text-green-400;
+	}
+
 	.status-error {
 		@apply bg-error-50 text-error-800 border-2 border-error-200 whitespace-pre-line dark:bg-error-900/20 dark:text-error-400 dark:border-error-800;
+	}
+
+	.status-error-minimal {
+		@apply text-red-600 whitespace-pre-line dark:text-red-400;
 	}
 
 	/* Input Components */

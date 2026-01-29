@@ -130,7 +130,7 @@ export function StatusMessage(props: StatusMessageProps) {
 	return (
 		<output class={`${baseClasses()} ${getTypeClass()}`} aria-live="polite" aria-atomic="true">
 			<div class="flex items-start gap-2">
-				<div class="flex-shrink-0 mt-0.5">
+				<div class="flex-shrink-0">
 					<div class={iconColorClass()}>{getStatusIcon(type())}</div>
 				</div>
 				<div class="flex-1">

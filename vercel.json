@@ -1,84 +1,77 @@
 {
 	"$schema": "https://openapi.vercel.sh/vercel.json",
-	"bunVersion": "1.x",
-	"buildCommand": "bun run build:web",
+	"buildCommand": "bun run build:web && bun run build:api",
 	"outputDirectory": ".",
 	"cleanUrls": true,
 	"trailingSlash": false,
 	"rewrites": [
 		{
 			"source": "/",
-			"destination": "/api/index"
+			"destination": "/dist/api/api/index"
 		},
 		{
 			"source": "/favicon.ico",
-			"destination": "/api/assets?path=/favicon.ico"
+			"destination": "/dist/api/api/assets?path=/favicon.ico"
 		},
 		{
 			"source": "/favicon.png",
-			"destination": "/api/assets?path=/favicon.png"
+			"destination": "/dist/api/api/assets?path=/favicon.png"
 		},
 		{
 			"source": "/favicon-16x16.png",
-			"destination": "/api/assets?path=/favicon-16x16.png"
+			"destination": "/dist/api/api/assets?path=/favicon-16x16.png"
 		},
 		{
 			"source": "/favicon-32x32.png",
-			"destination": "/api/assets?path=/favicon-32x32.png"
+			"destination": "/dist/api/api/assets?path=/favicon-32x32.png"
 		},
 		{
 			"source": "/favicon-white.png",
-			"destination": "/api/assets?path=/favicon-white.png"
+			"destination": "/dist/api/api/assets?path=/favicon-white.png"
 		},
 		{
 			"source": "/favicon-16x16-white.png",
-			"destination": "/api/assets?path=/favicon-16x16-white.png"
+			"destination": "/dist/api/api/assets?path=/favicon-16x16-white.png"
 		},
 		{
 			"source": "/favicon-32x32-white.png",
-			"destination": "/api/assets?path=/favicon-32x32-white.png"
+			"destination": "/dist/api/api/assets?path=/favicon-32x32-white.png"
 		},
 		{
 			"source": "/apple-touch-icon.png",
-			"destination": "/api/assets?path=/apple-touch-icon.png"
+			"destination": "/dist/api/api/assets?path=/apple-touch-icon.png"
 		},
 		{
 			"source": "/fork-and-knife.png",
-			"destination": "/api/assets?path=/fork-and-knife.png"
+			"destination": "/dist/api/api/assets?path=/fork-and-knife.png"
 		},
 		{
 			"source": "/manifest.json",
-			"destination": "/api/assets?path=/manifest.json"
+			"destination": "/dist/api/api/assets?path=/manifest.json"
 		},
 		{
 			"source": "/web.css",
-			"destination": "/api/assets?path=/web.css"
+			"destination": "/dist/api/api/assets?path=/web.css"
 		},
 		{
 			"source": "/web.js",
-			"destination": "/api/assets?path=/web.js"
+			"destination": "/dist/api/api/assets?path=/web.js"
 		},
 		{
 			"source": "/shared/api.js",
-			"destination": "/api/assets?path=/shared/api.js"
+			"destination": "/dist/api/api/assets?path=/shared/api.js"
 		},
 		{
 			"source": "/shared/storage.js",
-			"destination": "/api/assets?path=/shared/storage.js"
+			"destination": "/dist/api/api/assets?path=/shared/storage.js"
 		}
 	],
 	"functions": {
-		"api/**/*.ts": {
+		"dist/api/**/*.js": {
 			"maxDuration": 60
 		},
 		"api/scrape.py": {
 			"maxDuration": 60
 		}
-	},
-	"env": {
-		"BUN_INSTALL_CACHE": "/tmp/bun-cache",
-		"BUN_RUNTIME_TRANSPILER_CACHE_PATH": "/tmp/bun-transpiler-cache",
-		"BUN_CACHE_DIR": "/tmp/bun-cache-dir",
-		"HOME": "/tmp"
 	}
 }

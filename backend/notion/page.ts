@@ -1,6 +1,6 @@
 import { DuplicateRecipeError } from "../errors.js";
 import { buildPageBody } from "./blocks.js";
-import { checkForDuplicateByTitle, checkForDuplicateByUrl } from "./duplicates.js";
+import { checkForDuplicate, DuplicateCheckType } from "./duplicates.js";
 import {
 	buildPageParams,
 	buildPageProperties,
@@ -26,20 +26,22 @@ export async function createRecipePage({
 	const notion = createNotionClient(notionApiKey);
 
 	if (!skipDuplicateCheck) {
-		const urlDuplicate = await checkForDuplicateByUrl({
-			url: recipe.sourceUrl,
+		const urlDuplicate = await checkForDuplicate({
+			value: recipe.sourceUrl,
 			notionApiKey,
 			databaseId,
+			type: DuplicateCheckType.Url,
 		});
 
 		if (urlDuplicate) {
 			throw new DuplicateRecipeError(urlDuplicate.title, urlDuplicate.url, urlDuplicate.notionUrl);
 		}
 
-		const titleDuplicate = await checkForDuplicateByTitle({
-			recipeName: recipe.name,
+		const titleDuplicate = await checkForDuplicate({
+			value: recipe.name,
 			notionApiKey,
 			databaseId,
+			type: DuplicateCheckType.Title,
 		});
 
 		if (titleDuplicate) {

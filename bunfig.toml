@@ -1,5 +1,0 @@
-[install]
-cache = "/tmp/bun-install-cache"
-
-[runtime]
-cache = "/tmp/bun-runtime-cache"

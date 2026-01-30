@@ -111,17 +111,12 @@ export function validateRecipeUrl(
 
 	if (!isValidHttpUrl(urlString)) {
 		return createErrorResponse(
-			"Invalid URL protocol. Only HTTP and HTTPS are allowed",
+			"Invalid URL format or protocol. Only HTTP and HTTPS URLs are allowed",
 			HttpStatus.BadRequest,
 		);
 	}
 
-	try {
-		new URL(urlString);
-		return null;
-	} catch {
-		return createErrorResponse("Invalid URL format", HttpStatus.BadRequest);
-	}
+	return null;
 }
 
 /**

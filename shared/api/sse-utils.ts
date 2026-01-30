@@ -1,6 +1,5 @@
-import type { RecipeResponse, ServerProgressEvent } from "@shared/api/types.js";
-import { ServerProgressEventType } from "@shared/api/types.js";
-import { validateServerProgressEvent } from "@shared/api/validation.js";
+import type { RecipeResponse, ServerProgressEvent } from "@shared/api/types";
+import { ServerProgressEventType, validateServerProgressEvent } from "@shared/api/types";
 
 /**
  * SSE event data prefix pattern.
@@ -31,7 +30,7 @@ export type ParseSseStreamOptions = {
 	/**
 	 * Progress callbacks for UI updates.
 	 */
-	callbacks: import("./types.js").ProgressCallbacks;
+	callbacks: import("./types").ProgressCallbacks;
 };
 
 /**
@@ -99,7 +98,7 @@ export async function parseSseStream(options: ParseSseStreamOptions): Promise<Re
  */
 export function handleSseEvent(
 	data: ServerProgressEvent,
-	callbacks: import("./types.js").ProgressCallbacks,
+	callbacks: import("./types").ProgressCallbacks,
 ): RecipeResponse | null {
 	if (data.type === ServerProgressEventType.Progress) {
 		callbacks.onProgress(data.message);

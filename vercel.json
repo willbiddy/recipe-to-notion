@@ -67,7 +67,7 @@
 		}
 	],
 	"functions": {
-		"dist/api/**/*.js": {
+		"api/**/*.ts": {
 			"maxDuration": 60
 		},
 		"api/scrape.py": {

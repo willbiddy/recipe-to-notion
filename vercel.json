@@ -1,72 +1,152 @@
 {
 	"$schema": "https://openapi.vercel.sh/vercel.json",
-	"buildCommand": "bun run build:web && bun run build:api",
+	"bunVersion": "1.x",
+	"buildCommand": "bun run build:web",
 	"outputDirectory": ".",
 	"cleanUrls": true,
 	"trailingSlash": false,
 	"rewrites": [
 		{
 			"source": "/",
-			"destination": "/api/dist/index"
+			"destination": "/api/index"
 		},
 		{
 			"source": "/favicon.ico",
-			"destination": "/api/dist/assets?path=/favicon.ico"
+			"destination": "/api/assets?path=/favicon.ico"
 		},
 		{
 			"source": "/favicon.png",
-			"destination": "/api/dist/assets?path=/favicon.png"
+			"destination": "/api/assets?path=/favicon.png"
 		},
 		{
 			"source": "/favicon-16x16.png",
-			"destination": "/api/dist/assets?path=/favicon-16x16.png"
+			"destination": "/api/assets?path=/favicon-16x16.png"
 		},
 		{
 			"source": "/favicon-32x32.png",
-			"destination": "/api/dist/assets?path=/favicon-32x32.png"
+			"destination": "/api/assets?path=/favicon-32x32.png"
 		},
 		{
 			"source": "/favicon-white.png",
-			"destination": "/api/dist/assets?path=/favicon-white.png"
+			"destination": "/api/assets?path=/favicon-white.png"
 		},
 		{
 			"source": "/favicon-16x16-white.png",
-			"destination": "/api/dist/assets?path=/favicon-16x16-white.png"
+			"destination": "/api/assets?path=/favicon-16x16-white.png"
 		},
 		{
 			"source": "/favicon-32x32-white.png",
-			"destination": "/api/dist/assets?path=/favicon-32x32-white.png"
+			"destination": "/api/assets?path=/favicon-32x32-white.png"
 		},
 		{
 			"source": "/apple-touch-icon.png",
-			"destination": "/api/dist/assets?path=/apple-touch-icon.png"
+			"destination": "/api/assets?path=/apple-touch-icon.png"
 		},
 		{
 			"source": "/fork-and-knife.png",
-			"destination": "/api/dist/assets?path=/fork-and-knife.png"
+			"destination": "/api/assets?path=/fork-and-knife.png"
 		},
 		{
 			"source": "/manifest.json",
-			"destination": "/api/dist/assets?path=/manifest.json"
+			"destination": "/api/assets?path=/manifest.json"
 		},
 		{
 			"source": "/web.css",
-			"destination": "/api/dist/assets?path=/web.css"
+			"destination": "/api/assets?path=/web.css"
 		},
 		{
 			"source": "/web.js",
-			"destination": "/api/dist/assets?path=/web.js"
+			"destination": "/api/assets?path=/web.js"
 		},
 		{
 			"source": "/shared/api.js",
-			"destination": "/api/dist/assets?path=/shared/api.js"
+			"destination": "/api/assets?path=/shared/api.js"
 		},
 		{
 			"source": "/shared/storage.js",
-			"destination": "/api/dist/assets?path=/shared/storage.js"
+			"destination": "/api/assets?path=/shared/storage.js"
+		},
+		{
+			"source": "/api/web.js",
+			"destination": "/api/assets?path=/web.js"
+		},
+		{
+			"source": "/api/web.css",
+			"destination": "/api/assets?path=/web.css"
+		},
+		{
+			"source": "/api/favicon.ico",
+			"destination": "/api/assets?path=/favicon.ico"
+		},
+		{
+			"source": "/api/favicon.png",
+			"destination": "/api/assets?path=/favicon.png"
+		},
+		{
+			"source": "/api/favicon",
+			"destination": "/api/assets?path=/favicon"
+		},
+		{
+			"source": "/api/favicon-16x16.png",
+			"destination": "/api/assets?path=/favicon-16x16.png"
+		},
+		{
+			"source": "/api/favicon-16x16",
+			"destination": "/api/assets?path=/favicon-16x16"
+		},
+		{
+			"source": "/api/favicon-32x32.png",
+			"destination": "/api/assets?path=/favicon-32x32.png"
+		},
+		{
+			"source": "/api/favicon-32x32",
+			"destination": "/api/assets?path=/favicon-32x32"
+		},
+		{
+			"source": "/api/favicon-white.png",
+			"destination": "/api/assets?path=/favicon-white.png"
+		},
+		{
+			"source": "/api/favicon-white",
+			"destination": "/api/assets?path=/favicon-white"
+		},
+		{
+			"source": "/api/favicon-16x16-white.png",
+			"destination": "/api/assets?path=/favicon-16x16-white.png"
+		},
+		{
+			"source": "/api/favicon-16x16-white",
+			"destination": "/api/assets?path=/favicon-16x16-white"
+		},
+		{
+			"source": "/api/favicon-32x32-white.png",
+			"destination": "/api/assets?path=/favicon-32x32-white.png"
+		},
+		{
+			"source": "/api/favicon-32x32-white",
+			"destination": "/api/assets?path=/favicon-32x32-white"
+		},
+		{
+			"source": "/api/apple-touch-icon.png",
+			"destination": "/api/assets?path=/apple-touch-icon.png"
+		},
+		{
+			"source": "/api/apple-touch-icon",
+			"destination": "/api/assets?path=/apple-touch-icon"
+		},
+		{
+			"source": "/api/fork-and-knife.png",
+			"destination": "/api/assets?path=/fork-and-knife.png"
+		},
+		{
+			"source": "/api/manifest.json",
+			"destination": "/api/assets?path=/manifest.json"
 		}
 	],
 	"functions": {
+		"api/**/*.ts": {
+			"maxDuration": 60
+		},
 		"api/scrape.py": {
 			"maxDuration": 60
 		}

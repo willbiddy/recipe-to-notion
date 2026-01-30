@@ -22,6 +22,21 @@ CLI/Extension/Web/API → Check duplicates → Scrape recipe → Claude scores/t
 
 Each recipe costs about **$0.03** in Claude API usage (roughly 4,000-7,000 input tokens and 200-1,000 output tokens per recipe). The default model is Sonnet 4.5, but you can change it by setting the `CLAUDE_MODEL` environment variable to `"haiku"`, `"sonnet"`, or `"opus"`.
 
+## Prerequisites
+
+- **Bun**: Package manager and runtime
+  ```bash
+  curl -fsSL https://bun.sh/install | bash
+  ```
+- **Python 3.11+**: Required for recipe scraping
+  ```bash
+  python3 --version
+  ```
+- **Git**: Version control
+  ```bash
+  git --version
+  ```
+
 ## Setup
 
 ### 1. Clone and install
@@ -168,6 +183,54 @@ If you have Vercel Deployment Protection enabled, you need to create a **Protect
 - **[iOS Shortcut Setup](docs/IOS_SHORTCUT.md)** - Set up iOS Share Sheet integration
 - **[API Reference](docs/API.md)** - Full REST API documentation with examples
 - **[Deployment Guide](docs/DEPLOYMENT.md)** - Deploy to Vercel
+- **[Development Reference](docs/reference.md)** - Code style, naming conventions, and patterns
+
+---
+
+## Development
+
+### Debugging
+
+**Extension:**
+```typescript
+// Add to popup/background/content script
+console.log("[Extension]", data);
+
+// View logs in:
+// - Popup: Right-click popup → Inspect
+// - Background: chrome://extensions → Inspect service worker
+// - Content: Page DevTools → Console
+```
+
+**Web Interface:**
+```typescript
+// Standard browser DevTools
+console.log("[Web]", data);
+```
+
+**Backend:**
+```typescript
+// Server logs
+console.log("[Server]", data);
+// View in terminal running `bun run server`
+```
+
+### Security Considerations
+
+- **Input Validation**: Validate all external inputs (URLs, API requests)
+- **SSRF Prevention**: URLs are validated before fetching (only http/https allowed)
+- **No Stack Traces**: Server errors never expose stack traces to clients
+- **Secrets**: Never log or commit API keys (use `.env` file)
+- **Rate Limiting**: 10 requests per minute per API key/IP
+- **XSS Prevention**: HTML content is never rendered via `innerHTML`
+
+### Code Quality
+
+Run all checks before committing:
+
+```bash
+bun run check    # TypeScript + lint + format
+```
 
 ---
 

@@ -7,7 +7,7 @@ import { ExtensionRecipeForm } from "@shared/components/extension-recipe-form.js
 import { ExtensionMessageType } from "@shared/constants.js";
 import { StorageProvider } from "@shared/contexts/storage-context.js";
 import { ThemeProvider } from "@shared/contexts/theme-context.js";
-import { detectSystemTheme } from "@shared/utils/theme-utils.js";
+import { detectSystemTheme } from "@shared/hooks/use-theme.js";
 import { render } from "solid-js/web";
 import { getServerUrl } from "./config.js";
 

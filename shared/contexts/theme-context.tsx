@@ -10,7 +10,7 @@ import {
 	detectSystemTheme,
 	getEffectiveTheme,
 	watchSystemTheme,
-} from "@shared/utils/theme-utils";
+} from "@shared/hooks/use-theme";
 import {
 	type Accessor,
 	createContext,

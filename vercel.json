@@ -150,5 +150,8 @@
 		"api/scrape.py": {
 			"maxDuration": 60
 		}
+	},
+	"env": {
+		"BUN_RUNTIME_TRANSPILER_CACHE_PATH": "/tmp/bun-transpiler"
 	}
 }

@@ -156,23 +156,5 @@ For development and testing, you can use a local server instead of Vercel:
 
 > **Note:** For production use, always use Vercel deployment and set `EXTENSION_SERVER_URL` to your production URL.
 
----
-
-## Scripts
-
-### Build Scripts
-
-- **`bun run build:extension`** - Build the extension (compiles TypeScript and Tailwind CSS)
-- **`bun run watch:extension`** - Watch extension files and rebuild automatically on changes
-
-### Development Scripts
-
-- **`bun run server`** - Start local HTTP server for development (runs on `localhost:3000`)
-- **`bun run check`** - Run all code quality checks (typecheck, lint:fix, and format)
-- **`bun run typecheck`** - Check TypeScript types for errors
-- **`bun run lint`** - Run linter to find code issues
-- **`bun run lint:fix`** - Run linter and automatically fix issues
-- **`bun run format`** - Auto-format code with Biome
-
-For a complete list of all available scripts, see the [main README](../README.md#scripts).
+See the [main README](../README.md#scripts) for all available build and development scripts.
 

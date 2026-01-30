@@ -4,76 +4,24 @@ import type { Recipe } from "./scraper.js";
 import type { RecipeTags } from "./tagger.js";
 import { HealthScore } from "./tagger.js";
 
-/**
- * Logger type for recipe processing steps.
- * Allows different implementations (CLI, server, etc.) to handle logging consistently.
- */
+/** Logger type for recipe processing steps. */
 export type RecipeLogger = {
-	/**
-	 * Called when processing starts.
-	 * @param url - The recipe URL being processed.
-	 */
 	onStart?(url: string): void;
-	/**
-	 * Called when checking for duplicates.
-	 */
 	onCheckingDuplicates?(): void;
-	/**
-	 * Called when no duplicate URL is found.
-	 */
 	onNoDuplicateFound?(): void;
-	/**
-	 * Called when a duplicate is found.
-	 */
 	onDuplicateFound?(title: string, notionUrl: string): void;
-	/**
-	 * Called when scraping starts.
-	 */
 	onScraping?(): void;
-	/**
-	 * Called when scraping completes successfully.
-	 */
 	onScraped?(recipe: Recipe): void;
-	/**
-	 * Called when AI tagging starts.
-	 */
 	onTagging?(): void;
-	/**
-	 * Called when AI tagging completes.
-	 */
 	onTagged?(): void;
-	/**
-	 * Called when saving to Notion starts.
-	 */
 	onSaving?(): void;
-	/**
-	 * Called when saving to Notion completes.
-	 */
 	onSaved?(notionUrl: string): void;
-	/**
-	 * Called to display the recipe summary after processing completes.
-	 */
 	onSummary?(recipe: Recipe, tags: RecipeTags): void;
-	/**
-	 * Called when an error occurs.
-	 */
 	onError?(message: string): void;
 };
 
-/**
- * Creates a fancy console logger with colors and formatting.
- * Suitable for both CLI and serverless contexts where console output is desired.
- */
+/** Creates a console logger with colors and formatting. */
 export function createConsoleLogger(): RecipeLogger {
-	/**
-	 * Formats and displays a recipe summary with tags and metadata.
-	 *
-	 * Creates a formatted display showing recipe name, author,
-	 * tags, meal type, health score, time, ingredient count, and step count.
-	 *
-	 * @param recipe - The recipe data to display.
-	 * @param tags - The AI-generated tags and metadata.
-	 */
 	const formatSummary = (recipe: Recipe, tags: RecipeTags): void => {
 		const boxWidth = 60;
 		const border = "─".repeat(boxWidth);

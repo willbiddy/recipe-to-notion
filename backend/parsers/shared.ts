@@ -1,51 +1,16 @@
 import { MAX_AUTHOR_SUFFIX_LENGTH } from "@shared/constants.js";
 
-/**
- * Pattern to match "Recipe" suffix at the end of recipe names.
- *
- * Used to remove redundant "Recipe" suffixes from recipe titles.
- */
 const RECIPE_SUFFIX_PATTERN = /\s+Recipe$/i;
-
-/**
- * Pattern to match author name suffix pattern (e.g., " - Author Name").
- *
- * Captures the author name portion after " - " for removal from recipe titles.
- */
 const AUTHOR_SUFFIX_PATTERN = /\s+-\s+(.+)$/m;
-
-/**
- * Pattern to match double parentheses in ingredient strings.
- *
- * Used to normalize double parentheses like "((julienned))" to single parentheses.
- */
 const DOUBLE_PARENTHESES_PATTERN = /\(\s*\(([^)]+)\)\s*\)/g;
-
-/**
- * Pattern to match editor's note markers at the start of instruction steps.
- *
- * Used to identify and filter out instruction steps that are entirely editor's notes.
- */
 const EDITOR_NOTE_START_PATTERN = /^Editor'?s?\s+note:?/i;
-
-/**
- * Pattern to match editor's note markers at the end of instruction steps.
- *
- * Used to remove editor's note text that appears within instruction steps.
- */
 const EDITOR_NOTE_END_PATTERN = /\s*Editor'?s?\s+note:?.*$/i;
 
 /**
  * Cleans recipe names by removing common suffixes and author patterns.
  *
- * Removes "Recipe" suffix if present. Removes " - Author Name" pattern, but only if
- * the suffix looks like an author name: must be preceded by space-dash-space, must not
- * contain commas (recipe names often have commas, author names don't), and should be
- * relatively short (author names are typically < 50 chars). This prevents removing parts
- * of recipe names like "One-Pot Salmon, Spinach...".
- *
- * @param name - The raw recipe name to clean.
- * @returns Cleaned recipe name without suffixes.
+ * @param name - Raw recipe name to clean
+ * @returns Cleaned recipe name
  */
 export function cleanRecipeName(name: string): string {
 	let cleaned = name.replace(RECIPE_SUFFIX_PATTERN, "");
@@ -85,11 +50,8 @@ const FRACTION_MAP = new Map([
 /**
  * Normalizes Unicode fraction characters to ASCII equivalents.
  *
- * Converts Unicode fraction characters (e.g., ½, ¼, ¾) to their
- * ASCII equivalents (e.g., 1/2, 1/4, 3/4) for consistent display.
- *
- * @param text - The text potentially containing Unicode fractions.
- * @returns The text with fractions normalized to ASCII.
+ * @param text - Text potentially containing Unicode fractions
+ * @returns Text with fractions normalized to ASCII
  */
 export function normalizeFractions(text: string): string {
 	let result = text;
@@ -99,24 +61,13 @@ export function normalizeFractions(text: string): string {
 	return result;
 }
 
-/**
- * Pattern to match trailing markdown asterisks (bold/italic markers).
- *
- * Used to remove markdown formatting that sometimes appears in ingredient text.
- */
 const TRAILING_ASTERISKS_PATTERN = /\*+\s*$/;
 
 /**
  * Normalizes and cleans ingredient text.
  *
- * Some recipe sources include double parentheses like "((julienned))" which should
- * be normalized to single parentheses "(julienned)" for cleaner display.
- * Also handles cases with spaces like ( (text) ) or (( text )).
- * Trims spaces inside the parentheses for cleaner output.
- * Removes trailing markdown asterisks (* or **) that sometimes appear in ingredients.
- *
- * @param ingredient - The raw ingredient string.
- * @returns The cleaned ingredient string.
+ * @param ingredient - Raw ingredient string
+ * @returns Cleaned ingredient text
  */
 export function normalizeIngredient(ingredient: string): string {
 	return ingredient
@@ -128,14 +79,10 @@ export function normalizeIngredient(ingredient: string): string {
 }
 
 /**
- * Filters out editor's notes and similar editorial content from instruction arrays.
+ * Filters out editor's notes from instruction arrays.
  *
- * Removes instruction steps that are entirely editor's notes, and strips
- * editor's notes that appear within instruction text (e.g., at the end of a step).
- * Handles patterns like "Editor's note:", "Editor note:", or similar editorial markers.
- *
- * @param instructions - Array of instruction step strings.
- * @returns Filtered array with editor's notes removed and cleaned.
+ * @param instructions - Array of instruction step strings
+ * @returns Filtered array with editor's notes removed
  */
 export function filterEditorNotes(instructions: string[]): string[] {
 	return instructions

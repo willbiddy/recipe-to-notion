@@ -1,69 +1,26 @@
-/**
- * Simple in-memory rate limiter.
- *
- * For production use, consider using a distributed rate limiting service
- * like @upstash/ratelimit or Vercel Edge Middleware with Redis.
- * This implementation uses an in-memory Map and is suitable for single-instance
- * deployments. For serverless functions with multiple instances, use a
- * distributed solution.
- */
+/** Simple in-memory rate limiter using token bucket algorithm. */
 
 import { CLEANUP_INTERVAL_MS } from "@shared/constants.js";
 
-/**
- * Rate limit configuration.
- */
 export type RateLimitConfig = {
-	/**
-	 * Maximum number of requests allowed in the time window.
-	 */
 	maxRequests: number;
-	/**
-	 * Time window in milliseconds.
-	 */
 	windowMs: number;
 };
 
-/**
- * Default rate limit: 10 requests per minute per IP/API key.
- */
 export const DEFAULT_RATE_LIMIT: RateLimitConfig = {
 	maxRequests: 10,
 	windowMs: 60 * 1000,
 };
 
-/**
- * Request tracking entry.
- */
 type RateLimitEntry = {
-	/**
-	 * Number of requests made in the current window.
-	 */
 	count: number;
-	/**
-	 * Timestamp when the window started.
-	 */
 	windowStart: number;
 };
 
-/**
- * In-memory store for rate limit tracking.
- * Key: identifier (IP address or API key hash)
- * Value: rate limit entry
- */
 const rateLimitStore = new Map<string, RateLimitEntry>();
 
-/**
- * Track last cleanup time for lazy cleanup (serverless-friendly).
- * Instead of using setInterval() which creates persistent timers that
- * accumulate across serverless function instances, we perform cleanup
- * on-demand when checkRateLimit() is called.
- */
 let lastCleanupTime = Date.now();
 
-/**
- * Cleans up expired rate limit entries to prevent memory leaks.
- */
 function cleanupExpiredEntries(): void {
 	const now = Date.now();
 	for (const [key, entry] of rateLimitStore.entries()) {
@@ -76,13 +33,9 @@ function cleanupExpiredEntries(): void {
 /**
  * Checks if a request should be rate limited.
  *
- * Creates a new window if no entry exists or the current window has expired.
- * Returns rate limit exceeded if the count has reached the maximum. Otherwise
- * increments the count and returns the remaining requests.
- *
- * @param identifier - Unique identifier (IP address or API key hash).
- * @param config - Rate limit configuration (defaults to DEFAULT_RATE_LIMIT).
- * @returns Object with `allowed` boolean, `remaining` requests count, and `resetAt` timestamp.
+ * @param identifier - Unique identifier (IP or API key hash)
+ * @param config - Rate limit configuration
+ * @returns Object with allowed, remaining, and resetAt
  */
 export function checkRateLimit(
 	identifier: string,
@@ -134,11 +87,8 @@ export function checkRateLimit(
 /**
  * Extracts rate limit identifier from request.
  *
- * Hashes the API key for per-key rate limiting if present in the Authorization header.
- * Falls back to IP address-based identification using x-forwarded-for or x-real-ip headers.
- *
- * @param request - The incoming request.
- * @returns Rate limit identifier string (api-key-{hash} or ip-{address}).
+ * @param request - Incoming request
+ * @returns Rate limit identifier (api-key-{hash} or ip-{address})
  */
 export function getRateLimitIdentifier(request: Request): string {
 	const authHeader = request.headers.get("Authorization");

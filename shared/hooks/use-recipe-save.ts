@@ -37,12 +37,12 @@
  * ```
  */
 
-import type { RecipeResponse } from "@shared/api/types.js";
-import { StatusType } from "@shared/components/status-message.js";
-import { ErrorMessageKey, getErrorMessage } from "@shared/constants.js";
-import { isApiKeyError } from "@shared/error-utils.js";
-import type { StorageAdapter } from "@shared/storage.js";
-import { isValidHttpUrl } from "@shared/url-utils.js";
+import type { RecipeResponse } from "@shared/api/types";
+import { StatusType } from "@shared/components/status-message";
+import { ErrorMessageKey, getErrorMessage } from "@shared/constants";
+import { isApiKeyError } from "@shared/error-utils";
+import type { StorageAdapter } from "@shared/storage";
+import { isValidHttpUrl } from "@shared/url-utils";
 import type { JSX } from "solid-js";
 import { type Accessor, createSignal, type Setter } from "solid-js";
 

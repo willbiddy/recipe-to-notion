@@ -5,7 +5,7 @@
  * to enable appropriate error handling and user messaging.
  */
 
-import { ApiErrorPattern } from "@shared/constants.js";
+import { ApiErrorPattern } from "@shared/constants";
 
 /**
  * Checks if an error message indicates an API key authentication error.

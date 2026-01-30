@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
-import { HttpStatus } from "@backend/server-shared/http-utils.js";
-import { resolveIndexPath } from "./path-utils.js";
+import { HttpStatus } from "@backend/server-shared/http-utils";
+import { resolveIndexPath } from "./path-utils";
 
 export default {
 	/**

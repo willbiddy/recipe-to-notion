@@ -1,12 +1,12 @@
 import type { Client } from "@notionhq/client";
 import type { QueryDataSourceParameters } from "@notionhq/client/build/src/api-endpoints";
-import { hasProperty, isArray, isObject } from "@shared/type-guards.js";
+import { hasProperty, isArray, isObject } from "@shared/type-guards";
 import {
 	createNotionClient,
 	type DuplicateInfo,
 	getNotionPageUrl,
 	PropertyName,
-} from "./notion-client.js";
+} from "./notion-client";
 
 /** Type of duplicate check to perform. */
 export enum DuplicateCheckType {

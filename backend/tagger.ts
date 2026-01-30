@@ -3,8 +3,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
-import { TaggingError, ValidationError } from "./errors.js";
-import type { Recipe } from "./scraper.js";
+import { TaggingError, ValidationError } from "./errors";
+import type { Recipe } from "./scraper";
 
 /** Shopping categories for ingredient organization. */
 export enum IngredientCategory {

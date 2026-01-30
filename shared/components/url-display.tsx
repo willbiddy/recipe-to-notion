@@ -26,7 +26,7 @@
  * ```
  */
 
-import { getUnsupportedUrlMessage, isValidHttpUrl } from "@shared/url-utils.js";
+import { getUnsupportedUrlMessage, isValidHttpUrl } from "@shared/url-utils";
 import { createMemo, Show } from "solid-js";
 
 /**

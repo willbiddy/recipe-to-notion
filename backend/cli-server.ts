@@ -6,12 +6,12 @@
  *   bun backend/cli-server.ts
  *   SERVER_PORT=8080 bun backend/cli-server.ts
  */
-import { colors } from "@shared/colors.js";
-import { DEFAULT_PORT, IDLE_TIMEOUT_SECONDS, MAX_PORT, MIN_PORT } from "@shared/constants.js";
+import { colors } from "@shared/colors";
+import { DEFAULT_PORT, IDLE_TIMEOUT_SECONDS, MAX_PORT, MIN_PORT } from "@shared/constants";
 import getPort from "get-port";
-import { ValidationError } from "./errors.js";
-import { handleRequest } from "./server.js";
-import { HttpStatus } from "./server-shared/http-utils.js";
+import { ValidationError } from "./errors";
+import { handleRequest } from "./server";
+import { HttpStatus } from "./server-shared/http-utils";
 
 try {
 	const { loadConfig } = await import("./config.js");

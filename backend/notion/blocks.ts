@@ -1,13 +1,13 @@
-import { MAX_TEXT_LENGTH } from "@shared/constants.js";
-import type { Recipe } from "../scraper.js";
-import type { CategorizedIngredient, RecipeTags } from "../tagger.js";
-import { IngredientCategory } from "../tagger.js";
+import { MAX_TEXT_LENGTH } from "@shared/constants";
+import type { Recipe } from "../scraper";
+import type { CategorizedIngredient, RecipeTags } from "../tagger";
+import { IngredientCategory } from "../tagger";
 import {
 	type NotionBlock,
 	NotionBlockType,
 	normalizeDescriptionText,
 	truncate,
-} from "./notion-client.js";
+} from "./notion-client";
 
 const CATEGORY_ORDER: IngredientCategory[] = [
 	IngredientCategory.Produce,

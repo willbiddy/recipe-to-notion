@@ -25,15 +25,15 @@
  * // https://example.com?url=https://recipe-site.com/recipe
  */
 
-import type { RecipeFormShellHandlers } from "@shared/components/recipe-form-shell.js";
-import { RecipeFormShell } from "@shared/components/recipe-form-shell.js";
-import { StatusType } from "@shared/components/status-message.js";
-import { ErrorMessageKey } from "@shared/constants.js";
-import { useStorage } from "@shared/contexts/storage-context.js";
-import { useKeyboardShortcuts } from "@shared/hooks/use-keyboard-shortcuts.js";
-import { useQueryParams } from "@shared/hooks/use-query-params.js";
-import { useTimeout } from "@shared/hooks/use-timeout.js";
-import { isValidHttpUrl } from "@shared/url-utils.js";
+import type { RecipeFormShellHandlers } from "@shared/components/recipe-form-shell";
+import { RecipeFormShell } from "@shared/components/recipe-form-shell";
+import { StatusType } from "@shared/components/status-message";
+import { ErrorMessageKey } from "@shared/constants";
+import { useStorage } from "@shared/contexts/storage-context";
+import { useKeyboardShortcuts } from "@shared/hooks/use-keyboard-shortcuts";
+import { useQueryParams } from "@shared/hooks/use-query-params";
+import { useTimeout } from "@shared/hooks/use-timeout";
+import { isValidHttpUrl } from "@shared/url-utils";
 import { createMemo, createSignal, Show } from "solid-js";
 
 /**

@@ -50,14 +50,10 @@ export function resolveWebDir(): string | null {
 		// Standard paths (local development and most deployments)
 		join(__dirname, "..", "web"),
 		join(process.cwd(), "web"),
-		join(process.cwd(), "..", "web"),
-		// Vercel-specific paths (serverless functions may be nested deeper)
-		join(process.cwd(), "..", "..", "web"),
-		join("/var/task", "web"), // AWS Lambda style
-		join("/var/task", "..", "web"),
-		// Fallback to current directory structure
+		// Vercel/AWS Lambda serverless
+		join("/var/task", "web"),
+		// Fallback
 		"web",
-		join(__dirname, "web"),
 	];
 
 	return resolveFilePath(possiblePaths, "web directory");
@@ -72,17 +68,13 @@ export function resolveIndexPath(): string | null {
 	const __dirname = getDirname();
 
 	const possiblePaths = [
-		// Standard paths
+		// Standard paths (local development and most deployments)
 		join(__dirname, "..", "web", "index.html"),
 		join(process.cwd(), "web", "index.html"),
-		join(process.cwd(), "..", "web", "index.html"),
-		// Vercel-specific paths
-		join(process.cwd(), "..", "..", "web", "index.html"),
-		join("/var/task", "web", "index.html"), // AWS Lambda style
-		join("/var/task", "..", "web", "index.html"),
-		// Fallback to current directory structure
+		// Vercel/AWS Lambda serverless
+		join("/var/task", "web", "index.html"),
+		// Fallback
 		"web/index.html",
-		join(__dirname, "web", "index.html"),
 	];
 
 	return resolveFilePath(possiblePaths, "index.html");

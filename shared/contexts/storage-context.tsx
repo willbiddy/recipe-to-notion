@@ -3,7 +3,7 @@
  * Eliminates the need to create storage adapters in every component.
  */
 
-import { createStorageAdapter, type StorageAdapter } from "@shared/storage.js";
+import { createStorageAdapter, type StorageAdapter } from "@shared/storage";
 import { createContext, type ParentComponent, useContext } from "solid-js";
 
 /**

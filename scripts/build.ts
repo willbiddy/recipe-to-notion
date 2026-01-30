@@ -6,7 +6,7 @@ import { existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { SolidPlugin } from "@dschz/bun-plugin-solid";
 import { $ } from "bun";
-import { handleBuildResult } from "./build-utils.js";
+import { handleBuildResult } from "./build-utils";
 
 const target = process.argv[2] || "all";
 const isDev = process.argv.includes("--dev");

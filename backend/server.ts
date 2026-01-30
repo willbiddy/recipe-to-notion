@@ -1,10 +1,10 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { ASSET_ROUTES } from "@api/asset-routes.js";
-import { resolveIndexPath, resolveWebDir } from "@api/path-utils.js";
-import { createErrorResponse, generateRequestId } from "./server-shared/errors.js";
-import { HttpStatus, handleOptionsRequest, setCorsHeaders } from "./server-shared/http-utils.js";
-import { handleRecipeRequest } from "./server-shared/recipe-handler.js";
+import { ASSET_ROUTES } from "@api/asset-routes";
+import { resolveIndexPath, resolveWebDir } from "@api/path-utils";
+import { createErrorResponse, generateRequestId } from "./server-shared/errors";
+import { HttpStatus, handleOptionsRequest, setCorsHeaders } from "./server-shared/http-utils";
+import { handleRecipeRequest } from "./server-shared/recipe-handler";
 
 /**
  * Serves static assets from the web directory.

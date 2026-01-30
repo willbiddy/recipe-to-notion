@@ -21,11 +21,11 @@
  * ```
  */
 
-import { RecipeFormShell } from "@shared/components/recipe-form-shell.js";
-import { StatusType, TextSize } from "@shared/components/status-message.js";
-import { UrlDisplay } from "@shared/components/url-display.js";
-import { ExtensionMessageType } from "@shared/constants.js";
-import { getWebsiteName, isValidHttpUrl } from "@shared/url-utils.js";
+import { RecipeFormShell } from "@shared/components/recipe-form-shell";
+import { StatusType, TextSize } from "@shared/components/status-message";
+import { UrlDisplay } from "@shared/components/url-display";
+import { ExtensionMessageType } from "@shared/constants";
+import { getWebsiteName, isValidHttpUrl } from "@shared/url-utils";
 import { createSignal, onMount } from "solid-js";
 
 /**

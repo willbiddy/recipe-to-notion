@@ -3,7 +3,7 @@
  * Handles context menu and other background tasks.
  */
 
-import { ExtensionMessageType, Theme } from "@shared/constants.js";
+import { ExtensionMessageType, Theme } from "@shared/constants";
 import { z } from "zod";
 
 /**

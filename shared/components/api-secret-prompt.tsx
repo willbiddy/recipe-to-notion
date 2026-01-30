@@ -27,11 +27,11 @@
  * ```
  */
 
-import { useStorage } from "@shared/contexts/storage-context.js";
+import { useStorage } from "@shared/contexts/storage-context";
 import {
 	useGlobalKeyboardShortcuts,
 	useKeyboardShortcuts,
-} from "@shared/hooks/use-keyboard-shortcuts.js";
+} from "@shared/hooks/use-keyboard-shortcuts";
 import { createSignal, Show } from "solid-js";
 
 /**

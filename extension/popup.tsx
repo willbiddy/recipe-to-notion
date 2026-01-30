@@ -3,13 +3,13 @@
  * Mounts the Solid.js ExtensionRecipeForm component.
  */
 
-import { ExtensionRecipeForm } from "@shared/components/extension-recipe-form.js";
-import { ExtensionMessageType } from "@shared/constants.js";
-import { StorageProvider } from "@shared/contexts/storage-context.js";
-import { ThemeProvider } from "@shared/contexts/theme-context.js";
-import { detectSystemTheme } from "@shared/hooks/use-theme.js";
+import { ExtensionRecipeForm } from "@shared/components/extension-recipe-form";
+import { ExtensionMessageType } from "@shared/constants";
+import { StorageProvider } from "@shared/contexts/storage-context";
+import { ThemeProvider } from "@shared/contexts/theme-context";
+import { detectSystemTheme } from "@shared/hooks/use-theme";
 import { render } from "solid-js/web";
-import { getServerUrl } from "./config.js";
+import { getServerUrl } from "./config";
 
 /**
  * Updates the extension icon based on the current theme.

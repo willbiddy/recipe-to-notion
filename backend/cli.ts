@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
-import { colors } from "@shared/colors.js";
-import { isString } from "@shared/type-guards.js";
-import { isValidHttpUrl, stripQueryParams } from "@shared/url-utils.js";
+import { colors } from "@shared/colors";
+import { isString } from "@shared/type-guards";
+import { isValidHttpUrl, stripQueryParams } from "@shared/url-utils";
 /**
  * CLI entry point for recipe-to-notion.
  *
@@ -10,10 +10,10 @@ import { isValidHttpUrl, stripQueryParams } from "@shared/url-utils.js";
  *   bun add --html <path> <url>
  */
 import { defineCommand, runMain } from "citty";
-import { loadConfig } from "./config.js";
-import { createConsoleLogger } from "./logger.js";
-import { processRecipe } from "./process-recipe.js";
-import { scrapeRecipeFromHtml } from "./scraper.js";
+import { loadConfig } from "./config";
+import { createConsoleLogger } from "./logger";
+import { processRecipe } from "./process-recipe";
+import { scrapeRecipeFromHtml } from "./scraper";
 
 const main = defineCommand({
 	meta: {

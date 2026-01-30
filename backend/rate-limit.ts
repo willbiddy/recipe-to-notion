@@ -1,6 +1,6 @@
 /** Simple in-memory rate limiter using token bucket algorithm. */
 
-import { CLEANUP_INTERVAL_MS } from "@shared/constants.js";
+import { CLEANUP_INTERVAL_MS } from "@shared/constants";
 
 export type RateLimitConfig = {
 	maxRequests: number;

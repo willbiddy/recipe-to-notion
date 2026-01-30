@@ -3,9 +3,9 @@
  * Mounts the Solid.js WebRecipeForm component.
  */
 
-import { WebRecipeForm } from "@shared/components/web-recipe-form.js";
-import { StorageProvider } from "@shared/contexts/storage-context.js";
-import { ThemeProvider } from "@shared/contexts/theme-context.js";
+import { WebRecipeForm } from "@shared/components/web-recipe-form";
+import { StorageProvider } from "@shared/contexts/storage-context";
+import { ThemeProvider } from "@shared/contexts/theme-context";
 import { render } from "solid-js/web";
 
 const mainContent = document.getElementById("main-content");

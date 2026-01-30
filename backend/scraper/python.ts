@@ -1,6 +1,6 @@
-import { type Recipe, ScrapeMethod } from "@shared/api/types.js";
-import { REQUEST_TIMEOUT_MS } from "@shared/constants.js";
-import { getWebsiteName } from "@shared/url-utils.js";
+import { type Recipe, ScrapeMethod } from "@shared/api/types";
+import { REQUEST_TIMEOUT_MS } from "@shared/constants";
+import { getWebsiteName } from "@shared/url-utils";
 import { ParseError, ScrapingError } from "../errors";
 import {
 	cleanRecipeName,

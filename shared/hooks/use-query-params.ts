@@ -32,8 +32,8 @@
  * ```
  */
 
-import { AUTO_SUBMIT_DELAY_MS } from "@shared/constants.js";
-import type { StorageAdapter } from "@shared/storage.js";
+import { AUTO_SUBMIT_DELAY_MS } from "@shared/constants";
+import type { StorageAdapter } from "@shared/storage";
 import { onMount } from "solid-js";
 
 /**

@@ -30,17 +30,13 @@
  * ```
  */
 
-import type { RecipeResponse } from "@shared/api/types.js";
-import { ApiSecretPrompt } from "@shared/components/api-secret-prompt.js";
-import { ProgressIndicator } from "@shared/components/progress-indicator.js";
-import {
-	StatusMessage,
-	type StatusType,
-	type TextSize,
-} from "@shared/components/status-message.js";
-import type { ErrorMessageKey } from "@shared/constants.js";
-import { useStorage } from "@shared/contexts/storage-context.js";
-import { useRecipeSave } from "@shared/hooks/use-recipe-save.js";
+import type { RecipeResponse } from "@shared/api/types";
+import { ApiSecretPrompt } from "@shared/components/api-secret-prompt";
+import { ProgressIndicator } from "@shared/components/progress-indicator";
+import { StatusMessage, type StatusType, type TextSize } from "@shared/components/status-message";
+import type { ErrorMessageKey } from "@shared/constants";
+import { useStorage } from "@shared/contexts/storage-context";
+import { useRecipeSave } from "@shared/hooks/use-recipe-save";
 import type { JSX } from "solid-js";
 import { createSignal, Show } from "solid-js";
 

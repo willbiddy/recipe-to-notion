@@ -1,5 +1,6 @@
 {
 	"$schema": "https://openapi.vercel.sh/vercel.json",
+	"bunVersion": "1.x",
 	"buildCommand": "bun run build:web",
 	"outputDirectory": ".",
 	"cleanUrls": true,
@@ -73,5 +74,8 @@
 		"api/scrape.py": {
 			"maxDuration": 60
 		}
+	},
+	"env": {
+		"BUN_INSTALL_CACHE": "/tmp/bun-cache"
 	}
 }

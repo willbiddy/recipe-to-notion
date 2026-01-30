@@ -213,6 +213,6 @@ If an ingredient appears multiple times in the recipe with different contexts, i
 
 ### 6. totalTimeMinutes: number;
 
-Use provided time if available. Otherwise, read through all instructions and sum up prep time plus cooking time for each step. Account for oven preheating time. You do not need to include extended waiting and chilling times (e.g., "45, plus 2 hours chilling" would have a toal time of 45 minutes).
+Use provided time if available. Otherwise, read through all instructions and sum up prep time plus cooking time for each step. Account for oven preheating time.
 
 **Never return 0 or null.**

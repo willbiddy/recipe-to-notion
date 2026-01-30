@@ -6,8 +6,8 @@ import { isValidHttpUrl, stripQueryParams } from "@shared/url-utils";
  * CLI entry point for recipe-to-notion.
  *
  * Usage:
- *   bun add <url> [urls...]
- *   bun add --html <path> <url>
+ *   bun save <url> [urls...]
+ *   bun save --html <path> <url>
  */
 import { defineCommand, runMain } from "citty";
 import { loadConfig } from "./config";

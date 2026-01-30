@@ -233,7 +233,7 @@ TypeScript build scripts using esbuild:
 **Decision:** Use Python `recipe-scrapers` library as a subprocess instead of pure Node.js.
 
 **Rationale:**
-- **Best-in-class library**: `recipe-scrapers` supports 180+ recipe websites with high accuracy
+- **Best-in-class library**: `recipe-scrapers` supports 600+ recipe websites with high accuracy
 - **Active maintenance**: Community-driven with regular updates for new sites
 - **Proven reliability**: Used by thousands of developers
 - **Language trade-off**: The small overhead of subprocess spawning is worth the scraping quality

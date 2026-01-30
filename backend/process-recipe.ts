@@ -75,6 +75,29 @@ export type ProcessRecipeOptions = {
 };
 
 /**
+ * Validates recipe input and extracts recipe URL.
+ * Consolidates the two validation checks into one helper.
+ */
+function validateRecipeInput(options: ProcessRecipeOptions): {
+	url: string;
+	inputUrl?: string;
+	recipe?: Recipe;
+} {
+	const { url, recipe } = options;
+
+	if (!(url || recipe)) {
+		throw new Error("Either url or recipe must be provided");
+	}
+
+	const recipeUrl = url || recipe?.sourceUrl;
+	if (!recipeUrl) {
+		throw new Error("Recipe URL is required for duplicate checking");
+	}
+
+	return { url: recipeUrl, inputUrl: url, recipe };
+}
+
+/**
  * Orchestrates the full recipe pipeline: scrape -> tag -> save.
  *
  * Processing steps:
@@ -89,24 +112,10 @@ export type ProcessRecipeOptions = {
  * @throws If a duplicate recipe (same title or URL) already exists.
  */
 export async function processRecipe(options: ProcessRecipeOptions): Promise<ProcessResult> {
-	const {
-		url,
-		recipe: preScrapedRecipe,
-		onProgress: progressCallback,
-		logger: recipeLogger,
-	} = options;
-
-	if (!(url || preScrapedRecipe)) {
-		throw new Error("Either url or recipe must be provided");
-	}
+	const { onProgress: progressCallback, logger: recipeLogger } = options;
+	const { url: recipeUrl, inputUrl, recipe: preScrapedRecipe } = validateRecipeInput(options);
 
 	const config = loadConfig();
-
-	// Determine recipe URL early for logging
-	const recipeUrl = url || (preScrapedRecipe ? preScrapedRecipe.sourceUrl : undefined);
-	if (!recipeUrl) {
-		throw new Error("Recipe URL is required for duplicate checking");
-	}
 
 	recipeLogger?.onStart?.(recipeUrl);
 
@@ -131,13 +140,13 @@ export async function processRecipe(options: ProcessRecipeOptions): Promise<Proc
 	if (preScrapedRecipe) {
 		recipe = preScrapedRecipe;
 		recipeLogger?.onScraped?.(recipe);
-	} else if (url) {
+	} else if (inputUrl) {
 		progressCallback?.({
 			type: ProgressType.Scraping,
 			message: PROGRESS_MESSAGES[ProgressType.Scraping],
 		});
 		recipeLogger?.onScraping?.();
-		recipe = await scrapeRecipe(url);
+		recipe = await scrapeRecipe(inputUrl);
 		recipeLogger?.onScraped?.(recipe);
 	} else {
 		throw new Error("Either url or recipe must be provided");

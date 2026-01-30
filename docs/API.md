@@ -249,7 +249,7 @@ The API includes several security measures:
 ### Development Scripts
 
 - **`bun run server`** - Start local HTTP server for development and testing (runs on `localhost:3000`)
-- **`bun add`** - Run the CLI tool to save recipes from the command line
+- **`bun run save`** - Run the CLI tool to save recipes from the command line
 
 ### Build Scripts
 

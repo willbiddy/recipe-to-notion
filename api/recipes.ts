@@ -1,6 +1,5 @@
-import { HttpStatus } from "@backend/server-shared/constants.js";
 import { createErrorResponse, generateRequestId } from "@backend/server-shared/errors.js";
-import { handleOptionsRequest } from "@backend/server-shared/headers.js";
+import { HttpStatus, handleOptionsRequest } from "@backend/server-shared/http-utils.js";
 import { handleRecipeRequest } from "@backend/server-shared/recipe-handler.js";
 
 /**

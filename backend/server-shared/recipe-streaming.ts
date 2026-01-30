@@ -8,7 +8,7 @@ import { createConsoleLogger } from "../logger.js";
 import { getNotionPageUrl } from "../notion/notion-client.js";
 import { type ProgressEvent, processRecipe } from "../process-recipe.js";
 import { sanitizeError } from "./errors.js";
-import { setCorsHeaders } from "./headers.js";
+import { setCorsHeaders } from "./http-utils.js";
 
 /**
  * Options for recipe stream handling.

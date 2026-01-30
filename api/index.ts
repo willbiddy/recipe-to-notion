@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { HttpStatus } from "@backend/server-shared/constants.js";
+import { HttpStatus } from "@backend/server-shared/http-utils.js";
 import { resolveIndexPath } from "./path-utils.js";
 
 export default {

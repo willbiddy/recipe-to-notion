@@ -13,9 +13,14 @@ import { createConsoleLogger } from "../logger.js";
 import { getNotionPageUrl } from "../notion/notion-client.js";
 import { processRecipe } from "../process-recipe.js";
 import type { RecipeRequest } from "../security.js";
-import { DEFAULT_RATE_LIMIT_VALUE, HttpStatus, RATE_LIMIT_HEADERS } from "./constants.js";
 import { handleRecipeError } from "./errors.js";
-import { setCorsHeaders, setSecurityHeaders } from "./headers.js";
+import {
+	DEFAULT_RATE_LIMIT_VALUE,
+	HttpStatus,
+	RateLimitHeader,
+	setCorsHeaders,
+	setSecurityHeaders,
+} from "./http-utils.js";
 import { handleRecipeStream } from "./recipe-streaming.js";
 import { validateRecipeRequestChain } from "./recipe-validation.js";
 
@@ -103,9 +108,9 @@ export async function handleRecipeRequest(options: RecipeHandlerOptions): Promis
 		const response = Response.json(successResponse, {
 			status: HttpStatus.OK,
 			headers: {
-				[RATE_LIMIT_HEADERS.LIMIT]: String(DEFAULT_RATE_LIMIT_VALUE),
-				[RATE_LIMIT_HEADERS.REMAINING]: rateLimit.remaining.toString(),
-				[RATE_LIMIT_HEADERS.RESET]: new Date(rateLimit.resetAt).toISOString(),
+				[RateLimitHeader.Limit]: String(DEFAULT_RATE_LIMIT_VALUE),
+				[RateLimitHeader.Remaining]: rateLimit.remaining.toString(),
+				[RateLimitHeader.Reset]: new Date(rateLimit.resetAt).toISOString(),
 			},
 		});
 

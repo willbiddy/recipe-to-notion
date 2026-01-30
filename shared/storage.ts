@@ -5,15 +5,17 @@
 
 import { Theme } from "@shared/constants";
 
-/**
- * Storage key for API secret in both localStorage and chrome.storage.
- */
-const STORAGE_KEY = "apiKey";
+/** Storage keys used across the application. */
+export enum StorageKey {
+	ApiKey = "apiKey",
+	Theme = "theme",
+}
 
-/**
- * Storage key for theme preference in both localStorage and chrome.storage.
- */
-const THEME_STORAGE_KEY = "theme";
+/** Storage backends available. */
+export enum StorageBackend {
+	Chrome = "chrome",
+	Local = "local",
+}
 
 /** Storage interface for API keys and theme preferences. */
 export type StorageAdapter = {
@@ -23,72 +25,67 @@ export type StorageAdapter = {
 	saveTheme(theme: Theme | null): Promise<void>;
 };
 
-/** localStorage adapter for web interface. */
-export class LocalStorageAdapter implements StorageAdapter {
-	// biome-ignore lint/suspicious/useAwait: Async to match StorageAdapter interface
+/** Detects the available storage backend. */
+function detectStorageBackend(): StorageBackend {
+	return typeof chrome !== "undefined" && chrome.storage
+		? StorageBackend.Chrome
+		: StorageBackend.Local;
+}
+
+/** Unified storage adapter that works in both extension and web contexts. */
+export class UnifiedStorageAdapter implements StorageAdapter {
+	private backend: StorageBackend;
+
+	constructor(backend: StorageBackend = detectStorageBackend()) {
+		this.backend = backend;
+	}
+
 	async getApiKey(): Promise<string | null> {
-		const apiKey = localStorage.getItem(STORAGE_KEY);
+		if (this.backend === StorageBackend.Chrome) {
+			const result = await chrome.storage.local.get(StorageKey.ApiKey);
+			const apiKey = result[StorageKey.ApiKey];
+			return typeof apiKey === "string" ? apiKey.trim() : null;
+		}
+		const apiKey = localStorage.getItem(StorageKey.ApiKey);
 		return apiKey ? apiKey.trim() : null;
 	}
 
-	// biome-ignore lint/suspicious/useAwait: Async to match StorageAdapter interface
 	async saveApiKey(apiKey: string): Promise<void> {
-		localStorage.setItem(STORAGE_KEY, apiKey);
-	}
-
-	// biome-ignore lint/suspicious/useAwait: Async to match StorageAdapter interface
-	async getTheme(): Promise<Theme | null> {
-		const theme = localStorage.getItem(THEME_STORAGE_KEY);
-		if (theme === Theme.Light || theme === Theme.Dark) {
-			return theme;
-		}
-		return null;
-	}
-
-	// biome-ignore lint/suspicious/useAwait: Async to match StorageAdapter interface
-	async saveTheme(theme: Theme | null): Promise<void> {
-		if (theme === null) {
-			localStorage.removeItem(THEME_STORAGE_KEY);
+		if (this.backend === StorageBackend.Chrome) {
+			await chrome.storage.local.set({ [StorageKey.ApiKey]: apiKey });
 		} else {
-			localStorage.setItem(THEME_STORAGE_KEY, theme);
+			localStorage.setItem(StorageKey.ApiKey, apiKey);
 		}
-	}
-}
-
-/** chrome.storage.local adapter for extension. */
-export class ChromeStorageAdapter implements StorageAdapter {
-	async getApiKey(): Promise<string | null> {
-		const result = await chrome.storage.local.get(STORAGE_KEY);
-		const apiKey = result[STORAGE_KEY];
-		return typeof apiKey === "string" ? apiKey.trim() : null;
-	}
-
-	async saveApiKey(apiKey: string): Promise<void> {
-		await chrome.storage.local.set({ [STORAGE_KEY]: apiKey });
 	}
 
 	async getTheme(): Promise<Theme | null> {
-		const result = await chrome.storage.local.get(THEME_STORAGE_KEY);
-		const theme = result[THEME_STORAGE_KEY];
-		if (theme === Theme.Light || theme === Theme.Dark) {
-			return theme;
+		let theme: string | null;
+		if (this.backend === StorageBackend.Chrome) {
+			const result = await chrome.storage.local.get(StorageKey.Theme);
+			theme = result[StorageKey.Theme] as string | null;
+		} else {
+			theme = localStorage.getItem(StorageKey.Theme);
 		}
-		return null;
+		return theme === Theme.Light || theme === Theme.Dark ? theme : null;
 	}
 
 	async saveTheme(theme: Theme | null): Promise<void> {
-		if (theme === null) {
-			await chrome.storage.local.remove(THEME_STORAGE_KEY);
+		const key = StorageKey.Theme;
+		if (this.backend === StorageBackend.Chrome) {
+			if (theme === null) {
+				await chrome.storage.local.remove(key as string);
+			} else {
+				await chrome.storage.local.set({ [key]: theme });
+			}
+		} else if (theme === null) {
+			localStorage.removeItem(key);
 		} else {
-			await chrome.storage.local.set({ [THEME_STORAGE_KEY]: theme });
+			localStorage.setItem(key, theme);
 		}
 	}
 }
 
 /** Creates a storage adapter based on the environment (Chrome extension or web). */
 export function createStorageAdapter(): StorageAdapter {
-	if (typeof chrome !== "undefined" && chrome.storage) {
-		return new ChromeStorageAdapter();
-	}
-	return new LocalStorageAdapter();
+	return new UnifiedStorageAdapter();
 }

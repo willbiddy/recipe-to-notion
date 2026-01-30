@@ -2,17 +2,12 @@ import { MAX_TEXT_LENGTH } from "@shared/constants.js";
 import type { Recipe } from "../scraper.js";
 import type { CategorizedIngredient, RecipeTags } from "../tagger.js";
 import { IngredientCategory } from "../tagger.js";
-import type {
-	NotionBlock,
-	NotionBulletedListItemBlock,
-	NotionColumnBlock,
-	NotionColumnListBlock,
-	NotionHeading1Block,
-	NotionHeading3Block,
-	NotionNumberedListItemBlock,
-	NotionParagraphBlock,
-} from "./types.js";
-import { normalizeDescriptionText, truncate } from "./utils.js";
+import {
+	type NotionBlock,
+	NotionBlockType,
+	normalizeDescriptionText,
+	truncate,
+} from "./notion-client.js";
 
 const CATEGORY_ORDER: IngredientCategory[] = [
 	IngredientCategory.Produce,
@@ -53,10 +48,10 @@ function groupIngredientsByCategory(
  * @param text - The paragraph text content (truncated to 2000 chars).
  * @returns A Notion paragraph block object.
  */
-function paragraph(text: string): NotionParagraphBlock {
+function paragraph(text: string): NotionBlock {
 	return {
 		object: "block",
-		type: "paragraph",
+		type: NotionBlockType.Paragraph,
 		paragraph: {
 			rich_text: [{ type: "text", text: { content: truncate(text, MAX_TEXT_LENGTH) } }],
 		},
@@ -69,10 +64,10 @@ function paragraph(text: string): NotionParagraphBlock {
  * @param text - The heading text content.
  * @returns A Notion heading_1 block object.
  */
-function heading1(text: string): NotionHeading1Block {
+function heading1(text: string): NotionBlock {
 	return {
 		object: "block",
-		type: "heading_1",
+		type: NotionBlockType.Heading1,
 		heading_1: {
 			rich_text: [{ type: "text", text: { content: text } }],
 		},
@@ -85,10 +80,10 @@ function heading1(text: string): NotionHeading1Block {
  * @param text - The heading text content.
  * @returns A Notion heading_3 block object.
  */
-function heading3(text: string): NotionHeading3Block {
+function heading3(text: string): NotionBlock {
 	return {
 		object: "block",
-		type: "heading_3",
+		type: NotionBlockType.Heading3,
 		heading_3: {
 			rich_text: [{ type: "text", text: { content: text } }],
 		},
@@ -101,10 +96,10 @@ function heading3(text: string): NotionHeading3Block {
  * @param text - The list item text content (truncated to 2000 chars).
  * @returns A Notion bulleted_list_item block object.
  */
-function bulletItem(text: string): NotionBulletedListItemBlock {
+function bulletItem(text: string): NotionBlock {
 	return {
 		object: "block",
-		type: "bulleted_list_item",
+		type: NotionBlockType.BulletedListItem,
 		bulleted_list_item: {
 			rich_text: [{ type: "text", text: { content: truncate(text, MAX_TEXT_LENGTH) } }],
 		},
@@ -117,10 +112,10 @@ function bulletItem(text: string): NotionBulletedListItemBlock {
  * @param text - The list item text content (truncated to 2000 chars).
  * @returns A Notion numbered_list_item block object.
  */
-function numberedItem(text: string): NotionNumberedListItemBlock {
+function numberedItem(text: string): NotionBlock {
 	return {
 		object: "block",
-		type: "numbered_list_item",
+		type: NotionBlockType.NumberedListItem,
 		numbered_list_item: {
 			rich_text: [{ type: "text", text: { content: truncate(text, MAX_TEXT_LENGTH) } }],
 		},
@@ -133,10 +128,10 @@ function numberedItem(text: string): NotionNumberedListItemBlock {
  * @param children - Array of Notion blocks to include in this column.
  * @returns A Notion column block object.
  */
-function column(children: NotionBlock[]): NotionColumnBlock {
+function column(children: NotionBlock[]): NotionBlock {
 	return {
 		object: "block",
-		type: "column",
+		type: NotionBlockType.Column,
 		column: {
 			children,
 		},
@@ -149,10 +144,10 @@ function column(children: NotionBlock[]): NotionColumnBlock {
  * @param columns - Array of column blocks to include in the column list.
  * @returns A Notion column_list block object.
  */
-function columnList(columns: NotionColumnBlock[]): NotionColumnListBlock {
+function columnList(columns: NotionBlock[]): NotionBlock {
 	return {
 		object: "block",
-		type: "column_list",
+		type: NotionBlockType.ColumnList,
 		column_list: {
 			children: columns,
 		},

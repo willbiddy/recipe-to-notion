@@ -5,7 +5,7 @@
 
 import { ServerProgressEventType } from "@shared/api/types.js";
 import { createConsoleLogger } from "../logger.js";
-import { getNotionPageUrl } from "../notion/client.js";
+import { getNotionPageUrl } from "../notion/notion-client.js";
 import { type ProgressEvent, processRecipe } from "../process-recipe.js";
 import { sanitizeError } from "./errors.js";
 import { setCorsHeaders } from "./headers.js";

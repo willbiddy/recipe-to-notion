@@ -42,12 +42,12 @@
 			"destination": "/api/assets?path=/web.js"
 		},
 		{
-			"source": "/shared/:match*",
-			"destination": "/api/assets?path=/shared/:match*"
+			"source": "/shared/(.*)",
+			"destination": "/api/assets?path=/shared/$1"
 		},
 		{
-			"source": "/api/:match*",
-			"destination": "/api/assets?path=/:match*"
+			"source": "/api/(.*)",
+			"destination": "/api/assets?path=/$1"
 		}
 	],
 	"functions": {

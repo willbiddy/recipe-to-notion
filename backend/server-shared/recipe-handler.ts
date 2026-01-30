@@ -10,7 +10,7 @@
 
 import type { RecipeResponse } from "@shared/api/types.js";
 import { createConsoleLogger } from "../logger.js";
-import { getNotionPageUrl } from "../notion/client.js";
+import { getNotionPageUrl } from "../notion/notion-client.js";
 import { processRecipe } from "../process-recipe.js";
 import type { RecipeRequest } from "../security.js";
 import { DEFAULT_RATE_LIMIT_VALUE, HttpStatus, RATE_LIMIT_HEADERS } from "./constants.js";

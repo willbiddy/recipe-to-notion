@@ -1,13 +1,26 @@
 import type { Client } from "@notionhq/client";
 import type { QueryDataSourceParameters } from "@notionhq/client/build/src/api-endpoints";
 import { hasProperty, isArray, isObject } from "@shared/type-guards.js";
-import { createNotionClient, getNotionPageUrl } from "./client.js";
-import type {
-	CheckDuplicateByTitleOptions,
-	CheckDuplicateByUrlOptions,
-	DuplicateInfo,
-} from "./types.js";
-import { PropertyNames } from "./types.js";
+import {
+	createNotionClient,
+	type DuplicateInfo,
+	getNotionPageUrl,
+	PropertyName,
+} from "./notion-client.js";
+
+/** Options for checking duplicate recipes by URL. */
+export type CheckDuplicateByUrlOptions = {
+	url: string;
+	notionApiKey: string;
+	databaseId: string;
+};
+
+/** Options for checking duplicate recipes by title. */
+export type CheckDuplicateByTitleOptions = {
+	recipeName: string;
+	notionApiKey: string;
+	databaseId: string;
+};
 
 /**
  * Options for querying pages in a database.
@@ -144,17 +157,17 @@ export async function checkForDuplicateByUrl(
 			notion,
 			databaseId,
 			filter: {
-				property: PropertyNames.SOURCE,
+				property: PropertyName.Source,
 				url: {
 					equals: url,
 				},
 			},
 			resultBuilder: (properties, pageId) => {
 				const title =
-					PropertyNames.NAME in properties
-						? extractTitle(properties[PropertyNames.NAME])
+					PropertyName.Name in properties
+						? extractTitle(properties[PropertyName.Name])
 						: "Unknown Recipe";
-				const sourceUrl = extractUrl(properties[PropertyNames.SOURCE]);
+				const sourceUrl = extractUrl(properties[PropertyName.Source]);
 				return {
 					title,
 					url: sourceUrl,
@@ -195,15 +208,15 @@ export async function checkForDuplicateByTitle(
 			notion,
 			databaseId,
 			filter: {
-				property: PropertyNames.NAME,
+				property: PropertyName.Name,
 				title: {
 					equals: recipeName,
 				},
 			},
 			resultBuilder: (properties, pageId) => {
-				const pageTitle = extractTitle(properties[PropertyNames.NAME]);
+				const pageTitle = extractTitle(properties[PropertyName.Name]);
 				const url =
-					PropertyNames.SOURCE in properties ? extractUrl(properties[PropertyNames.SOURCE]) : "";
+					PropertyName.Source in properties ? extractUrl(properties[PropertyName.Source]) : "";
 				return {
 					title: pageTitle,
 					url,

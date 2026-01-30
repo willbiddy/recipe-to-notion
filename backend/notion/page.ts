@@ -1,9 +1,12 @@
 import { DuplicateRecipeError } from "../errors.js";
 import { buildPageBody } from "./blocks.js";
-import { createNotionClient } from "./client.js";
 import { checkForDuplicateByTitle, checkForDuplicateByUrl } from "./duplicates.js";
-import { buildPageParams, buildPageProperties } from "./properties.js";
-import type { CreateRecipePageOptions } from "./types.js";
+import {
+	buildPageParams,
+	buildPageProperties,
+	type CreateRecipePageOptions,
+	createNotionClient,
+} from "./notion-client.js";
 
 /**
  * Creates a new page in the Notion recipe database with the recipe's metadata,

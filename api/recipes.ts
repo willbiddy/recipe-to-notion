@@ -1,6 +1,6 @@
-import { createErrorResponse, generateRequestId } from "../backend/server-shared/errors.js";
-import { HttpStatus, handleOptionsRequest } from "../backend/server-shared/http-utils.js";
-import { handleRecipeRequest } from "../backend/server-shared/recipe-handler.js";
+import { createErrorResponse, generateRequestId } from "@backend/server-shared/errors";
+import { HttpStatus, handleOptionsRequest } from "@backend/server-shared/http-utils";
+import { handleRecipeRequest } from "@backend/server-shared/recipe-handler";
 
 /**
  * Main handler for the /api/recipes endpoint.

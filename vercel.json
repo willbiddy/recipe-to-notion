@@ -1,7 +1,7 @@
 {
 	"$schema": "https://openapi.vercel.sh/vercel.json",
 	"buildCommand": "bun run build:web",
-	"outputDirectory": "dist",
+	"outputDirectory": ".",
 	"cleanUrls": true,
 	"trailingSlash": false,
 	"rewrites": [
@@ -10,44 +10,60 @@
 			"destination": "/api/index"
 		},
 		{
-			"source": "/favicon\\.ico",
+			"source": "/favicon.ico",
 			"destination": "/api/assets?path=/favicon.ico"
 		},
 		{
-			"source": "/favicon(-:size)?(\\.png)?",
-			"destination": "/api/assets?path=/favicon:size.png"
+			"source": "/favicon.png",
+			"destination": "/api/assets?path=/favicon.png"
 		},
 		{
-			"source": "/favicon(-:size)?-white(\\.png)?",
-			"destination": "/api/assets?path=/favicon:size-white.png"
+			"source": "/favicon-16x16.png",
+			"destination": "/api/assets?path=/favicon-16x16.png"
 		},
 		{
-			"source": "/apple-touch-icon(\\.png)?",
+			"source": "/favicon-32x32.png",
+			"destination": "/api/assets?path=/favicon-32x32.png"
+		},
+		{
+			"source": "/favicon-white.png",
+			"destination": "/api/assets?path=/favicon-white.png"
+		},
+		{
+			"source": "/favicon-16x16-white.png",
+			"destination": "/api/assets?path=/favicon-16x16-white.png"
+		},
+		{
+			"source": "/favicon-32x32-white.png",
+			"destination": "/api/assets?path=/favicon-32x32-white.png"
+		},
+		{
+			"source": "/apple-touch-icon.png",
 			"destination": "/api/assets?path=/apple-touch-icon.png"
 		},
 		{
-			"source": "/fork-and-knife(\\.png)?",
+			"source": "/fork-and-knife.png",
 			"destination": "/api/assets?path=/fork-and-knife.png"
 		},
 		{
-			"source": "/manifest\\.json",
+			"source": "/manifest.json",
 			"destination": "/api/assets?path=/manifest.json"
 		},
 		{
-			"source": "/web\\.css",
+			"source": "/web.css",
 			"destination": "/api/assets?path=/web.css"
 		},
 		{
-			"source": "/web\\.js",
+			"source": "/web.js",
 			"destination": "/api/assets?path=/web.js"
 		},
 		{
-			"source": "/shared/(.*)",
-			"destination": "/api/assets?path=/shared/$1"
+			"source": "/shared/api.js",
+			"destination": "/api/assets?path=/shared/api.js"
 		},
 		{
-			"source": "/api/(.*)",
-			"destination": "/api/assets?path=/$1"
+			"source": "/shared/storage.js",
+			"destination": "/api/assets?path=/shared/storage.js"
 		}
 	],
 	"functions": {

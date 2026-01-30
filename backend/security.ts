@@ -1,12 +1,8 @@
 import { timingSafeEqual } from "node:crypto";
-import { MAX_REQUEST_BODY_SIZE, MAX_URL_LENGTH } from "@shared/constants.js";
-import { isValidHttpUrl, stripQueryParams } from "@shared/url-utils.js";
+import { MAX_REQUEST_BODY_SIZE, MAX_URL_LENGTH } from "@shared/constants";
+import { isValidHttpUrl, stripQueryParams } from "@shared/url-utils";
 import { z } from "zod";
-
-export enum SecurityHttpStatus {
-	BadRequest = 400,
-	InternalServerError = 500,
-}
+import { HttpStatus } from "./server-shared/http-utils";
 
 export { MAX_REQUEST_BODY_SIZE, MAX_URL_LENGTH };
 
@@ -67,13 +63,13 @@ export function validateApiKeyHeader(
 	createErrorResponse: (error: string, status: number) => Response,
 ): Response | null {
 	if (!authHeader) {
-		return createErrorResponse("Missing Authorization header", SecurityHttpStatus.BadRequest);
+		return createErrorResponse("Missing Authorization header", HttpStatus.BadRequest);
 	}
 
 	if (!authHeader.startsWith("Bearer ")) {
 		return createErrorResponse(
 			"Invalid Authorization format. Expected: Bearer <token>",
-			SecurityHttpStatus.BadRequest,
+			HttpStatus.BadRequest,
 		);
 	}
 
@@ -82,14 +78,11 @@ export function validateApiKeyHeader(
 
 	if (!expectedKey) {
 		console.error("API_SECRET is empty or invalid");
-		return createErrorResponse(
-			"Server configuration error",
-			SecurityHttpStatus.InternalServerError,
-		);
+		return createErrorResponse("Server configuration error", HttpStatus.InternalServerError);
 	}
 
 	if (!constantTimeEquals(providedKey, expectedKey)) {
-		return createErrorResponse("Invalid API secret", SecurityHttpStatus.BadRequest);
+		return createErrorResponse("Invalid API secret", HttpStatus.BadRequest);
 	}
 
 	return null;
@@ -112,14 +105,14 @@ export function validateRecipeUrl(
 	if (urlString.length > MAX_URL_LENGTH) {
 		return createErrorResponse(
 			`URL too long (max ${MAX_URL_LENGTH} characters)`,
-			SecurityHttpStatus.BadRequest,
+			HttpStatus.BadRequest,
 		);
 	}
 
 	if (!isValidHttpUrl(urlString)) {
 		return createErrorResponse(
 			"Invalid URL protocol. Only HTTP and HTTPS are allowed",
-			SecurityHttpStatus.BadRequest,
+			HttpStatus.BadRequest,
 		);
 	}
 
@@ -127,7 +120,7 @@ export function validateRecipeUrl(
 		new URL(urlString);
 		return null;
 	} catch {
-		return createErrorResponse("Invalid URL format", SecurityHttpStatus.BadRequest);
+		return createErrorResponse("Invalid URL format", HttpStatus.BadRequest);
 	}
 }
 
@@ -152,10 +145,7 @@ export function validateRecipeRequest(
 			.join(", ");
 		return {
 			success: false,
-			response: createErrorResponse(
-				`Invalid request body: ${errorMessage}`,
-				SecurityHttpStatus.BadRequest,
-			),
+			response: createErrorResponse(`Invalid request body: ${errorMessage}`, HttpStatus.BadRequest),
 		};
 	}
 
@@ -194,7 +184,7 @@ export function validateRequestSize(
 	if (Number.isNaN(size) || size > maxSize) {
 		return createErrorResponse(
 			`Request body too large. Maximum size is ${maxSize / 1024}KB`,
-			SecurityHttpStatus.BadRequest,
+			HttpStatus.BadRequest,
 		);
 	}
 
@@ -223,7 +213,7 @@ export function validateActualBodySize(
 	if (bodySize > maxSize) {
 		return createErrorResponse(
 			`Request body too large. Maximum size is ${maxSize / 1024}KB`,
-			SecurityHttpStatus.BadRequest,
+			HttpStatus.BadRequest,
 		);
 	}
 

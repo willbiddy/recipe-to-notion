@@ -1,4 +1,4 @@
-import { MAX_NOTION_BLOCKS, MAX_TEXT_LENGTH } from "../../shared/constants.js";
+import { MAX_NOTION_BLOCKS, MAX_TEXT_LENGTH } from "@shared/constants.js";
 import type { Recipe } from "../scraper.js";
 import type { CategorizedIngredient, RecipeTags } from "../tagger.js";
 import { IngredientCategory } from "../tagger.js";

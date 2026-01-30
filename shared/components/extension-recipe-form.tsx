@@ -21,16 +21,16 @@
  * ```
  */
 
+import { ApiSecretPrompt } from "@shared/components/api-secret-prompt.js";
+import { ProgressIndicator } from "@shared/components/progress-indicator.js";
+import { StatusMessage, StatusType, TextSize } from "@shared/components/status-message.js";
+import { UrlDisplay } from "@shared/components/url-display.js";
+import { ExtensionMessageType } from "@shared/constants.js";
+import { useRecipeSave } from "@shared/hooks/use-recipe-save.js";
+import { createStorageAdapter } from "@shared/storage.js";
+import { getWebsiteName, isValidHttpUrl } from "@shared/url-utils.js";
 import type { JSX } from "solid-js";
 import { createSignal, onMount, Show } from "solid-js";
-import { ExtensionMessageType } from "../constants.js";
-import { useRecipeSave } from "../hooks/use-recipe-save.js";
-import { createStorageAdapter } from "../storage.js";
-import { getWebsiteName, isValidHttpUrl } from "../url-utils.js";
-import { ApiSecretPrompt } from "./api-secret-prompt.js";
-import { ProgressIndicator } from "./progress-indicator.js";
-import { StatusMessage, StatusType, TextSize } from "./status-message.js";
-import { UrlDisplay } from "./url-display.js";
 
 /**
  * Props for ExtensionRecipeForm component.
@@ -53,6 +53,101 @@ export type ExtensionRecipeFormProps = {
  * @param setPermissionIssue - Optional setter to update permission issue state.
  * @returns Object containing URL, title, recipe title, author, and website name.
  */
+/**
+ * Checks if the extension has tabs permission and requests it if missing.
+ * @param setPermissionIssue - Optional callback to notify about permission state
+ */
+async function checkTabsPermission(setPermissionIssue?: (value: boolean) => void): Promise<void> {
+	const hasTabsPermission = await chrome.permissions.contains({
+		permissions: ["tabs"],
+	});
+
+	if (!hasTabsPermission) {
+		console.error("[getCurrentTab] MISSING TABS PERMISSION - Requesting it now");
+		setPermissionIssue?.(true);
+
+		// Attempt to request permission at runtime
+		try {
+			const granted = await chrome.permissions.request({
+				permissions: ["tabs"],
+			});
+			if (granted) {
+				setPermissionIssue?.(false);
+			}
+		} catch (err) {
+			console.error("[getCurrentTab] Permission request failed:", err);
+		}
+	}
+}
+
+/**
+ * Gets the currently active tab in the current window.
+ * @returns The active tab or undefined if not found
+ */
+async function getActiveTab(): Promise<chrome.tabs.Tab | undefined> {
+	const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+	return tab;
+}
+
+/**
+ * Attempts to get the current page URL from the content script.
+ * Used as a fallback when tab.url is undefined (e.g., file:// URLs or restricted pages).
+ * @param tabId - The ID of the tab to query
+ * @returns Object with URL and title, or nulls if the content script is unavailable
+ */
+async function getUrlFromContentScript(
+	tabId: number,
+): Promise<{ url: string | null; title: string | null }> {
+	try {
+		const response = await chrome.tabs.sendMessage(tabId, {
+			type: ExtensionMessageType.GetPageUrl,
+		});
+		return {
+			url: response?.url || null,
+			title: response?.title || null,
+		};
+	} catch (error) {
+		console.error("[getCurrentTab] Content script fallback failed:", error);
+		return { url: null, title: null };
+	}
+}
+
+/**
+ * Extracts recipe metadata (title and author) from the current page via content script.
+ * @param tabId - The ID of the tab to extract from
+ * @param url - The URL of the page (must be a valid HTTP(S) URL)
+ * @returns Object with recipe title and author, or nulls if extraction fails
+ */
+async function extractRecipeMetadata(
+	tabId: number,
+	url: string,
+): Promise<{ recipeTitle: string | null; author: string | null }> {
+	if (!isValidHttpUrl(url)) {
+		return { recipeTitle: null, author: null };
+	}
+
+	try {
+		const response = await chrome.tabs.sendMessage(tabId, {
+			type: ExtensionMessageType.ExtractRecipeData,
+		});
+		return {
+			recipeTitle: response?.title || null,
+			author: response?.author || null,
+		};
+	} catch {
+		// Expected: Content script not yet injected or page doesn't support messaging
+		// This is not an error - we'll proceed without recipe metadata
+		// The scraper will extract the recipe data from the URL instead
+		return { recipeTitle: null, author: null };
+	}
+}
+
+/**
+ * Gets current tab information including URL, title, and recipe metadata.
+ * Orchestrates permission checking, tab querying, and metadata extraction.
+ * @param setPermissionIssue - Optional callback to notify about permission state
+ * @returns Object with all tab and recipe information
+ */
 async function getCurrentTab(setPermissionIssue?: (value: boolean) => void): Promise<{
 	url: string | null;
 	title: string | null;
@@ -60,65 +155,33 @@ async function getCurrentTab(setPermissionIssue?: (value: boolean) => void): Pro
 	author: string | null;
 	websiteName: string | null;
 }> {
-	// Check if tabs permission is actually granted
-	const hasTabsPermission = await chrome.permissions.contains({
-		permissions: ["tabs"],
-	});
+	// 1. Check and request permissions if needed
+	await checkTabsPermission(setPermissionIssue);
 
-	if (!hasTabsPermission) {
-		console.error("[getCurrentTab] MISSING TABS PERMISSION - Requesting it now");
-		if (setPermissionIssue) {
-			setPermissionIssue(true);
-		}
-		// Attempt to request permission at runtime
-		try {
-			const granted = await chrome.permissions.request({
-				permissions: ["tabs"],
-			});
-			if (granted && setPermissionIssue) {
-				setPermissionIssue(false);
-			}
-		} catch (err) {
-			console.error("[getCurrentTab] Permission request failed:", err);
-		}
-	}
+	// 2. Get the active tab
+	const tab = await getActiveTab();
 
-	const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
+	// 3. Extract URL and title (with content script fallback if needed)
 	let url = tab?.url || null;
 	let title = tab?.title || null;
 
-	// If tab.url is undefined, try content script fallback
-	if (tab && !url && tab.id) {
-		try {
-			const response = await chrome.tabs.sendMessage(tab.id, {
-				type: ExtensionMessageType.GetPageUrl,
-			});
-			url = response?.url || null;
-			title = response?.title || title;
-		} catch (error) {
-			console.error("[getCurrentTab] Content script fallback failed:", error);
-		}
+	if (tab?.id && !url) {
+		const fallback = await getUrlFromContentScript(tab.id);
+		url = fallback.url;
+		title = fallback.title || title;
 	}
 
+	// 4. Extract website name from URL
+	const websiteName = url ? getWebsiteName(url) : null;
+
+	// 5. Extract recipe metadata from content script
 	let recipeTitle: string | null = null;
 	let author: string | null = null;
-	let websiteName: string | null = null;
 
-	if (url) {
-		websiteName = getWebsiteName(url);
-	}
-
-	if (tab?.id && url && isValidHttpUrl(url)) {
-		try {
-			const response = await chrome.tabs.sendMessage(tab.id, {
-				type: ExtensionMessageType.ExtractRecipeData,
-			});
-			recipeTitle = response?.title || null;
-			author = response?.author || null;
-		} catch {
-			// Content script unavailable
-		}
+	if (tab?.id && url) {
+		const metadata = await extractRecipeMetadata(tab.id, url);
+		recipeTitle = metadata.recipeTitle;
+		author = metadata.author;
 	}
 
 	return {

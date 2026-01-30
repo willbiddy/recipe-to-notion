@@ -2,16 +2,19 @@
  * StatusMessage - Component for displaying status messages with icons.
  *
  * Renders info, success, or error messages with appropriate styling and icons.
- * Supports both plain text and HTML content, as well as JSX children.
+ * Supports both plain text messages and JSX children for rich content.
  * Automatically applies ARIA live region attributes for accessibility.
  *
  * Features:
  * - Three status types: info (blue), success (green), error (red)
  * - Configurable text size (xs, sm, base)
- * - HTML rendering support (innerHTML) when message contains HTML tags
- * - JSX children support (takes precedence over message prop)
+ * - JSX children support for rich content (links, buttons, formatting)
+ * - Plain text message support
  * - Accessible with aria-live="polite" for screen readers
  * - Fade-in animation
+ *
+ * Security: Does NOT support HTML strings via innerHTML to prevent XSS attacks.
+ * Use JSX children for rich content instead.
  *
  * @example
  * ```tsx
@@ -24,16 +27,17 @@
  *
  * @example
  * ```tsx
- * // HTML message with link
- * <StatusMessage
- *   message='Recipe exists. <a href="..." class="underline">Open in Notion</a>'
- *   type={StatusType.Info}
- * />
+ * // Rich content with JSX children
+ * <StatusMessage type={StatusType.Info}>
+ *   <>
+ *     Recipe exists. <a href="..." class="underline">Open in Notion</a>
+ *   </>
+ * </StatusMessage>
  * ```
  *
  * @example
  * ```tsx
- * // JSX children
+ * // Interactive elements
  * <StatusMessage type={StatusType.Error}>
  *   <>
  *     Failed to save. <button onClick={retry}>Retry</button>
@@ -70,13 +74,15 @@ export enum TextSize {
  */
 export type StatusMessageProps = {
 	/**
-	 * The status message to display. Can contain HTML (will use innerHTML).
+	 * The status message to display as plain text.
 	 * If children are provided, message is ignored.
+	 * For rich content (links, buttons, etc.), use children instead.
 	 */
 	message?: string;
 	/**
 	 * JSX children to display instead of message.
 	 * Takes precedence over message prop.
+	 * Use this for rich content like links or buttons.
 	 */
 	children?: JSX.Element;
 	/**
@@ -188,7 +194,6 @@ export function StatusMessage(props: StatusMessageProps) {
 		props.baseClasses ||
 		`py-2 leading-relaxed animate-[fadeIn_0.2s_ease-in] block ${getTextSizeClass()}`;
 
-	const isHTML = () => (props.message?.includes("<") && props.message?.includes(">")) ?? false;
 	const hasChildren = () => props.children !== undefined;
 	const hasMessage = () => props.message !== undefined;
 
@@ -205,15 +210,8 @@ export function StatusMessage(props: StatusMessageProps) {
 					<Show
 						when={hasChildren()}
 						fallback={
-							<Show
-								when={hasMessage() && isHTML()}
-								fallback={
-									<Show when={hasMessage()}>
-										<span class={textColorClass()}>{props.message}</span>
-									</Show>
-								}
-							>
-								<span class={textColorClass()} innerHTML={props.message} />
+							<Show when={hasMessage()}>
+								<span class={textColorClass()}>{props.message}</span>
 							</Show>
 						}
 					>

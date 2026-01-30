@@ -37,14 +37,14 @@
  * ```
  */
 
+import type { RecipeResponse } from "@shared/api/types.js";
+import { StatusType } from "@shared/components/status-message.js";
+import { ErrorMessageKey, getErrorMessage } from "@shared/constants.js";
+import { isApiKeyError } from "@shared/error-utils.js";
+import type { StorageAdapter } from "@shared/storage.js";
+import { isValidHttpUrl } from "@shared/url-utils.js";
 import type { JSX } from "solid-js";
 import { type Accessor, createSignal, type Setter } from "solid-js";
-import type { RecipeResponse } from "../api/types.js";
-import { StatusType } from "../components/status-message.js";
-import { ErrorMessageKey, getErrorMessage } from "../constants.js";
-import { isApiKeyError } from "../error-utils.js";
-import type { StorageAdapter } from "../storage.js";
-import { isValidHttpUrl } from "../url-utils.js";
 
 /**
  * Options for API secret prompt handlers.
@@ -110,10 +110,10 @@ export type UseRecipeSaveOptions = {
 	}) => void;
 	/**
 	 * Callback for when a duplicate recipe is found.
-	 * If it returns a string, that string will be used as the status message (can contain HTML).
-	 * If it returns undefined, the callback is responsible for setting the status itself.
+	 * Should call setStatus with appropriate JSX children for rich content (e.g., "Open in Notion" link).
+	 * The hook provides a fallback if not specified, but custom handling is recommended.
 	 */
-	onDuplicate?: (notionUrl: string) => string | undefined;
+	onDuplicate?: (notionUrl: string) => void;
 	noUrlErrorKey?: ErrorMessageKey;
 };
 
@@ -249,16 +249,12 @@ export function useRecipeSave(options: UseRecipeSaveOptions): UseRecipeSaveResul
 				options.onSuccess?.(result);
 			} else if (result.error?.includes("Duplicate recipe found") && result.notionUrl) {
 				if (options.onDuplicate) {
-					const message = options.onDuplicate(result.notionUrl);
-					if (typeof message === "string") {
-						options.setStatus({
-							message,
-							type: StatusType.Info,
-						});
-					}
+					options.onDuplicate(result.notionUrl);
 				} else {
+					// Fallback: plain text message without link
+					// Applications should provide onDuplicate callback for rich content
 					options.setStatus({
-						message: `This recipe already exists. <a href="${result.notionUrl}" target="_blank" class="underline font-semibold">Open in Notion</a>`,
+						message: `This recipe already exists in Notion (${result.notionUrl})`,
 						type: StatusType.Info,
 					});
 				}

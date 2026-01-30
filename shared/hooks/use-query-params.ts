@@ -32,9 +32,9 @@
  * ```
  */
 
+import { AUTO_SUBMIT_DELAY_MS } from "@shared/constants.js";
+import type { StorageAdapter } from "@shared/storage.js";
 import { onMount } from "solid-js";
-import { AUTO_SUBMIT_DELAY_MS } from "../constants.js";
-import type { StorageAdapter } from "../storage.js";
 
 /**
  * Options for the useQueryParams hook.

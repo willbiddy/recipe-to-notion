@@ -27,8 +27,8 @@
  * ```
  */
 
+import { createStorageAdapter } from "@shared/storage.js";
 import { createSignal, Show } from "solid-js";
-import { createStorageAdapter } from "../storage.js";
 
 /**
  * Props for ApiSecretPrompt component.

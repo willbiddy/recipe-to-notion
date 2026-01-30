@@ -3,6 +3,14 @@
  * Provides theme preference, effective theme, and theme switching functionality.
  */
 
+import type { Theme } from "@shared/constants";
+import { createStorageAdapter, type StorageAdapter } from "@shared/storage";
+import {
+	applyThemeToDocument,
+	detectSystemTheme,
+	getEffectiveTheme,
+	watchSystemTheme,
+} from "@shared/utils/theme-utils";
 import {
 	type Accessor,
 	createContext,
@@ -12,14 +20,6 @@ import {
 	onMount,
 	type ParentComponent,
 } from "solid-js";
-import type { Theme } from "../constants";
-import { createStorageAdapter, type StorageAdapter } from "../storage";
-import {
-	applyThemeToDocument,
-	detectSystemTheme,
-	getEffectiveTheme,
-	watchSystemTheme,
-} from "../utils/theme-utils";
 
 /**
  * Theme context value interface.

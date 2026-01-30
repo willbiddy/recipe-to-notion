@@ -1,4 +1,4 @@
-import { ProgressType } from "../shared/constants.js";
+import { ProgressType } from "@shared/constants.js";
 import { loadConfig } from "./config.js";
 import { DuplicateRecipeError } from "./errors.js";
 import type { RecipeLogger } from "./logger.js";

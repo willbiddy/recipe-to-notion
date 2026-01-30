@@ -3,9 +3,9 @@
  * Content scripts can import modules, so we can reuse the actual parser code.
  */
 
-import { cleanRecipeName } from "../backend/parsers/shared.js";
-import { ExtensionMessageType } from "../shared/constants.js";
-import { hasProperty, isArray, isObject, isString } from "../shared/type-guards.js";
+import { cleanRecipeName } from "@backend/parsers/shared.js";
+import { ExtensionMessageType } from "@shared/constants.js";
+import { hasProperty, isArray, isObject, isString } from "@shared/type-guards.js";
 
 /**
  * Browser-compatible HTML entity decoder using DOM API.

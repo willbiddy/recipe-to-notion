@@ -11,26 +11,26 @@ Recipe Clipper for Notion is a full-stack application that scrapes recipe websit
 ## System Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         User Interfaces                          │
-├──────────────────┬──────────────────┬───────────────────────────┤
-│  Chrome Extension│   Web Interface  │      CLI Tool             │
-│   (Solid.js)     │   (Solid.js)     │  (Node.js script)         │
-└────────┬─────────┴────────┬─────────┴────────┬──────────────────┘
-         │                  │                  │
-         └──────────────────┴──────────────────┘
-                           │
-                           ▼
+┌───────────────────────────────────────────────────────────┐
+│                      User Interfaces                      │
+├────────────────────┬─────────────────┬────────────────────┤
+│  Chrome Extension  │  Web Interface  │  CLI Tool          │
+│  (Solid.js)        │  (Solid.js)     │  (Node.js script)  │
+└────────┬───────────┴───────┬─────────┴───────┬────────────┘
+         │                   │                 │
+         └───────────────────┴─────────────────┘
+                            │
+                            ▼
          ┌─────────────────────────────────────┐
-         │      API Layer (Express.js)         │
-         │  - Authentication (Bearer tokens)   │
+         │    API Layer                        │
+         │  - Authentication                   │
          │  - Rate limiting                    │
          │  - SSE streaming                    │
          └──────────────────┬──────────────────┘
-                           │
-                           ▼
+                            │
+                            ▼
          ┌─────────────────────────────────────┐
-         │    Recipe Processing Pipeline       │
+         │     Recipe Processing Pipeline      │
          │  1. Scraper (Python subprocess)     │
          │  2. AI Tagger (Claude API)          │
          │  3. Notion Formatter                │
@@ -40,10 +40,10 @@ Recipe Clipper for Notion is a full-stack application that scrapes recipe websit
          ┌─────────────────┴─────────────────┐
          │                                   │
          ▼                                   ▼
-  ┌─────────────┐                   ┌──────────────┐
-  │ Notion API  │                   │  Claude API  │
-  │ (External)  │                   │  (External)  │
-  └─────────────┘                   └──────────────┘
+  ┌──────────────┐                   ┌──────────────┐
+  │  Notion API  │                   │  Claude API  │
+  │  (External)  │                   │  (External)  │
+  └──────────────┘                   └──────────────┘
 ```
 
 ## Module Organization

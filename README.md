@@ -20,7 +20,7 @@ CLI/Extension/Web/API → Check duplicates → Scrape recipe → Claude scores/t
 
 ## Cost
 
-Each recipe costs about **$0.03** in Claude API usage (roughly 4,000-7,000 input tokens and 200-1,000 output tokens per recipe). The default model is Sonnet 4.5, but you can change it by setting the `CLAUDE_MODEL` environment variable to `"haiku"`, `"sonnet"`, or `"opus"` — Haiku is faster and cheaper (~$0.01 per recipe), Opus is more capable but costs more (~$0.10+ per recipe).
+Each recipe costs about **$0.03** in Claude API usage (roughly 4,000-7,000 input tokens and 200-1,000 output tokens per recipe). The default model is Sonnet 4.5, but you can change it by setting the `CLAUDE_MODEL` environment variable to `"haiku"`, `"sonnet"`, or `"opus"`.
 
 ## Setup
 

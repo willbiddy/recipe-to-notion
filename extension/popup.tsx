@@ -3,11 +3,11 @@
  * Mounts the Solid.js ExtensionRecipeForm component.
  */
 
+import { ExtensionRecipeForm } from "@shared/components/extension-recipe-form.js";
+import { ExtensionMessageType } from "@shared/constants.js";
+import { ThemeProvider } from "@shared/contexts/theme-context.js";
+import { detectSystemTheme } from "@shared/utils/theme-utils.js";
 import { render } from "solid-js/web";
-import { ExtensionRecipeForm } from "../shared/components/extension-recipe-form.js";
-import { ExtensionMessageType } from "../shared/constants.js";
-import { ThemeProvider } from "../shared/contexts/theme-context.js";
-import { detectSystemTheme } from "../shared/utils/theme-utils.js";
 import { getServerUrl } from "./config.js";
 
 /**

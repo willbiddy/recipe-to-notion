@@ -1,26 +1,23 @@
 /**
  * Shared recipe request handling logic for both server.ts and api/recipes.ts.
- * Reduces code duplication and ensures consistent behavior.
+ * Orchestrates validation, streaming, and non-streaming recipe processing.
+ *
+ * This module has been refactored into smaller, focused modules:
+ * - recipe-validation.ts: Request validation chain (auth, rate limit, body parsing)
+ * - recipe-streaming.ts: SSE streaming for progress updates
+ * - recipe-handler.ts (this file): Orchestration and non-streaming responses
  */
 
-import { type RecipeResponse, ServerProgressEventType } from "../../shared/api/types.js";
-import { type Config, loadConfig } from "../config.js";
-import { ValidationError } from "../errors.js";
+import type { RecipeResponse } from "@shared/api/types.js";
 import { createConsoleLogger } from "../logger.js";
 import { getNotionPageUrl } from "../notion/client.js";
-import { type ProgressEvent, processRecipe } from "../process-recipe.js";
-import { checkRateLimit, getRateLimitIdentifier } from "../rate-limit.js";
-import {
-	MAX_REQUEST_BODY_SIZE,
-	type RecipeRequest,
-	validateActualBodySize,
-	validateApiKeyHeader,
-	validateRecipeRequest,
-	validateRequestSize,
-} from "../security.js";
+import { processRecipe } from "../process-recipe.js";
+import type { RecipeRequest } from "../security.js";
 import { DEFAULT_RATE_LIMIT_VALUE, HttpStatus, RATE_LIMIT_HEADERS } from "./constants.js";
-import { createRateLimitResponse, handleRecipeError, sanitizeError } from "./errors.js";
+import { handleRecipeError } from "./errors.js";
 import { setCorsHeaders, setSecurityHeaders } from "./headers.js";
+import { handleRecipeStream } from "./recipe-streaming.js";
+import { validateRecipeRequestChain } from "./recipe-validation.js";
 
 /**
  * Options for handling recipe requests.
@@ -49,207 +46,48 @@ export type RecipeHandlerOptions = {
 };
 
 /**
- * Options for recipe stream handling.
- */
-export type HandleRecipeStreamOptions = {
-	/**
-	 * The recipe URL to process.
-	 */
-	url: string;
-	/**
-	 * Optional request correlation ID for logging.
-	 */
-	requestId?: string;
-	/**
-	 * Whether to include full recipe and tags data in the complete event (for Vercel API).
-	 */
-	includeFullData?: boolean;
-};
-
-/**
- * Handles recipe processing requests with Server-Sent Events for progress.
- *
- * Streams progress updates to the client as the recipe is processed.
- *
- * @param options - Stream handling options.
- * @returns Response with SSE stream for progress updates.
- */
-export function handleRecipeStream(options: HandleRecipeStreamOptions): Response {
-	const { url, requestId, includeFullData = false } = options;
-	const stream = new ReadableStream({
-		async start(controller) {
-			const encoder = new TextEncoder();
-
-			function sendEvent(data: object) {
-				try {
-					const message = `data: ${JSON.stringify(data)}\n\n`;
-					controller.enqueue(encoder.encode(message));
-				} catch (e) {
-					console.error("Error sending SSE event:", e);
-				}
-			}
-
-			try {
-				const logger = createConsoleLogger();
-
-				const result = await processRecipe({
-					url,
-					onProgress: (event: ProgressEvent) => {
-						sendEvent({
-							type: ServerProgressEventType.Progress,
-							message: event.message,
-							progressType: event.type,
-						});
-					},
-					logger,
-				});
-
-				const notionUrl = getNotionPageUrl(result.pageId);
-
-				const completeEvent: Record<string, unknown> = {
-					type: ServerProgressEventType.Complete,
-					success: true,
-					pageId: result.pageId,
-					notionUrl,
-				};
-
-				if (includeFullData) {
-					completeEvent.recipe = {
-						name: result.recipe.name,
-						author: result.recipe.author,
-						ingredients: result.recipe.ingredients,
-						instructions: result.recipe.instructions,
-					};
-					completeEvent.tags = {
-						tags: result.tags.tags,
-						mealType: result.tags.mealType,
-						healthScore: result.tags.healthScore,
-						totalTimeMinutes: result.tags.totalTimeMinutes,
-					};
-				}
-
-				sendEvent(completeEvent);
-			} catch (error) {
-				console.error("Recipe processing error in stream:", error);
-
-				const { logErrorDetails } = await import("./errors.js");
-				logErrorDetails(error, { error: console.error }, requestId);
-
-				const { message, notionUrl } = sanitizeError(error, { error: console.error }, requestId);
-
-				try {
-					sendEvent({
-						type: ServerProgressEventType.Error,
-						success: false,
-						error: message,
-						...(notionUrl && { notionUrl }),
-					});
-				} catch (e) {
-					console.error("Error sending error event:", e);
-				}
-			} finally {
-				try {
-					controller.close();
-				} catch (e) {
-					console.error("Error closing stream:", e);
-				}
-			}
-		},
-	});
-
-	const response = new Response(stream, {
-		headers: {
-			"Content-Type": "text/event-stream",
-			"Cache-Control": "no-cache",
-			Connection: "keep-alive",
-		},
-	});
-	setCorsHeaders(response);
-	return response;
-}
-
-/**
  * Handles recipe processing requests (non-streaming and streaming).
  *
- * Validates rate limit, authentication, request size, and URL before processing.
- * Supports both streaming and non-streaming responses based on the request body.
+ * Request processing flow:
+ * 1. Validates configuration, rate limit, authentication, and request body (via recipe-validation.ts)
+ * 2. Routes to streaming handler if stream=true (via recipe-streaming.ts)
+ * 3. Otherwise, processes recipe and returns JSON response
+ * 4. Includes rate limit headers in all responses
+ * 5. Applies CORS and security headers
  *
- * @param options - Handler options including request and error response creator.
- * @returns Response with recipe processing result or error.
+ * @param options - Handler options including request and error response creator
+ * @returns Response with recipe processing result or error
  */
 export async function handleRecipeRequest(options: RecipeHandlerOptions): Promise<Response> {
 	const { request, requestId, createErrorResponse, includeFullDataInStream = false } = options;
 
-	let config: Config;
-	try {
-		config = loadConfig();
-	} catch (error) {
-		console.error(`[${requestId}] Configuration error:`, error);
-		if (error instanceof ValidationError) {
-			const response = createErrorResponse(
-				"Server configuration error: Missing or invalid environment variables. Please check your Vercel environment variables.",
-				HttpStatus.InternalServerError,
-			);
-			setCorsHeaders(response, request);
-			return response;
-		}
-		throw error; // Re-throw if it's not a ValidationError
-	}
-
-	const clientId = getRateLimitIdentifier(request);
-	const rateLimit = checkRateLimit(clientId);
-
-	if (!rateLimit.allowed) {
-		return createRateLimitResponse(rateLimit);
-	}
-
-	const authError = validateApiKeyHeader(
-		request.headers.get("Authorization"),
-		config.API_SECRET,
+	// Step 1: Validate request through the complete validation chain
+	const validationResult = await validateRecipeRequestChain({
+		request,
+		parsedBody: options.parsedBody,
+		requestId,
 		createErrorResponse,
-	);
+	});
 
-	if (authError) {
-		return authError;
+	if (!validationResult.success) {
+		// Validation failed - return error response
+		return validationResult.response;
 	}
 
-	const sizeError = validateRequestSize(
-		request.headers.get("Content-Length"),
-		MAX_REQUEST_BODY_SIZE,
-		createErrorResponse,
-	);
+	const { data: validatedBody, rateLimit } = validationResult;
 
-	if (sizeError) {
-		return sizeError;
+	// Step 2: Route to streaming or non-streaming handler
+	if (validatedBody.stream) {
+		// Streaming response via SSE
+		return handleRecipeStream({
+			url: validatedBody.url,
+			requestId,
+			includeFullData: includeFullDataInStream,
+		});
 	}
 
+	// Step 3: Non-streaming response
 	try {
-		const body = options.parsedBody ?? ((await request.json()) as unknown);
-
-		const actualSizeError = validateActualBodySize(
-			body,
-			MAX_REQUEST_BODY_SIZE,
-			createErrorResponse,
-		);
-		if (actualSizeError) {
-			return actualSizeError;
-		}
-
-		const validationResult = validateRecipeRequest(body, createErrorResponse);
-		if (!validationResult.success) {
-			return validationResult.response;
-		}
-
-		const validatedBody: RecipeRequest = validationResult.data;
-
-		if (validatedBody.stream) {
-			return handleRecipeStream({
-				url: validatedBody.url,
-				requestId,
-				includeFullData: includeFullDataInStream,
-			});
-		}
-
 		const logger = createConsoleLogger();
 		const result = await processRecipe({ url: validatedBody.url, logger });
 
@@ -261,6 +99,7 @@ export async function handleRecipeRequest(options: RecipeHandlerOptions): Promis
 			notionUrl: savedNotionUrl,
 		};
 
+		// Step 4: Build response with rate limit headers
 		const response = Response.json(successResponse, {
 			status: HttpStatus.OK,
 			headers: {
@@ -269,10 +108,13 @@ export async function handleRecipeRequest(options: RecipeHandlerOptions): Promis
 				[RATE_LIMIT_HEADERS.RESET]: new Date(rateLimit.resetAt).toISOString(),
 			},
 		});
+
+		// Step 5: Apply security and CORS headers
 		setSecurityHeaders(response);
 		setCorsHeaders(response, request);
 		return response;
 	} catch (error) {
+		// Step 6: Handle recipe processing errors
 		return handleRecipeError(error, { error: console.error }, requestId);
 	}
 }

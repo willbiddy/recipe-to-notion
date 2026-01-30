@@ -1,6 +1,6 @@
-import type { RecipeResponse, ServerProgressEvent } from "./types.js";
-import { ServerProgressEventType } from "./types.js";
-import { validateServerProgressEvent } from "./validation.js";
+import type { RecipeResponse, ServerProgressEvent } from "@shared/api/types.js";
+import { ServerProgressEventType } from "@shared/api/types.js";
+import { validateServerProgressEvent } from "@shared/api/validation.js";
 
 /**
  * SSE event data prefix pattern.

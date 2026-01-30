@@ -1,4 +1,4 @@
-import type { ProgressType } from "../constants.js";
+import type { ProgressType } from "@shared/constants.js";
 
 /**
  * Method used to extract recipe data from the page.
@@ -139,7 +139,7 @@ export type ProgressCallbacks = {
 	onError: (error: string, notionUrl?: string) => void;
 };
 
-import type { StorageAdapter } from "../storage.js";
+import type { StorageAdapter } from "@shared/storage.js";
 
 /**
  * Options for saving a recipe.

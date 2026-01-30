@@ -26,8 +26,8 @@
  * ```
  */
 
+import { getUnsupportedUrlMessage, isValidHttpUrl } from "@shared/url-utils.js";
 import { createMemo, Show } from "solid-js";
-import { getUnsupportedUrlMessage, isValidHttpUrl } from "../url-utils.js";
 
 /**
  * Props for UrlDisplay component.

@@ -35,8 +35,8 @@
  * ```
  */
 
+import { ThemeContext, type ThemeContextValue } from "@shared/contexts/theme-context";
 import { useContext } from "solid-js";
-import { ThemeContext, type ThemeContextValue } from "../contexts/theme-context";
 
 /**
  * Hook to access the theme context.

@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ASSET_ROUTES } from "../api/asset-routes.js";
+import { ASSET_ROUTES } from "@api/asset-routes.js";
 import { HttpStatus } from "./server-shared/constants.js";
 import { createErrorResponse, generateRequestId } from "./server-shared/errors.js";
 import { handleOptionsRequest, setCorsHeaders } from "./server-shared/headers.js";

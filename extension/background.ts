@@ -3,7 +3,14 @@
  * Handles context menu and other background tasks.
  */
 
-import { ExtensionMessageType, Theme } from "../shared/constants.js";
+import { ExtensionMessageType, Theme } from "@shared/constants.js";
+import { z } from "zod";
+
+/**
+ * Zod schema for validating theme values from storage.
+ * Ensures only valid Theme enum values are accepted.
+ */
+const themeSchema = z.nativeEnum(Theme);
 
 /**
  * Context menu configuration.
@@ -44,12 +51,23 @@ async function updateIcon(theme: Theme): Promise<void> {
 
 /**
  * Gets the current theme preference from storage, defaulting to light.
+ * Validates the stored value to ensure it's a valid Theme enum value.
  *
  * @returns The current theme preference.
  */
 async function getThemePreference(): Promise<Theme> {
 	const result = await chrome.storage.local.get("theme");
-	return (result.theme as Theme) || Theme.Light;
+
+	// Validate the stored theme value
+	const parseResult = themeSchema.safeParse(result.theme);
+
+	if (parseResult.success) {
+		return parseResult.data;
+	}
+
+	// Invalid or missing theme - default to light
+	console.warn("[background] Invalid theme in storage, defaulting to light:", result.theme);
+	return Theme.Light;
 }
 
 /**
@@ -87,12 +105,18 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 });
 
 /**
- * Listens for storage changes to update icon when theme is detected elsewhere.
+ * Listens for storage changes to update icon when theme is updated.
+ * Validates the new theme value before updating the icon.
  */
 chrome.storage.onChanged.addListener((changes, areaName) => {
 	if (areaName === "local" && changes.theme) {
-		const newTheme = changes.theme.newValue as Theme;
-		updateIcon(newTheme);
+		const parseResult = themeSchema.safeParse(changes.theme.newValue);
+
+		if (parseResult.success) {
+			updateIcon(parseResult.data);
+		} else {
+			console.warn("[background] Invalid theme change ignored:", changes.theme.newValue);
+		}
 	}
 });
 

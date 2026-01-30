@@ -11,9 +11,9 @@
  * - Error: Save failure with error message and optional Notion URL (for duplicates)
  */
 
+import { type ServerProgressEvent, ServerProgressEventType } from "@shared/api/types.js";
+import { ProgressType } from "@shared/constants.js";
 import { z } from "zod";
-import { ProgressType } from "../constants.js";
-import { type ServerProgressEvent, ServerProgressEventType } from "./types.js";
 
 /**
  * Zod schema for Progress event.

@@ -3,10 +3,10 @@
  * Shared between web and extension interfaces.
  */
 
+import { StatusMessage, StatusType, TextSize } from "@shared/components/status-message.js";
+import { SUCCESS_STATUS_CLEAR_DELAY_MS } from "@shared/constants.js";
+import { createStorageAdapter } from "@shared/storage.js";
 import { createSignal, onMount, Show } from "solid-js";
-import { SUCCESS_STATUS_CLEAR_DELAY_MS } from "../constants.js";
-import { createStorageAdapter } from "../storage.js";
-import { StatusMessage, StatusType, TextSize } from "./status-message.js";
 
 export type SettingsPanelProps = {
 	/** Text size for status messages. */

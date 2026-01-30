@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { ASSET_ROUTES } from "./asset-routes";
-import { normalizeAssetPath, resolveWebDir } from "./path-utils";
+import { ASSET_ROUTES } from "./asset-routes.js";
+import { normalizeAssetPath, resolveWebDir } from "./path-utils.js";
 
 export default {
 	/**

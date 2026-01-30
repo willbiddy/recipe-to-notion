@@ -30,6 +30,7 @@ import { RecipeFormShell } from "@shared/components/recipe-form-shell.js";
 import { StatusType } from "@shared/components/status-message.js";
 import { ErrorMessageKey } from "@shared/constants.js";
 import { useStorage } from "@shared/contexts/storage-context.js";
+import { useKeyboardShortcuts } from "@shared/hooks/use-keyboard-shortcuts.js";
 import { useQueryParams } from "@shared/hooks/use-query-params.js";
 import { useTimeout } from "@shared/hooks/use-timeout.js";
 import { isValidHttpUrl } from "@shared/url-utils.js";
@@ -79,17 +80,9 @@ export function WebRecipeForm() {
 		setUrl(value);
 	}
 
-	/**
-	 * Handles keyboard shortcuts for save action.
-	 *
-	 * @param e - The keyboard event.
-	 */
-	function handleKeyDown(e: KeyboardEvent) {
-		if (e.key === "Enter") {
-			e.preventDefault();
-			shellHandlers?.performSave();
-		}
-	}
+	const { onKeyDown } = useKeyboardShortcuts({
+		onEnter: () => shellHandlers?.performSave(),
+	});
 
 	// Query params integration: auto-submit from URL parameters
 	useQueryParams({
@@ -118,7 +111,7 @@ export function WebRecipeForm() {
 							name="recipe-url"
 							value={url()}
 							onInput={handleUrlInput}
-							onKeyDown={handleKeyDown}
+							onKeyDown={onKeyDown}
 							autocomplete="url"
 							aria-invalid={urlValid() === false ? "true" : "false"}
 							class="input-field-minimal"

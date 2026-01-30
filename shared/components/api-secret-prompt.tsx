@@ -28,6 +28,10 @@
  */
 
 import { useStorage } from "@shared/contexts/storage-context.js";
+import {
+	useGlobalKeyboardShortcuts,
+	useKeyboardShortcuts,
+} from "@shared/hooks/use-keyboard-shortcuts.js";
 import { createSignal, Show } from "solid-js";
 
 /**
@@ -72,21 +76,14 @@ export function ApiSecretPrompt(props: ApiSecretPromptProps) {
 		}
 	}
 
-	function handleKeyDown(e: KeyboardEvent) {
-		if (e.key === "Enter") {
-			e.preventDefault();
-			saveSecret();
-		}
-		if (e.key === "Escape") {
-			props.onCancel();
-		}
-	}
+	const { onKeyDown } = useKeyboardShortcuts({
+		onEnter: saveSecret,
+		onEscape: props.onCancel,
+	});
 
-	function handleBackdropKeyDown(e: KeyboardEvent) {
-		if (e.key === "Escape") {
-			props.onCancel();
-		}
-	}
+	useGlobalKeyboardShortcuts({
+		onEscape: props.onCancel,
+	});
 
 	return (
 		<div
@@ -95,7 +92,11 @@ export function ApiSecretPrompt(props: ApiSecretPromptProps) {
 			aria-modal="true"
 			aria-labelledby="api-secret-title"
 			onClick={props.onCancel}
-			onKeyDown={handleBackdropKeyDown}
+			onKeyDown={(e) => {
+				if (e.key === "Escape") {
+					props.onCancel();
+				}
+			}}
 		>
 			<div
 				class="bg-white dark:bg-gray-800 shadow-xl rounded-lg p-6 w-full max-w-md"
@@ -128,7 +129,7 @@ export function ApiSecretPrompt(props: ApiSecretPromptProps) {
 								setSecret((e.target as HTMLInputElement).value);
 								setError(null);
 							}}
-							onKeyDown={handleKeyDown}
+							onKeyDown={onKeyDown}
 							autocomplete="off"
 							class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 dark:bg-gray-900 dark:border-gray-600 dark:text-gray-100 dark:placeholder:text-gray-500"
 							autofocus

@@ -1,46 +1,10 @@
 import { existsSync, readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import { ASSET_ROUTES } from "@api/asset-routes.js";
+import { resolveIndexPath, resolveWebDir } from "@api/path-utils.js";
 import { createErrorResponse, generateRequestId } from "./server-shared/errors.js";
 import { HttpStatus, handleOptionsRequest, setCorsHeaders } from "./server-shared/http-utils.js";
 import { handleRecipeRequest } from "./server-shared/recipe-handler.js";
-
-/**
- * Resolves the path to the web directory.
- */
-function resolveWebDir(): string | null {
-	let __dirname: string;
-	try {
-		const __filename = fileURLToPath(import.meta.url);
-		__dirname = dirname(__filename);
-	} catch {
-		__dirname = "";
-	}
-
-	const possiblePaths = [
-		join(__dirname, "..", "web"),
-		join(process.cwd(), "web"),
-		join(process.cwd(), "..", "web"),
-	];
-
-	for (const path of possiblePaths) {
-		if (existsSync(path)) {
-			return path;
-		}
-	}
-
-	return null;
-}
-
-/**
- * Resolves the path to index.html.
- */
-function resolveIndexPath(): string | null {
-	const webDir = resolveWebDir();
-	if (!webDir) return null;
-	return join(webDir, "index.html");
-}
 
 /**
  * Serves static assets from the web directory.

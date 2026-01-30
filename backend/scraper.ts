@@ -2,14 +2,14 @@ import { readFile } from "node:fs/promises";
 import { type Recipe, ScrapeMethod } from "@shared/api/types.js";
 import { REQUEST_TIMEOUT_MS } from "@shared/constants.js";
 import { getWebsiteName } from "@shared/url-utils.js";
-import { ParseError, ScrapingError } from "./errors.js";
-import { BROWSER_HEADERS } from "./parsers/headers.js";
+import { ParseError, ScrapingError } from "./errors";
 import {
+	BROWSER_HEADERS,
 	cleanRecipeName,
 	filterEditorNotes,
 	normalizeFractions,
 	normalizeIngredient,
-} from "./parsers/shared.js";
+} from "./parsers/shared";
 
 // Re-export Recipe type for convenience (used by logger, tagger, process-recipe)
 export type { Recipe } from "@shared/api/types.js";

@@ -11,8 +11,7 @@ const target = process.argv[2] || "all";
 const buildExtension = async () => {
 	console.log("🔨 Building extension...");
 	try {
-		await $`bun scripts/build-extension.ts`.quiet();
-		await $`bunx tailwindcss -i extension/input.css -o extension/styles.css --minify`.quiet();
+		await $`bun scripts/build.ts extension`.quiet();
 		console.log("✅ Extension build complete");
 	} catch (error) {
 		console.error("❌ Extension build failed:", error);
@@ -22,8 +21,7 @@ const buildExtension = async () => {
 const buildWeb = async () => {
 	console.log("🔨 Building web...");
 	try {
-		await $`bun scripts/build-web.ts`.quiet();
-		await $`bunx tailwindcss -i web/input.css -o web/web.css --minify`.quiet();
+		await $`bun scripts/build.ts web`.quiet();
 		console.log("✅ Web build complete");
 	} catch (error) {
 		console.error("❌ Web build failed:", error);

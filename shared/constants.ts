@@ -3,19 +3,6 @@
  */
 
 /**
- * Schema.org Recipe URLs for microdata parsing.
- */
-export enum SchemaOrgRecipeUrl {
-	HTTP = "http://schema.org/Recipe",
-	HTTPS = "https://schema.org/Recipe",
-}
-
-/**
- * Delay before opening Notion page after successful save (milliseconds).
- */
-export const NOTION_OPEN_DELAY_MS = 500;
-
-/**
  * Delay before auto-submitting URL from query parameters (milliseconds).
  */
 export const AUTO_SUBMIT_DELAY_MS = 300;

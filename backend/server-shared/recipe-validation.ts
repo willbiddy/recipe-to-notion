@@ -3,9 +3,9 @@
  * Handles configuration, rate limiting, authentication, and request body validation.
  */
 
-import { type Config, loadConfig } from "../config";
-import { ValidationError } from "../errors";
-import { checkRateLimit, getRateLimitIdentifier } from "../rate-limit";
+import { type Config, loadConfig } from "../config.js";
+import { ValidationError } from "../errors.js";
+import { checkRateLimit, getRateLimitIdentifier } from "../rate-limit.js";
 
 /**
  * Result from rate limit check.
@@ -19,8 +19,8 @@ import {
 	validateApiKeyHeader,
 	validateRecipeRequest,
 	validateRequestSize,
-} from "../security";
-import { setCorsHeaders } from "./http-utils";
+} from "../security.js";
+import { setCorsHeaders } from "./http-utils.js";
 
 /**
  * Result of request validation.

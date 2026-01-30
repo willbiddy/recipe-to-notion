@@ -85,11 +85,6 @@ export const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
 export const MAX_TEXT_LENGTH = 2000;
 
 /**
- * Maximum number of blocks allowed in a Notion page.
- */
-export const MAX_NOTION_BLOCKS = 100;
-
-/**
  * Length of ellipsis string ("...") used when truncating text.
  */
 export const ELLIPSIS_LENGTH = 3;

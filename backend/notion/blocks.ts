@@ -1,4 +1,4 @@
-import { MAX_NOTION_BLOCKS, MAX_TEXT_LENGTH } from "@shared/constants.js";
+import { MAX_TEXT_LENGTH } from "@shared/constants.js";
 import type { Recipe } from "../scraper.js";
 import type { CategorizedIngredient, RecipeTags } from "../tagger.js";
 import { IngredientCategory } from "../tagger.js";
@@ -211,14 +211,18 @@ export function buildPageBody(recipe: Recipe, tags: RecipeTags): NotionBlock[] {
 	const leftColumnBlocks: NotionBlock[] = [];
 	const rightColumnBlocks: NotionBlock[] = [];
 
-	// Full-width description at the top (no heading)
+	//
+	// Full-width description at the top
+	//
 	if (tags.description) {
 		const descriptionText = normalizeDescriptionText(tags.description);
 		const paragraphs = descriptionText.split("\n\n").filter((paragraph) => paragraph.trim());
 		fullWidthBlocks.push(...paragraphs.map((paragraphText) => paragraph(paragraphText)));
 	}
 
+	//
 	// Left column: Ingredients section
+	//
 	if (tags.ingredients && tags.ingredients.length > 0) {
 		leftColumnBlocks.push(heading1("Ingredients"));
 		const grouped = groupIngredientsByCategory(tags.ingredients);
@@ -228,23 +232,17 @@ export function buildPageBody(recipe: Recipe, tags: RecipeTags): NotionBlock[] {
 		leftColumnBlocks.push(...recipe.ingredients.map((ingredient) => bulletItem(ingredient)));
 	}
 
+	//
 	// Right column: Preparation section
+	//
 	if (recipe.instructions.length > 0) {
 		rightColumnBlocks.push(heading1("Preparation"));
 		rightColumnBlocks.push(...recipe.instructions.map((step) => numberedItem(step)));
 	}
 
-	// Fallback to linear layout if either column is empty
-	// (This handles edge cases where ingredients or instructions are missing)
-	if (leftColumnBlocks.length === 0 || rightColumnBlocks.length === 0) {
-		return [...fullWidthBlocks, ...leftColumnBlocks, ...rightColumnBlocks].slice(
-			0,
-			MAX_NOTION_BLOCKS,
-		);
-	}
-
+	//
 	// Create two-column layout
-	// The column_list contains two columns with equal width (50/50 split by default)
+	//
 	const leftCol = column(leftColumnBlocks);
 	const rightCol = column(rightColumnBlocks);
 	const layout = columnList([leftCol, rightCol]);

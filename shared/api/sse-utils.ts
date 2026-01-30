@@ -32,28 +32,26 @@ export type ParseSseStreamOptions = {
 	 * Progress callbacks for UI updates.
 	 */
 	callbacks: import("./types.js").ProgressCallbacks;
-	/**
-	 * Promise resolve function.
-	 */
-	resolve: (value: RecipeResponse) => void;
 };
 
 /**
  * Parses SSE events from a stream reader and processes them.
  *
- * @param options - Options for parsing the SSE stream.
- * @returns Promise that resolves when a terminal event is received or stream ends.
+ * Recursively reads from the stream until a terminal event (complete or error)
+ * is received or the stream ends unexpectedly.
+ *
+ * @param options - Options for parsing the SSE stream
+ * @returns Promise that resolves with the final RecipeResponse
  */
-export async function parseSseStream(options: ParseSseStreamOptions): Promise<void> {
-	const { reader, decoder, buffer, callbacks, resolve } = options;
+export async function parseSseStream(options: ParseSseStreamOptions): Promise<RecipeResponse> {
+	const { reader, decoder, buffer, callbacks } = options;
 	const { done, value } = await reader.read();
 
 	if (done) {
-		resolve({
+		return {
 			success: false,
 			error: "Stream ended unexpectedly",
-		});
-		return;
+		};
 	}
 
 	const newBuffer = buffer + decoder.decode(value, { stream: true });
@@ -70,9 +68,10 @@ export async function parseSseStream(options: ParseSseStreamOptions): Promise<vo
 					continue;
 				}
 
-				const isTerminal = handleSseEvent(data, callbacks, resolve);
-				if (isTerminal) {
-					return;
+				const result = handleSseEvent(data, callbacks);
+				if (result) {
+					// Terminal event received - return the result
+					return result;
 				}
 			} catch (error) {
 				// Skip malformed SSE lines, but log for debugging
@@ -82,31 +81,29 @@ export async function parseSseStream(options: ParseSseStreamOptions): Promise<vo
 		}
 	}
 
+	// Continue reading from stream
 	return parseSseStream({
 		reader,
 		decoder,
 		buffer: remainingBuffer,
 		callbacks,
-		resolve,
 	});
 }
 
 /**
  * Handles a parsed SSE event and calls appropriate callbacks.
  *
- * @param data - The validated server progress event.
- * @param callbacks - Progress callbacks for UI updates.
- * @param resolve - Promise resolve function.
- * @returns True if the event was a terminal event (complete or error), false otherwise.
+ * @param data - The validated server progress event
+ * @param callbacks - Progress callbacks for UI updates
+ * @returns RecipeResponse if this was a terminal event, null otherwise
  */
 export function handleSseEvent(
 	data: ServerProgressEvent,
 	callbacks: import("./types.js").ProgressCallbacks,
-	resolve: (value: RecipeResponse) => void,
-): boolean {
+): RecipeResponse | null {
 	if (data.type === ServerProgressEventType.Progress) {
 		callbacks.onProgress(data.message);
-		return false;
+		return null;
 	}
 
 	if (data.type === ServerProgressEventType.Complete) {
@@ -129,23 +126,22 @@ export function handleSseEvent(
 				},
 			});
 		}
-		resolve({
+
+		return {
 			success: true,
 			pageId: data.pageId,
 			notionUrl: data.notionUrl,
-		});
-		return true;
+		};
 	}
 
 	if (data.type === ServerProgressEventType.Error) {
 		callbacks.onError(data.error || "Unknown error", data.notionUrl);
-		resolve({
+		return {
 			success: false,
 			error: data.error || "Unknown error",
 			notionUrl: data.notionUrl,
-		});
-		return true;
+		};
 	}
 
-	return false;
+	return null;
 }

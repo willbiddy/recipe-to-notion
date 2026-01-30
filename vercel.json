@@ -145,7 +145,11 @@
 	],
 	"functions": {
 		"api/**/*.ts": {
-			"maxDuration": 60
+			"maxDuration": 60,
+			"env": {
+				"BUN_INSTALL_CACHE": "/tmp/bun-cache",
+				"HOME": "/tmp"
+			}
 		},
 		"api/scrape.py": {
 			"maxDuration": 60

@@ -1,5 +1,5 @@
-# Bun configuration file
-# Configures Bun to use Solid.js JSX transform
+[install]
+cache = "/tmp/bun-install-cache"
 
-jsx = "solid"
-preload = ["./bun-preload.ts"]
+[runtime]
+cache = "/tmp/bun-runtime-cache"

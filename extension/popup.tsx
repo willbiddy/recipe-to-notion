@@ -4,7 +4,7 @@
  */
 
 import { ExtensionRecipeForm } from "@shared/components/extension-recipe-form";
-import { ExtensionMessageType } from "@shared/constants";
+import { DOM_SELECTORS, ExtensionMessageType } from "@shared/constants";
 import { StorageProvider } from "@shared/contexts/storage-context";
 import { ThemeProvider } from "@shared/contexts/theme-context";
 import { detectSystemTheme } from "@shared/hooks/use-theme";
@@ -26,7 +26,7 @@ if (window.matchMedia) {
 	mediaQuery.addEventListener("change", updateExtensionIcon);
 }
 
-const card = document.querySelector(".card");
+const card = document.querySelector(DOM_SELECTORS.Card);
 
 if (card) {
 	render(

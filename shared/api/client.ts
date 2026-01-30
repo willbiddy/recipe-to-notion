@@ -36,6 +36,68 @@ function formatNetworkError(error: unknown): string {
 }
 
 /**
+ * Handles error responses from the server.
+ * Attempts to parse JSON error details, falls back to text if that fails.
+ *
+ * @param response - The HTTP response with error status
+ * @returns RecipeResponse with error details
+ */
+async function handleErrorResponse(response: Response): Promise<RecipeResponse> {
+	try {
+		const errorData = await response.json();
+		const errorMessage = errorData.error || errorData.message || "Unknown error";
+		const errorResponse: RecipeResponse = {
+			success: false,
+			error: `Server error (${response.status}): ${errorMessage}`,
+		};
+
+		// Include notionUrl if present (for duplicate recipe errors)
+		if (typeof errorData.notionUrl === "string") {
+			errorResponse.notionUrl = errorData.notionUrl;
+		}
+
+		return errorResponse;
+	} catch {
+		// Failed to parse JSON - try to get text
+		const text = await response.text().catch(() => "");
+		return {
+			success: false,
+			error: `Server error (${response.status}): ${response.statusText}${text ? ` - ${text}` : ""}`,
+		};
+	}
+}
+
+/**
+ * Sets up SSE stream reading and returns a promise that resolves with the final result.
+ *
+ * @param response - The HTTP response with SSE stream
+ * @param callbacks - Callbacks for progress and error notifications
+ * @returns Promise that resolves with the final RecipeResponse
+ */
+function handleSseStream(
+	response: Response,
+	callbacks: SaveRecipeOptions["callbacks"],
+): Promise<RecipeResponse> {
+	const reader = response.body?.getReader();
+
+	if (!reader) {
+		return Promise.resolve({
+			success: false,
+			error: "Failed to read response stream",
+		});
+	}
+
+	const decoder = new TextDecoder();
+
+	return parseSseStream({
+		reader,
+		decoder,
+		buffer: "",
+		callbacks,
+	});
+}
+
+/**
  * Saves a recipe by sending the URL to the server with progress streaming.
  *
  * Makes a POST request to the API with the recipe URL, then opens an SSE stream
@@ -81,6 +143,7 @@ export async function saveRecipe({
 	storage,
 	callbacks,
 }: SaveRecipeOptions): Promise<RecipeResponse> {
+	// Step 1: Validate API key
 	const apiKey = await storage.getApiKey();
 
 	if (!apiKey) {
@@ -90,70 +153,31 @@ export async function saveRecipe({
 		};
 	}
 
-	return new Promise((resolve, reject) => {
-		try {
-			fetch(apiUrl, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${apiKey}`,
-				},
-				body: JSON.stringify({ url, stream: true }),
-			})
-				.then((response) => {
-					if (!response.ok) {
-						return response
-							.json()
-							.then((errorData) => {
-								const errorMessage = errorData.error || errorData.message || "Unknown error";
-								resolve({
-									success: false,
-									error: `Server error (${response.status}): ${errorMessage}`,
-									...errorData,
-								} as RecipeResponse);
-							})
-							.catch(async () => {
-								const text = await response.text().catch(() => "");
-								resolve({
-									success: false,
-									error: `Server error (${response.status}): ${response.statusText}${text ? ` - ${text}` : ""}`,
-								});
-							});
-					}
+	try {
+		// Step 2: Send POST request to server
+		const response = await fetch(apiUrl, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${apiKey}`,
+			},
+			body: JSON.stringify({ url, stream: true }),
+		});
 
-					const reader = response.body?.getReader();
-					const decoder = new TextDecoder();
-
-					if (!reader) {
-						resolve({
-							success: false,
-							error: "Failed to read response stream",
-						});
-						return;
-					}
-
-					parseSseStream({
-						reader,
-						decoder,
-						buffer: "",
-						callbacks,
-						resolve,
-					}).catch((error) => {
-						callbacks.onError(error instanceof Error ? error.message : String(error));
-						reject(error);
-					});
-				})
-				.catch((error) => {
-					const errorMessage = formatNetworkError(error);
-					callbacks.onError(errorMessage);
-					resolve({
-						success: false,
-						error: errorMessage,
-					});
-				});
-		} catch (error) {
-			callbacks.onError(error instanceof Error ? error.message : String(error));
-			reject(error);
+		// Step 3: Handle error responses
+		if (!response.ok) {
+			return await handleErrorResponse(response);
 		}
-	});
+
+		// Step 4: Process SSE stream for progress updates
+		return await handleSseStream(response, callbacks);
+	} catch (error) {
+		// Step 5: Handle network errors
+		const errorMessage = formatNetworkError(error);
+		callbacks.onError(errorMessage);
+		return {
+			success: false,
+			error: errorMessage,
+		};
+	}
 }

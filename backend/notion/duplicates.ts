@@ -8,23 +8,25 @@ import {
 	PropertyName,
 } from "./notion-client.js";
 
-/** Options for checking duplicate recipes by URL. */
-export type CheckDuplicateByUrlOptions = {
-	url: string;
+/** Type of duplicate check to perform. */
+export enum DuplicateCheckType {
+	Url = "url",
+	Title = "title",
+}
+
+/** Options for checking duplicate recipes. */
+export type CheckDuplicateOptions = {
+	/** Value to check (URL or recipe title). */
+	value: string;
+	/** Notion integration API key. */
 	notionApiKey: string;
+	/** Target Notion database ID. */
 	databaseId: string;
+	/** Type of duplicate check. */
+	type: DuplicateCheckType;
 };
 
-/** Options for checking duplicate recipes by title. */
-export type CheckDuplicateByTitleOptions = {
-	recipeName: string;
-	notionApiKey: string;
-	databaseId: string;
-};
-
-/**
- * Options for querying pages in a database.
- */
+/** Options for querying pages in a database. */
 type QueryPagesOptions = {
 	notion: Client;
 	databaseId: string;
@@ -35,19 +37,14 @@ type QueryPagesOptions = {
 /**
  * Queries for pages in a Notion database matching a filter condition.
  *
- * Uses the dataSources.query API (2025-09-03) to find pages by property values.
- * First retrieves the database to get its default data source ID.
- *
  * @param options - Query options including Notion client, database ID, filter, and result builder.
  * @returns Information about the matching page if found, null otherwise.
  */
 async function queryPagesInDatabase(options: QueryPagesOptions): Promise<DuplicateInfo | null> {
 	const { notion, databaseId, filter, resultBuilder } = options;
 
-	// Get the database to retrieve its default data source ID
 	const database = await notion.databases.retrieve({ database_id: databaseId });
 
-	// Extract the default data source ID from the database
 	if (!("data_sources" in database) || !Array.isArray(database.data_sources)) {
 		throw new Error("Database does not have data sources");
 	}
@@ -56,17 +53,15 @@ async function queryPagesInDatabase(options: QueryPagesOptions): Promise<Duplica
 		throw new Error("Database has no data sources");
 	}
 
-	// Use the first (default) data source
 	const dataSource = database.data_sources[0];
 	if (!dataSource?.id) {
 		throw new Error("Data source does not have an ID");
 	}
 
-	// Query using the new dataSources.query API
 	const response = await notion.dataSources.query({
 		data_source_id: dataSource.id,
 		filter,
-		page_size: 1, // We only need to know if one exists
+		page_size: 1,
 	});
 
 	if (response.results.length === 0) {
@@ -78,7 +73,6 @@ async function queryPagesInDatabase(options: QueryPagesOptions): Promise<Duplica
 		return null;
 	}
 
-	// Validate that properties is an object (runtime check for Notion API response)
 	if (!isObject(page.properties)) {
 		console.error("[duplicates] Invalid properties from Notion API:", page.properties);
 		return null;
@@ -134,101 +128,101 @@ function extractUrl(property: unknown): string {
 }
 
 /**
- * Checks if a recipe with the same URL already exists in the database.
- *
- * Useful for early duplicate detection before scraping.
- * Queries for recipes with the same URL using the Notion SDK.
- *
- * If the duplicate check fails (e.g., API error), returns null to allow
- * the recipe processing to continue. Duplicate checks are best-effort and
- * should not block recipe processing.
+ * Checks if a duplicate recipe exists in the database.
  *
  * @param options - Options for checking duplicates.
  * @returns Information about the duplicate if found, null otherwise or on error.
  */
-export async function checkForDuplicateByUrl(
-	options: CheckDuplicateByUrlOptions,
+export async function checkForDuplicate(
+	options: CheckDuplicateOptions,
 ): Promise<DuplicateInfo | null> {
-	const { url, notionApiKey, databaseId } = options;
+	const { value, notionApiKey, databaseId, type } = options;
 	const notion = createNotionClient(notionApiKey);
+
+	const filter =
+		type === DuplicateCheckType.Url
+			? {
+					property: PropertyName.Source,
+					url: { equals: value },
+				}
+			: {
+					property: PropertyName.Name,
+					title: { equals: value },
+				};
+
+	const resultBuilder =
+		type === DuplicateCheckType.Url
+			? (properties: Record<string, unknown>, pageId: string) => {
+					const title =
+						PropertyName.Name in properties
+							? extractTitle(properties[PropertyName.Name])
+							: "Unknown Recipe";
+					const sourceUrl = extractUrl(properties[PropertyName.Source]);
+					return {
+						title,
+						url: sourceUrl,
+						pageId,
+						notionUrl: getNotionPageUrl(pageId),
+					};
+				}
+			: (properties: Record<string, unknown>, pageId: string) => {
+					const pageTitle = extractTitle(properties[PropertyName.Name]);
+					const url =
+						PropertyName.Source in properties ? extractUrl(properties[PropertyName.Source]) : "";
+					return {
+						title: pageTitle,
+						url,
+						pageId,
+						notionUrl: getNotionPageUrl(pageId),
+					};
+				};
 
 	try {
 		return await queryPagesInDatabase({
 			notion,
 			databaseId,
-			filter: {
-				property: PropertyName.Source,
-				url: {
-					equals: url,
-				},
-			},
-			resultBuilder: (properties, pageId) => {
-				const title =
-					PropertyName.Name in properties
-						? extractTitle(properties[PropertyName.Name])
-						: "Unknown Recipe";
-				const sourceUrl = extractUrl(properties[PropertyName.Source]);
-				return {
-					title,
-					url: sourceUrl,
-					pageId,
-					notionUrl: getNotionPageUrl(pageId),
-				};
-			},
+			filter,
+			resultBuilder,
 		});
 	} catch (error) {
+		const errorMessage = error instanceof Error ? error.message : String(error);
 		console.warn(
-			`Failed to check for duplicate by URL: ${error instanceof Error ? error.message : String(error)}. Continuing without duplicate check.`,
+			`Failed to check for duplicate by ${type}: ${errorMessage}. Continuing without duplicate check.`,
 		);
 		return null;
 	}
 }
 
 /**
- * Checks if a recipe with the same title already exists in the database.
- *
- * Use this after already checking for URL duplicates to avoid redundant API calls.
- * Queries for recipes with the same title using the Notion SDK.
- *
- * If the duplicate check fails (e.g., API error), returns null to allow
- * the recipe processing to continue. Duplicate checks are best-effort and
- * should not block recipe processing.
- *
- * @param options - Options for checking duplicates.
- * @returns Information about the duplicate if found, null otherwise or on error.
+ * Checks if a recipe with the same URL already exists.
+ * @deprecated Use checkForDuplicate with DuplicateCheckType.Url instead.
  */
-export async function checkForDuplicateByTitle(
-	options: CheckDuplicateByTitleOptions,
-): Promise<DuplicateInfo | null> {
-	const { recipeName, notionApiKey, databaseId } = options;
-	const notion = createNotionClient(notionApiKey);
+export async function checkForDuplicateByUrl(options: {
+	url: string;
+	notionApiKey: string;
+	databaseId: string;
+}): Promise<DuplicateInfo | null> {
+	return await checkForDuplicate({
+		value: options.url,
+		notionApiKey: options.notionApiKey,
+		databaseId: options.databaseId,
+		type: DuplicateCheckType.Url,
+	});
+}
 
-	try {
-		return await queryPagesInDatabase({
-			notion,
-			databaseId,
-			filter: {
-				property: PropertyName.Name,
-				title: {
-					equals: recipeName,
-				},
-			},
-			resultBuilder: (properties, pageId) => {
-				const pageTitle = extractTitle(properties[PropertyName.Name]);
-				const url =
-					PropertyName.Source in properties ? extractUrl(properties[PropertyName.Source]) : "";
-				return {
-					title: pageTitle,
-					url,
-					pageId,
-					notionUrl: getNotionPageUrl(pageId),
-				};
-			},
-		});
-	} catch (error) {
-		console.warn(
-			`Failed to check for duplicate by title: ${error instanceof Error ? error.message : String(error)}. Continuing without duplicate check.`,
-		);
-		return null;
-	}
+/**
+ * Checks if a recipe with the same title already exists.
+ * @deprecated Use checkForDuplicate with DuplicateCheckType.Title instead.
+ */
+export async function checkForDuplicateByTitle(options: {
+	recipeName: string;
+	notionApiKey: string;
+	databaseId: string;
+}): Promise<DuplicateInfo | null> {
+	return await checkForDuplicate({
+		value: options.recipeName,
+		notionApiKey: options.notionApiKey,
+		databaseId: options.databaseId,
+		type: DuplicateCheckType.Title,
+	});
 }

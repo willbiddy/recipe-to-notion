@@ -1,4 +1,5 @@
-import type { ProgressType } from "@shared/constants.js";
+import { ProgressType } from "@shared/constants";
+import { z } from "zod";
 
 /**
  * Method used to extract recipe data from the page.
@@ -139,7 +140,75 @@ export type ProgressCallbacks = {
 	onError: (error: string, notionUrl?: string) => void;
 };
 
-import type { StorageAdapter } from "@shared/storage.js";
+/**
+ * Zod schema for Progress event.
+ */
+export const progressEventSchema = z.object({
+	type: z.literal(ServerProgressEventType.Progress),
+	message: z.string(),
+	progressType: z.enum(ProgressType),
+});
+
+/**
+ * Zod schema for Complete event.
+ */
+export const completeEventSchema = z.object({
+	type: z.literal(ServerProgressEventType.Complete),
+	success: z.literal(true),
+	pageId: z.string(),
+	notionUrl: z.string(),
+	recipe: z
+		.object({
+			name: z.string(),
+			author: z.string(),
+			ingredients: z.array(z.string()),
+			instructions: z.array(z.string()),
+		})
+		.optional(),
+	tags: z
+		.object({
+			tags: z.array(z.string()),
+			mealType: z.string(),
+			healthScore: z.number(),
+			totalTimeMinutes: z.number(),
+		})
+		.optional(),
+});
+
+/**
+ * Zod schema for Error event.
+ */
+export const errorEventSchema = z.object({
+	type: z.literal(ServerProgressEventType.Error),
+	success: z.literal(false),
+	error: z.string(),
+	notionUrl: z.string().optional(),
+});
+
+/**
+ * Zod schema for ServerProgressEvent (discriminated union).
+ */
+export const serverProgressEventSchema = z.discriminatedUnion("type", [
+	progressEventSchema,
+	completeEventSchema,
+	errorEventSchema,
+]);
+
+/**
+ * Validates that a parsed JSON object is a valid ServerProgressEvent using Zod.
+ *
+ * Uses Zod's safeParse to validate without throwing errors.
+ * Returns null for invalid data, allowing the SSE parser to skip malformed events.
+ *
+ * @param data - The parsed JSON data to validate.
+ * @returns The validated ServerProgressEvent, or null if invalid.
+ */
+export function validateServerProgressEvent(data: unknown): ServerProgressEvent | null {
+	const result = serverProgressEventSchema.safeParse(data);
+	return result.success ? result.data : null;
+}
+
+import type { StorageAdapter } from "@shared/storage";
 
 /**
  * Options for saving a recipe.

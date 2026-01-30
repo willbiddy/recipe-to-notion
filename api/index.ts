@@ -1,49 +1,6 @@
-import { existsSync, readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-import { HttpStatus } from "../backend/server-shared/constants.js";
-
-/**
- * Resolves the path to index.html, trying multiple possible locations.
- * Enhanced with additional fallback paths for Vercel's serverless environment.
- */
-function resolveIndexPath(): string | null {
-	let __dirname: string;
-
-	try {
-		const __filename = fileURLToPath(import.meta.url);
-		__dirname = dirname(__filename);
-	} catch {
-		__dirname = "";
-	}
-
-	const possiblePaths = [
-		// Standard paths
-		join(__dirname, "..", "web", "index.html"),
-		join(process.cwd(), "web", "index.html"),
-		join(process.cwd(), "..", "web", "index.html"),
-		// Vercel-specific paths
-		join(process.cwd(), "..", "..", "web", "index.html"),
-		join("/var/task", "web", "index.html"), // AWS Lambda style
-		join("/var/task", "..", "web", "index.html"),
-		// Fallback to current directory structure
-		"web/index.html",
-		join(__dirname, "web", "index.html"),
-	];
-
-	for (const path of possiblePaths) {
-		if (existsSync(path)) {
-			return path;
-		}
-	}
-
-	console.error(
-		"[api/index] Could not find index.html in any of the",
-		possiblePaths.length,
-		"attempted paths",
-	);
-	return null;
-}
+import { readFileSync } from "node:fs";
+import { HttpStatus } from "@backend/server-shared/constants.js";
+import { resolveIndexPath } from "./path-utils.js";
 
 export default {
 	/**

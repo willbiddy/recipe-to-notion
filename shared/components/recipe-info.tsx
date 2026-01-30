@@ -39,8 +39,8 @@
  * ```
  */
 
+import { formatTimeMinutes } from "@shared/format-utils";
 import { For } from "solid-js";
-import { formatTimeMinutes } from "../format-utils";
 
 /**
  * Recipe data structure passed to RecipeInfo.

@@ -1,50 +1,8 @@
 import { existsSync, readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import { ASSET_ROUTES } from "./asset-routes.js";
 import { normalizeAssetPath } from "./asset-utils.js";
-
-/**
- * Resolves the path to the web directory, trying multiple possible locations.
- * Enhanced with additional fallback paths for Vercel's serverless environment.
- */
-function resolveWebDir(): string | null {
-	let __dirname: string;
-
-	try {
-		const __filename = fileURLToPath(import.meta.url);
-		__dirname = dirname(__filename);
-	} catch {
-		__dirname = "";
-	}
-
-	const possiblePaths = [
-		// Standard paths
-		join(__dirname, "..", "web"),
-		join(process.cwd(), "web"),
-		join(process.cwd(), "..", "web"),
-		// Vercel-specific paths
-		join(process.cwd(), "..", "..", "web"),
-		join("/var/task", "web"), // AWS Lambda style
-		join("/var/task", "..", "web"),
-		// Fallback to current directory structure
-		"web",
-		join(__dirname, "web"),
-	];
-
-	for (const path of possiblePaths) {
-		if (existsSync(path)) {
-			return path;
-		}
-	}
-
-	console.error(
-		"[api/assets] Could not find web directory in any of the",
-		possiblePaths.length,
-		"attempted paths",
-	);
-	return null;
-}
+import { resolveWebDir } from "./path-utils.js";
 
 export default {
 	/**

@@ -3,7 +3,7 @@
  * Supports both localStorage (web) and chrome.storage.local (extension).
  */
 
-import { Theme } from "./constants";
+import { Theme } from "@shared/constants";
 
 /**
  * Storage key for API secret in both localStorage and chrome.storage.

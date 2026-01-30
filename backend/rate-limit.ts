@@ -8,7 +8,7 @@
  * distributed solution.
  */
 
-import { CLEANUP_INTERVAL_MS } from "../shared/constants.js";
+import { CLEANUP_INTERVAL_MS } from "@shared/constants.js";
 
 /**
  * Rate limit configuration.

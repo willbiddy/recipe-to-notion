@@ -2,7 +2,7 @@
  * Theme utilities for detecting system preferences and applying themes to the document.
  */
 
-import { Theme } from "../constants";
+import { Theme } from "@shared/constants";
 
 /**
  * Detects the system's preferred color scheme.

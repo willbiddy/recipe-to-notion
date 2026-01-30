@@ -1,4 +1,4 @@
-import { MAX_AUTHOR_SUFFIX_LENGTH } from "../../shared/constants.js";
+import { MAX_AUTHOR_SUFFIX_LENGTH } from "@shared/constants.js";
 
 /**
  * Pattern to match "Recipe" suffix at the end of recipe names.

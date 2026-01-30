@@ -6,6 +6,12 @@
 		"forceConsistentCasingInFileNames": true,
 		"resolveJsonModule": true,
 		"jsx": "preserve",
-		"jsxImportSource": "solid-js"
+		"jsxImportSource": "solid-js",
+		"baseUrl": ".",
+		"paths": {
+			"@shared/*": ["./shared/*"],
+			"@backend/*": ["./backend/*"],
+			"@api/*": ["./api/*"]
+		}
 	}
 }

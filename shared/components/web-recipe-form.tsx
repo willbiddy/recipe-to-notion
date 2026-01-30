@@ -25,17 +25,17 @@
  * // https://example.com?url=https://recipe-site.com/recipe
  */
 
+import { ApiSecretPrompt } from "@shared/components/api-secret-prompt.js";
+import { ProgressIndicator } from "@shared/components/progress-indicator.js";
+import { StatusMessage, StatusType } from "@shared/components/status-message.js";
+import { ErrorMessageKey } from "@shared/constants.js";
+import { useQueryParams } from "@shared/hooks/use-query-params.js";
+import { useRecipeSave } from "@shared/hooks/use-recipe-save.js";
+import { useTimeout } from "@shared/hooks/use-timeout.js";
+import { createStorageAdapter } from "@shared/storage.js";
+import { isValidHttpUrl } from "@shared/url-utils.js";
 import type { JSX } from "solid-js";
 import { createMemo, createSignal, Show } from "solid-js";
-import { ErrorMessageKey } from "../constants.js";
-import { useQueryParams } from "../hooks/use-query-params.js";
-import { useRecipeSave } from "../hooks/use-recipe-save.js";
-import { useTimeout } from "../hooks/use-timeout.js";
-import { createStorageAdapter } from "../storage.js";
-import { isValidHttpUrl } from "../url-utils.js";
-import { ApiSecretPrompt } from "./api-secret-prompt.js";
-import { ProgressIndicator } from "./progress-indicator.js";
-import { StatusMessage, StatusType } from "./status-message.js";
 
 /**
  * Gets the server URL from the current origin.

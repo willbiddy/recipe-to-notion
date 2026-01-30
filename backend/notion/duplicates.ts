@@ -1,6 +1,6 @@
 import type { Client } from "@notionhq/client";
 import type { QueryDataSourceParameters } from "@notionhq/client/build/src/api-endpoints";
-import { hasProperty, isArray, isObject } from "../../shared/type-guards.js";
+import { hasProperty, isArray, isObject } from "@shared/type-guards.js";
 import { createNotionClient, getNotionPageUrl } from "./client.js";
 import type {
 	CheckDuplicateByTitleOptions,
@@ -65,8 +65,13 @@ async function queryPagesInDatabase(options: QueryPagesOptions): Promise<Duplica
 		return null;
 	}
 
-	const properties = page.properties as Record<string, unknown>;
-	return resultBuilder(properties, page.id);
+	// Validate that properties is an object (runtime check for Notion API response)
+	if (!isObject(page.properties)) {
+		console.error("[duplicates] Invalid properties from Notion API:", page.properties);
+		return null;
+	}
+
+	return resultBuilder(page.properties, page.id);
 }
 
 /**

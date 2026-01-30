@@ -1,5 +1,5 @@
-import { ELLIPSIS_LENGTH } from "../../shared/constants.js";
-import { hasProperty, isObject } from "../../shared/type-guards.js";
+import { ELLIPSIS_LENGTH } from "@shared/constants.js";
+import { hasProperty, isObject } from "@shared/type-guards.js";
 import { NotionApiError } from "../errors.js";
 import type { NotionApiErrorResponse } from "./types.js";
 

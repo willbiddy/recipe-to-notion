@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
-import { type Recipe, ScrapeMethod } from "../shared/api/types.js";
-import { REQUEST_TIMEOUT_MS } from "../shared/constants.js";
-import { getWebsiteName } from "../shared/url-utils.js";
+import { type Recipe, ScrapeMethod } from "@shared/api/types.js";
+import { REQUEST_TIMEOUT_MS } from "@shared/constants.js";
+import { getWebsiteName } from "@shared/url-utils.js";
 import { ParseError, ScrapingError } from "./errors.js";
 import { BROWSER_HEADERS } from "./parsers/headers.js";
 import {
@@ -12,7 +12,7 @@ import {
 } from "./parsers/shared.js";
 
 // Re-export Recipe type for convenience (used by logger, tagger, process-recipe)
-export type { Recipe } from "../shared/api/types.js";
+export type { Recipe } from "@shared/api/types.js";
 
 /**
  * Response type from the Python scraper endpoint.

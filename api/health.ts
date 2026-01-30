@@ -3,12 +3,12 @@
  * Maps to GET /api/health
  */
 
-import { HttpStatus } from "../backend/server-shared/constants.js";
+import { HttpStatus } from "@backend/server-shared/constants.js";
 import {
 	handleOptionsRequest,
 	setCorsHeaders,
 	setSecurityHeaders,
-} from "../backend/server-shared/headers.js";
+} from "@backend/server-shared/headers.js";
 
 export default {
 	/**

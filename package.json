@@ -14,6 +14,7 @@
 		"build": "bun build backend/cli.ts --compile --outfile recipe-to-notion",
 		"build:extension": "bun scripts/build.ts extension",
 		"build:web": "bun scripts/build.ts web",
+		"build:api": "bun scripts/build-api.ts",
 		"watch": "bun scripts/watch.ts",
 		"watch:extension": "bun scripts/watch.ts extension",
 		"watch:web": "bun scripts/watch.ts web",

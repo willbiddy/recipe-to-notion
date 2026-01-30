@@ -150,8 +150,5 @@
 		"api/scrape.py": {
 			"maxDuration": 60
 		}
-	},
-	"env": {
-		"BUN_INSTALL_CACHE": "/tmp/bun-cache"
 	}
 }

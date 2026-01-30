@@ -3,28 +3,12 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 /**
- * Resolves a file or directory path by trying multiple possible locations.
+ * Resolves a file path by trying multiple possible locations.
+ * Used for deployment compatibility across environments (local, Vercel, Lambda).
  *
- * This utility is essential for deployment compatibility across different environments:
- * - **Local development**: Paths relative to source files work
- * - **Vercel serverless**: Working directory varies; needs multiple fallbacks
- * - **AWS Lambda**: Uses /var/task as base directory
- *
- * The function tries paths in order and returns the first one that exists.
- *
- * @param possiblePaths - Array of possible paths to try, in order of preference
- * @param contextLabel - Label for error logging (e.g., "web directory", "index.html")
- * @returns The first existing path, or null if none exist
- *
- * @example
- * ```ts
- * // Try to find a file in multiple locations
- * const configPath = resolveFilePath([
- *   join(__dirname, "config.json"),
- *   join(process.cwd(), "config.json"),
- *   "/etc/app/config.json"
- * ], "config.json");
- * ```
+ * @param possiblePaths - Array of paths to try, in order of preference
+ * @param contextLabel - Label for error messages (e.g., "web directory")
+ * @returns First existing path, or null if none exist
  */
 export function resolveFilePath(possiblePaths: string[], contextLabel: string): string | null {
 	for (const path of possiblePaths) {
@@ -43,11 +27,6 @@ export function resolveFilePath(possiblePaths: string[], contextLabel: string): 
 
 /**
  * Gets __dirname equivalent for ES modules.
- *
- * In CommonJS, __dirname is automatically available. In ES modules,
- * we need to derive it from import.meta.url using fileURLToPath.
- *
- * @returns The directory containing the calling module, or empty string if unavailable
  */
 function getDirname(): string {
 	try {
@@ -59,13 +38,7 @@ function getDirname(): string {
 }
 
 /**
- * Resolves the path to the web directory, trying multiple possible locations.
- *
- * Vercel Deployment Strategy:
- * 1. Try paths relative to api/ directory (standard structure)
- * 2. Try paths relative to process.cwd() (varies in serverless)
- * 3. Try AWS Lambda-style paths (/var/task)
- * 4. Try fallback paths for edge cases
+ * Resolves the web directory path across different deployment environments.
  *
  * @returns Path to web directory, or null if not found
  */
@@ -90,10 +63,7 @@ export function resolveWebDir(): string | null {
 }
 
 /**
- * Resolves the path to index.html, trying multiple possible locations.
- *
- * Uses the same deployment strategy as resolveWebDir but targets
- * the specific index.html file.
+ * Resolves the index.html path across different deployment environments.
  *
  * @returns Path to index.html, or null if not found
  */

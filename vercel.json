@@ -76,6 +76,9 @@
 		}
 	},
 	"env": {
-		"BUN_INSTALL_CACHE": "/tmp/bun-cache"
+		"BUN_INSTALL_CACHE": "/tmp/bun-cache",
+		"BUN_RUNTIME_TRANSPILER_CACHE_PATH": "/tmp/bun-transpiler-cache",
+		"BUN_CACHE_DIR": "/tmp/bun-cache-dir",
+		"HOME": "/tmp"
 	}
 }

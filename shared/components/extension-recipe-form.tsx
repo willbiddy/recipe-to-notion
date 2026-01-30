@@ -26,8 +26,8 @@ import { ProgressIndicator } from "@shared/components/progress-indicator.js";
 import { StatusMessage, StatusType, TextSize } from "@shared/components/status-message.js";
 import { UrlDisplay } from "@shared/components/url-display.js";
 import { ExtensionMessageType } from "@shared/constants.js";
+import { useStorage } from "@shared/contexts/storage-context.js";
 import { useRecipeSave } from "@shared/hooks/use-recipe-save.js";
-import { createStorageAdapter } from "@shared/storage.js";
 import { getWebsiteName, isValidHttpUrl } from "@shared/url-utils.js";
 import type { JSX } from "solid-js";
 import { createSignal, onMount, Show } from "solid-js";
@@ -200,7 +200,7 @@ async function getCurrentTab(setPermissionIssue?: (value: boolean) => void): Pro
  * @param props.getServerUrl - Function returning the server base URL.
  */
 export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
-	const storage = createStorageAdapter();
+	const { storage } = useStorage();
 	const [currentUrl, setCurrentUrl] = createSignal<string | null>(null);
 	const [currentTitle, setCurrentTitle] = createSignal<string | null>(null);
 	const [recipeTitle, setRecipeTitle] = createSignal<string | null>(null);

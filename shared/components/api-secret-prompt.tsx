@@ -27,7 +27,7 @@
  * ```
  */
 
-import { createStorageAdapter } from "@shared/storage.js";
+import { useStorage } from "@shared/contexts/storage-context.js";
 import { createSignal, Show } from "solid-js";
 
 /**
@@ -52,7 +52,7 @@ export type ApiSecretPromptProps = {
  * @param props.onCancel - Callback when prompt is cancelled.
  */
 export function ApiSecretPrompt(props: ApiSecretPromptProps) {
-	const storage = createStorageAdapter();
+	const { storage } = useStorage();
 	const [secret, setSecret] = createSignal("");
 	const [error, setError] = createSignal<string | null>(null);
 

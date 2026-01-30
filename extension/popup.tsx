@@ -5,6 +5,7 @@
 
 import { ExtensionRecipeForm } from "@shared/components/extension-recipe-form.js";
 import { ExtensionMessageType } from "@shared/constants.js";
+import { StorageProvider } from "@shared/contexts/storage-context.js";
 import { ThemeProvider } from "@shared/contexts/theme-context.js";
 import { detectSystemTheme } from "@shared/utils/theme-utils.js";
 import { render } from "solid-js/web";
@@ -30,9 +31,11 @@ const card = document.querySelector(".card");
 if (card) {
 	render(
 		() => (
-			<ThemeProvider>
-				<ExtensionRecipeForm getServerUrl={getServerUrl} />
-			</ThemeProvider>
+			<StorageProvider>
+				<ThemeProvider>
+					<ExtensionRecipeForm getServerUrl={getServerUrl} />
+				</ThemeProvider>
+			</StorageProvider>
 		),
 		card,
 	);

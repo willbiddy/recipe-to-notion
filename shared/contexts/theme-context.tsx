@@ -4,7 +4,7 @@
  */
 
 import type { Theme } from "@shared/constants";
-import { createStorageAdapter, type StorageAdapter } from "@shared/storage";
+import { useStorage } from "@shared/contexts/storage-context";
 import {
 	applyThemeToDocument,
 	detectSystemTheme,
@@ -51,7 +51,7 @@ export const ThemeContext = createContext<ThemeContextValue>();
  * @param props - Component props with children.
  */
 export const ThemeProvider: ParentComponent = (props) => {
-	const storage: StorageAdapter = createStorageAdapter();
+	const { storage } = useStorage();
 
 	// User's theme preference (null = follow system)
 	const [theme, setThemeInternal] = createSignal<Theme | null>(null);

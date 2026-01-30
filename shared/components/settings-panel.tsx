@@ -5,7 +5,7 @@
 
 import { StatusMessage, StatusType, TextSize } from "@shared/components/status-message.js";
 import { SUCCESS_STATUS_CLEAR_DELAY_MS } from "@shared/constants.js";
-import { createStorageAdapter } from "@shared/storage.js";
+import { useStorage } from "@shared/contexts/storage-context.js";
 import { createSignal, onMount, Show } from "solid-js";
 
 export type SettingsPanelProps = {
@@ -25,7 +25,7 @@ export type SettingsPanelProps = {
  * SettingsPanel component for API key management.
  */
 export function SettingsPanel(props: SettingsPanelProps) {
-	const storage = createStorageAdapter();
+	const { storage } = useStorage();
 	const [apiKey, setApiKey] = createSignal("");
 	const [apiKeyVisible, setApiKeyVisible] = createSignal(false);
 	const [apiKeyStatus, setApiKeyStatus] = createSignal<{

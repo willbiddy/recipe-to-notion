@@ -29,10 +29,10 @@ import { ApiSecretPrompt } from "@shared/components/api-secret-prompt.js";
 import { ProgressIndicator } from "@shared/components/progress-indicator.js";
 import { StatusMessage, StatusType } from "@shared/components/status-message.js";
 import { ErrorMessageKey } from "@shared/constants.js";
+import { useStorage } from "@shared/contexts/storage-context.js";
 import { useQueryParams } from "@shared/hooks/use-query-params.js";
 import { useRecipeSave } from "@shared/hooks/use-recipe-save.js";
 import { useTimeout } from "@shared/hooks/use-timeout.js";
-import { createStorageAdapter } from "@shared/storage.js";
 import { isValidHttpUrl } from "@shared/url-utils.js";
 import type { JSX } from "solid-js";
 import { createMemo, createSignal, Show } from "solid-js";
@@ -55,7 +55,7 @@ function getServerUrl(): string {
  * and status messages. Integrates with useQueryParams hook for auto-submission.
  */
 export function WebRecipeForm() {
-	const storage = createStorageAdapter();
+	const { storage } = useStorage();
 	const [url, setUrl] = createSignal("");
 	const [loading, setLoading] = createSignal(false);
 	const [status, setStatus] = createSignal<{

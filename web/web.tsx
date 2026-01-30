@@ -8,7 +8,7 @@ import { StorageProvider } from "@shared/contexts/storage-context";
 import { ThemeProvider } from "@shared/contexts/theme-context";
 import { render } from "solid-js/web";
 
-const mainContent = document.getElementById("main-content");
+const mainContent: HTMLElement | null = document.getElementById("main-content");
 
 if (mainContent) {
 	render(

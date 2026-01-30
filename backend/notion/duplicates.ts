@@ -45,7 +45,7 @@ async function queryPagesInDatabase(options: QueryPagesOptions): Promise<Duplica
 
 	const database = await notion.databases.retrieve({ database_id: databaseId });
 
-	if (!("data_sources" in database) || !Array.isArray(database.data_sources)) {
+	if (!("data_sources" in database && Array.isArray(database.data_sources))) {
 		throw new Error("Database does not have data sources");
 	}
 
@@ -92,7 +92,7 @@ function extractTitle(property: unknown): string {
 		return "";
 	}
 
-	if (!hasProperty(property, "title") || !isArray(property.title)) {
+	if (!(hasProperty(property, "title") && isArray(property.title))) {
 		return "";
 	}
 
@@ -102,7 +102,7 @@ function extractTitle(property: unknown): string {
 
 	const firstTitle = property.title[0];
 
-	if (!isObject(firstTitle) || !hasProperty(firstTitle, "plain_text")) {
+	if (!(isObject(firstTitle) && hasProperty(firstTitle, "plain_text"))) {
 		return "";
 	}
 
@@ -139,6 +139,16 @@ export async function checkForDuplicate(
 	const { value, notionApiKey, databaseId, type } = options;
 	const notion = createNotionClient(notionApiKey);
 
+	type ResultBuilder = (
+		properties: Record<string, unknown>,
+		pageId: string,
+	) => {
+		title: string;
+		url: string;
+		pageId: string;
+		notionUrl: string;
+	};
+
 	const filter =
 		type === DuplicateCheckType.Url
 			? {
@@ -150,9 +160,16 @@ export async function checkForDuplicate(
 					title: { equals: value },
 				};
 
-	const resultBuilder =
+	type ResultBuilderReturn = {
+		title: string;
+		url: string;
+		pageId: string;
+		notionUrl: string;
+	};
+
+	const resultBuilder: ResultBuilder =
 		type === DuplicateCheckType.Url
-			? (properties: Record<string, unknown>, pageId: string) => {
+			? (properties: Record<string, unknown>, pageId: string): ResultBuilderReturn => {
 					const title =
 						PropertyName.Name in properties
 							? extractTitle(properties[PropertyName.Name])
@@ -165,7 +182,7 @@ export async function checkForDuplicate(
 						notionUrl: getNotionPageUrl(pageId),
 					};
 				}
-			: (properties: Record<string, unknown>, pageId: string) => {
+			: (properties: Record<string, unknown>, pageId: string): ResultBuilderReturn => {
 					const pageTitle = extractTitle(properties[PropertyName.Name]);
 					const url =
 						PropertyName.Source in properties ? extractUrl(properties[PropertyName.Source]) : "";

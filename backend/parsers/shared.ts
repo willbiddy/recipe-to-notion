@@ -53,7 +53,7 @@ export function cleanRecipeName(name: string): string {
 	return cleaned.trim();
 }
 
-const FRACTION_MAP = new Map([
+const FRACTION_MAP: Map<string, string> = new Map([
 	["½", "1/2"],
 	["¼", "1/4"],
 	["¾", "3/4"],

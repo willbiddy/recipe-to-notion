@@ -17,9 +17,9 @@ type RateLimitEntry = {
 	windowStart: number;
 };
 
-const rateLimitStore = new Map<string, RateLimitEntry>();
+const rateLimitStore: Map<string, RateLimitEntry> = new Map<string, RateLimitEntry>();
 
-let lastCleanupTime = Date.now();
+let lastCleanupTime: number = Date.now();
 
 function cleanupExpiredEntries(): void {
 	const now = Date.now();

@@ -96,7 +96,7 @@ export async function processRecipe(options: ProcessRecipeOptions): Promise<Proc
 		logger: recipeLogger,
 	} = options;
 
-	if (!url && !preScrapedRecipe) {
+	if (!(url || preScrapedRecipe)) {
 		throw new Error("Either url or recipe must be provided");
 	}
 

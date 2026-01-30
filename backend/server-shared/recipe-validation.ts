@@ -116,8 +116,8 @@ export async function validateRecipeRequestChain(
 	// 4. Validate request size (header check)
 	const sizeError = validateRequestSize(
 		request.headers.get("Content-Length"),
-		MAX_REQUEST_BODY_SIZE,
 		createErrorResponse,
+		MAX_REQUEST_BODY_SIZE,
 	);
 
 	if (sizeError) {
@@ -131,8 +131,8 @@ export async function validateRecipeRequestChain(
 		// Validate actual body size
 		const actualSizeError = validateActualBodySize(
 			body,
-			MAX_REQUEST_BODY_SIZE,
 			createErrorResponse,
+			MAX_REQUEST_BODY_SIZE,
 		);
 		if (actualSizeError) {
 			return { success: false, response: actualSizeError };

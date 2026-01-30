@@ -70,7 +70,7 @@ function getPythonScraperUrl(): string {
  */
 export function transformPythonResponse(data: PythonScraperResponse, sourceUrl: string): Recipe {
 	// Apply author fallback chain: author → siteName → website name → URL
-	let author = data.author;
+	let author: string | null = data.author;
 	if (!author) {
 		author = data.siteName;
 	}
@@ -79,10 +79,12 @@ export function transformPythonResponse(data: PythonScraperResponse, sourceUrl: 
 	}
 
 	// Normalize ingredients (fractions, double parens, etc.)
-	const ingredients = data.ingredients.map((ing) => normalizeFractions(normalizeIngredient(ing)));
+	const ingredients: string[] = data.ingredients.map((ing) =>
+		normalizeFractions(normalizeIngredient(ing)),
+	);
 
 	// Filter editor notes from instructions
-	const instructions = filterEditorNotes(data.instructions);
+	const instructions: string[] = filterEditorNotes(data.instructions);
 
 	// Normalize keywords to array if it's a string
 	let keywords: string[] | null = null;
@@ -170,7 +172,10 @@ export async function parseRecipeFromHtml(html: string, sourceUrl: string): Prom
 
 		if (!response.ok) {
 			const errorText = await response.text();
-			let errorData: { error?: string; errorType?: string } = {};
+			let errorData: { error?: string; errorType?: string } = {} as {
+				error?: string;
+				errorType?: string;
+			};
 			try {
 				errorData = JSON.parse(errorText);
 			} catch {

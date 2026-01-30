@@ -27,7 +27,7 @@ const main = defineCommand({
 			description: "Use saved HTML file instead of fetching (for sites that block requests)",
 		},
 	},
-	async run({ args }) {
+	async run({ args }): Promise<void> {
 		const urls = parseUrls(args._);
 		const firstUrl = urls[0];
 

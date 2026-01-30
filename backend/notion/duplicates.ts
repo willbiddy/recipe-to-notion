@@ -192,37 +192,3 @@ export async function checkForDuplicate(
 		return null;
 	}
 }
-
-/**
- * Checks if a recipe with the same URL already exists.
- * @deprecated Use checkForDuplicate with DuplicateCheckType.Url instead.
- */
-export async function checkForDuplicateByUrl(options: {
-	url: string;
-	notionApiKey: string;
-	databaseId: string;
-}): Promise<DuplicateInfo | null> {
-	return await checkForDuplicate({
-		value: options.url,
-		notionApiKey: options.notionApiKey,
-		databaseId: options.databaseId,
-		type: DuplicateCheckType.Url,
-	});
-}
-
-/**
- * Checks if a recipe with the same title already exists.
- * @deprecated Use checkForDuplicate with DuplicateCheckType.Title instead.
- */
-export async function checkForDuplicateByTitle(options: {
-	recipeName: string;
-	notionApiKey: string;
-	databaseId: string;
-}): Promise<DuplicateInfo | null> {
-	return await checkForDuplicate({
-		value: options.recipeName,
-		notionApiKey: options.notionApiKey,
-		databaseId: options.databaseId,
-		type: DuplicateCheckType.Title,
-	});
-}

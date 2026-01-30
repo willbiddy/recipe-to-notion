@@ -7,8 +7,13 @@ import {
 	TaggingError,
 	ValidationError,
 } from "../errors.js";
-import { DEFAULT_RATE_LIMIT_VALUE, HttpStatus, RATE_LIMIT_HEADERS } from "./constants.js";
-import { setCorsHeaders, setSecurityHeaders } from "./headers.js";
+import {
+	DEFAULT_RATE_LIMIT_VALUE,
+	HttpStatus,
+	RateLimitHeader,
+	setCorsHeaders,
+	setSecurityHeaders,
+} from "./http-utils.js";
 
 /**
  * Logger interface for error logging.
@@ -218,9 +223,9 @@ export function createRateLimitResponse(rateLimit: {
 		{
 			status: 429,
 			headers: {
-				[RATE_LIMIT_HEADERS.LIMIT]: String(DEFAULT_RATE_LIMIT_VALUE),
-				[RATE_LIMIT_HEADERS.REMAINING]: "0",
-				[RATE_LIMIT_HEADERS.RESET]: new Date(rateLimit.resetAt).toISOString(),
+				[RateLimitHeader.Limit]: String(DEFAULT_RATE_LIMIT_VALUE),
+				[RateLimitHeader.Remaining]: "0",
+				[RateLimitHeader.Reset]: new Date(rateLimit.resetAt).toISOString(),
 			},
 		},
 	);

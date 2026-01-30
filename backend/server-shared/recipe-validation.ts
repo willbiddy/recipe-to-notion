@@ -20,7 +20,7 @@ import {
 	validateRecipeRequest,
 	validateRequestSize,
 } from "../security.js";
-import { setCorsHeaders } from "./headers.js";
+import { setCorsHeaders } from "./http-utils.js";
 
 /**
  * Result of request validation.

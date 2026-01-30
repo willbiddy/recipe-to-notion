@@ -11,7 +11,7 @@ import { DEFAULT_PORT, IDLE_TIMEOUT_SECONDS, MAX_PORT, MIN_PORT } from "@shared/
 import getPort from "get-port";
 import { ValidationError } from "./errors.js";
 import { handleRequest } from "./server.js";
-import { HttpStatus } from "./server-shared/constants.js";
+import { HttpStatus } from "./server-shared/http-utils.js";
 
 try {
 	const { loadConfig } = await import("./config.js");

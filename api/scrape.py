@@ -49,10 +49,14 @@ class handler(BaseHTTPRequestHandler):
             self._send_json(200, result)
             
         except json.JSONDecodeError as e:
-            self._send_error(400, f"Invalid JSON: {str(e)}")
+            self._send_error(400, f"Invalid JSON: {str(e)}", "JSONDecodeError")
+        except ValueError as e:
+            # Recipe extraction failures (e.g., no recipe data found)
+            self._send_error(400, str(e), "ScrapingError")
         except Exception as e:
+            # Unexpected server errors
             error_type = type(e).__name__
-            self._send_error(400, str(e), error_type)
+            self._send_error(500, f"Internal server error: {str(e)}", error_type)
     
     def do_OPTIONS(self):
         """Handle CORS preflight requests."""

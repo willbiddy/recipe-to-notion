@@ -1,5 +1,6 @@
 /** Simple in-memory rate limiter using token bucket algorithm. */
 
+import { createHash } from "node:crypto";
 import { CLEANUP_INTERVAL_MS } from "@shared/constants";
 
 export type RateLimitConfig = {
@@ -95,12 +96,8 @@ export function getRateLimitIdentifier(request: Request): string {
 
 	if (authHeader?.startsWith("Bearer ")) {
 		const apiKey = authHeader.slice(7).trim();
-		let hash = 0;
-		for (let i = 0; i < apiKey.length; i++) {
-			const char = apiKey.charCodeAt(i);
-			hash = (hash << 5) - hash + char;
-		}
-		return `api-key-${Math.abs(hash)}`;
+		const hash = createHash("sha256").update(apiKey).digest("hex").slice(0, 16);
+		return `api-key-${hash}`;
 	}
 
 	const forwardedFor = request.headers.get("x-forwarded-for");

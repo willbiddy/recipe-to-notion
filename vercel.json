@@ -152,7 +152,6 @@
 		}
 	},
 	"env": {
-		"BUN_INSTALL_CACHE": "/tmp/bun-cache",
-		"HOME": "/tmp"
+		"BUN_INSTALL_CACHE": "/tmp/bun-cache"
 	}
 }

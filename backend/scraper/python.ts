@@ -1,6 +1,6 @@
 import { type Recipe, ScrapeMethod } from "@shared/api/types";
 import { REQUEST_TIMEOUT_MS } from "@shared/constants";
-import { getWebsiteName } from "@shared/url-utils";
+import { resolveAuthor } from "@shared/url-utils";
 import { ParseError, ScrapingError } from "../errors";
 import {
 	cleanRecipeName,
@@ -70,13 +70,7 @@ function getPythonScraperUrl(): string {
  */
 export function transformPythonResponse(data: PythonScraperResponse, sourceUrl: string): Recipe {
 	// Apply author fallback chain: author → siteName → website name → URL
-	let author: string | null = data.author;
-	if (!author) {
-		author = data.siteName;
-	}
-	if (!author) {
-		author = getWebsiteName(sourceUrl) ?? sourceUrl;
-	}
+	const author = resolveAuthor(data.author, data.siteName, sourceUrl);
 
 	// Normalize ingredients (fractions, double parens, etc.)
 	const ingredients: string[] = data.ingredients.map((ing) =>

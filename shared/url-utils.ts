@@ -41,6 +41,22 @@ export function getWebsiteName(url: string): string | null {
 }
 
 /**
+ * Resolves author with fallback chain: author → siteName → website name → URL.
+ *
+ * @param author - Primary author name (can be null/undefined)
+ * @param siteName - Site name fallback
+ * @param sourceUrl - Source URL for final fallback
+ * @returns Resolved author string
+ */
+export function resolveAuthor(
+	author: string | null | undefined,
+	siteName: string | null | undefined,
+	sourceUrl: string,
+): string {
+	return author || siteName || getWebsiteName(sourceUrl) || sourceUrl;
+}
+
+/**
  * Strips query parameters and hash fragments from a URL.
  *
  * @param url - URL to normalize
@@ -71,21 +87,16 @@ export function getUnsupportedUrlMessage(url: string | null, permissionIssue?: b
 		return "No webpage detected. Try refreshing the page and reopening the extension.";
 	}
 
+	const PROTOCOL_MESSAGES: Record<string, string> = {
+		"chrome:": "Cannot save from browser pages",
+		"chrome-extension:": "Cannot save from extension pages",
+		"about:": "Cannot save from this page",
+		"file:": "Cannot save from local files",
+	};
+
 	try {
 		const { protocol } = new URL(url);
-		if (protocol === "chrome:") {
-			return "Cannot save from browser pages";
-		}
-		if (protocol === "chrome-extension:") {
-			return "Cannot save from extension pages";
-		}
-		if (protocol === "about:") {
-			return "Cannot save from this page";
-		}
-		if (protocol === "file:") {
-			return "Cannot save from local files";
-		}
-		return "Not a valid web page";
+		return PROTOCOL_MESSAGES[protocol] || "Not a valid web page";
 	} catch {
 		return "Not a valid web page";
 	}

@@ -32,7 +32,7 @@
  * ```
  */
 
-import { AUTO_SUBMIT_DELAY_MS } from "@shared/constants";
+import { AUTO_SUBMIT_DELAY_MS, QUERY_PARAMS } from "@shared/constants";
 import type { StorageAdapter } from "@shared/storage";
 import { onMount } from "solid-js";
 
@@ -89,7 +89,7 @@ export function useQueryParams(options: UseQueryParamsOptions): void {
 
 	async function handleQueryParameters() {
 		const urlParams = new URLSearchParams(window.location.search);
-		const urlParam = urlParams.get("url");
+		const urlParam = urlParams.get(QUERY_PARAMS.Url);
 
 		if (urlParam) {
 			try {

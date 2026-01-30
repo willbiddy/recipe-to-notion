@@ -39,7 +39,7 @@
 
 import type { RecipeResponse } from "@shared/api/types";
 import { StatusType } from "@shared/components/status-message";
-import { ErrorMessageKey, getErrorMessage } from "@shared/constants";
+import { DUPLICATE_RECIPE_ERROR_MARKER, ErrorMessageKey, getErrorMessage } from "@shared/constants";
 import { isApiKeyError } from "@shared/error-utils";
 import type { StorageAdapter } from "@shared/storage";
 import { isValidHttpUrl } from "@shared/url-utils";
@@ -247,7 +247,7 @@ export function useRecipeSave(options: UseRecipeSaveOptions): UseRecipeSaveResul
 
 			if (result.success) {
 				options.onSuccess?.(result);
-			} else if (result.error?.includes("Duplicate recipe found") && result.notionUrl) {
+			} else if (result.error?.includes(DUPLICATE_RECIPE_ERROR_MARKER) && result.notionUrl) {
 				if (options.onDuplicate) {
 					options.onDuplicate(result.notionUrl);
 				} else {

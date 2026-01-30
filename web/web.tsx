@@ -4,11 +4,12 @@
  */
 
 import { WebRecipeForm } from "@shared/components/web-recipe-form";
+import { DOM_SELECTORS } from "@shared/constants";
 import { StorageProvider } from "@shared/contexts/storage-context";
 import { ThemeProvider } from "@shared/contexts/theme-context";
 import { render } from "solid-js/web";
 
-const mainContent: HTMLElement | null = document.getElementById("main-content");
+const mainContent: HTMLElement | null = document.getElementById(DOM_SELECTORS.MainContent);
 
 if (mainContent) {
 	render(

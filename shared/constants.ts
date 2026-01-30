@@ -168,6 +168,12 @@ export function getErrorMessage(key: ErrorMessageKey): string {
 export const CLAUDE_MAX_TOKENS = 2048;
 
 /**
+ * Error message substring for duplicate recipe detection.
+ * Used to identify duplicate errors from backend in frontend error handling.
+ */
+export const DUPLICATE_RECIPE_ERROR_MARKER = "Duplicate recipe found";
+
+/**
  * Recipe time range constraints (minutes).
  */
 export const RECIPE_TIME_MIN_MINUTES = 5;
@@ -178,3 +184,18 @@ export const RECIPE_TIME_MAX_MINUTES = 480;
  */
 export const ERROR_PREVIEW_LENGTH_SHORT = 200;
 export const ERROR_PREVIEW_LENGTH_LONG = 300;
+
+/**
+ * DOM element selectors.
+ */
+export const DOM_SELECTORS = {
+	MainContent: "main-content",
+	Card: ".card",
+} as const;
+
+/**
+ * URL query parameter names.
+ */
+export const QUERY_PARAMS = {
+	Url: "url",
+} as const;

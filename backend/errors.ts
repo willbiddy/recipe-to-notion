@@ -1,3 +1,5 @@
+import { DUPLICATE_RECIPE_ERROR_MARKER } from "@shared/constants";
+
 /**
  * Error types used throughout the application.
  */
@@ -32,7 +34,7 @@ export class DuplicateRecipeError extends AppError {
 		public readonly notionUrl: string,
 	) {
 		super(
-			`Duplicate recipe found: "${title}" (${url}) already exists in the database. View it at: ${notionUrl}`,
+			`${DUPLICATE_RECIPE_ERROR_MARKER}: "${title}" (${url}) already exists in the database. View it at: ${notionUrl}`,
 		);
 	}
 }

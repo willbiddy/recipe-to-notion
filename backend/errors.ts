@@ -1,9 +1,16 @@
 /**
- * Base error class for all application errors.
- *
- * Provides a consistent structure for error handling. Maintains proper stack
- * trace for where our error was thrown (only available on V8 via Error.captureStackTrace).
+ * Error types used throughout the application.
  */
+export enum ErrorType {
+	Duplicate = "duplicate",
+	Scraping = "scraping",
+	NotionApi = "notion_api",
+	Validation = "validation",
+	Tagging = "tagging",
+	Parse = "parse",
+}
+
+/** Base error class for all application errors. */
 export class AppError extends Error {
 	constructor(
 		message: string,
@@ -17,9 +24,7 @@ export class AppError extends Error {
 	}
 }
 
-/**
- * Error thrown when a duplicate recipe is detected (same URL or title).
- */
+/** Error thrown when a duplicate recipe is detected. */
 export class DuplicateRecipeError extends AppError {
 	constructor(
 		public readonly title: string,
@@ -32,50 +37,36 @@ export class DuplicateRecipeError extends AppError {
 	}
 }
 
-/**
- * Options for creating a ScrapingError.
- */
-export type ScrapingErrorOptions = {
-	message: string;
-	originalUrl: string;
-	statusCode?: number;
-	cause?: unknown;
-};
-
-/**
- * Error thrown when recipe scraping fails.
- */
+/** Error thrown when recipe scraping fails. */
 export class ScrapingError extends AppError {
 	public readonly originalUrl: string;
 	public readonly statusCode?: number;
 
-	constructor(options: ScrapingErrorOptions) {
+	constructor(options: {
+		message: string;
+		originalUrl: string;
+		statusCode?: number;
+		cause?: unknown;
+	}) {
 		super(options.message, options.cause);
 		this.originalUrl = options.originalUrl;
 		this.statusCode = options.statusCode;
 	}
 }
 
-/**
- * Options for creating a NotionApiError.
- */
-export type NotionApiErrorOptions = {
-	message: string;
-	statusCode: number;
-	propertyName?: string;
-	propertyType?: string;
-	cause?: unknown;
-};
-
-/**
- * Error thrown when the Notion API returns an error response.
- */
+/** Error thrown when the Notion API returns an error. */
 export class NotionApiError extends AppError {
 	public readonly statusCode: number;
 	public readonly propertyName?: string;
 	public readonly propertyType?: string;
 
-	constructor(options: NotionApiErrorOptions) {
+	constructor(options: {
+		message: string;
+		statusCode: number;
+		propertyName?: string;
+		propertyType?: string;
+		cause?: unknown;
+	}) {
 		super(options.message, options.cause);
 		this.statusCode = options.statusCode;
 		this.propertyName = options.propertyName;
@@ -83,19 +74,13 @@ export class NotionApiError extends AppError {
 	}
 }
 
-/**
- * Error thrown when validation fails (config, input, etc.).
- */
+/** Error thrown when validation fails. */
 export class ValidationError extends AppError {}
 
-/**
- * Error thrown when AI tagging/analysis fails.
- */
+/** Error thrown when AI tagging fails. */
 export class TaggingError extends AppError {}
 
-/**
- * Error thrown when parsing recipe data fails.
- */
+/** Error thrown when parsing recipe data fails. */
 export class ParseError extends AppError {
 	constructor(
 		message: string,
@@ -104,4 +89,20 @@ export class ParseError extends AppError {
 	) {
 		super(message, cause);
 	}
+}
+
+/**
+ * Gets the error type from an error instance.
+ *
+ * @param error - The error to check.
+ * @returns The ErrorType enum value, or null if not a known error.
+ */
+export function getErrorType(error: unknown): ErrorType | null {
+	if (error instanceof DuplicateRecipeError) return ErrorType.Duplicate;
+	if (error instanceof ScrapingError) return ErrorType.Scraping;
+	if (error instanceof NotionApiError) return ErrorType.NotionApi;
+	if (error instanceof ValidationError) return ErrorType.Validation;
+	if (error instanceof TaggingError) return ErrorType.Tagging;
+	if (error instanceof ParseError) return ErrorType.Parse;
+	return null;
 }

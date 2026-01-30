@@ -25,16 +25,14 @@
  * // https://example.com?url=https://recipe-site.com/recipe
  */
 
-import { ApiSecretPrompt } from "@shared/components/api-secret-prompt.js";
-import { ProgressIndicator } from "@shared/components/progress-indicator.js";
-import { StatusMessage, StatusType } from "@shared/components/status-message.js";
+import type { RecipeFormShellHandlers } from "@shared/components/recipe-form-shell.js";
+import { RecipeFormShell } from "@shared/components/recipe-form-shell.js";
+import { StatusType } from "@shared/components/status-message.js";
 import { ErrorMessageKey } from "@shared/constants.js";
 import { useStorage } from "@shared/contexts/storage-context.js";
 import { useQueryParams } from "@shared/hooks/use-query-params.js";
-import { useRecipeSave } from "@shared/hooks/use-recipe-save.js";
 import { useTimeout } from "@shared/hooks/use-timeout.js";
 import { isValidHttpUrl } from "@shared/url-utils.js";
-import type { JSX } from "solid-js";
 import { createMemo, createSignal, Show } from "solid-js";
 
 /**
@@ -57,16 +55,7 @@ function getServerUrl(): string {
 export function WebRecipeForm() {
 	const { storage } = useStorage();
 	const [url, setUrl] = createSignal("");
-	const [loading, setLoading] = createSignal(false);
-	const [status, setStatus] = createSignal<{
-		message?: string;
-		children?: JSX.Element;
-		type: StatusType;
-	} | null>(null);
-	const [progress, setProgress] = createSignal<string | null>(null);
 	const [savedRecipeName, setSavedRecipeName] = createSignal<string | null>(null);
-	const [showApiPrompt, setShowApiPrompt] = createSignal(false);
-	const [pendingSave, setPendingSave] = createSignal<(() => void) | null>(null);
 
 	const urlValid = createMemo(() => {
 		const currentUrl = url().trim();
@@ -78,58 +67,8 @@ export function WebRecipeForm() {
 
 	const scheduleTimeout = useTimeout();
 
-	const {
-		performSave,
-		isInvalidApiKey,
-		handleApiSecretSaved: createHandleApiSecretSaved,
-		handleUpdateApiKey: createHandleUpdateApiKey,
-	} = useRecipeSave({
-		storage,
-		getApiUrl: () => `${getServerUrl()}/api/recipes`,
-		getCurrentUrl: () => url().trim() || null,
-		setStatus,
-		setLoading,
-		setProgress,
-		onSuccess: (result) => {
-			// Set success message with recipe title and Notion link
-			const recipeName = savedRecipeName() || "Recipe";
-			setStatus({
-				children: (
-					<>
-						Recipe "{recipeName}" saved successfully!{" "}
-						<a
-							href={result.notionUrl}
-							target="_blank"
-							rel="noopener noreferrer"
-							class="underline font-semibold"
-						>
-							Open in Notion
-						</a>
-					</>
-				),
-				type: StatusType.Success,
-			});
-			// Clear URL immediately after successful save
-			clearUrl();
-		},
-		onComplete: (data) => {
-			setSavedRecipeName(data.recipe.name);
-		},
-		noUrlErrorKey: ErrorMessageKey.PleaseEnterRecipeUrl,
-	});
-
-	async function handleSave() {
-		const apiKey = await storage.getApiKey();
-		if (!apiKey) {
-			setPendingSave(() => performSave);
-			setShowApiPrompt(true);
-			return;
-		}
-
-		setStatus(null);
-		setSavedRecipeName(null);
-		await performSave();
-	}
+	// Capture shell handlers for query params integration
+	let shellHandlers: RecipeFormShellHandlers | null = null;
 
 	function clearUrl() {
 		setUrl("");
@@ -148,142 +87,106 @@ export function WebRecipeForm() {
 	function handleKeyDown(e: KeyboardEvent) {
 		if (e.key === "Enter") {
 			e.preventDefault();
-			handleSave();
+			shellHandlers?.performSave();
 		}
 	}
 
-	function handleApiSecretSaved() {
-		createHandleApiSecretSaved({
-			setShowApiPrompt,
-			setPendingSave,
-			pendingSave,
-			performSave,
-		});
-	}
-
-	function handleUpdateApiKey() {
-		createHandleUpdateApiKey({
-			setShowApiPrompt,
-			setPendingSave,
-			pendingSave,
-			performSave,
-		});
-	}
-
+	// Query params integration: auto-submit from URL parameters
 	useQueryParams({
 		storage,
 		setUrl,
-		performSave,
-		setPendingSave,
-		setShowApiPrompt,
+		performSave: () => shellHandlers?.performSave() || Promise.resolve(),
+		setPendingSave: (callback) => shellHandlers?.setPendingSave(callback),
+		setShowApiPrompt: (show) => shellHandlers?.setShowApiPrompt(show),
 		scheduleTimeout,
 	});
 
 	return (
-		<div class="flex flex-col gap-3">
-			<div>
-				<label
-					for="url-input"
-					class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-				>
-					Recipe URL
-				</label>
-				<div class="relative">
-					<input
-						type="url"
-						id="url-input"
-						name="recipe-url"
-						value={url()}
-						onInput={handleUrlInput}
-						onKeyDown={handleKeyDown}
-						autocomplete="url"
-						aria-invalid={urlValid() === false ? "true" : "false"}
-						class="input-field-minimal"
-					/>
-					<Show when={showClearButton()}>
-						<button
-							type="button"
-							onClick={clearUrl}
-							class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 p-1 rounded transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
-							aria-label="Clear URL"
-							title="Clear URL"
-						>
-							<svg
-								class="w-4 h-4"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-								aria-hidden="true"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M6 18L18 6M6 6l12 12"
-								/>
-							</svg>
-						</button>
-					</Show>
-				</div>
-				<div class="sr-only" aria-live="polite" aria-atomic="true">
-					<Show when={urlValid() !== null}>{urlValid() ? "Valid URL" : "Invalid URL format"}</Show>
-				</div>
-			</div>
-
-			<button
-				type="button"
-				onClick={handleSave}
-				disabled={loading()}
-				aria-label="Save recipe with Recipe Clipper for Notion"
-				class="btn-primary-minimal group"
-			>
-				<svg
-					class="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200"
-					fill="none"
-					stroke="currentColor"
-					viewBox="0 0 24 24"
-					aria-hidden="true"
-				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M5 13l4 4L19 7"
-					/>
-				</svg>
-				<span>Save Recipe</span>
-			</button>
-
-			<Show when={progress()}>{(msg) => <ProgressIndicator message={msg()} />}</Show>
-
-			<Show when={status()}>
-				{(s) => (
-					<div class="flex flex-col gap-2">
-						<StatusMessage message={s().message} type={s().type}>
-							{s().children}
-						</StatusMessage>
-						<Show when={isInvalidApiKey()}>
+		<RecipeFormShell
+			urlSource={
+				<div>
+					<label
+						for="url-input"
+						class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+					>
+						Recipe URL
+					</label>
+					<div class="relative">
+						<input
+							type="url"
+							id="url-input"
+							name="recipe-url"
+							value={url()}
+							onInput={handleUrlInput}
+							onKeyDown={handleKeyDown}
+							autocomplete="url"
+							aria-invalid={urlValid() === false ? "true" : "false"}
+							class="input-field-minimal"
+						/>
+						<Show when={showClearButton()}>
 							<button
 								type="button"
-								onClick={handleUpdateApiKey}
-								class="w-full px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 transition-colors duration-200"
+								onClick={clearUrl}
+								class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 p-1 rounded transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+								aria-label="Clear URL"
+								title="Clear URL"
 							>
-								Update API Secret
+								<svg
+									class="w-4 h-4"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+									aria-hidden="true"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M6 18L18 6M6 6l12 12"
+									/>
+								</svg>
 							</button>
 						</Show>
 					</div>
-				)}
-			</Show>
-
-			<Show when={showApiPrompt()}>
-				<ApiSecretPrompt
-					onSecretSaved={handleApiSecretSaved}
-					onCancel={() => {
-						setShowApiPrompt(false);
-						setPendingSave(null);
-					}}
-				/>
-			</Show>
-		</div>
+					<div class="sr-only" aria-live="polite" aria-atomic="true">
+						<Show when={urlValid() !== null}>
+							{urlValid() ? "Valid URL" : "Invalid URL format"}
+						</Show>
+					</div>
+				</div>
+			}
+			getCurrentUrl={() => url().trim() || null}
+			getApiUrl={() => `${getServerUrl()}/api/recipes`}
+			onSuccess={(result) => {
+				// Set success message with recipe title and Notion link
+				const recipeName = savedRecipeName() || "Recipe";
+				// Clear URL after successful save
+				clearUrl();
+				return {
+					children: (
+						<>
+							Recipe "{recipeName}" saved successfully!{" "}
+							<a
+								href={result.notionUrl}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="underline font-semibold"
+							>
+								Open in Notion
+							</a>
+						</>
+					),
+					type: StatusType.Success,
+				};
+			}}
+			onComplete={(data) => {
+				setSavedRecipeName(data.recipe.name);
+			}}
+			onShellReady={(handlers) => {
+				shellHandlers = handlers;
+			}}
+			buttonClass="btn-primary-minimal"
+			noUrlErrorKey={ErrorMessageKey.PleaseEnterRecipeUrl}
+		/>
 	);
 }

@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ASSET_ROUTES } from "./asset-routes";
+import { ASSET_ROUTES } from "./asset-routes.js";
 
 /**
  * Resolves a file path by trying multiple possible locations.

@@ -8,7 +8,7 @@ import {
 	handleOptionsRequest,
 	setCorsHeaders,
 	setSecurityHeaders,
-} from "../backend/server-shared/http-utils.js";
+} from "@backend/server-shared/http-utils";
 
 export default {
 	/**

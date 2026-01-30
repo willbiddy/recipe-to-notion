@@ -9,9 +9,9 @@
 import { colors } from "@shared/colors";
 import { DEFAULT_PORT, IDLE_TIMEOUT_SECONDS, MAX_PORT, MIN_PORT } from "@shared/constants";
 import getPort from "get-port";
-import { ValidationError } from "./errors";
-import { handleRequest } from "./server";
-import { HttpStatus } from "./server-shared/http-utils";
+import { ValidationError } from "./errors.js";
+import { handleRequest } from "./server.js";
+import { HttpStatus } from "./server-shared/http-utils.js";
 
 try {
 	const { loadConfig } = await import("./config.js");

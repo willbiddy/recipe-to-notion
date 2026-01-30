@@ -4,11 +4,11 @@
  */
 
 import { ServerProgressEventType } from "@shared/api/types";
-import { createConsoleLogger } from "../logger";
-import { getNotionPageUrl } from "../notion/notion-client";
-import { type ProgressEvent, processRecipe } from "../process-recipe";
-import { sanitizeError } from "./errors";
-import { setCorsHeaders } from "./http-utils";
+import { createConsoleLogger } from "../logger.js";
+import { getNotionPageUrl } from "../notion/notion-client.js";
+import { type ProgressEvent, processRecipe } from "../process-recipe.js";
+import { sanitizeError } from "./errors.js";
+import { setCorsHeaders } from "./http-utils.js";
 
 /**
  * Options for recipe stream handling.

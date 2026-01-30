@@ -65,41 +65,41 @@ export function createConsoleLogger(): RecipeLogger {
 	};
 
 	return {
-		onStart(url: string) {
+		onStart(url: string): void {
 			console.log(`Processing recipe from ${colors.cyan(url)}`);
 		},
-		onCheckingDuplicates() {
+		onCheckingDuplicates(): void {
 			console.log("Checking for duplicates...");
 		},
-		onNoDuplicateFound() {
+		onNoDuplicateFound(): void {
 			console.log(colors.green("No duplicates found"));
 		},
-		onDuplicateFound(title: string, notionUrl: string) {
+		onDuplicateFound(title: string, notionUrl: string): void {
 			console.log(colors.yellow(`Duplicate: "${title}" already exists`));
 			console.log(colors.blue(notionUrl));
 		},
-		onScraping() {
+		onScraping(): void {
 			console.log("Scraping recipe data...");
 		},
-		onScraped(recipe: Recipe) {
+		onScraped(recipe: Recipe): void {
 			console.log(colors.green(`Scraped: ${colors.bold(recipe.name)}`));
 		},
-		onTagging() {
+		onTagging(): void {
 			console.log("Generating AI tags and scores...");
 		},
-		onTagged() {
+		onTagged(): void {
 			console.log(colors.green("Tags generated"));
 		},
-		onSaving() {
+		onSaving(): void {
 			console.log("Saving to Notion database...");
 		},
-		onSaved(notionUrl: string) {
+		onSaved(notionUrl: string): void {
 			console.log(colors.green(`Saved to Notion: ${colors.blue(notionUrl)}`));
 		},
-		onSummary(recipe: Recipe, tags: RecipeTags) {
+		onSummary(recipe: Recipe, tags: RecipeTags): void {
 			formatSummary(recipe, tags);
 		},
-		onError(message: string) {
+		onError(message: string): void {
 			console.log(colors.red(`Failed: ${message}`));
 		},
 	};

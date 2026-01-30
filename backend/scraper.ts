@@ -65,7 +65,7 @@ export async function scrapeRecipe(url: string): Promise<Recipe> {
 		throw new ScrapingError({
 			message: `Failed to fetch ${url}: ${error instanceof Error ? error.message : String(error)}`,
 			originalUrl: url,
-			cause: error,
+			cause: error instanceof Error ? error : new Error(String(error)),
 		});
 	} finally {
 		clearTimeout(timeoutId);

@@ -12,7 +12,7 @@ export enum ErrorType {
 
 /** Base error class for all application errors. */
 export class AppError extends Error {
-	constructor(
+	public constructor(
 		message: string,
 		public readonly cause?: unknown,
 	) {
@@ -26,7 +26,7 @@ export class AppError extends Error {
 
 /** Error thrown when a duplicate recipe is detected. */
 export class DuplicateRecipeError extends AppError {
-	constructor(
+	public constructor(
 		public readonly title: string,
 		public readonly url: string,
 		public readonly notionUrl: string,
@@ -42,7 +42,7 @@ export class ScrapingError extends AppError {
 	public readonly originalUrl: string;
 	public readonly statusCode?: number;
 
-	constructor(options: {
+	public constructor(options: {
 		message: string;
 		originalUrl: string;
 		statusCode?: number;
@@ -60,7 +60,7 @@ export class NotionApiError extends AppError {
 	public readonly propertyName?: string;
 	public readonly propertyType?: string;
 
-	constructor(options: {
+	public constructor(options: {
 		message: string;
 		statusCode: number;
 		propertyName?: string;
@@ -82,7 +82,7 @@ export class TaggingError extends AppError {}
 
 /** Error thrown when parsing recipe data fails. */
 export class ParseError extends AppError {
-	constructor(
+	public constructor(
 		message: string,
 		public readonly sourceUrl?: string,
 		cause?: unknown,

@@ -37,7 +37,7 @@ function parsePort(envPort: string | undefined): number {
 		return DEFAULT_PORT;
 	}
 
-	const port = parseInt(envPort, 10);
+	const port = Number.parseInt(envPort, 10);
 
 	if (Number.isNaN(port) || port < MIN_PORT || port > MAX_PORT) {
 		throw new ValidationError(
@@ -88,7 +88,7 @@ try {
 	process.exit(1);
 }
 
-const port = await getAvailablePort(requestedPort);
+const port: number = await getAvailablePort(requestedPort);
 
 /**
  * Starts the HTTP server.
@@ -102,7 +102,7 @@ function startServer(port: number): ReturnType<typeof Bun.serve> {
 		port,
 		fetch: handleRequest,
 		idleTimeout: IDLE_TIMEOUT_SECONDS,
-		error(error) {
+		error(error: Error): Response {
 			console.log(colors.red(`Server error: ${error.message}`));
 			return new Response("Internal Server Error", { status: HttpStatus.InternalServerError });
 		},

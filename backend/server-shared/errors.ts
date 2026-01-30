@@ -133,13 +133,15 @@ export function logErrorDetails(error: unknown, logger: ErrorLogger, context?: s
 }
 
 const ERROR_HANDLERS: Array<(e: unknown) => SanitizedError | null> = [
-	(e): SanitizedError | null =>
+	(e: unknown): SanitizedError | null =>
 		e instanceof DuplicateRecipeError ? handleDuplicateError(e) : null,
-	(e): SanitizedError | null => (e instanceof ScrapingError ? handleScrapingError(e) : null),
-	(e): SanitizedError | null => (e instanceof NotionApiError ? handleNotionApiError(e) : null),
-	(e): SanitizedError | null =>
+	(e: unknown): SanitizedError | null =>
+		e instanceof ScrapingError ? handleScrapingError(e) : null,
+	(e: unknown): SanitizedError | null =>
+		e instanceof NotionApiError ? handleNotionApiError(e) : null,
+	(e: unknown): SanitizedError | null =>
 		e instanceof ValidationError ? { statusCode: HttpStatus.BadRequest, message: e.message } : null,
-	(e): SanitizedError | null =>
+	(e: unknown): SanitizedError | null =>
 		e instanceof ParseError || e instanceof TaggingError
 			? { statusCode: HttpStatus.InternalServerError, message: FALLBACK_MESSAGE }
 			: null,

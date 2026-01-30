@@ -109,7 +109,9 @@ export function applyThemeToDocument(theme: Theme): void {
  */
 export function watchSystemTheme(callback: (theme: Theme) => void): () => void {
 	if (typeof window === "undefined" || !window.matchMedia) {
-		return () => {};
+		return () => {
+			// No-op cleanup function when not in browser environment
+		};
 	}
 
 	const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");

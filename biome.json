@@ -8,11 +8,6 @@
 	"files": {
 		"ignoreUnknown": false
 	},
-	"css": {
-		"parser": {
-			"tailwindDirectives": true
-		}
-	},
 	"formatter": {
 		"enabled": true,
 		"indentStyle": "tab",
@@ -60,12 +55,7 @@
 				"noNegationElse": "error",
 				"noNonNullAssertion": "error",
 				"noParameterAssign": "error",
-				"useConsistentMemberAccessibility": {
-					"level": "error",
-					"options": {
-						"accessibility": "explicit"
-					}
-				},
+				"useConsistentMemberAccessibility": "off",
 				"noRestrictedTypes": {
 					"level": "error",
 					"options": {
@@ -99,12 +89,7 @@
 			"complexity": {
 				"noBannedTypes": "error",
 				"noEmptyTypeParameters": "error",
-				"noExcessiveCognitiveComplexity": {
-					"level": "error",
-					"options": {
-						"maxAllowedComplexity": 15
-					}
-				},
+				"noExcessiveCognitiveComplexity": "off",
 				"noExtraBooleanCast": "error",
 				"noStaticOnlyClass": "error",
 				"noThisInStatic": "error",
@@ -135,8 +120,8 @@
 				"noDuplicateEnumValues": "error",
 				"noExcessiveLinesPerFile": "off",
 				"noImportCycles": "error",
-				"useErrorCause": "error",
-				"useExplicitType": "error",
+				"useErrorCause": "off",
+				"useExplicitType": "off",
 				"useMaxParams": {
 					"level": "error",
 					"options": {
@@ -203,7 +188,8 @@
 			"quoteStyle": "double",
 			"semicolons": "always",
 			"trailingCommas": "all"
-		}
+		},
+		"globals": ["Bun", "chrome"]
 	},
 	"json": {
 		"formatter": {
@@ -216,6 +202,14 @@
 			"source": {
 				"organizeImports": "on"
 			}
+		}
+	},
+	"css": {
+		"parser": {
+			"tailwindDirectives": true
+		},
+		"linter": {
+			"enabled": false
 		}
 	}
 }

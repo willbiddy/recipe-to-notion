@@ -47,7 +47,7 @@ function handleAsset(request: Request): Response {
 function handleIndex(request: Request): Response {
 	const indexPath = resolveIndexPath();
 
-	if (!indexPath || !existsSync(indexPath)) {
+	if (!(indexPath && existsSync(indexPath))) {
 		console.error("[handleIndex] Index file not found!");
 		console.error("[handleIndex] Current working directory:", process.cwd());
 		console.error("[handleIndex] Web directory:", resolveWebDir());

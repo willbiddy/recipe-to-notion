@@ -6,12 +6,15 @@ import { HttpStatus } from "./server-shared/http-utils";
 
 export { MAX_REQUEST_BODY_SIZE, MAX_URL_LENGTH };
 
-const BEARER_PREFIX_LENGTH = "Bearer ".length;
+const BEARER_PREFIX_LENGTH: number = "Bearer ".length;
 
 /**
  * Zod schema for RecipeRequest validation.
  */
-export const recipeRequestSchema = z.object({
+export const recipeRequestSchema: z.ZodObject<{
+	url: z.ZodString;
+	stream: z.ZodOptional<z.ZodBoolean>;
+}> = z.object({
 	url: z.string().min(1, "URL is required"),
 	stream: z.boolean().optional(),
 });
@@ -33,8 +36,8 @@ export type RecipeRequest = z.infer<typeof recipeRequestSchema>;
  * @returns True if strings are equal, false otherwise.
  */
 export function constantTimeEquals(a: string, b: string): boolean {
-	const aBuffer = Buffer.from(a, "utf8");
-	const bBuffer = Buffer.from(b, "utf8");
+	const aBuffer: Buffer = Buffer.from(a, "utf8");
+	const bBuffer: Buffer = Buffer.from(b, "utf8");
 
 	if (aBuffer.length !== bBuffer.length) {
 		return false;
@@ -73,8 +76,8 @@ export function validateApiKeyHeader(
 		);
 	}
 
-	const providedKey = authHeader.slice(BEARER_PREFIX_LENGTH).trim();
-	const expectedKey = expectedApiSecret.trim();
+	const providedKey: string = authHeader.slice(BEARER_PREFIX_LENGTH).trim();
+	const expectedKey: string = expectedApiSecret.trim();
 
 	if (!expectedKey) {
 		console.error("API_SECRET is empty or invalid");
@@ -161,20 +164,20 @@ export function validateRecipeRequest(
  * Validates the Content-Length header to prevent large request body attacks.
  *
  * @param contentLength - The Content-Length header value.
- * @param maxSize - Maximum allowed size in bytes (default: MAX_REQUEST_BODY_SIZE).
  * @param createErrorResponse - Function to create error responses.
+ * @param maxSize - Maximum allowed size in bytes (default: MAX_REQUEST_BODY_SIZE).
  * @returns Null if valid, or an error response if invalid.
  */
 export function validateRequestSize(
 	contentLength: string | null,
-	maxSize: number = MAX_REQUEST_BODY_SIZE,
 	createErrorResponse: (error: string, status: number) => Response,
+	maxSize: number = MAX_REQUEST_BODY_SIZE,
 ): Response | null {
 	if (!contentLength) {
 		return null;
 	}
 
-	const size = parseInt(contentLength, 10);
+	const size = Number.parseInt(contentLength, 10);
 
 	if (Number.isNaN(size) || size > maxSize) {
 		return createErrorResponse(
@@ -193,14 +196,14 @@ export function validateRequestSize(
  * not just the Content-Length header, which could be incorrect or manipulated.
  *
  * @param body - The parsed request body object.
- * @param maxSize - Maximum allowed size in bytes (default: MAX_REQUEST_BODY_SIZE).
  * @param createErrorResponse - Function to create error responses.
+ * @param maxSize - Maximum allowed size in bytes (default: MAX_REQUEST_BODY_SIZE).
  * @returns Null if valid, or an error response if invalid.
  */
 export function validateActualBodySize(
 	body: unknown,
-	maxSize: number = MAX_REQUEST_BODY_SIZE,
 	createErrorResponse: (error: string, status: number) => Response,
+	maxSize: number = MAX_REQUEST_BODY_SIZE,
 ): Response | null {
 	const bodyString = JSON.stringify(body);
 	const bodySize = new TextEncoder().encode(bodyString).length;

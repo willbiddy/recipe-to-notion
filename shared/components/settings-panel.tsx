@@ -15,8 +15,6 @@ export type SettingsPanelProps = {
 	panelClass?: string;
 	/** Custom class for the help text. */
 	helpTextClass?: string;
-	/** Optional function to close the settings panel. */
-	onClose?: () => void;
 	/** Optional callback when API key is successfully saved. */
 	onApiKeySaved?: () => void;
 };

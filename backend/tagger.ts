@@ -2,6 +2,13 @@ import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import Anthropic from "@anthropic-ai/sdk";
+import {
+	CLAUDE_MAX_TOKENS,
+	ERROR_PREVIEW_LENGTH_LONG,
+	ERROR_PREVIEW_LENGTH_SHORT,
+	RECIPE_TIME_MAX_MINUTES,
+	RECIPE_TIME_MIN_MINUTES,
+} from "@shared/constants";
 import { z } from "zod";
 import { TaggingError, ValidationError } from "./errors";
 import type { Recipe } from "./scraper";
@@ -82,20 +89,6 @@ function getClaudeModel(): ClaudeModel {
 
 const CLAUDE_MODEL = getClaudeModel();
 
-enum ClaudeLimit {
-	MaxTokens = 2048,
-}
-
-enum RecipeTime {
-	Min = 5,
-	Max = 480,
-}
-
-enum ErrorDisplay {
-	JsonParsePreview = 200,
-	ValidationPreview = 300,
-}
-
 const categorizedIngredientSchema = z.object({
 	name: z.string().min(1, "Ingredient name is required"),
 	category: z.enum(IngredientCategory, {
@@ -172,7 +165,7 @@ export async function tagRecipe(recipe: Recipe, apiKey: string): Promise<RecipeT
 		tags: validated.tags,
 		mealType: validated.mealType,
 		healthScore: clamp(validated.healthScore, HealthScore.Min, HealthScore.Max),
-		totalTimeMinutes: clamp(totalTime, RecipeTime.Min, RecipeTime.Max),
+		totalTimeMinutes: clamp(totalTime, RECIPE_TIME_MIN_MINUTES, RECIPE_TIME_MAX_MINUTES),
 		description: validated.description.trim(),
 		ingredients: validated.ingredients,
 	};
@@ -186,7 +179,7 @@ async function callClaudeAPI(
 	try {
 		return await client.messages.create({
 			model: CLAUDE_MODEL,
-			max_tokens: ClaudeLimit.MaxTokens,
+			max_tokens: CLAUDE_MAX_TOKENS,
 			system: systemPrompt,
 			tools: [
 				{
@@ -208,14 +201,13 @@ async function callClaudeAPI(
 		}
 
 		const errorMessage = error instanceof Error ? error.message : String(error);
-
-		const causeMessage =
-			error instanceof Error &&
-			error.cause &&
-			typeof error.cause === "object" &&
-			"message" in error.cause
-				? String(error.cause.message)
-				: undefined;
+		const causeMessage = (() => {
+			if (!(error instanceof Error)) return undefined;
+			const cause = error.cause;
+			if (cause && typeof cause === "object" && "message" in cause) {
+				return String(cause.message);
+			}
+		})();
 
 		throw new TaggingError(
 			`Failed to call Anthropic API: ${errorMessage}${causeMessage ? `. Cause: ${causeMessage}` : ""}`,
@@ -235,7 +227,7 @@ function extractToolUse(response: Anthropic.Messages.Message): Anthropic.Message
 			.map((block) => block.text)
 			.join("");
 		throw new TaggingError(
-			`Expected tool_use response from Claude, but received text instead. Response: ${textContent.substring(0, ErrorDisplay.JsonParsePreview)}...`,
+			`Expected tool_use response from Claude, but received text instead. Response: ${textContent.substring(0, ERROR_PREVIEW_LENGTH_SHORT)}...`,
 		);
 	}
 
@@ -256,7 +248,7 @@ function validateClaudeResponse(
 			.join("\n");
 		throw new ValidationError(
 			`Claude tool response validation failed:\n${issues}\n\n` +
-				`Tool input: ${JSON.stringify(toolUse.input).substring(0, ErrorDisplay.ValidationPreview)}...`,
+				`Tool input: ${JSON.stringify(toolUse.input).substring(0, ERROR_PREVIEW_LENGTH_LONG)}...`,
 			validationResult.error,
 		);
 	}

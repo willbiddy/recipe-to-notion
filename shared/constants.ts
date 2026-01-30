@@ -161,3 +161,20 @@ export function getErrorMessage(key: ErrorMessageKey): string {
 	};
 	return messages[key];
 }
+
+/**
+ * Maximum tokens for Claude API responses.
+ */
+export const CLAUDE_MAX_TOKENS = 2048;
+
+/**
+ * Recipe time range constraints (minutes).
+ */
+export const RECIPE_TIME_MIN_MINUTES = 5;
+export const RECIPE_TIME_MAX_MINUTES = 480;
+
+/**
+ * Maximum preview length for error messages (characters).
+ */
+export const ERROR_PREVIEW_LENGTH_SHORT = 200;
+export const ERROR_PREVIEW_LENGTH_LONG = 300;

@@ -21,6 +21,7 @@
  * ```
  */
 
+import { NotionLinkButton } from "@shared/components/notion-link-button";
 import { RecipeFormShell } from "@shared/components/recipe-form-shell";
 import { StatusType, TextSize } from "@shared/components/status-message";
 import { UrlDisplay } from "@shared/components/url-display";
@@ -219,18 +220,7 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 				return {
 					children: (
 						<>
-							Recipe saved successfully!{" "}
-							<button
-								type="button"
-								onClick={() => {
-									if (result.notionUrl) {
-										chrome.tabs.create({ url: result.notionUrl });
-									}
-								}}
-								class="underline font-semibold bg-transparent border-none p-0 cursor-pointer text-inherit hover:opacity-80"
-							>
-								Open in Notion
-							</button>
+							Recipe saved successfully! <NotionLinkButton notionUrl={result.notionUrl || ""} />
 						</>
 					),
 					type: StatusType.Success,
@@ -240,16 +230,7 @@ export function ExtensionRecipeForm(props: ExtensionRecipeFormProps) {
 				return {
 					children: (
 						<>
-							This recipe already exists.{" "}
-							<button
-								type="button"
-								onClick={() => {
-									chrome.tabs.create({ url: notionUrl });
-								}}
-								class="underline font-semibold bg-transparent border-none p-0 cursor-pointer text-inherit hover:opacity-80"
-							>
-								Open in Notion
-							</button>
+							This recipe already exists. <NotionLinkButton notionUrl={notionUrl} />
 						</>
 					),
 					type: StatusType.Info,

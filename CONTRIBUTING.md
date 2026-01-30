@@ -44,7 +44,7 @@ cd recipe-to-notion
 bun install
 
 # Install Python dependencies
-pip3 install recipe-scrapers
+pip3 install -r requirements-dev.txt
 
 # Set up environment variables
 cp .env.example .env
@@ -59,7 +59,7 @@ Create a `.env` file in the project root:
 # Required
 API_SECRET=your-secret-here
 ANTHROPIC_API_KEY=sk-ant-...
-NOTION_TOKEN=secret_...
+NOTION_API_KEY=ntn_...
 NOTION_DATABASE_ID=...
 
 # Optional

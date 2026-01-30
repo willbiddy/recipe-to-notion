@@ -68,8 +68,8 @@ export function WebRecipeForm() {
 
 	const scheduleTimeout = useTimeout();
 
-	// Capture shell handlers for query params integration
-	let shellHandlers: RecipeFormShellHandlers | null = null;
+	// Use a ref pattern for shell handlers - more idiomatic Solid.js
+	const shellHandlersRef: { current: RecipeFormShellHandlers | null } = { current: null };
 
 	function clearUrl() {
 		setUrl("");
@@ -81,16 +81,16 @@ export function WebRecipeForm() {
 	}
 
 	const { onKeyDown } = useKeyboardShortcuts({
-		onEnter: () => shellHandlers?.performSave(),
+		onEnter: () => shellHandlersRef.current?.performSave(),
 	});
 
 	// Query params integration: auto-submit from URL parameters
 	useQueryParams({
 		storage,
 		setUrl,
-		performSave: () => shellHandlers?.performSave() || Promise.resolve(),
-		setPendingSave: (callback) => shellHandlers?.setPendingSave(callback),
-		setShowApiPrompt: (show) => shellHandlers?.setShowApiPrompt(show),
+		performSave: () => shellHandlersRef.current?.performSave() || Promise.resolve(),
+		setPendingSave: (callback) => shellHandlersRef.current?.setPendingSave(callback),
+		setShowApiPrompt: (show) => shellHandlersRef.current?.setShowApiPrompt(show),
 		scheduleTimeout,
 	});
 
@@ -176,7 +176,7 @@ export function WebRecipeForm() {
 				setSavedRecipeName(data.recipe.name);
 			}}
 			onShellReady={(handlers) => {
-				shellHandlers = handlers;
+				shellHandlersRef.current = handlers;
 			}}
 			buttonClass="btn-primary-minimal"
 			noUrlErrorKey={ErrorMessageKey.PleaseEnterRecipeUrl}

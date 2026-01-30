@@ -72,3 +72,6 @@ Screenshot*.png
 
 # Claude AI settings (not part of project)
 .claude
+
+# Cursor IDE settings
+.cursor

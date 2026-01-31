@@ -10,6 +10,8 @@ module.exports = {
 		"./web/index.html",
 		"./web/web.tsx",
 		"./web/web.js",
+		"./shared/**/*.tsx",
+		"./shared/**/*.ts",
 	],
 	theme: {
 		extend: {

@@ -10,8 +10,8 @@ import {
 	RECIPE_TIME_MIN_MINUTES,
 } from "@shared/constants";
 import { z } from "zod";
-import { TaggingError, ValidationError } from "./errors";
-import type { Recipe } from "./scraper";
+import { TaggingError, ValidationError } from "./errors.js";
+import type { Recipe } from "./scraper.js";
 
 /** Shopping categories for ingredient organization. */
 export enum IngredientCategory {

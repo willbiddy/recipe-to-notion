@@ -10,10 +10,10 @@ import { isValidHttpUrl, stripQueryParams } from "@shared/url-utils";
  *   bun save --html <path> <url>
  */
 import { defineCommand, runMain } from "citty";
-import { loadConfig } from "./config";
-import { createConsoleLogger } from "./logger";
-import { processRecipe } from "./process-recipe";
-import { scrapeRecipeFromHtml } from "./scraper";
+import { loadConfig } from "./config.js";
+import { createConsoleLogger } from "./logger.js";
+import { processRecipe } from "./process-recipe.js";
+import { scrapeRecipeFromHtml } from "./scraper.js";
 
 const main = defineCommand({
 	meta: {

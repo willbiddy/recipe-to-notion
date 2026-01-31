@@ -1,8 +1,8 @@
 import { colors } from "@shared/colors";
 import { formatTimeMinutes } from "@shared/format-utils";
-import type { Recipe } from "./scraper";
-import type { RecipeTags } from "./tagger";
-import { HealthScore } from "./tagger";
+import type { Recipe } from "./scraper.js";
+import type { RecipeTags } from "./tagger.js";
+import { HealthScore } from "./tagger.js";
 
 /** Logger type for recipe processing steps. */
 export type RecipeLogger = {

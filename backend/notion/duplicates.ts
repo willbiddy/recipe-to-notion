@@ -6,7 +6,7 @@ import {
 	type DuplicateInfo,
 	getNotionPageUrl,
 	PropertyName,
-} from "./notion-client";
+} from "./notion-client.js";
 
 /** Type of duplicate check to perform. */
 export enum DuplicateCheckType {

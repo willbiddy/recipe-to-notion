@@ -6,14 +6,14 @@ import {
 	ScrapingError,
 	TaggingError,
 	ValidationError,
-} from "../errors.js";
+} from "../errors";
 import {
 	DEFAULT_RATE_LIMIT_VALUE,
 	HttpStatus,
 	RateLimitHeader,
 	setCorsHeaders,
 	setSecurityHeaders,
-} from "./http-utils.js";
+} from "./http-utils";
 
 /**
  * Logger interface for error logging.

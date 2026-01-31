@@ -1,13 +1,13 @@
 import { type Recipe, ScrapeMethod } from "@shared/api/types";
 import { REQUEST_TIMEOUT_MS } from "@shared/constants";
 import { resolveAuthor } from "@shared/url-utils";
-import { ParseError, ScrapingError } from "../errors.js";
+import { ParseError, ScrapingError } from "../errors";
 import {
 	cleanRecipeName,
 	filterEditorNotes,
 	normalizeFractions,
 	normalizeIngredient,
-} from "../parsers/shared.js";
+} from "../parsers/shared";
 
 /**
  * Response type from the Python scraper endpoint.

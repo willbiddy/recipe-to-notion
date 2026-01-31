@@ -5,14 +5,14 @@ Save recipes to Notion without copying and pasting. Paste a URL from almost any 
 ## How It Works
 
 ```
-CLI/Extension/Web/API → Check duplicates → Scrape recipe → Claude scores/tags → Notion page
+CLI/Extension/Web/API/Shortcut → Check duplicates → Scrape recipe → Claude scores/tags → Notion page
 ```
 
-1. **CLI/Extension/Web/API** — Recipe URL is provided via CLI command, browser extension click, web interface, or HTTP API request.
+1. **CLI/Extension/Web/API/Shortcut** — Recipe URL is provided via CLI command, browser extension click, web interface, HTTP API request, or iOS Shortcut.
 
 2. **Check duplicates** — Before processing, checks if a recipe with the same URL or title already exists in your Notion database. If found, the tool rejects the duplicate and provides a link to the existing recipe.
 
-3. **Scrape recipe** — Sends the page HTML to the Python `recipe-scrapers` library which extracts structured recipe data. Supports 600+ recipe sites including NYT Cooking, AllRecipes, Epicurious, and many more.
+3. **Scrape recipe** — Sends the page HTML to the Python `recipe-scrapers` library which extracts structured recipe data. Supports 600+ recipe sites including NYT Cooking, Bon Appétit, AllRecipes and many more.
 
 4. **Claude scores/tags** — Sends the recipe to Claude, which returns tags, meal type, health score (1-10), time estimate, description, and ingredient categories grouped by shopping aisle.
 
@@ -187,56 +187,9 @@ If you have Vercel Deployment Protection enabled, you need to create a **Protect
 
 ---
 
-## Development
-
-### Debugging
-
-**Extension:**
-```typescript
-// Add to popup/background/content script
-console.log("[Extension]", data);
-
-// View logs in:
-// - Popup: Right-click popup → Inspect
-// - Background: chrome://extensions → Inspect service worker
-// - Content: Page DevTools → Console
-```
-
-**Web Interface:**
-```typescript
-// Standard browser DevTools
-console.log("[Web]", data);
-```
-
-**Backend:**
-```typescript
-// Server logs
-console.log("[Server]", data);
-// View in terminal running `bun run server`
-```
-
-### Security Considerations
-
-- **Input Validation**: Validate all external inputs (URLs, API requests)
-- **SSRF Prevention**: URLs are validated before fetching (only http/https allowed)
-- **No Stack Traces**: Server errors never expose stack traces to clients
-- **Secrets**: Never log or commit API keys (use `.env` file)
-- **Rate Limiting**: 10 requests per minute per API key/IP
-- **XSS Prevention**: HTML content is never rendered via `innerHTML`
-
-### Code Quality
-
-Run all checks before committing:
-
-```bash
-bun run check    # TypeScript + lint + format
-```
-
----
-
 ## Usage
 
-There are four ways to use Recipe Clipper for Notion:
+There are five ways to use Recipe Clipper for Notion:
 
 ### 1. Command Line Interface (CLI)
 
@@ -278,6 +231,14 @@ Use the REST API to integrate Recipe Clipper for Notion into your own applicatio
 
 > 📖 **Full API Docs:** See [API Reference](docs/API.md) for complete endpoint documentation, request/response formats, and examples.
 
+### 5. iOS Shortcut
+
+Save recipes directly from Safari or any app using the iOS Share Sheet. The shortcut sends the recipe URL to the web interface for processing.
+
+> 📖 See [iOS Shortcut Setup Guide](docs/IOS_SHORTCUT.md) for complete setup instructions.
+>
+> **Quick Start:** Deploy to Vercel, set up the shortcut, then share any recipe URL from Safari to save it to Notion.
+
 ---
 
 **Technologies:**
@@ -295,38 +256,7 @@ Use the REST API to integrate Recipe Clipper for Notion into your own applicatio
 
 ---
 
-## Scripts
-
-### Development Scripts
-
-- **`bun run save`** - Run the CLI tool to save recipes from the command line
-- **`bun run dev`** - Start both Python scraper and Bun server together
-- **`bun run scraper`** - Start the Python recipe scraper (runs on `localhost:5001`)
-- **`bun run server`** - Start the Bun HTTP server (runs on `localhost:3000`)
-
-### Build Scripts
-
-- **`bun run build`** - Compile the CLI tool to a standalone binary (`recipe-to-notion`)
-- **`bun run build:extension`** - Compile TypeScript and Tailwind CSS for the browser extension
-- **`bun run build:web`** - Compile TypeScript and Tailwind CSS for the web interface
-
-### Watch Scripts (Auto-rebuild on file changes)
-
-- **`bun run watch`** - Watch all files (extension and web) and rebuild automatically on changes
-- **`bun run watch:extension`** - Watch extension files only and rebuild on changes
-- **`bun run watch:web`** - Watch web files only and rebuild on changes
-
-### Code Quality Scripts
-
-- **`bun run check`** - Run all code quality checks (typecheck, lint:fix, and format) - same as pre-commit hook
-- **`bun run typecheck`** - Check TypeScript types for errors
-- **`bun run lint`** - Run linter to find code issues
-- **`bun run lint:fix`** - Run linter and automatically fix issues
-- **`bun run format`** - Auto-format code with Biome
-
----
-
-## Credits
+### Credits
 
 Icon attribution: <a href="https://www.flaticon.com/free-icons/cutlery" title="cutlery icons">Cutlery icons created by Freepik - Flaticon</a>
 

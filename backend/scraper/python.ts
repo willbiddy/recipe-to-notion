@@ -63,12 +63,37 @@ function getPythonScraperUrl(): string {
 }
 
 /**
+ * Validates that the scraped data has required fields.
+ * Throws ParseError if essential fields are missing.
+ */
+function validateRecipeData(data: PythonScraperResponse, sourceUrl: string): void {
+	// Validate title
+	if (!data.title?.trim()) {
+		throw new ParseError(
+			`Could not extract recipe title. The page may not contain a recipe or uses an unsupported format.`,
+			sourceUrl,
+		);
+	}
+
+	// Validate ingredients
+	if (!data.ingredients || data.ingredients.length === 0) {
+		throw new ParseError(
+			`Could not extract recipe ingredients. The page may not contain a recipe or uses an unsupported format.`,
+			sourceUrl,
+		);
+	}
+}
+
+/**
  * Transforms Python scraper response to Recipe type.
  *
  * Applies text normalization (fractions, ingredient cleanup) and
  * author fallback chain to ensure consistent output format.
  */
 export function transformPythonResponse(data: PythonScraperResponse, sourceUrl: string): Recipe {
+	// Validate required fields before processing
+	validateRecipeData(data, sourceUrl);
+
 	// Apply author fallback chain: author → siteName → website name → URL
 	const author = resolveAuthor(data.author, data.siteName, sourceUrl);
 

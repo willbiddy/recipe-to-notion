@@ -22,6 +22,7 @@ Save recipes to Notion without copying and pasting. Paste a URL from almost any 
 | **[API Reference](docs/API.md)** | REST API for custom integrations |
 | **[Deployment](docs/DEPLOYMENT.md)** | Deploy to Vercel |
 | **[Architecture](docs/ARCHITECTURE.md)** | System design and data flow |
+| **[System Prompt](backend/system-prompt.md)** | Claude AI instructions for recipe tagging |
 
 ## How It Works
 

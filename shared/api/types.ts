@@ -1,5 +1,5 @@
-import { ProgressType } from "@shared/constants";
 import { z } from "zod";
+import { ProgressType } from "../constants.js";
 
 /**
  * Method used to extract recipe data from the page.
@@ -252,7 +252,7 @@ export function validateServerProgressEvent(data: unknown): ServerProgressEvent 
 	return result.success ? result.data : null;
 }
 
-import type { StorageAdapter } from "@shared/storage";
+import type { StorageAdapter } from "../storage.js";
 
 /**
  * Options for saving a recipe.

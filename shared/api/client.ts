@@ -11,8 +11,8 @@
  * with automatic error recovery and detailed network error messages.
  */
 
-import { parseSseStream } from "@shared/api/sse-utils";
-import type { RecipeResponse, SaveRecipeOptions } from "@shared/api/types";
+import { parseSseStream } from "./sse-utils.js";
+import type { RecipeResponse, SaveRecipeOptions } from "./types.js";
 
 /**
  * Formats network errors into user-friendly messages.

@@ -12,7 +12,9 @@ export enum ErrorType {
 	Parse = "parse",
 }
 
-/** Base error class for all application errors. */
+/**
+ * Base error class for all application errors.
+ */
 export class AppError extends Error {
 	public constructor(
 		message: string,
@@ -26,7 +28,9 @@ export class AppError extends Error {
 	}
 }
 
-/** Error thrown when a duplicate recipe is detected. */
+/**
+ * Error thrown when a duplicate recipe is detected.
+ */
 export class DuplicateRecipeError extends AppError {
 	public constructor(
 		public readonly title: string,
@@ -39,7 +43,9 @@ export class DuplicateRecipeError extends AppError {
 	}
 }
 
-/** Error thrown when recipe scraping fails. */
+/**
+ * Error thrown when recipe scraping fails.
+ */
 export class ScrapingError extends AppError {
 	public readonly originalUrl: string;
 	public readonly statusCode?: number;
@@ -56,7 +62,9 @@ export class ScrapingError extends AppError {
 	}
 }
 
-/** Error thrown when the Notion API returns an error. */
+/**
+ * Error thrown when the Notion API returns an error.
+ */
 export class NotionApiError extends AppError {
 	public readonly statusCode: number;
 	public readonly propertyName?: string;
@@ -76,13 +84,19 @@ export class NotionApiError extends AppError {
 	}
 }
 
-/** Error thrown when validation fails. */
+/**
+ * Error thrown when validation fails.
+ */
 export class ValidationError extends AppError {}
 
-/** Error thrown when AI tagging fails. */
+/**
+ * Error thrown when AI tagging fails.
+ */
 export class TaggingError extends AppError {}
 
-/** Error thrown when parsing recipe data fails. */
+/**
+ * Error thrown when parsing recipe data fails.
+ */
 export class ParseError extends AppError {
 	public constructor(
 		message: string,

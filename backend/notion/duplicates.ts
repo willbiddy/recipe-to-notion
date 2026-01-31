@@ -8,25 +8,39 @@ import {
 	PropertyName,
 } from "./notion-client.js";
 
-/** Type of duplicate check to perform. */
+/**
+ * Type of duplicate check to perform.
+ */
 export enum DuplicateCheckType {
 	Url = "url",
 	Title = "title",
 }
 
-/** Options for checking duplicate recipes. */
+/**
+ * Options for checking duplicate recipes.
+ */
 export type CheckDuplicateOptions = {
-	/** Value to check (URL or recipe title). */
+	/**
+	 * Value to check (URL or recipe title).
+	 */
 	value: string;
-	/** Notion integration API key. */
+	/**
+	 * Notion integration API key.
+	 */
 	notionApiKey: string;
-	/** Target Notion database ID. */
+	/**
+	 * Target Notion database ID.
+	 */
 	databaseId: string;
-	/** Type of duplicate check. */
+	/**
+	 * Type of duplicate check.
+	 */
 	type: DuplicateCheckType;
 };
 
-/** Options for querying pages in a database. */
+/**
+ * Options for querying pages in a database.
+ */
 type QueryPagesOptions = {
 	notion: Client;
 	databaseId: string;

@@ -5,7 +5,9 @@ import { NotionApiError } from "../errors.js";
 import type { Recipe } from "../scraper.js";
 import type { RecipeTags } from "../tagger.js";
 
-/** Notion block types used in recipe pages. */
+/**
+ * Notion block types used in recipe pages.
+ */
 export enum NotionBlockType {
 	Paragraph = "paragraph",
 	Heading1 = "heading_1",
@@ -16,7 +18,9 @@ export enum NotionBlockType {
 	ColumnList = "column_list",
 }
 
-/** Notion database property names. */
+/**
+ * Notion database property names.
+ */
 export enum PropertyName {
 	Name = "Name",
 	Source = "Source",
@@ -27,13 +31,17 @@ export enum PropertyName {
 	HealthScore = "Health score",
 }
 
-/** Notion rich text object. */
+/**
+ * Notion rich text object.
+ */
 export type NotionRichText = {
 	type: "text";
 	text: { content: string };
 };
 
-/** Generic Notion block type. */
+/**
+ * Generic Notion block type.
+ */
 export type NotionBlock = {
 	object: "block";
 	type: NotionBlockType;
@@ -46,10 +54,14 @@ export type NotionBlock = {
 	column_list?: { children: NotionBlock[] };
 };
 
-/** Notion page properties structure. */
+/**
+ * Notion page properties structure.
+ */
 export type NotionProperties = Record<string, unknown>;
 
-/** Information about a duplicate recipe. */
+/**
+ * Information about a duplicate recipe.
+ */
 export type DuplicateInfo = {
 	title: string;
 	url: string;
@@ -57,14 +69,18 @@ export type DuplicateInfo = {
 	notionUrl: string;
 };
 
-/** Notion API error structure. */
+/**
+ * Notion API error structure.
+ */
 export type NotionApiErrorResponse = {
 	code?: string;
 	message?: string;
 	status?: number;
 };
 
-/** Options for creating a recipe page. */
+/**
+ * Options for creating a recipe page.
+ */
 export type CreateRecipePageOptions = {
 	recipe: Recipe;
 	tags: RecipeTags;
@@ -191,7 +207,9 @@ export function buildPageProperties(recipe: Recipe, tags: RecipeTags): NotionPro
 	};
 }
 
-/** Options for building page parameters. */
+/**
+ * Options for building page parameters.
+ */
 export type BuildPageParamsOptions = {
 	databaseId: string;
 	properties: NotionProperties;

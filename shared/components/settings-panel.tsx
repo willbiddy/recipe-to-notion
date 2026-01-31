@@ -9,13 +9,21 @@ import { useStorage } from "@shared/contexts/storage-context";
 import { createSignal, onMount, Show } from "solid-js";
 
 export type SettingsPanelProps = {
-	/** Text size for status messages. */
+	/**
+	 * Text size for status messages.
+	 */
 	textSize?: TextSize;
-	/** Custom class for the panel container. */
+	/**
+	 * Custom class for the panel container.
+	 */
 	panelClass?: string;
-	/** Custom class for the help text. */
+	/**
+	 * Custom class for the help text.
+	 */
 	helpTextClass?: string;
-	/** Optional callback when API key is successfully saved. */
+	/**
+	 * Optional callback when API key is successfully saved.
+	 */
 	onApiKeySaved?: () => void;
 };
 

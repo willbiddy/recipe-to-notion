@@ -13,7 +13,9 @@ import { z } from "zod";
 import { TaggingError, ValidationError } from "./errors.js";
 import type { Recipe } from "./scraper.js";
 
-/** Shopping categories for ingredient organization. */
+/**
+ * Shopping categories for ingredient organization.
+ */
 export enum IngredientCategory {
 	Produce = "Produce",
 	Bakery = "Bakery",
@@ -24,7 +26,9 @@ export enum IngredientCategory {
 	Other = "Other",
 }
 
-/** Meal type categories for recipe classification. */
+/**
+ * Meal type categories for recipe classification.
+ */
 export enum MealType {
 	Main = "Main",
 	Breakfast = "Breakfast",
@@ -34,19 +38,25 @@ export enum MealType {
 	Other = "Other",
 }
 
-/** Health score range (1-10). */
+/**
+ * Health score range (1-10).
+ */
 export enum HealthScore {
 	Min = 1,
 	Max = 10,
 }
 
-/** Categorized ingredient for shopping organization. */
+/**
+ * Categorized ingredient for shopping organization.
+ */
 export type CategorizedIngredient = {
 	name: string;
 	category: IngredientCategory;
 };
 
-/** AI-generated metadata for a recipe. */
+/**
+ * AI-generated metadata for a recipe.
+ */
 export type RecipeTags = {
 	tags: string[];
 	mealType: MealType;
@@ -71,7 +81,9 @@ enum ClaudeModel {
 	Opus = "claude-3-opus-20240229",
 }
 
-/** Gets the Claude model from environment variable or defaults to Sonnet. */
+/**
+ * Gets the Claude model from environment variable or defaults to Sonnet.
+ */
 function getClaudeModel(): ClaudeModel {
 	const envModel = process.env.CLAUDE_MODEL?.toLowerCase();
 
@@ -121,7 +133,9 @@ const claudeResponseSchemaWithCrossValidation = claudeResponseSchema.refine(
 
 let systemPromptCache: string | null = null;
 
-/** Loads the system prompt from the file system (cached after first load). */
+/**
+ * Loads the system prompt from the file system (cached after first load).
+ */
 async function loadSystemPrompt(): Promise<string> {
 	if (systemPromptCache !== null) {
 		return systemPromptCache;

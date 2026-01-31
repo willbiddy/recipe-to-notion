@@ -4,7 +4,9 @@ import type { Recipe } from "./scraper.js";
 import type { RecipeTags } from "./tagger.js";
 import { HealthScore } from "./tagger.js";
 
-/** Logger type for recipe processing steps. */
+/**
+ * Logger type for recipe processing steps.
+ */
 export type RecipeLogger = {
 	onStart?(url: string): void;
 	onCheckingDuplicates?(): void;
@@ -20,7 +22,9 @@ export type RecipeLogger = {
 	onError?(message: string): void;
 };
 
-/** Creates a console logger with colors and formatting. */
+/**
+ * Creates a console logger with colors and formatting.
+ */
 export function createConsoleLogger(): RecipeLogger {
 	const formatSummary = (recipe: Recipe, tags: RecipeTags): void => {
 		const boxWidth = 60;

@@ -37,14 +37,14 @@
  * ```
  */
 
-import type { RecipeResponse } from "@shared/api/types";
-import { StatusType } from "@shared/components/status-message";
-import { DUPLICATE_RECIPE_ERROR_MARKER, ErrorMessageKey, getErrorMessage } from "@shared/constants";
-import { isApiKeyError } from "@shared/error-utils";
-import type { StorageAdapter } from "@shared/storage";
-import { isValidHttpUrl } from "@shared/url-utils";
 import type { JSX } from "solid-js";
 import { type Accessor, createSignal, type Setter } from "solid-js";
+import type { RecipeResponse } from "../api/types.js";
+import { StatusType } from "../components/status-message.js";
+import { DUPLICATE_RECIPE_ERROR_MARKER, ErrorMessageKey, getErrorMessage } from "../constants.js";
+import { isApiKeyError } from "../error-utils.js";
+import type { StorageAdapter } from "../storage.js";
+import { isValidHttpUrl } from "../url-utils.js";
 
 /**
  * Options for API secret prompt handlers.

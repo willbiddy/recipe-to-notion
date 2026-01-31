@@ -3,7 +3,7 @@
  * Supports both localStorage (web) and chrome.storage.local (extension).
  */
 
-import { Theme } from "@shared/constants";
+import { Theme } from "./constants.js";
 
 /**
  * Storage keys used across the application.

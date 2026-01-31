@@ -187,8 +187,8 @@ TypeScript build scripts using esbuild:
    ├─ Send recipe data to Claude
    ├─ Claude analyzes and generates:
    │  ├─ Tags (e.g., "dessert", "baking")
-   │  ├─ Meal type (Main/Breakfast/Dessert/Snack)
-   │  ├─ Health score (0-10)
+   │  ├─ Meal type (Main/Side/Breakfast/Snack/Dessert/Other)
+   │  ├─ Health score (1-10)
    │  └─ Total time (minutes)
    └─ Parse structured JSON response
 
@@ -564,80 +564,6 @@ cd dist/extension && zip -r extension.zip .
 - **SSE streaming**: Users see progress immediately (perceived performance)
 - **Parallel processing**: Claude API and Notion API calls could be parallelized (future optimization)
 - **Caching**: Duplicate detection caches Notion database queries (via Notion API)
-
-## Testing Strategy
-
-**Current State:** No automated tests (as of documentation time)
-
-**Recommended Testing Approach:**
-
-1. **Unit Tests** (Vitest)
-   - Utility functions (url-utils, format-utils, type-guards)
-   - Pure functions (block builders, property builders)
-   - Error handling logic
-
-2. **Integration Tests**
-   - API endpoints (supertest)
-   - Recipe processing pipeline
-   - SSE stream parsing
-
-3. **E2E Tests** (Playwright)
-   - Extension popup flow
-   - Web interface flow
-   - API error handling
-
-4. **Type Tests**
-   - TypeScript compilation as test suite
-   - Zod schema validation tests
-
-## Monitoring & Observability
-
-**Current State:** Console logging only
-
-**Recommended Improvements:**
-
-1. **Structured Logging**: Replace `console.log` with structured logger (pino, winston)
-2. **Error Tracking**: Sentry integration for production errors
-3. **Metrics**: Track recipe save success rate, processing times
-4. **Health Checks**: `/api/health` endpoint for monitoring
-5. **Alerts**: Notify on high error rates or API failures
-
-## Future Architectural Considerations
-
-### Scalability
-
-**Current Limitations:**
-- In-memory rate limiting (per-instance)
-- No request queuing (high traffic = dropped requests)
-- Python subprocess overhead (one per request)
-
-**Potential Solutions:**
-- Redis for distributed rate limiting
-- Message queue (SQS, RabbitMQ) for async processing
-- Python service with persistent workers (FastAPI)
-- Horizontal scaling via Vercel's auto-scaling
-
-### Multi-User Support
-
-**Current State:** Single-user tool (one Notion database, one API secret)
-
-**Multi-User Architecture:**
-- User authentication (Auth0, Clerk)
-- Database per user (store Notion tokens)
-- OAuth Notion integration (instead of manual tokens)
-- Subscription management (Stripe)
-
-### Extensibility
-
-**Plugin System:**
-- Custom scrapers for unsupported sites
-- Custom Notion templates
-- Post-processing hooks (image upload, unit conversion)
-
-**API Extensions:**
-- Bulk import (CSV, JSON)
-- Recipe editing/updating
-- Recipe sharing (public links)
 
 ## Appendix: File Structure
 

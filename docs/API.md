@@ -233,11 +233,3 @@ The API includes several security measures:
 
 - **400 Bad Request** - Missing or invalid `Authorization` header, invalid API secret, invalid URL format/protocol, URL too long, or request body too large
 - **429 Too Many Requests** - Rate limit exceeded
-
----
-
-## Related Documentation
-
-- [Extension Setup](./EXTENSION.md) - Browser extension that uses this API
-- [Deployment Guide](./DEPLOYMENT.md) - Deploy to Vercel
-- [Main README](../README.md) - Project overview and available scripts

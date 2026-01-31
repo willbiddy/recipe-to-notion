@@ -166,52 +166,6 @@ API keys are stored in browser localStorage (client-side only, not synced to clo
 
 ---
 
-## Troubleshooting
-
-### API Key Not Saving
-
-- Make sure you're entering the exact value from your Vercel `API_SECRET` environment variable
-- Check browser console for errors (F12 → Console)
-- Try clearing browser cache and localStorage, then re-enter the key
-
-### Connection Errors
-
-- Verify your Vercel deployment is active (check Vercel dashboard)
-- Test the health endpoint: `curl https://your-app.vercel.app/api/health`
-- Check that your API key is configured correctly
-- Verify the API key matches your `API_SECRET` environment variable
-
-### Recipe Processing Fails
-
-- Check Vercel function logs in the dashboard for errors
-- Verify all environment variables are set correctly in Vercel
-- Ensure your Notion integration has access to the database
-- Check that your Anthropic API key has sufficient credits
-
-### Auto-submit Not Working
-
-- Make sure your API key is configured (check Settings)
-- Verify the URL query parameter is correctly formatted: `?url=https://example.com/recipe`
-- Check browser console for JavaScript errors
-- Try manually submitting the URL to verify the API key works
-
-### Android Share Sheet Not Appearing
-
-- Make sure you've visited the web interface at least once (to register the share target)
-- Clear Chrome cache and revisit the web interface
-- Verify the manifest.json is being served correctly
-- Check that you're using Chrome (not other browsers)
-
-### iOS Share Sheet Not Working
-
-- Make sure you've installed the iOS Shortcut (see [iOS Shortcut Setup](./IOS_SHORTCUT.md))
-- Verify the shortcut is enabled in Settings → Shortcuts → Allow Untrusted Shortcuts
-- Check that the shortcut appears in your Share Sheet (works from Safari, Chrome, Firefox, etc.)
-- Try re-running the shortcut setup if it's not working
-- Test from a different browser to rule out browser-specific issues
-
----
-
 ## Development
 
 ### Building
@@ -246,13 +200,3 @@ The web interface will use `localhost:3000` as the server URL automatically.
 | Cross-Platform | ✅ Yes | ❌ Chrome only | ✅ Yes | ✅ Yes |
 | Setup Required | Minimal | Extension install | None | None |
 | Best For | Mobile users | Desktop Chrome | Automation | Integrations |
-
----
-
-## Next Steps
-
-- [iOS Shortcut Setup](./IOS_SHORTCUT.md) - Detailed instructions for iOS Share Sheet integration
-- [API Reference](./API.md) - Full REST API documentation
-- [Deployment Guide](./DEPLOYMENT.md) - Deploy to Vercel
-
-See the [main README](../README.md#scripts) for all available build and development scripts.

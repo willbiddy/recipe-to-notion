@@ -81,58 +81,6 @@ After setup:
 
 ---
 
-## Troubleshooting
-
-### Shortcut Not Appearing in Share Sheet
-
-**Most common issue:** Share Sheet not enabled.
-
-1. Open the shortcut in the Shortcuts app
-2. Tap **"..."** → **"Share Sheet"** (or the Share Sheet tab at the bottom)
-3. Make sure **"Show in Share Sheet"** is ON (green toggle)
-4. Verify **"URLs"** is checked under "Accepted Types"
-
-**If still not appearing:**
-- Force close and reopen the app you're sharing from
-- Restart your iPhone/iPad
-- Check Settings → Shortcuts → make sure the shortcut isn't disabled
-- Delete and recreate the shortcut, making sure to enable Share Sheet before saving
-- Verify you're on iOS 12 or later (required for Share Sheet shortcuts)
-
-### Shortcut Opens but Recipe Doesn't Process
-
-- Verify your API key is configured in the web interface
-- Check that the URL query parameter is correct: `?url=https://example.com/recipe`
-- Open the web interface manually and test saving a recipe
-- Check browser console for errors (if using Safari/Chrome on Mac)
-- Try from a different browser to rule out browser-specific issues
-
-### URL Not Being Passed Correctly
-
-This error means the URL variable isn't being passed correctly.
-
-**Fix:**
-1. Make sure "Get URLs from Input" is the **first action**
-2. Use **Combine Text** to join your base URL (`https://your-app.vercel.app/?url=`) with the **URLs** variable from "Get URLs from Input"
-3. Make sure "Open URL" receives the **combined/final URL**, not just the base URL
-4. Test by running the shortcut manually - it should open a URL with `?url=something`
-
-**Quick Fix:** Delete and recreate the shortcut, following the manual setup steps exactly.
-
-### "Allow Untrusted Shortcuts" Not Available
-
-- This option only appears if you've created at least one shortcut manually
-- Create a simple test shortcut first, then the option will appear
-- On iOS 15+, you may need to enable it in Settings → Shortcuts → Advanced
-
-### Shortcut Opens Wrong URL
-
-- Verify your Vercel deployment URL is correct in the "Text" action
-- Check that the URL format includes `?url=` at the end
-- Test by manually opening: `https://your-app.vercel.app/?url=https://example.com/recipe`
-
----
-
 ## Advanced: Multiple Shortcuts
 
 You can create variations of the shortcut:
@@ -142,13 +90,3 @@ You can create variations of the shortcut:
 - **"Save to Notion"** - Generic name
 
 All shortcuts can use the same actions - just change the name and icon.
-
----
-
-## Next Steps
-
-- [Web Interface Guide](./WEB_INTERFACE.md) - Complete web interface documentation
-- [API Reference](./API.md) - REST API documentation
-- [Deployment Guide](./DEPLOYMENT.md) - Deploy to Vercel
-
-See the [main README](../README.md#scripts) for all available build and development scripts.

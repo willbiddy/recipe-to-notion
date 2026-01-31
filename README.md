@@ -95,7 +95,7 @@ pip install -r requirements-dev.txt
    - **"Author"** - Type: Text
    - **"Minutes"** - Type: Number
    - **"Tags"** - Type: Multi-select
-   - **"Meal type"** - Type: Multi-select
+   - **"Meal type"** - Type: Select
    - **"Health score"** - Type: Number
 3. Connect your integration to the database:
    - Click the `...` menu in the top-right of the database

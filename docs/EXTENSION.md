@@ -79,40 +79,6 @@ This bundles Solid.js components and compiles Tailwind CSS for the extension UI.
 - **Error Handling** - Clear error messages for duplicates, connection issues, and other problems
 - **Auto-open** - Automatically opens the saved Notion page after successful save
 
----
-
-## Troubleshooting
-
-### Extension Not Loading
-
-- Make sure Developer mode is enabled in `chrome://extensions/`
-- Check that you selected the `extension/` directory (not a parent directory)
-- Verify the extension files were built (`bun run build:extension`)
-
-### Connection Errors
-
-- Verify your Vercel deployment URL is correct (check that you set `EXTENSION_SERVER_URL` when building)
-- **Check that your API key is configured** - Click the settings icon and verify the API key is set
-- Verify the API key matches your `API_SECRET` environment variable in Vercel
-- Check that environment variables are set in your Vercel deployment
-- Test the health endpoint: `curl https://your-app.vercel.app/api/health`
-- Make sure your Vercel deployment is active (check the Vercel dashboard)
-
-### Build Errors
-
-- Make sure all dependencies are installed: `bun install`
-- Check that TypeScript compiles: `bun run typecheck`
-- Verify Tailwind CSS builds: Check that `extension/styles.css` exists after building
-
-### Recipe Processing Fails
-
-- Check Vercel function logs in the dashboard for errors
-- Verify all environment variables are set correctly
-- Ensure your Notion integration has access to the database
-- Check that your Anthropic API key has sufficient credits
-
----
-
 ## Configuration
 
 ### Server URL
@@ -155,6 +121,4 @@ For development and testing, you can use a local server instead of Vercel:
 3. Reload the extension in Chrome
 
 > **Note:** For production use, always use Vercel deployment and set `EXTENSION_SERVER_URL` to your production URL.
-
-See the [main README](../README.md#scripts) for all available build and development scripts.
 

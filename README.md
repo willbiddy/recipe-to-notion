@@ -2,6 +2,19 @@
 
 Save recipes to Notion without copying and pasting. Paste a URL from almost any recipe site and get a Notion page with the cover photo, ingredients grouped by shopping aisle, instructions, and AI-generated tags. Claude automatically analyzes each recipe to add cuisine tags, meal types, health scores, ingredient categories, and a short description, so you can filter and search your collection later.
 
+## Documentation
+
+📚 **Quick Links:**
+
+| Guide | Description |
+|-------|-------------|
+| **[Browser Extension](docs/EXTENSION.md)** | One-click recipe saving from your browser |
+| **[Web Interface](docs/WEB_INTERFACE.md)** | Mobile-friendly interface for phones and tablets |
+| **[iOS Shortcut](docs/IOS_SHORTCUT.md)** | Share Sheet integration for iPhone/iPad |
+| **[API Reference](docs/API.md)** | REST API for custom integrations |
+| **[Deployment](docs/DEPLOYMENT.md)** | Deploy to Vercel |
+| **[Architecture](docs/ARCHITECTURE.md)** | System design and data flow |
+
 ## How It Works
 
 ```
@@ -174,18 +187,6 @@ If you have Vercel Deployment Protection enabled, you need to create a **Protect
 > 💡 **Why this is needed:** Vercel's Deployment Protection blocks external requests, including internal function-to-function calls. The bypass secret allows your TypeScript functions to call the Python scraper while keeping your deployment protected from unauthorized access.
 
 > 📖 See [Deployment Guide](docs/DEPLOYMENT.md) for initial Vercel setup and environment variable configuration.
-
-## Documentation
-
-📚 **Detailed Guides:**
-- **[Browser Extension Setup](docs/EXTENSION.md)** - Complete guide for setting up and using the browser extension
-- **[Web Interface Guide](docs/WEB_INTERFACE.md)** - Mobile-friendly web interface for saving recipes from any device
-- **[iOS Shortcut Setup](docs/IOS_SHORTCUT.md)** - Set up iOS Share Sheet integration
-- **[API Reference](docs/API.md)** - Full REST API documentation with examples
-- **[Deployment Guide](docs/DEPLOYMENT.md)** - Deploy to Vercel
-- **[Development Reference](docs/reference.md)** - Code style, naming conventions, and patterns
-
----
 
 ## Usage
 

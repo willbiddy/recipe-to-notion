@@ -1,42 +1,49 @@
-/** Content types for static assets. */
-export enum ContentType {
-	Png = "image/png",
-	ManifestJson = "application/manifest+json; charset=utf-8",
-	Css = "text/css; charset=utf-8",
-	JavaScript = "application/javascript; charset=utf-8",
-}
-
-/** Asset route configuration. */
+/**
+ * Asset route configuration type.
+ */
 export type AssetRoute = {
+	/**
+	 * File path relative to web directory.
+	 */
 	path: string;
-	contentType: ContentType;
+	/**
+	 * Content-Type header value.
+	 */
+	contentType: string;
+	/**
+	 * Whether the file should be read as text (UTF-8).
+	 */
 	isText?: boolean;
 };
 
 /**
- * Asset route mappings for web interface static files.
- * All paths are relative to dist/web/ directory.
+ * Asset route mappings to file paths and content types.
  */
 export const ASSET_ROUTES: Record<string, AssetRoute> = {
 	// Favicons
-	"/favicon.ico": { path: "favicon.png", contentType: ContentType.Png },
-	"/favicon.png": { path: "favicon.png", contentType: ContentType.Png },
-	"/favicon-16x16.png": { path: "favicon-16x16.png", contentType: ContentType.Png },
-	"/favicon-32x32.png": { path: "favicon-32x32.png", contentType: ContentType.Png },
-	"/favicon-white.png": { path: "favicon-white.png", contentType: ContentType.Png },
-	"/favicon-16x16-white.png": { path: "favicon-16x16-white.png", contentType: ContentType.Png },
-	"/favicon-32x32-white.png": { path: "favicon-32x32-white.png", contentType: ContentType.Png },
-	"/apple-touch-icon.png": { path: "apple-touch-icon.png", contentType: ContentType.Png },
-	"/fork-and-knife.png": { path: "fork-and-knife.png", contentType: ContentType.Png },
+	"/favicon.ico": { path: "favicon.png", contentType: "image/png" },
+	"/favicon.png": { path: "favicon.png", contentType: "image/png" },
+	"/favicon": { path: "favicon.png", contentType: "image/png" },
+	"/favicon-16x16.png": { path: "favicon-16x16.png", contentType: "image/png" },
+	"/favicon-16x16": { path: "favicon-16x16.png", contentType: "image/png" },
+	"/favicon-32x32.png": { path: "favicon-32x32.png", contentType: "image/png" },
+	"/favicon-32x32": { path: "favicon-32x32.png", contentType: "image/png" },
+	"/favicon-white.png": { path: "favicon-white.png", contentType: "image/png" },
+	"/favicon-white": { path: "favicon-white.png", contentType: "image/png" },
+	"/favicon-16x16-white.png": { path: "favicon-16x16-white.png", contentType: "image/png" },
+	"/favicon-16x16-white": { path: "favicon-16x16-white.png", contentType: "image/png" },
+	"/favicon-32x32-white.png": { path: "favicon-32x32-white.png", contentType: "image/png" },
+	"/favicon-32x32-white": { path: "favicon-32x32-white.png", contentType: "image/png" },
+	"/apple-touch-icon.png": { path: "apple-touch-icon.png", contentType: "image/png" },
+	"/apple-touch-icon": { path: "apple-touch-icon.png", contentType: "image/png" },
+	"/fork-and-knife.png": { path: "fork-and-knife.png", contentType: "image/png" },
 
 	// Text assets
-	"/manifest.json": { path: "manifest.json", contentType: ContentType.ManifestJson, isText: true },
-	"/web.css": { path: "web.css", contentType: ContentType.Css, isText: true },
-	"/web.js": { path: "web.js", contentType: ContentType.JavaScript, isText: true },
-	"/shared/api.js": { path: "shared/api.js", contentType: ContentType.JavaScript, isText: true },
-	"/shared/storage.js": {
-		path: "shared/storage.js",
-		contentType: ContentType.JavaScript,
+	"/manifest.json": {
+		path: "manifest.json",
+		contentType: "application/manifest+json; charset=utf-8",
 		isText: true,
 	},
+	"/web.css": { path: "web.css", contentType: "text/css; charset=utf-8", isText: true },
+	"/web.js": { path: "web.js", contentType: "application/javascript; charset=utf-8", isText: true },
 };

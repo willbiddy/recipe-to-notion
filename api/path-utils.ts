@@ -48,11 +48,15 @@ export function resolveWebDir(): string | null {
 
 	const possiblePaths = [
 		// Standard paths (local development and most deployments)
+		join(__dirname, "..", "dist", "web"),
 		join(__dirname, "..", "web"),
+		join(process.cwd(), "dist", "web"),
 		join(process.cwd(), "web"),
 		// Vercel/AWS Lambda serverless
+		join("/var/task", "dist", "web"),
 		join("/var/task", "web"),
 		// Fallback
+		"dist/web",
 		"web",
 	];
 
@@ -69,11 +73,15 @@ export function resolveIndexPath(): string | null {
 
 	const possiblePaths = [
 		// Standard paths (local development and most deployments)
+		join(__dirname, "..", "dist", "web", "index.html"),
 		join(__dirname, "..", "web", "index.html"),
+		join(process.cwd(), "dist", "web", "index.html"),
 		join(process.cwd(), "web", "index.html"),
 		// Vercel/AWS Lambda serverless
+		join("/var/task", "dist", "web", "index.html"),
 		join("/var/task", "web", "index.html"),
 		// Fallback
+		"dist/web/index.html",
 		"web/index.html",
 	];
 

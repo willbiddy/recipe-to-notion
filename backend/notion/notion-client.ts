@@ -1,9 +1,9 @@
 import { Client } from "@notionhq/client";
 import { ELLIPSIS_LENGTH } from "@shared/constants";
 import { hasProperty, isObject } from "@shared/type-guards";
-import { NotionApiError } from "../errors.js";
-import type { Recipe } from "../scraper.js";
-import type { RecipeTags } from "../tagger.js";
+import { NotionApiError } from "../errors";
+import type { Recipe } from "../scraper";
+import type { RecipeTags } from "../tagger";
 
 /** Notion block types used in recipe pages. */
 export enum NotionBlockType {

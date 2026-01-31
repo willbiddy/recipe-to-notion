@@ -1,14 +1,14 @@
 import { ProgressType } from "@shared/constants";
-import { loadConfig } from "./config.js";
-import { DuplicateRecipeError } from "./errors.js";
-import type { RecipeLogger } from "./logger.js";
-import { checkForDuplicate, DuplicateCheckType } from "./notion/duplicates.js";
-import { getNotionPageUrl } from "./notion/notion-client.js";
-import { createRecipePage } from "./notion/page.js";
-import type { Recipe } from "./scraper.js";
-import { scrapeRecipe } from "./scraper.js";
-import type { RecipeTags } from "./tagger.js";
-import { tagRecipe } from "./tagger.js";
+import { loadConfig } from "./config";
+import { DuplicateRecipeError } from "./errors";
+import type { RecipeLogger } from "./logger";
+import { checkForDuplicate, DuplicateCheckType } from "./notion/duplicates";
+import { getNotionPageUrl } from "./notion/notion-client";
+import { createRecipePage } from "./notion/page";
+import type { Recipe } from "./scraper";
+import { scrapeRecipe } from "./scraper";
+import type { RecipeTags } from "./tagger";
+import { tagRecipe } from "./tagger";
 
 /**
  * Result of processing a recipe URL through the full pipeline.

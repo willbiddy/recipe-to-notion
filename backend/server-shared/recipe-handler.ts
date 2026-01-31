@@ -9,20 +9,20 @@
  */
 
 import type { RecipeResponse } from "@shared/api/types";
-import { createConsoleLogger } from "../logger.js";
-import { getNotionPageUrl } from "../notion/notion-client.js";
-import { processRecipe } from "../process-recipe.js";
-import type { RecipeRequest } from "../security.js";
-import { handleRecipeError } from "./errors.js";
+import { createConsoleLogger } from "../logger";
+import { getNotionPageUrl } from "../notion/notion-client";
+import { processRecipe } from "../process-recipe";
+import type { RecipeRequest } from "../security";
+import { handleRecipeError } from "./errors";
 import {
 	DEFAULT_RATE_LIMIT_VALUE,
 	HttpStatus,
 	RateLimitHeader,
 	setCorsHeaders,
 	setSecurityHeaders,
-} from "./http-utils.js";
-import { handleRecipeStream } from "./recipe-streaming.js";
-import { validateRecipeRequestChain } from "./recipe-validation.js";
+} from "./http-utils";
+import { handleRecipeStream } from "./recipe-streaming";
+import { validateRecipeRequestChain } from "./recipe-validation";
 
 /**
  * Options for handling recipe requests.

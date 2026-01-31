@@ -2,7 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import { MAX_REQUEST_BODY_SIZE, MAX_URL_LENGTH } from "@shared/constants";
 import { isValidHttpUrl, stripQueryParams } from "@shared/url-utils";
 import { z } from "zod";
-import { HttpStatus } from "./server-shared/http-utils.js";
+import { HttpStatus } from "./server-shared/http-utils";
 
 export { MAX_REQUEST_BODY_SIZE, MAX_URL_LENGTH };
 

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ValidationError } from "./errors.js";
+import { ValidationError } from "./errors";
 
 /**
  * Environment variable schema for validation.

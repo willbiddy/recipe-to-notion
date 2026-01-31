@@ -3,15 +3,6 @@
  * Handles context menu and other background tasks.
  */
 
-import { ExtensionMessageType, Theme } from "@shared/constants";
-import { z } from "zod";
-
-/**
- * Zod schema for validating theme values from storage.
- * Ensures only valid Theme enum values are accepted.
- */
-const themeSchema = z.nativeEnum(Theme);
-
 /**
  * Context menu configuration.
  */
@@ -20,63 +11,6 @@ const CONTEXT_MENU = {
 	TITLE: "Save Recipe with Recipe Clipper for Notion",
 	CONTEXTS: ["page" as chrome.contextMenus.ContextType],
 } as const;
-
-/**
- * Icon paths for light and dark themes.
- */
-const ICONS = {
-	[Theme.Light]: {
-		16: "icons/icon16.png",
-		48: "icons/icon48.png",
-		128: "icons/icon128.png",
-	},
-	[Theme.Dark]: {
-		16: "icons/icon16-white.png",
-		48: "icons/icon48-white.png",
-		128: "icons/icon128-white.png",
-	},
-} as const;
-
-/**
- * Updates the extension icon based on the current theme.
- *
- * @param theme - The theme to use (light or dark).
- */
-async function updateIcon(theme: Theme): Promise<void> {
-	const iconSet = ICONS[theme];
-	await chrome.action.setIcon({
-		path: iconSet,
-	});
-}
-
-/**
- * Gets the current theme preference from storage, defaulting to light.
- * Validates the stored value to ensure it's a valid Theme enum value.
- *
- * @returns The current theme preference.
- */
-async function getThemePreference(): Promise<Theme> {
-	const result = await chrome.storage.local.get("theme");
-
-	// Validate the stored theme value
-	const parseResult = themeSchema.safeParse(result.theme);
-
-	if (parseResult.success) {
-		return parseResult.data;
-	}
-
-	// Invalid or missing theme - default to light
-	console.warn("[background] Invalid theme in storage, defaulting to light:", result.theme);
-	return Theme.Light;
-}
-
-/**
- * Initializes the extension icon based on stored theme preference.
- */
-async function initializeIcon() {
-	const theme = await getThemePreference();
-	await updateIcon(theme);
-}
 
 /**
  * Creates context menu item when extension is installed.
@@ -89,41 +23,7 @@ chrome.runtime.onInstalled.addListener(() => {
 			contexts: [...CONTEXT_MENU.CONTEXTS],
 		});
 	}
-	// Initialize icon on install
-	initializeIcon();
 });
-
-/**
- * Listens for theme updates from the popup.
- */
-chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-	if (message.type === ExtensionMessageType.ThemeChanged) {
-		updateIcon(message.theme);
-		sendResponse({ success: true });
-	}
-	return true;
-});
-
-/**
- * Listens for storage changes to update icon when theme is updated.
- * Validates the new theme value before updating the icon.
- */
-chrome.storage.onChanged.addListener((changes, areaName) => {
-	if (areaName === "local" && changes.theme) {
-		const parseResult = themeSchema.safeParse(changes.theme.newValue);
-
-		if (parseResult.success) {
-			updateIcon(parseResult.data);
-		} else {
-			console.warn("[background] Invalid theme change ignored:", changes.theme.newValue);
-		}
-	}
-});
-
-/**
- * Initialize icon when service worker starts.
- */
-initializeIcon();
 
 /**
  * Handles context menu clicks.

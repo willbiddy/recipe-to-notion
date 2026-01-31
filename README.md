@@ -8,7 +8,7 @@ Save recipes to Notion without copying and pasting. Paste a URL from almost any 
 
 ![Notion Recipe Dashboard](docs/notion-dashboard.png)
 
-*Recipe collection in Notion with AI-generated tags, meal types, and health scores for easy filtering*
+*Recipe collection in Notion with AI-generated tags*
 
 ## Documentation
 

@@ -187,7 +187,7 @@ Rate 1-10 using the criteria, examples, and key signals below. Judge by actual i
 
 * **Healthier:** Vegetables fill half the plate (potatoes don't count). Whole intact grains (brown rice, quinoa, oats, barley, whole wheat). Fish, poultry, beans, lentils, nuts as protein. Fish 2-3 times weekly for omega-3s. Healthy oils (olive, canola, soybean). Fiber-rich foods (beans, whole grains, vegetables). Whole fruits. Low glycemic load foods. Home-cooked from whole ingredients. Color and variety. Unsaturated fats.
 * **Less healthy:** Few or no vegetables. Potatoes (count as starch, not vegetables). Refined grains (white bread, white rice, white pasta). Processed meats (bacon, sausage, hot dogs, cold cuts). Trans fats or partially hydrogenated oils (worst type of fat). Heavy dairy beyond 1-2 servings. Fruit juice or added sugars. High glycemic load foods. Highly processed prepared foods. Monotone, limited vegetable types. High saturated fat.
-* **Side dishes:** Rate based on contribution potential. Does this side help or hurt the overall health of a meal? Sides max out at 9 (only main dishes can score 10).
+* **Side dishes:** Rate based on contribution potential. Does this side help or hurt the overall health of a meal? Sides max out at 9 (main dishes CAN score a 10).
 
 ### 4. Description (description: string;)
 

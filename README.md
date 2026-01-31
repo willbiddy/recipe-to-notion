@@ -10,6 +10,10 @@ Save recipes to Notion without copying and pasting. Paste a URL from almost any 
 
 *Recipe collection in Notion with AI-generated tags*
 
+![Notion Recipe Page](docs/notion-recipe-page.png)
+
+*Individual recipe page with ingredients, instructions, and AI-generated description*
+
 ## Documentation
 
 📚 **Quick Links:**

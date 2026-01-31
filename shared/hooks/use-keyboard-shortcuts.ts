@@ -1,12 +1,20 @@
 import { onCleanup, onMount } from "solid-js";
 
-/** Options for keyboard shortcut handling. */
+/**
+ * Options for keyboard shortcut handling.
+ */
 export type KeyboardShortcutsOptions = {
-	/** Callback when Enter key is pressed. */
+	/**
+	 * Callback when Enter key is pressed.
+	 */
 	onEnter?: () => void;
-	/** Callback when Escape key is pressed. */
+	/**
+	 * Callback when Escape key is pressed.
+	 */
 	onEscape?: () => void;
-	/** Whether to prevent default behavior for handled keys. Default: true */
+	/**
+	 * Whether to prevent default behavior for handled keys. Default: true
+	 */
 	preventDefault?: boolean;
 };
 
@@ -46,9 +54,13 @@ export function useKeyboardShortcuts(options: KeyboardShortcutsOptions) {
 	return { onKeyDown };
 }
 
-/** Options for global keyboard shortcut handling. */
+/**
+ * Options for global keyboard shortcut handling.
+ */
 export type GlobalKeyboardShortcutsOptions = KeyboardShortcutsOptions & {
-	/** Whether shortcuts are enabled. Default: true */
+	/**
+	 * Whether shortcuts are enabled. Default: true
+	 */
 	enabled?: boolean;
 };
 

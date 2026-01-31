@@ -1,4 +1,6 @@
-/** Simple in-memory rate limiter using token bucket algorithm. */
+/**
+ * Simple in-memory rate limiter using token bucket algorithm.
+ */
 
 import { createHash } from "node:crypto";
 import { CLEANUP_INTERVAL_MS } from "@shared/constants";

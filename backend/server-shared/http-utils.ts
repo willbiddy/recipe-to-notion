@@ -2,7 +2,9 @@
  * HTTP utilities including status codes, headers, and CORS handling.
  */
 
-/** HTTP status codes. */
+/**
+ * HTTP status codes.
+ */
 export enum HttpStatus {
 	OK = 200,
 	NoContent = 204,
@@ -14,24 +16,32 @@ export enum HttpStatus {
 	BadGateway = 502,
 }
 
-/** Rate limit header names. */
+/**
+ * Rate limit header names.
+ */
 export enum RateLimitHeader {
 	Limit = "X-RateLimit-Limit",
 	Remaining = "X-RateLimit-Remaining",
 	Reset = "X-RateLimit-Reset",
 }
 
-/** Default rate limit (requests per minute). */
+/**
+ * Default rate limit (requests per minute).
+ */
 export const DEFAULT_RATE_LIMIT_VALUE = 10;
 
-/** Security header names. */
+/**
+ * Security header names.
+ */
 export enum SecurityHeader {
 	ContentTypeOptions = "X-Content-Type-Options",
 	FrameOptions = "X-Frame-Options",
 	ReferrerPolicy = "Referrer-Policy",
 }
 
-/** Security header values. */
+/**
+ * Security header values.
+ */
 export enum SecurityHeaderValue {
 	NoSniff = "nosniff",
 	Deny = "DENY",

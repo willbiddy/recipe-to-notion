@@ -5,19 +5,25 @@
 
 import { Theme } from "@shared/constants";
 
-/** Storage keys used across the application. */
+/**
+ * Storage keys used across the application.
+ */
 export enum StorageKey {
 	ApiKey = "apiKey",
 	Theme = "theme",
 }
 
-/** Storage backends available. */
+/**
+ * Storage backends available.
+ */
 export enum StorageBackend {
 	Chrome = "chrome",
 	Local = "local",
 }
 
-/** Storage interface for API keys and theme preferences. */
+/**
+ * Storage interface for API keys and theme preferences.
+ */
 export type StorageAdapter = {
 	getApiKey(): Promise<string | null>;
 	saveApiKey(apiKey: string): Promise<void>;
@@ -25,14 +31,18 @@ export type StorageAdapter = {
 	saveTheme(theme: Theme | null): Promise<void>;
 };
 
-/** Detects the available storage backend. */
+/**
+ * Detects the available storage backend.
+ */
 function detectStorageBackend(): StorageBackend {
 	return typeof chrome !== "undefined" && chrome.storage
 		? StorageBackend.Chrome
 		: StorageBackend.Local;
 }
 
-/** Unified storage adapter that works in both extension and web contexts. */
+/**
+ * Unified storage adapter that works in both extension and web contexts.
+ */
 export class UnifiedStorageAdapter implements StorageAdapter {
 	private backend: StorageBackend;
 
@@ -85,7 +95,9 @@ export class UnifiedStorageAdapter implements StorageAdapter {
 	}
 }
 
-/** Creates a storage adapter based on the environment (Chrome extension or web). */
+/**
+ * Creates a storage adapter based on the environment (Chrome extension or web).
+ */
 export function createStorageAdapter(): StorageAdapter {
 	return new UnifiedStorageAdapter();
 }

@@ -38,7 +38,7 @@ import type { ErrorMessageKey } from "@shared/constants";
 import { useStorage } from "@shared/contexts/storage-context";
 import { useRecipeSave } from "@shared/hooks/use-recipe-save";
 import type { JSX } from "solid-js";
-import { createSignal, Show } from "solid-js";
+import { createRoot, createSignal, Show } from "solid-js";
 
 /**
  * Internal handlers exposed by RecipeFormShell for platform-specific integrations.
@@ -181,17 +181,24 @@ export function RecipeFormShell(props: RecipeFormShellProps) {
 		setProgress,
 		onSuccess: (result) => {
 			// Call parent's onSuccess to get status message and perform side effects
-			const statusToSet = props.onSuccess(result);
-			setStatus(statusToSet);
+			// Must wrap in createRoot since this callback runs from async context in useRecipeSave
+			// and the parent may return JSX elements that need a reactive root
+			createRoot(() => {
+				const statusToSet = props.onSuccess(result);
+				setStatus(statusToSet);
+			});
 		},
 		onComplete: props.onComplete,
 		onDuplicate: props.onDuplicate
 			? (notionUrl) => {
 					// Call parent's onDuplicate to get status message
-					const statusToSet = props.onDuplicate?.(notionUrl);
-					if (statusToSet) {
-						setStatus(statusToSet);
-					}
+					// Must wrap in createRoot since this runs from async context
+					createRoot(() => {
+						const statusToSet = props.onDuplicate?.(notionUrl);
+						if (statusToSet) {
+							setStatus(statusToSet);
+						}
+					});
 				}
 			: undefined,
 		noUrlErrorKey: props.noUrlErrorKey,

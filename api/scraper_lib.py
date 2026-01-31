@@ -47,11 +47,25 @@ def scrape_recipe(html: str, url: str) -> dict:
     except Exception:
         title = ""
     
+    # Validate that we have a title - fail if not
+    if not title or not title.strip():
+        raise ValueError(
+            "Could not extract recipe title. The page may not contain a recipe "
+            "or uses an unsupported format."
+        )
+    
     # Extract ingredients (required field)
     try:
         ingredients = scraper.ingredients()
     except Exception:
         ingredients = []
+    
+    # Validate that we have ingredients - fail if not
+    if not ingredients or len(ingredients) == 0:
+        raise ValueError(
+            "Could not extract recipe ingredients. The page may not contain a recipe "
+            "or uses an unsupported format."
+        )
     
     # JSON-LD field names that should never be instruction steps
     INVALID_INSTRUCTIONS = {

@@ -1,4 +1,4 @@
-import { MAX_TEXT_LENGTH } from "@shared/constants";
+import { MAX_TEXT_LENGTH } from "../../shared/constants.js";
 import type { Recipe } from "../scraper.js";
 import type { CategorizedIngredient, RecipeTags } from "../tagger.js";
 import { IngredientCategory } from "../tagger.js";

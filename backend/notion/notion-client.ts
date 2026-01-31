@@ -1,6 +1,6 @@
 import { Client } from "@notionhq/client";
-import { ELLIPSIS_LENGTH } from "@shared/constants";
-import { hasProperty, isObject } from "@shared/type-guards";
+import { ELLIPSIS_LENGTH } from "../../shared/constants.js";
+import { hasProperty, isObject } from "../../shared/type-guards.js";
 import { NotionApiError } from "../errors.js";
 import type { Recipe } from "../scraper.js";
 import type { RecipeTags } from "../tagger.js";

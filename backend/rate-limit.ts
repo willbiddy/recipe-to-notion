@@ -3,7 +3,7 @@
  */
 
 import { createHash } from "node:crypto";
-import { CLEANUP_INTERVAL_MS } from "@shared/constants";
+import { CLEANUP_INTERVAL_MS } from "../shared/constants.js";
 
 export type RateLimitConfig = {
 	maxRequests: number;

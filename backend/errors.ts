@@ -1,4 +1,4 @@
-import { DUPLICATE_RECIPE_ERROR_MARKER } from "@shared/constants";
+import { DUPLICATE_RECIPE_ERROR_MARKER } from "../shared/constants.js";
 
 /**
  * Error types used throughout the application.

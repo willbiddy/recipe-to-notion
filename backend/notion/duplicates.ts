@@ -1,6 +1,6 @@
 import type { Client } from "@notionhq/client";
 import type { QueryDataSourceParameters } from "@notionhq/client/build/src/api-endpoints";
-import { hasProperty, isArray, isObject } from "@shared/type-guards";
+import { hasProperty, isArray, isObject } from "../../shared/type-guards.js";
 import {
 	createNotionClient,
 	type DuplicateInfo,

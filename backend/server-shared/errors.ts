@@ -1,4 +1,4 @@
-import type { RecipeResponse } from "@shared/api/types";
+import type { RecipeResponse } from "../../shared/api/types.js";
 import {
 	DuplicateRecipeError,
 	NotionApiError,

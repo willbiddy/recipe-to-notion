@@ -8,7 +8,7 @@
  * - recipe-handler.ts (this file): Orchestration and non-streaming responses
  */
 
-import type { RecipeResponse } from "@shared/api/types";
+import type { RecipeResponse } from "../../shared/api/types.js";
 import { createConsoleLogger } from "../logger.js";
 import { getNotionPageUrl } from "../notion/notion-client.js";
 import { processRecipe } from "../process-recipe.js";

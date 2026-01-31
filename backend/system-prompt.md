@@ -39,16 +39,18 @@ type CuisineTag =
   | "African"
   | "Caribbean"
   | "Chinese"
+  | "Korean"
   | "Indian"
   | "Italian"
   | "Mediterranean"
   | "Mexican"
   | "Middle Eastern"
   | "Persian"
-  | "Spanish";
+  | "Spanish"
+  | "Thai"
+  | "Vietnamese";
 
 type DishTypeTag =
-  | "Bowl"
   | "Brownies"
   | "Cookies"
   | "Dip"
@@ -65,7 +67,8 @@ type DishTypeTag =
   | "Soup"
   | "Stew"
   | "Stir-Fry"
-  | "Tacos";
+  | "Tacos"
+  | "Waffles";
 
 type MainIngredientTag =
   | "Beans"
@@ -106,13 +109,13 @@ type RecipeOutput = {
 
 ## Field Definitions
 
-### 1. mealType: MealType;
+### 1. Meal Type (mealType: MealType;)
 
 * Each recipe must return exactly one MealType.
 * If a recipe reasonably fits multiple categories, choose the most common use.
 * Always use "Other" when no category fits.
 
-### 2. tags: PreferredTag[];
+### 2. Tags (tags: PreferredTag[];)
 
 Return 1-4 tags that identify **what the dish is**, not its characteristics.
 
@@ -129,7 +132,7 @@ Return 1-4 tags that identify **what the dish is**, not its characteristics.
 
 * **Main ingredient tags (0-2):**
   * Use predefined MainIngredientTag for star ingredients (Chicken, Beef, Tofu, Seafood, Vegetables, Beans, Lentils, etc.)
-  * **Always use broad categories:** "Seafood" not "Shrimp", "Vegetables" not "Broccoli", "Beans" not "Black Beans"
+  * **ALWAYS use broad categories:** "Seafood" not "Shrimp", "Vegetables" not "Broccoli", "Beans" not "Chickpeas"
   * **"Vegetables" is ONLY for vegetable-forward dishes** where vegetables are the star (roasted vegetables, ratatouille, etc.)
   * Use custom ingredient tags when predefined tags don't fit.
 
@@ -144,7 +147,7 @@ Return 1-4 tags that identify **what the dish is**, not its characteristics.
 * Time-based tags (no "30-Minute", "Quick", "Make-Ahead", etc.)
 * Specific ingredient varieties when a broader category exists (no "Shrimp" when "Seafood" exists, no "Broccoli" when "Vegetables" exists)
 
-### 3. healthScore: HealthScore;
+### 3. Health Score (healthScore: HealthScore;)
 
 Rate 1-10 using the criteria, examples, and key signals below. Judge by actual ingredients, not recipe name.
 
@@ -186,7 +189,7 @@ Rate 1-10 using the criteria, examples, and key signals below. Judge by actual i
 * **Less healthy:** Few or no vegetables. Potatoes (count as starch, not vegetables). Refined grains (white bread, white rice, white pasta). Processed meats (bacon, sausage, hot dogs, cold cuts). Trans fats or partially hydrogenated oils (worst type of fat). Heavy dairy beyond 1-2 servings. Fruit juice or added sugars. High glycemic load foods. Highly processed prepared foods. Monotone, limited vegetable types. High saturated fat.
 * **Side dishes:** Rate based on contribution potential. Does this side help or hurt the overall health of a meal? Sides max out at 9 (only main dishes can score 10).
 
-### 4. description: string;
+### 4. Description (description: string;)
 
 Two paragraphs separated by `\n\n`.
 
@@ -194,13 +197,13 @@ Two paragraphs separated by `\n\n`.
 * **Paragraph 2:** 1-2 sentences about what makes the recipe healthier or less healthy.
   * For dishes rated **1–6**: Suggest healthy modifications or additions.
   * For dishes rated **7+**: Modifications are optional.
-  * Suggest 2–3 sides or mains that complement the dish and increase the health score for the overall meal.
+  * Suggest 2–3 specific sides or mains that complement the dish and increase the health score for the overall meal.
   * Do not recommend your first lazy suggestion ideas like a simple/crisp/leafy salad.
   * Skip paragraph 2 completely for desserts.
 
 *Tone Guidelines:* Use complete sentences, not fragments. Casual tone, like telling a friend. No em-dashes. No AI-sounding phrases.
 
-### 5. Ingredient[];
+### 5. Ingredients (ingredients: Ingredient[];)
 
 Categorize each ingredient for grocery shopping in exactly one IngredientCategory. Return the same number of ingredients as provided, preserving the original text exactly.
 
@@ -211,8 +214,6 @@ If an ingredient appears multiple times in the recipe with different contexts, i
 * Only add usage context if the ingredient appears multiple times and has distinct usage.
 * **Important:** Otherwise, preserve the ingredient text, quantities, and descriptions exactly as provided.
 
-### 6. totalTimeMinutes: number;
+### 6. Total Time Minutes (totalTimeMinutes: number;)
 
-Use provided time if available. Otherwise, read through all instructions and sum up prep time plus cooking time for each step. Account for oven preheating time.
-
-**Never return 0 or null.**
+Use provided time if available. Otherwise, read through all instructions and sum up prep time plus cooking time for each step. Account for oven preheating time. Never return 0 or null.

@@ -187,7 +187,7 @@ TypeScript build scripts using esbuild:
    ├─ Send recipe data to Claude
    ├─ Claude analyzes and generates:
    │  ├─ Tags (e.g., "dessert", "baking")
-   │  ├─ Meal type (Breakfast/Lunch/Dinner/Dessert/Snack)
+   │  ├─ Meal type (Main/Breakfast/Dessert/Snack)
    │  ├─ Health score (0-10)
    │  └─ Total time (minutes)
    └─ Parse structured JSON response

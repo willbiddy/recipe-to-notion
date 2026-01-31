@@ -3,7 +3,7 @@
  * Handles real-time progress updates during recipe scraping, tagging, and Notion upload.
  */
 
-import { ServerProgressEventType } from "@shared/api/types";
+import { ServerProgressEventType } from "../../shared/api/types.js";
 import { createConsoleLogger } from "../logger.js";
 import { getNotionPageUrl } from "../notion/notion-client.js";
 import { type ProgressEvent, processRecipe } from "../process-recipe.js";

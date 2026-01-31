@@ -1,6 +1,6 @@
-import { type Recipe, ScrapeMethod } from "@shared/api/types";
-import { REQUEST_TIMEOUT_MS } from "@shared/constants";
-import { resolveAuthor } from "@shared/url-utils";
+import { type Recipe, ScrapeMethod } from "../../shared/api/types.js";
+import { REQUEST_TIMEOUT_MS } from "../../shared/constants.js";
+import { resolveAuthor } from "../../shared/url-utils.js";
 import { ParseError, ScrapingError } from "../errors.js";
 import {
 	cleanRecipeName,

@@ -1,12 +1,12 @@
 import { readFile } from "node:fs/promises";
-import type { Recipe } from "@shared/api/types";
-import { REQUEST_TIMEOUT_MS } from "@shared/constants";
+import type { Recipe } from "../shared/api/types.js";
+import { REQUEST_TIMEOUT_MS } from "../shared/constants.js";
 import { ParseError, ScrapingError } from "./errors.js";
 import { BROWSER_HEADERS } from "./parsers/shared.js";
 import { parseRecipeFromHtml } from "./scraper/python.js";
 
 // Re-export Recipe type for convenience (used by logger, tagger, process-recipe)
-export type { Recipe } from "@shared/api/types";
+export type { Recipe } from "../shared/api/types.js";
 
 /**
  * Fetches a recipe URL and extracts structured data.

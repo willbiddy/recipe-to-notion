@@ -1,7 +1,4 @@
 #!/usr/bin/env bun
-import { colors } from "@shared/colors";
-import { isString } from "@shared/type-guards";
-import { isValidHttpUrl, stripQueryParams } from "@shared/url-utils";
 /**
  * CLI entry point for recipe-to-notion.
  *
@@ -10,6 +7,9 @@ import { isValidHttpUrl, stripQueryParams } from "@shared/url-utils";
  *   bun save --html <path> <url>
  */
 import { defineCommand, runMain } from "citty";
+import { colors } from "../shared/colors.js";
+import { isString } from "../shared/type-guards.js";
+import { isValidHttpUrl, stripQueryParams } from "../shared/url-utils.js";
 import { loadConfig } from "./config.js";
 import { createConsoleLogger } from "./logger.js";
 import { processRecipe } from "./process-recipe.js";

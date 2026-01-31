@@ -1,4 +1,4 @@
-import { MAX_AUTHOR_SUFFIX_LENGTH } from "@shared/constants";
+import { MAX_AUTHOR_SUFFIX_LENGTH } from "../../shared/constants.js";
 
 /**
  * Browser-like HTTP headers to avoid bot detection when scraping.

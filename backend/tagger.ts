@@ -2,14 +2,14 @@ import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import Anthropic from "@anthropic-ai/sdk";
+import { z } from "zod";
 import {
 	CLAUDE_MAX_TOKENS,
 	ERROR_PREVIEW_LENGTH_LONG,
 	ERROR_PREVIEW_LENGTH_SHORT,
 	RECIPE_TIME_MAX_MINUTES,
 	RECIPE_TIME_MIN_MINUTES,
-} from "@shared/constants";
-import { z } from "zod";
+} from "../shared/constants.js";
 import { TaggingError, ValidationError } from "./errors.js";
 import type { Recipe } from "./scraper.js";
 

@@ -1,6 +1,6 @@
 # Recipe Clipper for Notion
 
-Save recipes to Notion without copying and pasting. Paste a URL from almost any recipe site and get a Notion page with the cover photo, ingredients grouped by shopping aisle, instructions, and AI-generated tags. Claude automatically analyzes each recipe to add cuisine tags, meal types, health scores, ingredient categories, and a short description, so you can filter and search your collection later.
+Save recipes to Notion without copying and pasting. Input a URL from almost any recipe site and get a Notion page with the cover photo, ingredients grouped by shopping aisle, instructions, and AI-generated tags. Claude automatically analyzes each recipe to add cuisine tags, meal types, health scores, ingredient categories, and a short description, so you can filter and search your collection later.
 
 ![Chrome Extension Popup](docs/extension-popup.png)
 
@@ -20,11 +20,10 @@ Save recipes to Notion without copying and pasting. Paste a URL from almost any 
 
 | Guide | Description |
 |-------|-------------|
-| **[Browser Extension](docs/EXTENSION.md)** | One-click recipe saving from your browser |
-| **[Web Interface](docs/WEB_INTERFACE.md)** | Mobile-friendly interface for phones and tablets |
-| **[iOS Shortcut](docs/IOS_SHORTCUT.md)** | Share Sheet integration for iPhone/iPad |
-| **[API Reference](docs/API.md)** | REST API for custom integrations |
+| **[Setup](docs/SETUP.md)** | Initial setup, local development, and configuration |
 | **[Deployment](docs/DEPLOYMENT.md)** | Deploy to Vercel |
+| **[Clients](docs/CLIENTS.md)** | Browser extension, web interface, and iOS shortcut |
+| **[API Reference](docs/API.md)** | REST API for custom integrations |
 | **[Architecture](docs/ARCHITECTURE.md)** | System design and data flow |
 | **[System Prompt](backend/system-prompt.md)** | Claude AI instructions for recipe tagging |
 
@@ -48,166 +47,25 @@ CLI/Extension/Web/API/Shortcut → Check duplicates → Scrape recipe → Claude
 
 Each recipe costs roughly **2-3 cents** in Claude API usage (roughly 4,300-5,300 input tokens and 400-1,000 output tokens per recipe). The default model is Sonnet 4.5, but you can change it by setting the `CLAUDE_MODEL` environment variable to `"haiku"`, `"sonnet"`, or `"opus"`.
 
-## Prerequisites
-
-- **Bun**: Package manager and runtime
-  ```bash
-  curl -fsSL https://bun.sh/install | bash
-  ```
-- **Python 3.11+**: Required for recipe scraping
-  ```bash
-  python3 --version
-  ```
-- **Git**: Version control
-  ```bash
-  git --version
-  ```
-
 ## Setup
 
-### 1. Clone and install
-
-```bash
-git clone https://github.com/willbiddy/recipe-to-notion.git
-cd recipe-to-notion
-bun install
-```
-
-### 2. Install Python dependencies (for recipe scraping)
-
-The recipe scraper uses Python's `recipe-scrapers` library which supports 600+ recipe websites.
-
-```bash
-# Using pip directly
-pip install -r requirements-dev.txt
-
-# Or with a virtual environment (recommended)
-python3 -m venv .venv
-source .venv/bin/activate  # macOS/Linux
-pip install -r requirements-dev.txt
-```
-
-### 3. Create an Anthropic API key
-
-1. Go to [console.anthropic.com](https://console.anthropic.com/) and sign in or create an account.
-2. Navigate to **API Keys** in the sidebar.
-3. Click **Create Key** and give it a name (e.g., "Recipe Clipper for Notion").
-4. Copy the API key (starts with `sk-ant-`). You won't be able to see it again, so save it securely.
-
-### 4. Create a Notion integration
-
-1. Go to [notion.so/my-integrations](https://www.notion.so/my-integrations) and create a new integration.
-2. Copy the **Internal Integration Secret** (starts with `ntn_`).
-
-### 5. Create a Notion database
-
-1. In Notion, create a new page and select **Table** → **Full page**.
-2. Add the following properties to your database:
-   - **"Name"** - Type: Title (this is the default property)
-   - **"Source"** - Type: URL
-   - **"Author"** - Type: Text
-   - **"Minutes"** - Type: Number
-   - **"Tags"** - Type: Multi-select
-   - **"Meal type"** - Type: Select
-   - **"Health score"** - Type: Number
-3. Connect your integration to the database:
-   - Click the `...` menu in the top-right of the database
-   - Select **Connections**
-   - Choose your integration from the list
-
-### 6. Get your database ID
-
-The database ID is the 32-character hex string in your database URL (`https://www.notion.so/yourworkspace/DATABASE_ID_HERE?v=...`). Copy just the ID portion (with or without dashes).
-
-### 7. Configure environment variables
-
-Copy the example file and fill in your keys:
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env`:
-
-```
-ANTHROPIC_API_KEY=sk-ant-...
-NOTION_API_KEY=ntn_...
-NOTION_DATABASE_ID=abc123...
-API_SECRET=your-secret-api-key-here
-```
-
-> **Note:** The `API_SECRET` is required for API authentication. Use a strong, random value (e.g., generate with `openssl rand -hex 32`). This prevents unauthorized access to your API endpoints.
-
-## Local Development
-
-To run the project locally, you need to start both the Python recipe scraper and the Bun server.
-
-### Option A: Single command (quickest)
-
-```bash
-bun run dev
-# Starts both Python scraper and Bun server together
-```
-
-### Option B: Separate terminals (recommended for debugging)
-
-**Terminal 1** — Start the Python scraper:
-```bash
-bun run scraper
-# Runs on http://localhost:5001
-```
-
-**Terminal 2** — Start the Bun server:
-```bash
-bun run server
-# Runs on http://localhost:3000
-```
-
-### Option C: Vercel CLI (closer to production)
-
-```bash
-vercel dev
-# Runs both TypeScript and Python functions together
-# Runs on http://localhost:3000
-```
-
-### Environment Variables
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `ANTHROPIC_API_KEY` | Yes | Claude API key (starts with `sk-ant-`) |
-| `NOTION_API_KEY` | Yes | Notion integration token (starts with `ntn_` or `secret_`) |
-| `NOTION_DATABASE_ID` | Yes | Target Notion database ID |
-| `API_SECRET` | Yes | Secret for API authentication |
-| `PYTHON_SCRAPER_URL` | No | Override Python scraper URL (default: `http://localhost:5001/scrape` in dev) |
+📚 **[Setup Guide](docs/SETUP.md)** — Complete setup including prerequisites, API keys, Notion configuration, and local development.
 
 ## Deployment
 
-When you push to your connected Git repository, **Vercel automatically redeploys** both the TypeScript and Python functions. No manual steps required.
+Deploy to Vercel for production use:
 
-The Python scraper runs as a Vercel serverless function at `/api/scrape` — the TypeScript backend automatically detects the Vercel environment and calls it at the correct URL.
+```bash
+bunx vercel --prod
+```
 
-### Vercel Deployment Protection Setup
-
-If you have Vercel Deployment Protection enabled, you need to create a **Protection Bypass for Automation** secret to allow your TypeScript backend to call the Python scraper:
-
-1. Go to your Vercel project settings → **Deployment Protection**
-2. Scroll to **"Protection Bypass for Automation"**
-3. Click **"Add a secret"** — Vercel will generate a bypass secret automatically
-4. The secret is automatically available as `VERCEL_AUTOMATION_BYPASS_SECRET` (no manual configuration needed)
-5. Redeploy your project — the backend will automatically use this secret to bypass protection when calling the scraper
-
-> 💡 **Why this is needed:** Vercel's Deployment Protection blocks external requests, including internal function-to-function calls. The bypass secret allows your TypeScript functions to call the Python scraper while keeping your deployment protected from unauthorized access.
-
-> 📖 See [Deployment Guide](docs/DEPLOYMENT.md) for initial Vercel setup and environment variable configuration.
+Vercel automatically redeploys on every Git push. See **[Deployment Guide](docs/DEPLOYMENT.md)** for full setup including environment variables and deployment protection.
 
 ## Usage
 
-There are five ways to use Recipe Clipper for Notion:
+### Command Line (CLI)
 
-### 1. Command Line Interface (CLI)
-
-The simplest way to get started. Save recipes from the terminal:
+The quickest way to save recipes:
 
 ```bash
 # Single recipe
@@ -216,42 +74,18 @@ bun save https://cooking.nytimes.com/recipes/1023430-pasta-with-pumpkin-seed-pes
 # Multiple recipes
 bun save \
   https://www.bonappetit.com/recipe/ditalini-and-peas-in-parmesan-broth \
-  https://cooking.nytimes.com/recipes/768413295-chickpeas-al-limone-with-burrata \
-  https://www.seriouseats.com/tacos-gobernador-sinaloan-shrimp-tacos-recipe-8676611
+  https://cooking.nytimes.com/recipes/768413295-chickpeas-al-limone-with-burrata
 
-# If a site blocks requests (403 error), save the page source and use --html
-bun save --html ~/Downloads/baked-oatmeal-recipe.html "https://cookieandkate.com/baked-oatmeal-recipe/"
+# For sites that block scraping, save the HTML manually
+bun save --html ~/Downloads/recipe.html "https://example.com/recipe"
 ```
 
-### 2. Browser Extension
+### Other Interfaces
 
-Save recipes with one click directly from your browser.
-
-> 📖 See [Extension Setup Guide](docs/EXTENSION.md) for complete setup instructions.
->
-> **Quick Start:** Deploy to Vercel (see [Deployment Guide](docs/DEPLOYMENT.md)), then build and load the extension.
-
-### 3. Web Interface
-
-Save recipes from your phone or any device using the web interface. Works with iOS Share Sheet (via Shortcuts) and Android Share Sheet (native).
-
-> 📖 See [Web Interface Guide](docs/WEB_INTERFACE.md) for complete setup instructions, including iOS and Android sharing.
->
-> **Quick Start:** Deploy to Vercel, build the web interface (`bun run build:web`), then access it at your Vercel URL.
-
-### 4. HTTP API
-
-Use the REST API to integrate Recipe Clipper for Notion into your own applications or scripts.
-
-> 📖 **Full API Docs:** See [API Reference](docs/API.md) for complete endpoint documentation, request/response formats, and examples.
-
-### 5. iOS Shortcut
-
-Save recipes directly from Safari or any app using the iOS Share Sheet. The shortcut sends the recipe URL to the web interface for processing.
-
-> 📖 See [iOS Shortcut Setup Guide](docs/IOS_SHORTCUT.md) for complete setup instructions.
->
-> **Quick Start:** Deploy to Vercel, set up the shortcut, then share any recipe URL from Safari to save it to Notion.
+- **[Browser Extension](docs/CLIENTS.md#browser-extension)** — One-click saving from Chrome/Edge
+- **[Web Interface](docs/CLIENTS.md#web-interface)** — Mobile-friendly, works with Share Sheet
+- **[iOS Shortcut](docs/CLIENTS.md#ios-shortcut)** — Share Sheet integration for iPhone/iPad  
+- **[API](docs/API.md)** — REST API for custom integrations
 
 ---
 

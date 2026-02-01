@@ -19,7 +19,7 @@ Process and save a recipe to Notion.
 #### Request
 
 ```bash
-curl -X POST https://your-server.com/api/recipes \
+curl -X POST https://your-app.vercel.app/api/recipes \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_API_SECRET" \
   -d '{"url": "https://cooking.nytimes.com/recipes/1234-example"}'
@@ -100,7 +100,7 @@ Progress events are sent during processing. The `progressType` can be: `"checkin
 #### Example with Streaming
 
 ```bash
-curl -X POST https://your-server.com/api/recipes \
+curl -X POST https://your-app.vercel.app/api/recipes \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_API_SECRET" \
   -d '{"url": "https://example.com/recipe", "stream": true}'
@@ -115,7 +115,7 @@ Health check endpoint to verify the server is running.
 #### Request
 
 ```bash
-curl https://your-server.com/api/health
+curl https://your-app.vercel.app/api/health
 ```
 
 #### Response

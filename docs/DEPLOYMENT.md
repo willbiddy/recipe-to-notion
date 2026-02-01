@@ -6,6 +6,14 @@ Deploy the Recipe Clipper for Notion server to Vercel. The code is already confi
 
 ## Quick Deploy
 
+### Step 0: Install Vercel CLI
+
+If you haven't already installed the Vercel CLI:
+
+```bash
+bun add -g vercel
+```
+
 ### Step 1: Login to Vercel
 
 ```bash
@@ -24,7 +32,7 @@ bunx vercel --prod
 2. Navigate to **Settings → Environment Variables**
 3. Add the following variables:
    - `ANTHROPIC_API_KEY` - Your Anthropic API key (starts with `sk-ant-`)
-   - `NOTION_API_KEY` - Your Notion integration secret (starts with `ntn_`)
+   - `NOTION_API_KEY` - Your Notion integration secret (starts with `ntn_` or `secret_`)
    - `NOTION_DATABASE_ID` - Your Notion database ID (32-character hex string)
    - `API_SECRET` - A secret key for API authentication (use a strong, random value - you'll need this to configure the browser extension)
 4. Select all environments (Production, Preview, Development)
@@ -48,14 +56,14 @@ If you have Vercel Deployment Protection enabled (requires authentication to acc
 
 ### Step 5: Get Your Deployment URL
 
-- Vercel will provide a URL like `https://recipe-to-notion-xi.vercel.app`
+- Vercel will provide a URL like `https://your-app.vercel.app`
 - Copy this URL - you'll need it to configure the browser extension
 
 ---
 
 ## Testing Your Deployment
 
-> 📖 **API Endpoints:** See [API Reference](./API.md) for complete endpoint documentation, including the health check endpoint.
+> 📖 **API Endpoints:** See [API Reference](API.md) for complete endpoint documentation, including the health check endpoint.
 
 ### Test Recipe Processing
 

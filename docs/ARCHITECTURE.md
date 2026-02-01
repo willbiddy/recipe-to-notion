@@ -19,7 +19,7 @@ Recipe Clipper for Notion scrapes recipe websites, analyzes them with Claude AI,
 
 ## Key Technologies
 
-- **Backend**: Node.js/TypeScript with Express
+- **Backend**: Bun.serve() (Bun's built-in HTTP server)
 - **Frontend**: Solid.js (small bundle size, ~7KB vs React ~40KB)
 - **Scraping**: Python recipe-scrapers library (600+ sites supported)
 - **AI**: Claude API for recipe analysis

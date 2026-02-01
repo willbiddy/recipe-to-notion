@@ -76,7 +76,6 @@ async function buildWeb(): Promise<void> {
 	await $`cp web/manifest.json dist/web/`.quiet();
 	await $`cp web/favicon*.png dist/web/ 2>/dev/null || true`.quiet();
 	await $`cp web/apple-touch-icon.png dist/web/ 2>/dev/null || true`.quiet();
-	await $`cp web/fork-and-knife.png dist/web/ 2>/dev/null || true`.quiet();
 
 	console.log("✅ Web build complete");
 }

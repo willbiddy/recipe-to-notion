@@ -36,7 +36,6 @@ export const ASSET_ROUTES: Record<string, AssetRoute> = {
 	"/favicon-32x32-white": { path: "favicon-32x32-white.png", contentType: "image/png" },
 	"/apple-touch-icon.png": { path: "apple-touch-icon.png", contentType: "image/png" },
 	"/apple-touch-icon": { path: "apple-touch-icon.png", contentType: "image/png" },
-	"/fork-and-knife.png": { path: "fork-and-knife.png", contentType: "image/png" },
 
 	// Text assets
 	"/manifest.json": {

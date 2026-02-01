@@ -43,10 +43,6 @@
 			"destination": "/api/assets?path=/apple-touch-icon.png"
 		},
 		{
-			"source": "/fork-and-knife.png",
-			"destination": "/api/assets?path=/fork-and-knife.png"
-		},
-		{
 			"source": "/manifest.json",
 			"destination": "/api/assets?path=/manifest.json"
 		},

@@ -235,4 +235,4 @@ All API keys are:
 - Never shared or exposed in URLs
 - All connections use HTTPS (enforced by Vercel)
 
-Use a strong, unique `API_SECRET` and don't share it with others. If compromised, regenerate it in Vercel and update it in all clients.
+Use a strong, unique `API_SECRET` and don't share it with others.

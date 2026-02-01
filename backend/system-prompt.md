@@ -155,34 +155,34 @@ Rate 1-10 using the criteria, examples, and key signals below. Judge by actual i
 #### Scoring Criteria
 
 * **1 — Processed/Fried:** Deep fried or ultra-processed components. No vegetables. Sugar is primary ingredient. No meaningful protein. Trans fats or extremely high sodium.
-* *Examples: Frozen Fish Sticks with Tartar Sauce, Store-Bought Cinnamon Rolls with Icing, French Fries (side).*
+  * *Examples: Frozen Fish Sticks with Tartar Sauce, Store-Bought Cinnamon Rolls with Icing, French Fries (side).*
 
 * **2 — Poor:** No vegetables. All refined carbohydrates. Processed meats as primary protein. High added sugar or very high sodium.
-* *Examples: Hot Dogs on White Buns, Instant Ramen with No Vegetables, White Bread with Butter (side).*
+  * *Examples: Hot Dogs on White Buns, Instant Ramen with No Vegetables, White Bread with Butter (side).*
 
 * **3 — Heavy:** Minimal vegetables (potatoes don't count). All refined grains. High saturated fat from cheese, butter, red meat, or processed meat. High sodium. Fried components may be present.
-* *Examples: Bacon Cheeseburger on White Bun, Sausage Pasta on White Pasta, Loaded Potato Skins with Bacon and Sour Cream (side).*
+  * *Examples: Bacon Cheeseburger on White Bun, Sausage Pasta on White Pasta, Loaded Potato Skins with Bacon and Sour Cream (side).*
 
 * **4 — Below average:** Few vegetables. All refined grains. Cheese or red meat heavy (exceeds 1-2 dairy servings). Higher sodium. No fiber.
-* *Examples: Fettuccine Alfredo, Grilled Cheese on White Bread, Buttered White Rice (side).*
+  * *Examples: Fettuccine Alfredo, Grilled Cheese on White Bread, Buttered White Rice (side).*
 
 * **5 — Moderate:** Limited vegetables. Primarily refined grains. Protein quality varies. Moderate dairy. Low fiber. Some processed components.
-* *Examples: Spaghetti with Meat Sauce on White Pasta, Chicken Parmesan with White Pasta, Mashed Potatoes with Butter (side).*
+  * *Examples: Spaghetti with Meat Sauce on White Pasta, Chicken Parmesan with White Pasta, Mashed Potatoes with Butter (side).*
 
 * **6 — Fair:** Some vegetables present. Mix of whole and refined grains. Decent protein but may include modest red meat or cheese. Moderate fiber. Moderate sodium.
-* *Examples: Chicken Stir-Fry with Vegetables over White Rice, Bean and Cheese Burrito on Flour Tortilla, Steamed Green Beans with Butter (side).*
+  * *Examples: Chicken Stir-Fry with Vegetables over White Rice, Bean and Cheese Burrito on Flour Tortilla, Steamed Green Beans with Butter (side).*
 
 * **7 — Good:** Decent vegetable content. Some whole grains. Healthy protein (poultry, fish, beans, eggs). Good fiber from legumes or whole grains. Limited processed ingredients. Healthy fats present.
-* *Examples: Chicken Fajitas with Peppers and Onions on Corn Tortillas, Mujadara (Lentils and Rice with Caramelized Onions), Roasted Sweet Potato Wedges (side).*
+  * *Examples: Chicken Fajitas with Peppers and Onions on Corn Tortillas, Mujadara (Lentils and Rice with Caramelized Onions), Roasted Sweet Potato Wedges (side).*
 
 * **8 — Great:** Good vegetable representation. Mostly whole grains. Fish, poultry, beans, or eggs as protein. Healthy fats (olive oil). High fiber. Minimal added sugar. Dairy within 1-2 servings.
-* *Examples: Vegetable Stir-Fry with Tofu over Brown Rice, Lentil Soup with Vegetables and Whole Grain Bread, Steamed Broccoli with Olive Oil and Garlic (side).*
+  * *Examples: Vegetable Stir-Fry with Tofu over Brown Rice, Lentil Soup with Vegetables and Whole Grain Bread, Steamed Broccoli with Olive Oil and Garlic (side).*
 
 * **9 — Excellent:** High vegetable content (near half plate). Whole grains present. Fish (omega-3s), legumes, or poultry as protein. Healthy unsaturated fats. High fiber. Low sodium. No added sugar. Maximum score for sides.
-* *Examples: Grilled Salmon with Roasted Brussels Sprouts and Quinoa, Chickpea and Spinach Curry over Brown Rice, Sautéed Kale with Garlic and Olive Oil (side).*
+  * *Examples: Grilled Salmon with Roasted Brussels Sprouts and Quinoa, Chickpea and Spinach Curry over Brown Rice, Sautéed Kale with Garlic and Olive Oil (side).*
 
 * **10 — Optimal:** Half plate vegetables. Whole intact grains. Plant protein or fish (omega-3s). Healthy oils (olive, canola). High fiber. No added sugar. Minimal sodium. Minimally processed whole foods. Main dishes only.
-* *Examples: Mediterranean Lentil Salad with Leafy Greens, Tomatoes, Cucumbers, and Olive Oil; Grilled Salmon over Quinoa with Roasted Broccoli and Kale.*
+  * *Examples: Mediterranean Lentil Salad with Leafy Greens, Tomatoes, Cucumbers, and Olive Oil; Grilled Salmon over Quinoa with Roasted Broccoli and Kale.*
 
 #### Key Signals
 

@@ -181,14 +181,14 @@ Rate 1-10 using the criteria, examples, and key signals below. Judge by actual i
 * **9 — Excellent:** High vegetable content (near half plate). Whole grains present. Fish (omega-3s), legumes, or poultry as protein. Healthy unsaturated fats. High fiber. Low sodium. No added sugar. Maximum score for sides.
   * *Examples: Grilled Salmon with Roasted Brussels Sprouts and Quinoa, Chickpea and Spinach Curry over Brown Rice, Sautéed Kale with Garlic and Olive Oil (side).*
 
-* **10 — Optimal:** Half plate vegetables. Whole intact grains. Plant protein or fish (omega-3s). Healthy oils (olive, canola). High fiber. No added sugar. Minimal sodium. Minimally processed whole foods. Main dishes only.
+* **10 — Optimal:** Half plate vegetables. Whole intact grains. Plant protein or fish (omega-3s). Healthy oils (olive, canola). High fiber. No added sugar. Low sodium. Minimally processed whole foods. Main dishes only.
   * *Examples: Mediterranean Lentil Salad with Leafy Greens, Tomatoes, Cucumbers, and Olive Oil; Grilled Salmon over Quinoa with Roasted Broccoli and Kale.*
 
 #### Key Signals
 
 * **Healthier:** Vegetables fill half the plate (potatoes don't count). Whole intact grains (brown rice, quinoa, oats, barley, whole wheat). Fish, poultry, beans, lentils, nuts as protein. Fish 2-3 times weekly for omega-3s. Healthy oils (olive, canola, soybean). Fiber-rich foods (beans, whole grains, vegetables). Whole fruits. Low glycemic load foods. Home-cooked from whole ingredients. Color and variety. Unsaturated fats.
 * **Less healthy:** Few or no vegetables. Potatoes (count as starch, not vegetables). Refined grains (white bread, white rice, white pasta). Processed meats (bacon, sausage, hot dogs, cold cuts). Trans fats or partially hydrogenated oils (worst type of fat). Heavy dairy beyond 1-2 servings. Fruit juice or added sugars. High glycemic load foods. Highly processed prepared foods. Monotone, limited vegetable types. High saturated fat.
-* **Side dishes:** Rate based on contribution potential. Does this side help or hurt the overall health of a meal? Sides max out at 9 (main dishes CAN score a 10).
+* **Side dishes:** Rate based on contribution potential. Does this side help or hurt the overall health of a meal? Sides max out at 9 (main dishes can score a 10).
 
 ### 4. Description (description: string;)
 
@@ -202,7 +202,7 @@ Two paragraphs separated by `\n\n`.
   * Do not recommend your first lazy suggestion ideas like a simple/crisp/leafy salad.
   * Skip paragraph 2 completely for desserts.
 
-*Tone Guidelines:* Use complete sentences, not fragments. Casual tone, like telling a friend. No em-dashes. No AI-sounding phrases.
+Use complete sentences, not fragments. Casual tone, like telling a friend. No em-dashes. No AI-sounding phrases.
 
 ### 5. Ingredients (ingredients: Ingredient[];)
 

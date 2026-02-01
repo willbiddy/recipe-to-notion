@@ -201,15 +201,48 @@ If you see a warning about untrusted shortcuts:
 
 ---
 
+## CLI (Command Line)
+
+Save recipes directly from your terminal. Best for batch operations and automation.
+
+### Usage
+
+**Single recipe:**
+```bash
+bun save https://cooking.nytimes.com/recipes/1023430-pasta-with-pumpkin-seed-pesto
+```
+
+**Multiple recipes:**
+```bash
+bun save \
+  https://www.bonappetit.com/recipe/ditalini-and-peas-in-parmesan-broth \
+  https://cooking.nytimes.com/recipes/768413295-chickpeas-al-limone-with-burrata
+```
+
+**Sites that block scraping:**
+```bash
+bun save --html ~/Downloads/recipe.html "https://example.com/recipe"
+```
+
+### Features
+
+- **Batch processing** — Save multiple recipes at once
+- **HTML fallback** — For sites that block automated requests
+- **No API key required** — Uses environment variables from `.env`
+- **Fastest method** — Direct local execution, no HTTP overhead
+
+---
+
 ## Comparison
 
-| Feature | Extension | Web Interface | iOS Shortcut |
-|---------|-----------|---------------|--------------|
-| Platform | Chrome/Edge only | Any browser | iOS only |
-| Mobile Support | ❌ No | ✅ Yes | ✅ Yes |
-| One-Click Save | ✅ Yes | ✅ (with setup) | ✅ Yes |
-| Share Sheet | ❌ No | ✅ (Android native, iOS via Shortcut) | ✅ Yes |
-| Best For | Desktop users | Mobile/cross-platform | iOS users |
+| Feature | Extension | Web Interface | iOS Shortcut | CLI |
+|---------|-----------|---------------|--------------|-----|
+| Platform | Chrome/Edge only | Any browser | iOS only | Any terminal |
+| Mobile Support | ❌ No | ✅ Yes | ✅ Yes | ❌ No |
+| One-Click Save | ✅ Yes | ✅ (with setup) | ✅ Yes | ✅ Yes |
+| Share Sheet | ❌ No | ✅ (Android native, iOS via Shortcut) | ✅ Yes | ❌ No |
+| Batch Support | ❌ No | ❌ No | ❌ No | ✅ Yes |
+| Best For | Desktop users | Mobile/cross-platform | iOS users | Power users & automation |
 
 ---
 
@@ -220,6 +253,7 @@ If you see a warning about untrusted shortcuts:
 - **Extension:** Stored in `chrome.storage.local` (not synced to Google servers)
 - **Web Interface:** Stored in browser `localStorage` (client-side only)
 - **iOS Shortcut:** Uses the web interface's storage
+- **CLI:** Uses environment variables from `.env` file
 
 All API keys are:
 - Stored in plaintext locally (anyone with device access can view via DevTools)

@@ -22,7 +22,7 @@ Save recipes to Notion without copying and pasting. Input a URL from almost any 
 |-------|-------------|
 | **[Setup](docs/SETUP.md)** | Initial setup, local development, and configuration |
 | **[Deployment](docs/DEPLOYMENT.md)** | Deploy to Vercel |
-| **[Clients](docs/CLIENTS.md)** | Browser extension, web interface, and iOS shortcut |
+| **[Clients](docs/CLIENTS.md)** | Browser extension, web interface, iOS shortcut, and CLI |
 | **[API Reference](docs/API.md)** | REST API for custom integrations |
 | **[Architecture](docs/ARCHITECTURE.md)** | System design and data flow |
 | **[System Prompt](backend/system-prompt.md)** | Claude AI instructions for recipe tagging |
@@ -47,20 +47,6 @@ CLI/Extension/Web/API/Shortcut → Check duplicates → Scrape recipe → Claude
 
 Each recipe costs roughly **2-3 cents** in Claude API usage (roughly 4,300-5,300 input tokens and 400-1,000 output tokens per recipe). The default model is Sonnet 4.5, but you can change it by setting the `CLAUDE_MODEL` environment variable to `"haiku"`, `"sonnet"`, or `"opus"`.
 
-## Setup
-
-📚 **[Setup Guide](docs/SETUP.md)** — Complete setup including prerequisites, API keys, Notion configuration, and local development.
-
-## Deployment
-
-Deploy to Vercel for production use:
-
-```bash
-bunx vercel --prod
-```
-
-Vercel automatically redeploys on every Git push. See **[Deployment Guide](docs/DEPLOYMENT.md)** for full setup including environment variables and deployment protection.
-
 ## Usage
 
 ### Command Line (CLI)
@@ -80,12 +66,7 @@ bun save \
 bun save --html ~/Downloads/recipe.html "https://example.com/recipe"
 ```
 
-### Other Interfaces
 
-- **[Browser Extension](docs/CLIENTS.md#browser-extension)** — One-click saving from Chrome/Edge
-- **[Web Interface](docs/CLIENTS.md#web-interface)** — Mobile-friendly, works with Share Sheet
-- **[iOS Shortcut](docs/CLIENTS.md#ios-shortcut)** — Share Sheet integration for iPhone/iPad  
-- **[API](docs/API.md)** — REST API for custom integrations
 
 ---
 

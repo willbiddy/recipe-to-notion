@@ -2,7 +2,7 @@
 # 🔌 Client Interfaces
 
 Recipe Clipper for Notion provides multiple ways to save recipes: browser extension, web interface, and iOS shortcut.
-## 🔌 Browser Extension
+## 🧩 Browser Extension
 
 Save recipes with one click directly from Chrome/Edge.
 
@@ -219,16 +219,7 @@ bun save --html ~/Downloads/recipe.html "https://example.com/recipe"
 - **HTML fallback** — For sites that block automated requests
 - **No API key required** — Uses environment variables from `.env`
 - **Fastest method** — Direct local execution, no HTTP overhead
-## 📊 Comparison
 
-| Feature | Extension | Web Interface | iOS Shortcut | CLI |
-|---------|-----------|---------------|--------------|-----|
-| Platform | Chrome/Edge only | Any browser | iOS only | Any terminal |
-| Mobile Support | ❌ No | ✅ Yes | ✅ Yes | ❌ No |
-| One-Click Save | ✅ Yes | ✅ (with setup) | ✅ Yes | ✅ Yes |
-| Share Sheet | ❌ No | ✅ (Android native, iOS via Shortcut) | ✅ Yes | ❌ No |
-| Batch Support | ❌ No | ❌ No | ❌ No | ✅ Yes |
-| Best For | Desktop users | Mobile/cross-platform | iOS users | Power users & automation |
 ## 🔒 Security Notes
 
 **API Key Storage:**

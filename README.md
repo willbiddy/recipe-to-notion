@@ -11,7 +11,7 @@ Save recipes to Notion without copying and pasting. Input a URL from almost any 
 ![Notion Recipe Page](docs/notion-recipe-page.png)
 *Individual recipe page with ingredients, instructions, and AI-generated description*
 
-## Documentation
+## 📚 Documentation
 
 | Guide | Description |
 |-------|-------------|
@@ -21,7 +21,7 @@ Save recipes to Notion without copying and pasting. Input a URL from almost any 
 | **[API Reference](docs/API.md)** | REST API for custom integrations |
 | **[System Prompt](backend/system-prompt.md)** | Claude AI instructions for recipe tagging |
 
-## How It Works
+## ⚙️ How It Works
 
 ```
 CLI/Extension/Web/API/Shortcut → Check duplicates → Scrape recipe → Claude scores/tags → Notion page
@@ -37,13 +37,13 @@ CLI/Extension/Web/API/Shortcut → Check duplicates → Scrape recipe → Claude
 
 5. **Notion page** — Creates a Notion page with all properties, cover image, AI description, ingredients grouped by shopping category, and numbered instructions.
 
-## Cost
+## 💰 Cost
 
 Each recipe costs roughly **2-3 cents** in Claude API usage (roughly 4,300-5,300 input tokens and 400-1,000 output tokens per recipe). The default model is Sonnet 4.5, but you can change it by setting the `CLAUDE_MODEL` environment variable to `"haiku"`, `"sonnet"`, or `"opus"`.
 
 > **Note:** The Notion API and Vercel hosting are free for personal use, so there are no additional costs beyond the Claude API usage.
 
-## Technologies
+## 🛠️ Technologies
 
 - [Anthropic SDK](https://docs.anthropic.com/en/api/client-sdks) - Claude AI API client
 - [Notion SDK](https://github.com/makenotion/notion-sdk-js) - Notion API client
@@ -56,7 +56,7 @@ Each recipe costs roughly **2-3 cents** in Claude API usage (roughly 4,300-5,300
 - [Citty](https://github.com/unjs/citty) - CLI argument parsing
 - [Biome](https://biomejs.dev/) - Linting & formatting
 
-## Credits
+## 🙏 Credits
 
 Icon attribution: <a href="https://www.flaticon.com/free-icons/cutlery" title="cutlery icons">Cutlery icons created by Freepik - Flaticon</a>
 

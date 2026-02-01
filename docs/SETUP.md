@@ -2,7 +2,7 @@
 
 Complete guide for setting up and running Recipe Clipper for Notion locally.
 
-## Prerequisites
+## 📋 Prerequisites
 
 - **Bun**: Package manager and runtime
   ```bash
@@ -92,7 +92,7 @@ API_SECRET=your-secret-api-key-here
 
 > **Note:** The `API_SECRET` is required for API authentication. Use a strong, random value (e.g., generate with `openssl rand -hex 32`). This prevents unauthorized access to your API endpoints.
 
-## Local Development
+## 💻 Local Development
 
 ### Quick Start
 
@@ -131,7 +131,7 @@ bunx vercel dev
 # Runs on http://localhost:3000
 ```
 
-### Environment Variables
+### ⚙️ Environment Variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
@@ -141,7 +141,7 @@ bunx vercel dev
 | `API_SECRET` | Yes | Secret for API authentication |
 | `PYTHON_SCRAPER_URL` | No | Override Python scraper URL (default: `http://localhost:5001/scrape` in dev) |
 
-### Testing
+### 🧪 Testing
 
 **Test a recipe via CLI:**
 
@@ -158,7 +158,7 @@ curl -X POST http://localhost:3000/api/recipes \
   -d '{"url": "https://example-recipe.com/recipe"}'
 ```
 
-## What's Next?
+## ➡️ What's Next?
 
 - **[Deployment](DEPLOYMENT.md)** - Deploy to Vercel
 - **[Clients](CLIENTS.md)** - Browser extension, web interface, and iOS shortcut

@@ -1,8 +1,8 @@
 
-# Client Interfaces
+# 🔌 Client Interfaces
 
 Recipe Clipper for Notion provides multiple ways to save recipes: browser extension, web interface, and iOS shortcut.
-## Browser Extension
+## 🔌 Browser Extension
 
 Save recipes with one click directly from Chrome/Edge.
 
@@ -64,7 +64,7 @@ For development, use a local server instead of Vercel:
 1. Start the local server: `bun run server`
 2. Build the extension (defaults to `http://localhost:3000`): `bun run build:extension`
 3. Reload the extension in Chrome
-## Web Interface
+## 🌐 Web Interface
 
 Save recipes from your phone or any device using the web interface. Works with iOS Share Sheet (via Shortcuts) and Android Share Sheet (native).
 
@@ -135,7 +135,7 @@ iOS browsers don't support Web Share Target API natively. Use iOS Shortcuts to a
 - **Auto-submit** - With query parameters and configured API key
 - **Mobile-Optimized UI** - Touch-friendly buttons, responsive layout
 - **Add to Home Screen** - Works on iOS and Android
-## iOS Shortcut
+## 📱 iOS Shortcut
 
 Save recipes directly from any iOS browser's Share Sheet (Safari, Chrome, Firefox, etc.).
 
@@ -190,7 +190,7 @@ If you see a warning about untrusted shortcuts:
 4. The web interface opens with the recipe URL
 5. If your API key is configured, the recipe is automatically processed
 6. The Notion page opens when complete
-## CLI (Command Line)
+## ⌨️ CLI (Command Line)
 
 Save recipes directly from your terminal. Best for batch operations and automation.
 
@@ -219,7 +219,7 @@ bun save --html ~/Downloads/recipe.html "https://example.com/recipe"
 - **HTML fallback** — For sites that block automated requests
 - **No API key required** — Uses environment variables from `.env`
 - **Fastest method** — Direct local execution, no HTTP overhead
-## Comparison
+## 📊 Comparison
 
 | Feature | Extension | Web Interface | iOS Shortcut | CLI |
 |---------|-----------|---------------|--------------|-----|
@@ -229,7 +229,7 @@ bun save --html ~/Downloads/recipe.html "https://example.com/recipe"
 | Share Sheet | ❌ No | ✅ (Android native, iOS via Shortcut) | ✅ Yes | ❌ No |
 | Batch Support | ❌ No | ❌ No | ❌ No | ✅ Yes |
 | Best For | Desktop users | Mobile/cross-platform | iOS users | Power users & automation |
-## Security Notes
+## 🔒 Security Notes
 
 **API Key Storage:**
 

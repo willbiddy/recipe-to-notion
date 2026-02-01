@@ -2,10 +2,10 @@
 # API Reference
 
 The Recipe Clipper for Notion server provides a REST API for processing recipes. Deploy to Vercel to use the API.
-## Base URL
+## 🔗 Base URL
 
 - **Vercel:** `https://your-app.vercel.app`
-## Endpoints
+## 🔌 Endpoints
 
 ### POST /api/recipes
 
@@ -118,7 +118,7 @@ curl https://your-app.vercel.app/api/health
   "service": "recipe-to-notion"
 }
 ```
-## CORS
+## 🌐 CORS
 
 The API includes CORS headers to allow cross-origin requests from browser extensions and web applications.
 
@@ -127,7 +127,7 @@ The API includes CORS headers to allow cross-origin requests from browser extens
 - **Allowed Origins:** `*` (all origins)
 
 > **Security Note:** CORS is set to allow all origins (`*`) to support browser extensions, which can make requests from any origin. The API is protected by API key authentication, which provides the primary security layer. In production, consider restricting CORS to specific origins if you only need to support specific web applications (browser extensions will still work regardless of CORS settings).
-## Error Handling
+## ⚠️ Error Handling
 
 All errors return JSON responses with appropriate HTTP status codes:
 
@@ -138,7 +138,7 @@ All errors return JSON responses with appropriate HTTP status codes:
   "notionUrl": "https://www.notion.so/..." // If duplicate found
 }
 ```
-## Rate Limiting
+## ⏱️ Rate Limiting
 
 The API implements rate limiting to prevent abuse and control costs. The default limit is **10 requests per minute** per client (IP address or API key).
 
@@ -173,7 +173,7 @@ When the rate limit is exceeded, the API returns:
   - Other distributed caching solutions
 
 > **Note:** Vercel's serverless functions also have platform-level rate limiting based on your plan. Application-level rate limiting provides additional protection and cost control.
-## Authentication
+## 🔐 Authentication
 
 **The API requires authentication via API key to prevent unauthorized usage.**
 

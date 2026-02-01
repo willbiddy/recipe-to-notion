@@ -1,7 +1,7 @@
 # Deployment Guide
 
 Deploy the Recipe Clipper for Notion server to Vercel. The code is already configured for Vercel deployment.
-## Quick Deploy
+## 🚀 Quick Deploy
 
 ### Step 0: Install Vercel CLI
 
@@ -55,7 +55,7 @@ If you have Vercel Deployment Protection enabled (requires authentication to acc
 
 - Vercel will provide a URL like `https://your-app.vercel.app`
 - Copy this URL - you'll need it to configure the browser extension
-## Testing Your Deployment
+## ✅ Testing Your Deployment
 
 > 📖 **API Endpoints:** See [API Reference](API.md) for complete endpoint documentation, including the health check endpoint.
 
@@ -69,7 +69,7 @@ curl -X POST https://your-app.vercel.app/api/recipes \
 ```
 
 Replace `YOUR_API_SECRET` with the value you set for the `API_SECRET` environment variable.
-## Important Notes
+## 📌 Important Notes
 
 ### Execution Time Limit
 

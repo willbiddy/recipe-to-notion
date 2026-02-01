@@ -196,20 +196,3 @@ The API requires the following environment variables:
 
 These should be configured in your Vercel deployment environment variables.
 
-### Security Features
-
-The API includes several security measures:
-
-- **Constant-time API key comparison** - Prevents timing attacks
-- **URL validation** - Only allows HTTP/HTTPS protocols (prevents SSRF and XSS)
-- **Request size limits** - Maximum 10KB request body and 2048 character URLs
-- **Request timeouts** - 30-second timeout on recipe scraping
-- **Rate limiting** - 10 requests per minute per client
-- **Security headers** - X-Content-Type-Options, X-Frame-Options, and Referrer-Policy
-- **Error message sanitization** - Detailed errors logged server-side; generic messages returned to clients
-- **Request correlation IDs** - Unique IDs for debugging and security incident response
-
-### Error Responses
-
-- **400 Bad Request** - Missing or invalid `Authorization` header, invalid API secret, invalid URL format/protocol, URL too long, or request body too large
-- **429 Too Many Requests** - Rate limit exceeded

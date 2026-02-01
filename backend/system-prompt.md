@@ -51,6 +51,7 @@ type CuisineTag =
   | "Vietnamese";
 
 type DishTypeTag =
+  | "Bread"
   | "Brownies"
   | "Cookies"
   | "Dip"

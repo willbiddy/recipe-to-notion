@@ -1,4 +1,4 @@
-# 🍴 Recipe Clipper for Notion
+# 🍽️ Recipe Clipper for Notion
 
 Save recipes to Notion without copying and pasting. Input a URL from almost any recipe site and get a Notion page with the cover photo, ingredients grouped by shopping aisle, instructions, and AI-generated tags. Claude automatically analyzes each recipe to add cuisine tags, meal types, health scores, ingredient categories, and a short description, so you can filter and search your collection later.
 

@@ -47,27 +47,6 @@ CLI/Extension/Web/API/Shortcut → Check duplicates → Scrape recipe → Claude
 
 Each recipe costs roughly **2-3 cents** in Claude API usage (roughly 4,300-5,300 input tokens and 400-1,000 output tokens per recipe). The default model is Sonnet 4.5, but you can change it by setting the `CLAUDE_MODEL` environment variable to `"haiku"`, `"sonnet"`, or `"opus"`.
 
-## Usage
-
-### Command Line (CLI)
-
-The quickest way to save recipes:
-
-```bash
-# Single recipe
-bun save https://cooking.nytimes.com/recipes/1023430-pasta-with-pumpkin-seed-pesto
-
-# Multiple recipes
-bun save \
-  https://www.bonappetit.com/recipe/ditalini-and-peas-in-parmesan-broth \
-  https://cooking.nytimes.com/recipes/768413295-chickpeas-al-limone-with-burrata
-
-# For sites that block scraping, save the HTML manually
-bun save --html ~/Downloads/recipe.html "https://example.com/recipe"
-```
-
-
-
 ---
 
 **Technologies:**

@@ -178,11 +178,13 @@ Rate 1-10 using the criteria, examples, and key signals below. Judge by actual i
 * **8 — Great:** Good vegetable representation. Mostly whole grains. Fish, poultry, beans, or eggs as protein. Healthy fats (olive oil). High fiber. Minimal added sugar. Dairy within 1-2 servings.
   * *Examples: Vegetable Stir-Fry with Tofu over Brown Rice, Lentil Soup with Vegetables and Whole Grain Bread, Steamed Broccoli with Olive Oil and Garlic (side).*
 
-* **9 — Excellent:** High vegetable content (near half plate). Whole grains present. Fish (omega-3s), legumes, or poultry as protein. Healthy unsaturated fats. High fiber. Low sodium. No added sugar. Maximum score for sides.
-  * *Examples: Grilled Salmon with Roasted Brussels Sprouts and Quinoa, Chickpea and Spinach Curry over Brown Rice, Sautéed Kale with Garlic and Olive Oil (side).*
+* **9 — Excellent:** A flawless recipe that is nutritionally dense but isn't a complete meal on its own.
+  * *Criteria:* High-quality protein (fish, poultry, legumes) or a vegetable-heavy side prepared with healthy fats. No added sugar, refined grains, or high sodium.
+  * *Examples: Grilled Salmon with Lemon; Sautéed Kale and Garlic; Roasted Chicken Thighs with Herbs.*
 
-* **10 — Optimal:** Half plate vegetables. Whole intact grains. Plant protein or fish (omega-3s). Healthy oils (olive, canola). High fiber. No added sugar. Low sodium. Minimally processed whole foods. Main dishes only.
-  * *Examples: Mediterranean Lentil Salad with Leafy Greens, Tomatoes, Cucumbers, and Olive Oil; Grilled Salmon over Quinoa with Roasted Broccoli and Kale.*
+ * **10 — Optimal**: A one-dish whole-food meal that is nutritionally balanced without needing sides.
+  * *Criteria:* Must integrate significant protein + high fiber + healthy fats. Strictly no refined grains (white rice/pasta), added sugar, or processed ingredients.
+  * *Examples:* Quinoa Bowl with Salmon and Roasted Veg; Lentil & Kale Stew; Chicken and Vegetable Stir-Fry over Brown Rice.
 
 #### Key Signals
 

@@ -16,8 +16,6 @@ Save recipes to Notion without copying and pasting. Input a URL from almost any 
 
 ## Documentation
 
-📚 **Quick Links:**
-
 | Guide | Description |
 |-------|-------------|
 | **[Setup](docs/SETUP.md)** | Initial setup, local development, and configuration |

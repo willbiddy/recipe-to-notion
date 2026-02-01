@@ -51,12 +51,6 @@ bun run build:extension
 4. The recipe will be processed and saved to your Notion database
 5. A new tab will open with the saved recipe page
 
-### Features
-
-- **Real-time Progress Updates** - Uses Server-Sent Events (SSE) to show progress
-- **Error Handling** - Clear error messages for duplicates, connection issues, etc.
-- **Auto-open** - Automatically opens the saved Notion page after successful save
-
 ### Development: Local Server
 
 For development, use a local server instead of Vercel:

@@ -182,7 +182,7 @@ Rate 1-10 using the criteria, examples, and key signals below. Judge by actual i
   * *Criteria:* High-quality protein (fish, poultry, legumes) or a vegetable-heavy side prepared with healthy fats. No added sugar, refined grains, or high sodium.
   * *Examples: Grilled Salmon with Lemon; Sautéed Kale and Garlic; Roasted Chicken Thighs with Herbs.*
 
- * **10 — Optimal**: A one-dish whole-food meal that is nutritionally balanced without needing sides.
+* **10 — Optimal**: A one-dish whole-food meal that is nutritionally balanced without needing sides.
   * *Criteria:* Must integrate significant protein + high fiber + healthy fats. Strictly no refined grains (white rice/pasta), added sugar, or processed ingredients.
   * *Examples:* Quinoa Bowl with Salmon and Roasted Veg; Lentil & Kale Stew; Chicken and Vegetable Stir-Fry over Brown Rice.
 

@@ -163,4 +163,3 @@ curl -X POST http://localhost:3000/api/recipes \
 - **[Deployment](DEPLOYMENT.md)** - Deploy to Vercel
 - **[Clients](CLIENTS.md)** - Browser extension, web interface, and iOS shortcut
 - **[API Reference](API.md)** - REST API documentation
-

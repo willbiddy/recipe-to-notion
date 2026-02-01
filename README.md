@@ -13,13 +13,36 @@ Save recipes to Notion without copying and pasting. Input a URL from almost any 
 
 ## Documentation
 
-| Guide | Description |
-|-------|-------------|
-| **[Setup](docs/SETUP.md)** | Initial setup, local development, and configuration |
-| **[Deployment](docs/DEPLOYMENT.md)** | Deploy to Vercel |
-| **[Clients](docs/CLIENTS.md)** | Browser extension, web interface, iOS shortcut, and CLI |
-| **[API Reference](docs/API.md)** | REST API for custom integrations |
-| **[System Prompt](backend/system-prompt.md)** | Claude AI instructions for recipe tagging |
+<table width="100%">
+  <thead>
+    <tr>
+      <th align="left">Guide</th>
+      <th align="left">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="docs/SETUP.md"><strong>Setup</strong></a></td>
+      <td>Initial setup, local development, and configuration</td>
+    </tr>
+    <tr>
+      <td><a href="docs/DEPLOYMENT.md"><strong>Deployment</strong></a></td>
+      <td>Deploy to Vercel</td>
+    </tr>
+    <tr>
+      <td><a href="docs/CLIENTS.md"><strong>Clients</strong></a></td>
+      <td>Browser extension, web interface, iOS shortcut, and CLI</td>
+    </tr>
+    <tr>
+      <td><a href="docs/API.md"><strong>API Reference</strong></a></td>
+      <td>REST API for custom integrations</td>
+    </tr>
+    <tr>
+      <td><a href="backend/system-prompt.md"><strong>System Prompt</strong></a></td>
+      <td>Claude AI instructions for recipe tagging</td>
+    </tr>
+  </tbody>
+</table>
 
 ## How It Works
 

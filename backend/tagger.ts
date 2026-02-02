@@ -191,10 +191,16 @@ async function callClaudeAPI(
 	systemPrompt: string,
 ): Promise<Anthropic.Messages.Message> {
 	try {
-		return await client.messages.create({
+		const response = await client.messages.create({
 			model: CLAUDE_MODEL,
 			max_tokens: CLAUDE_MAX_TOKENS,
-			system: systemPrompt,
+			system: [
+				{
+					type: "text",
+					text: systemPrompt,
+					cache_control: { type: "ephemeral" },
+				},
+			],
 			tools: [
 				{
 					name: "tag_recipe",
@@ -205,6 +211,30 @@ async function callClaudeAPI(
 			tool_choice: { type: "tool", name: "tag_recipe" },
 			messages: [{ role: "user", content: userMessage }],
 		});
+
+		// Log cache performance metrics
+		const usage = response.usage;
+		if (usage) {
+			const cacheCreate =
+				(usage as { cache_creation_input_tokens?: number }).cache_creation_input_tokens ?? 0;
+			const cacheRead =
+				(usage as { cache_read_input_tokens?: number }).cache_read_input_tokens ?? 0;
+			const regularInput = usage.input_tokens ?? 0;
+			const output = usage.output_tokens ?? 0;
+
+			if (cacheRead > 0) {
+				console.log(`[Prompt Cache] HIT: ${cacheRead} cached tokens + ${regularInput} new tokens`);
+			} else if (cacheCreate > 0) {
+				console.log(`[Prompt Cache] CREATE: ${cacheCreate} tokens cached for 5min`);
+			} else {
+				console.log(
+					`[Prompt Cache] MISS: ${regularInput} input tokens (prompt may be too short for caching)`,
+				);
+			}
+			console.log(`[Prompt Cache] Output: ${output} tokens`);
+		}
+
+		return response;
 	} catch (error) {
 		if (error instanceof Anthropic.APIError) {
 			throw new TaggingError(

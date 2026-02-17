@@ -76,9 +76,9 @@ enum PromptLabel {
 }
 
 enum ClaudeModel {
-	Haiku = "claude-3-5-haiku-20241022",
-	Sonnet = "claude-sonnet-4-5-20250929",
-	Opus = "claude-3-opus-20240229",
+	Haiku = "claude-haiku-4-5-20251001",
+	Sonnet = "claude-sonnet-4-6",
+	Opus = "claude-opus-4-6",
 }
 
 /**

@@ -54,7 +54,7 @@
 		"typescript": "^5.9.3"
 	},
 	"dependencies": {
-		"@anthropic-ai/sdk": "^0.71.2",
+		"@anthropic-ai/sdk": "^0.75.0",
 		"@notionhq/client": "^5.8.0",
 		"citty": "^0.2.0",
 		"get-port": "^7.1.0",

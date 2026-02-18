@@ -43,9 +43,9 @@ CLI/Extension/Web/API/Shortcut → Check duplicates → Scrape recipe → Claude
 
 ## 💰 Cost
 
-Each recipe costs roughly **2-3 cents** in Claude API usage (roughly 4,300-5,300 input tokens and 400-1,000 output tokens per recipe). The default model is Sonnet 4.6, but you can change it by setting the `CLAUDE_MODEL` environment variable to `"haiku"`, `"sonnet"`, or `"opus"`.
+Each recipe costs about **2.5 cents** in Claude API usage, so you can save roughly **40 recipes** for **$1**. The default model is Sonnet, but you can change it by setting the `CLAUDE_MODEL` environment variable to `"haiku"`, `"sonnet"`, or `"opus"`.
 
-**Prompt caching:** When you save multiple recipes within 5 minutes, subsequent recipes cost about 40% less because Claude caches the system prompt.
+When you save multiple recipes within 5 minutes, subsequent recipes cost about 40% less because Claude caches the system prompt.
 
 > **Note:** The Notion API and Vercel hosting are free for personal use, so there are no additional costs beyond the Claude API usage.
 
